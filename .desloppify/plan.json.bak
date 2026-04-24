@@ -1,25 +1,41 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T09:49:22+00:00",
+  "updated": "2026-04-24T10:44:41+00:00",
   "queue_order": [
-    "subjective::abstraction_fitness",
-    "subjective::ai_generated_debt",
+    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+    "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+    "review::.::holistic::error_consistency::extends_resolver_bare_error",
+    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+    "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+    "review::.::holistic::design_coherence::display_name_duplication",
+    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+    "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::dependency_health::shared_vcs_circular_import",
+    "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+    "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+    "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+    "review::.::holistic::contract_coherence::get_or_create_mutates",
+    "review::.::holistic::type_safety::unguarded_error_property_access",
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+    "review::.::holistic::design_coherence::receive_migration_multi_phase",
+    "review::.::holistic::design_coherence::settings_formatter_duplication",
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+    "review::.::holistic::initialization_coupling::run_scope_module_state",
+    "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+    "triage::strategize",
+    "triage::enrich",
+    "triage::commit",
     "subjective::api_surface_coherence",
-    "subjective::authorization_consistency",
     "subjective::contract_coherence",
-    "subjective::convention_outlier",
-    "subjective::design_coherence",
-    "subjective::error_consistency",
-    "subjective::high_level_elegance",
-    "subjective::incomplete_migration",
-    "subjective::initialization_coupling",
-    "subjective::logic_clarity",
-    "subjective::mid_level_elegance",
-    "subjective::naming_quality",
-    "subjective::package_organization",
-    "subjective::test_strategy",
-    "subjective::type_safety"
+    "subjective::mid_level_elegance"
   ],
   "deferred": [],
   "skipped": {
@@ -3488,107 +3504,143 @@
       "cluster": null,
       "updated_at": "2026-04-24T09:00:22+00:00"
     },
-    "subjective::abstraction_fitness": {
-      "issue_id": "subjective::abstraction_fitness",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning": {
+      "issue_id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+      "created_at": "2026-04-24T10:39:18+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:18+00:00"
     },
-    "subjective::ai_generated_debt": {
-      "issue_id": "subjective::ai_generated_debt",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::error_consistency::extends_resolver_bare_error": {
+      "issue_id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
+      "created_at": "2026-04-24T10:39:18+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:18+00:00"
     },
-    "subjective::api_surface_coherence": {
-      "issue_id": "subjective::api_surface_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive": {
+      "issue_id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+      "created_at": "2026-04-24T10:39:19+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:19+00:00"
     },
-    "subjective::authorization_consistency": {
-      "issue_id": "subjective::authorization_consistency",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
+      "issue_id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+      "created_at": "2026-04-24T10:39:20+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:20+00:00"
     },
-    "subjective::contract_coherence": {
-      "issue_id": "subjective::contract_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::design_coherence::display_name_duplication": {
+      "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
+      "created_at": "2026-04-24T10:39:20+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:20+00:00"
     },
-    "subjective::convention_outlier": {
-      "issue_id": "subjective::convention_outlier",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
+      "issue_id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+      "created_at": "2026-04-24T10:39:21+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:21+00:00"
     },
-    "subjective::design_coherence": {
-      "issue_id": "subjective::design_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
+      "issue_id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+      "created_at": "2026-04-24T10:39:21+00:00",
+      "cluster": "quick-wins",
+      "updated_at": "2026-04-24T10:39:21+00:00"
     },
-    "subjective::error_consistency": {
-      "issue_id": "subjective::error_consistency",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils": {
+      "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+      "created_at": "2026-04-24T10:39:36+00:00",
+      "cluster": "sanitize-utils-layering",
+      "updated_at": "2026-04-24T10:39:36+00:00"
     },
-    "subjective::high_level_elegance": {
-      "issue_id": "subjective::high_level_elegance",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils": {
+      "issue_id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+      "created_at": "2026-04-24T10:39:36+00:00",
+      "cluster": "sanitize-utils-layering",
+      "updated_at": "2026-04-24T10:39:36+00:00"
     },
-    "subjective::incomplete_migration": {
-      "issue_id": "subjective::incomplete_migration",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::dependency_health::shared_vcs_circular_import": {
+      "issue_id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
+      "created_at": "2026-04-24T10:39:37+00:00",
+      "cluster": "sanitize-utils-layering",
+      "updated_at": "2026-04-24T10:39:37+00:00"
     },
-    "subjective::initialization_coupling": {
-      "issue_id": "subjective::initialization_coupling",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling": {
+      "issue_id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+      "created_at": "2026-04-24T10:39:38+00:00",
+      "cluster": "sanitize-utils-layering",
+      "updated_at": "2026-04-24T10:39:38+00:00"
     },
-    "subjective::logic_clarity": {
-      "issue_id": "subjective::logic_clarity",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings": {
+      "issue_id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+      "created_at": "2026-04-24T10:39:39+00:00",
+      "cluster": "api-verb-consistency",
+      "updated_at": "2026-04-24T10:39:39+00:00"
     },
-    "subjective::mid_level_elegance": {
-      "issue_id": "subjective::mid_level_elegance",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names": {
+      "issue_id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+      "created_at": "2026-04-24T10:39:39+00:00",
+      "cluster": "api-verb-consistency",
+      "updated_at": "2026-04-24T10:39:39+00:00"
     },
-    "subjective::naming_quality": {
-      "issue_id": "subjective::naming_quality",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy": {
+      "issue_id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+      "created_at": "2026-04-24T10:39:40+00:00",
+      "cluster": "api-verb-consistency",
+      "updated_at": "2026-04-24T10:39:40+00:00"
     },
-    "subjective::package_organization": {
-      "issue_id": "subjective::package_organization",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::contract_coherence::base_result_unsafe_cast": {
+      "issue_id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+      "created_at": "2026-04-24T10:39:41+00:00",
+      "cluster": "contract-safety",
+      "updated_at": "2026-04-24T10:39:41+00:00"
     },
-    "subjective::test_strategy": {
-      "issue_id": "subjective::test_strategy",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::contract_coherence::get_or_create_mutates": {
+      "issue_id": "review::.::holistic::contract_coherence::get_or_create_mutates",
+      "created_at": "2026-04-24T10:39:42+00:00",
+      "cluster": "contract-safety",
+      "updated_at": "2026-04-24T10:39:42+00:00"
     },
-    "subjective::type_safety": {
-      "issue_id": "subjective::type_safety",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
+    "review::.::holistic::type_safety::unguarded_error_property_access": {
+      "issue_id": "review::.::holistic::type_safety::unguarded_error_property_access",
+      "created_at": "2026-04-24T10:39:43+00:00",
+      "cluster": "type-safety-casts",
+      "updated_at": "2026-04-24T10:39:43+00:00"
+    },
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff": {
+      "issue_id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+      "created_at": "2026-04-24T10:39:44+00:00",
+      "cluster": "type-safety-casts",
+      "updated_at": "2026-04-24T10:39:44+00:00"
+    },
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
+      "issue_id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+      "created_at": "2026-04-24T10:39:45+00:00",
+      "cluster": "module-scoped-mutables",
+      "updated_at": "2026-04-24T10:39:45+00:00"
+    },
+    "review::.::holistic::initialization_coupling::run_scope_module_state": {
+      "issue_id": "review::.::holistic::initialization_coupling::run_scope_module_state",
+      "created_at": "2026-04-24T10:39:45+00:00",
+      "cluster": "module-scoped-mutables",
+      "updated_at": "2026-04-24T10:39:45+00:00"
+    },
+    "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag": {
+      "issue_id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+      "created_at": "2026-04-24T10:39:47+00:00",
+      "cluster": "result-type-refactor",
+      "updated_at": "2026-04-24T10:39:47+00:00"
+    },
+    "review::.::holistic::design_coherence::receive_migration_multi_phase": {
+      "issue_id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
+      "created_at": "2026-04-24T10:39:48+00:00",
+      "cluster": "method-decomposition",
+      "updated_at": "2026-04-24T10:39:48+00:00"
+    },
+    "review::.::holistic::design_coherence::settings_formatter_duplication": {
+      "issue_id": "review::.::holistic::design_coherence::settings_formatter_duplication",
+      "created_at": "2026-04-24T10:39:48+00:00",
+      "cluster": "method-decomposition",
+      "updated_at": "2026-04-24T10:39:48+00:00"
     }
   },
   "clusters": {
@@ -4119,10 +4171,17 @@
         "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
         "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
         "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
-        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons"
+        "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+        "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+        "review::.::holistic::error_consistency::extends_resolver_bare_error",
+        "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+        "review::.::holistic::design_coherence::display_name_duplication",
+        "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern"
       ],
       "created_at": "2026-03-18T11:51:29+00:00",
-      "updated_at": "2026-03-22T06:21:02+00:00",
+      "updated_at": "2026-04-24T10:43:37+00:00",
       "auto": false,
       "cluster_key": "",
       "action": null,
@@ -4133,30 +4192,38 @@
       "action_steps": [
         {
           "title": "Simplify isValidGitUrl to single boolean return",
-          "detail": "Simplify boolean return in src/shared/type-guards.ts that wraps a truthy check in an unnecessary ternary or double-negation.",
+          "detail": "Fix gitlab_force_merge_no_warning, extends_resolver_bare_error, lifecycle_report_switch_not_exhaustive",
           "effort": "trivial",
-          "issue_refs": [],
+          "issue_refs": [
+            "gitlab_force_merge_no_warning,extends_resolver_bare_error,lifecycle_report_switch_not_exhaustive"
+          ],
           "done": true
         },
         {
           "title": "Remove formulaic cache comments",
-          "detail": "Remove formulaic auto-generated comments in src/config/normalizer.ts that just restate what the function signature says.",
+          "detail": "Move test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/repo-metadata-provider.test.ts. In src/shared/xfg-template.ts lines 99-105 replace inline fullName logic with call to getRepoDisplayName from src/repo/utils.ts",
           "effort": "trivial",
-          "issue_refs": [],
+          "issue_refs": [
+            "misplaced_repo_metadata_test,display_name_duplication"
+          ],
           "done": true
         },
         {
           "title": "Extract renderLeafNode from renderTree",
-          "detail": "Extract inline leaf renderer logic in src/output/unified-summary.ts into a named renderLeaf helper function.",
+          "detail": "In src/settings/base-processor.ts and src/config/normalizer.ts remove multi-line JSDoc blocks on trivial 1-3 line functions like type predicates and simple getters",
           "effort": "small",
-          "issue_refs": [],
+          "issue_refs": [
+            "trivial_function_docstring_bloat"
+          ],
           "done": true
         },
         {
           "title": "Defer sync-command.ts module-level singletons",
-          "detail": "Defer singleton initialization in src/cli/sync-command.ts from module scope to inside the action handler function.",
+          "detail": "In src/config/normalizer.ts simplify mergePROptions function by replacing verbose field-by-field intermediate variables with spread-and-filter pattern to reduce from 14 lines to ~4 lines",
           "effort": "small",
-          "issue_refs": [],
+          "issue_refs": [
+            "merge_pr_options_verbose_field_pattern"
+          ],
           "done": true
         }
       ]
@@ -5490,25 +5557,7 @@
     "auto/stale-review": {
       "name": "auto/stale-review",
       "description": "Re-review 17 stale subjective dimensions",
-      "issue_ids": [
-        "subjective::abstraction_fitness",
-        "subjective::ai_generated_debt",
-        "subjective::api_surface_coherence",
-        "subjective::authorization_consistency",
-        "subjective::contract_coherence",
-        "subjective::convention_outlier",
-        "subjective::design_coherence",
-        "subjective::error_consistency",
-        "subjective::high_level_elegance",
-        "subjective::incomplete_migration",
-        "subjective::initialization_coupling",
-        "subjective::logic_clarity",
-        "subjective::mid_level_elegance",
-        "subjective::naming_quality",
-        "subjective::package_organization",
-        "subjective::test_strategy",
-        "subjective::type_safety"
-      ],
+      "issue_ids": [],
       "created_at": "2026-04-24T04:50:52+00:00",
       "updated_at": "2026-04-24T04:50:52+00:00",
       "auto": true,
@@ -5518,6 +5567,325 @@
       "user_modified": false,
       "action_type": "manual_fix",
       "execution_policy": "planned_only"
+    },
+    "sanitize-utils-layering": {
+      "name": "sanitize-utils-layering",
+      "description": "Move sanitize-utils.ts from vcs/ to shared/ to fix layering violation",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+        "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+        "review::.::holistic::dependency_health::shared_vcs_circular_import",
+        "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling"
+      ],
+      "created_at": "2026-04-24T10:39:36+00:00",
+      "updated_at": "2026-04-24T10:43:39+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts",
+          "detail": "git mv src/vcs/sanitize-utils.ts src/shared/",
+          "issue_refs": [
+            "shared_imports_vcs_sanitize_utils,shared_vcs_circular_import,sanitize_utils_bidirectional_coupling"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update imports in shared/command-executor.ts, shared/retry-utils.ts",
+          "detail": "In src/shared/command-executor.ts line 2 and src/shared/retry-utils.ts line 2 change import path from '../vcs/sanitize-utils.js' to './sanitize-utils.js'",
+          "issue_refs": [
+            "shared_imports_vcs_sanitize_utils"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update imports in vcs/ado-pr-strategy.ts, vcs/github-pr-strategy.ts, vcs/gitlab-pr-strategy.ts",
+          "detail": "In src/vcs/ado-pr-strategy.ts, src/vcs/github-pr-strategy.ts, src/vcs/gitlab-pr-strategy.ts change import from './sanitize-utils.js' to '../shared/sanitize-utils.js'",
+          "issue_refs": [
+            "shared_vcs_circular_import"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update vcs/index.ts barrel export",
+          "detail": "In src/vcs/index.ts update the barrel re-export to point to '../shared/sanitize-utils.js' or remove if no longer needed from vcs barrel",
+          "issue_refs": [
+            "sanitize_utils_bidirectional_coupling"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Run tests",
+          "detail": "Run npm test to verify all imports resolve correctly and no test regressions. Run npm run test:typecheck to verify type-checking passes.",
+          "issue_refs": [
+            "shared_imports_vcs_sanitize_utils"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "api-verb-consistency": {
+      "name": "api-verb-consistency",
+      "description": "Standardize API method naming across settings strategies",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+        "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+        "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy"
+      ],
+      "created_at": "2026-04-24T10:39:38+00:00",
+      "updated_at": "2026-04-24T10:43:42+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Rename set* to update* in IRepoSettingsStrategy",
+          "detail": "In src/settings/repo-settings/types.ts rename setAutomatedSecurityFixes to updateAutomatedSecurityFixes and setPrivateVulnerabilityReporting to updatePrivateVulnerabilityReporting in IRepoSettingsStrategy interface",
+          "issue_refs": [
+            "mixed_set_update_verbs_repo_settings"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Simplify getDefaultSetup/updateDefaultSetup to get/update in ICodeScanningStrategy",
+          "detail": "In src/settings/code-scanning/types.ts rename getDefaultSetup to get and updateDefaultSetup to update in ICodeScanningStrategy interface definition",
+          "issue_refs": [
+            "code_scanning_compound_method_names"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Evaluate branchExists placement on IRepoSettingsStrategy",
+          "detail": "In src/settings/repo-settings/types.ts evaluate whether branchExists() should be moved to src/repo/ or src/vcs/ interface since it queries repo state not settings",
+          "issue_refs": [
+            "branch_exists_on_settings_strategy"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update all implementations and tests",
+          "detail": "Update all implementations in github-repo-settings-strategy.ts, ado-repo-settings-strategy.ts, gitlab-repo-settings-strategy.ts and all test files to use new method names",
+          "issue_refs": [
+            "mixed_set_update_verbs_repo_settings,code_scanning_compound_method_names"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "contract-safety": {
+      "name": "contract-safety",
+      "description": "Fix contract issues: unsafe cast and misleading method name",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+        "review::.::holistic::contract_coherence::get_or_create_mutates"
+      ],
+      "created_at": "2026-04-24T10:39:41+00:00",
+      "updated_at": "2026-04-24T10:43:44+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Rename getOrCreate to ensureEntry or findOrCreate in ResultsCollector",
+          "detail": "In src/cli/results-collector.ts rename getOrCreate method to findOrCreate to honestly convey that the method mutates internal state when entry does not exist",
+          "issue_refs": [
+            "get_or_create_mutates"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Replace unsafe as TResult cast in baseResult with proper type construction",
+          "detail": "In src/settings/base-processor.ts replace the unsafe 'as TResult' cast in baseResult<TResult>() with proper type construction using Object.assign or explicit field initialization",
+          "issue_refs": [
+            "base_result_unsafe_cast"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update all call sites",
+          "detail": "In src/cli/sync-command.ts and any other files calling getOrCreate, update call sites to use the new findOrCreate method name",
+          "issue_refs": [
+            "get_or_create_mutates"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "type-safety-casts": {
+      "name": "type-safety-casts",
+      "description": "Add type guards for unsafe property access and casts",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unguarded_error_property_access",
+        "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+      ],
+      "created_at": "2026-04-24T10:39:42+00:00",
+      "updated_at": "2026-04-24T10:44:27+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Add type guard for error.stdout access in gh-api-utils.ts",
+          "detail": "In src/shared/gh-api-utils.ts add isProcessError type guard function checking for stdout property before accessing it in attachRetryAfter and attachValidationDetails",
+          "issue_refs": [
+            "unguarded_error_property_access"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Add runtime check before string cast in diff-algorithm.ts",
+          "detail": "In src/settings/rulesets/diff-algorithm.ts add typeof check before 'item.type as string' cast to verify runtime type safety at the cast site",
+          "issue_refs": [
+            "unverified_string_cast_in_diff"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "module-scoped-mutables": {
+      "name": "module-scoped-mutables",
+      "description": "Replace module-scoped mutable state with explicit DI in sync-command.ts",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+        "review::.::holistic::initialization_coupling::run_scope_module_state"
+      ],
+      "created_at": "2026-04-24T10:39:44+00:00",
+      "updated_at": "2026-04-24T10:43:47+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Create SyncContext or similar to hold logger/executor",
+          "detail": "In src/cli/sync-command.ts define a RunContext interface with logger: ILogger and executor: IShellCommandExecutor fields near the top of the file",
+          "issue_refs": [
+            "sync_command_module_scoped_mutable_state,run_scope_module_state"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Thread through free functions as parameter",
+          "detail": "In src/cli/sync-command.ts add ctx: RunContext as first parameter to logSettingsResult, applyRepoSettings, displayReports, runLifecyclePhase, runFileSyncPhase and other free functions",
+          "issue_refs": [
+            "sync_command_module_scoped_mutable_state"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Remove module-level let variables and getLogger/getDefaultExecutor",
+          "detail": "In src/cli/sync-command.ts delete _runScopeExecutor, _runScopeLogger let variables and getLogger(), getDefaultExecutor() accessor functions from module scope",
+          "issue_refs": [
+            "run_scope_module_state"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update tests",
+          "detail": "Update test/unit/cli/sync-command.test.ts and test/integration/ tests to pass RunContext to refactored functions",
+          "issue_refs": [
+            "sync_command_module_scoped_mutable_state"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "result-type-refactor": {
+      "name": "result-type-refactor",
+      "description": "Replace flat optional ProcessorResult with discriminated union",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag"
+      ],
+      "created_at": "2026-04-24T10:39:46+00:00",
+      "updated_at": "2026-04-24T10:43:49+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Define discriminated union variants for each outcome shape",
+          "detail": "In src/sync/types.ts define discriminated union variants: SuccessResult with status:'success', SkippedResult with status:'skipped', FailedResult with status:'failed'",
+          "issue_refs": [
+            "processor_result_flat_optional_bag"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update determineMergeOutcome and other consumers",
+          "detail": "In src/cli/sync-command.ts update determineMergeOutcome to switch on result.status discriminant instead of inspecting optional field combinations",
+          "issue_refs": [
+            "processor_result_flat_optional_bag"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Update tests",
+          "detail": "Update test/unit/cli/sync-command.test.ts and test/unit/sync/ tests to construct discriminated union variants instead of partial objects",
+          "issue_refs": [
+            "processor_result_flat_optional_bag"
+          ],
+          "effort": "small"
+        }
+      ]
+    },
+    "method-decomposition": {
+      "name": "method-decomposition",
+      "description": "Extract long methods into focused sub-methods",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_phase",
+        "review::.::holistic::design_coherence::settings_formatter_duplication"
+      ],
+      "created_at": "2026-04-24T10:39:47+00:00",
+      "updated_at": "2026-04-24T10:43:50+00:00",
+      "auto": false,
+      "cluster_key": "",
+      "action": null,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only",
+      "execution_status": "active",
+      "user_modified": true,
+      "action_steps": [
+        {
+          "title": "Extract receiveMigration phases into private methods",
+          "detail": "In src/lifecycle/github-lifecycle-provider.ts extract receiveMigration into private methods: createRepository() lines ~450-480, renameBranch() lines ~480-510, pushMirror() lines ~510-540",
+          "issue_refs": [
+            "receive_migration_multi_phase"
+          ],
+          "effort": "small"
+        },
+        {
+          "title": "Extract shared formatting loop from code-scanning and repo-settings formatters",
+          "detail": "Extract shared create/update formatting loop from src/settings/code-scanning/formatter.ts and src/settings/repo-settings/formatter.ts into a shared utility in src/settings/shared/",
+          "issue_refs": [
+            "settings_formatter_duplication"
+          ],
+          "effort": "small"
+        }
+      ]
     }
   },
   "superseded": {
@@ -8931,7 +9299,35 @@
       "candidates": []
     }
   },
-  "promoted_ids": [],
+  "promoted_ids": [
+    "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
+    "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
+    "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
+    "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
+    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+    "review::.::holistic::error_consistency::extends_resolver_bare_error",
+    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+    "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+    "review::.::holistic::design_coherence::display_name_duplication",
+    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+    "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::dependency_health::shared_vcs_circular_import",
+    "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+    "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+    "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+    "review::.::holistic::contract_coherence::get_or_create_mutates",
+    "review::.::holistic::type_safety::unguarded_error_property_access",
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+    "review::.::holistic::design_coherence::receive_migration_multi_phase",
+    "review::.::holistic::design_coherence::settings_formatter_duplication",
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+    "review::.::holistic::initialization_coupling::run_scope_module_state",
+    "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag"
+  ],
   "plan_start_scores": {
     "strict": 91.6,
     "overall": 92.8,
@@ -34629,10 +35025,1838 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:25+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:25+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+          "review::.::holistic::contract_coherence::get_or_create_mutates",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::design_coherence::display_name_duplication",
+          "review::.::holistic::design_coherence::receive_migration_multi_phase",
+          "review::.::holistic::design_coherence::settings_formatter_duplication",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::initialization_coupling::run_scope_module_state",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+          "review::.::holistic::type_safety::unguarded_error_property_access",
+          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+          "review::.::holistic::contract_coherence::get_or_create_mutates",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::design_coherence::display_name_duplication",
+          "review::.::holistic::design_coherence::receive_migration_multi_phase",
+          "review::.::holistic::design_coherence::settings_formatter_duplication",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::initialization_coupling::run_scope_module_state",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+          "review::.::holistic::type_safety::unguarded_error_property_access",
+          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 23,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 77,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [
+          "subjective::api_surface_coherence",
+          "subjective::contract_coherence",
+          "subjective::mid_level_elegance"
+        ],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:46+00:00",
+      "action": "triage_auto_start",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "source": "runner_auto_start",
+        "runner": "claude",
+        "injected_stage_ids": [
+          "strategize",
+          "observe",
+          "reflect",
+          "organize",
+          "enrich",
+          "sense-check"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:36:43+00:00",
+      "action": "triage_strategize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false,
+        "score_trend": "declining",
+        "focus_dimensions": []
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:37:00+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 23,
+        "cited_ids": [],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:37:33+00:00",
+      "action": "triage_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 23,
+        "cited_ids": [
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+        ],
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:37:46+00:00",
+      "action": "triage_confirm_observe",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "All 23 issues verified against code across api_surface_coherence, design_coherence, contract_coherence, mid_level_elegance, package_organization, type_safety and 9 other dimensions. Each cluster has file:line citations."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:38:36+00:00",
+      "action": "triage_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "issue_count": 23,
+        "reuse": false,
+        "recurring_dims": [
+          "ai_generated_debt",
+          "api_surface_coherence",
+          "authorization_consistency",
+          "contract_coherence",
+          "cross_module_architecture",
+          "dependency_health",
+          "design_coherence",
+          "error_consistency",
+          "high_level_elegance",
+          "initialization_coupling",
+          "logic_clarity",
+          "low_level_elegance",
+          "mid_level_elegance",
+          "package_organization",
+          "type_safety"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:38:46+00:00",
+      "action": "triage_confirm_reflect",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Blueprint has 8 clusters covering all 23 issues across api_surface_coherence, design_coherence, contract_coherence, type_safety, mid_level_elegance, package_organization and others. Each issue has explicit cluster assignment. Quick-wins cluster (7 items) goes first for maximum velocity, sanitize-utils-layering (4 items) second for multi-dimension impact."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:18+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:18+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::error_consistency::extends_resolver_bare_error"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:19+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:20+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:20+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::display_name_duplication"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:21+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:21+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern"
+      ],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:36+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:36+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+        "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils"
+      ],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:37+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::dependency_health::shared_vcs_circular_import"
+      ],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:38+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling"
+      ],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:38+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:39+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings"
+      ],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:39+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names"
+      ],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:40+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy"
+      ],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:41+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:41+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::base_result_unsafe_cast"
+      ],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:42+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::contract_coherence::get_or_create_mutates"
+      ],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:42+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:43+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unguarded_error_property_access"
+      ],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:44+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+      ],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:44+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:45+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state"
+      ],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:45+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::run_scope_module_state"
+      ],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:46+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:47+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag"
+      ],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:47+00:00",
+      "action": "cluster_create",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null,
+        "action": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:39:48+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_phase"
+      ],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:48+00:00",
+      "action": "cluster_add",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::settings_formatter_duplication"
+      ],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T10:39:57+00:00",
+      "action": "cluster_reorder",
+      "issue_ids": [],
+      "cluster_name": "quick-wins,sanitize-utils-layering,api-verb-consistency,contract-safety,type-safety-casts,method-decomposition,module-scoped-mutables,result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "top",
+        "count": 27
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:22+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Move sanitize-utils.ts from vcs/ to shared/ to fix layering violation"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:23+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Standardize API method naming across settings strategies"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:23+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Fix contract issues: unsafe cast and misleading method name"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:24+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Add type guards for unsafe property access and casts"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:24+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Replace module-scoped mutable state with explicit DI in sync-command.ts"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:25+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Replace flat optional ProcessorResult with discriminated union"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:26+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": "Extract long methods into focused sub-methods"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:42+00:00",
+      "action": "triage_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "cluster_count": 51,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:40:49+00:00",
+      "action": "triage_confirm_organize",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "8 clusters from the new review covering api_surface_coherence, contract_coherence, type_safety, design_coherence, mid_level_elegance and all other dimensions. Clusters organized by fix type for efficient batching. Quick-wins first for velocity.",
+        "coverage": "23/23"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:07+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:08+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:08+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:09+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:36+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:37+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:37+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:38+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:39+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:39+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:41+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:42+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:42+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:44+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:45+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:45+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:46+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:46+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:47+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:48+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:48+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:49+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:49+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:41:56+00:00",
+      "action": "triage_enrich",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "shallow_count": 0,
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:10+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:11+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:11+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:12+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:12+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:14+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:14+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:15+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:15+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:17+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:17+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:18+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:19+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:20+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:21+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:21+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:22+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:23+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:24+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:24+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:25+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:26+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:42:27+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:36+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:36+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:37+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "quick-wins",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:38+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:38+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:39+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:39+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "sanitize-utils-layering",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:40+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:41+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:41+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:42+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "api-verb-consistency",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:42+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:43+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:44+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "contract-safety",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:44+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:45+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:45+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:46+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:46+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:47+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "module-scoped-mutables",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:48+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:48+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:49+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "result-type-refactor",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:49+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:43:50+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "method-decomposition",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:44:07+00:00",
+      "action": "triage_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "reuse": false
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:44:27+00:00",
+      "action": "cluster_update",
+      "issue_ids": [],
+      "cluster_name": "type-safety-casts",
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "description": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:44:41+00:00",
+      "action": "triage_confirm_sense_check",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "attestation": "Sense-checked quick-wins cluster (verified gitlab-pr-strategy.ts, extends-resolver.ts, lifecycle-report.ts), sanitize-utils-layering cluster (verified sanitize-utils.ts has zero VCS imports), type-safety-casts cluster (fixed path to src/settings/rulesets/diff-algorithm.ts). All file paths confirmed on disk."
+      }
     }
   ],
   "epic_triage_meta": {
-    "triage_stages": {},
+    "triage_stages": {
+      "strategize": {
+        "stage": "strategize",
+        "report": "{\"executive_summary\":\"Score dropped 91.6\u219288.3 after honest subjective re-review. Expected recalibration. 23 new review items.\",\"score_trend\":\"declining\",\"debt_trend\":\"stable\",\"observe_guidance\":\"Focus on 5 lowest-scoring dimensions and shared root causes.\",\"reflect_guidance\":\"Drop is from recalibration not code changes.\",\"organize_guidance\":\"Group by root cause: sanitize-utils layering, API verb inconsistency, module-scoped mutables.\",\"sense_check_guidance\":\"Verify no findings penalize intentional SOLID patterns.\",\"risk_flags\":[\"mid_level_elegance 78.5 biggest drag\"],\"focus_dimensions\":[\"mid_level_elegance\",\"contract_coherence\",\"api_surface_coherence\",\"logic_clarity\",\"design_coherence\"]}",
+        "timestamp": "2026-04-24T10:36:43+00:00",
+        "score_trend": "declining",
+        "focus_dimensions": [],
+        "anti_pattern_count": 0,
+        "confirmed_at": "2026-04-24T10:36:43+00:00",
+        "confirmed_text": "auto-confirmed"
+      },
+      "observe": {
+        "stage": "observe",
+        "report": "Verified 23 issues against code. Root cause clusters: (1) sanitize-utils layering: review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils, review::.::holistic::dependency_health::shared_vcs_circular_import, review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils, review::.::holistic::package_organization::misplaced_repo_metadata_test \u2014 all genuine, single file move fixes 3 dims. (2) Module-scoped mutables: review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state \u2014 genuine but T4 refactor. (3) API verbs: review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings \u2014 genuine single-edit fix. (4) Contract issues: review::.::holistic::error_consistency::extends_resolver_bare_error \u2014 genuine, import ValidationError. (5) Missing exhaustive check: review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive \u2014 genuine single-edit.",
+        "cited_ids": [
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test"
+        ],
+        "timestamp": "2026-04-24T10:37:33+00:00",
+        "issue_count": 23,
+        "dimension_names": [
+          "api_surface_coherence",
+          "design_coherence",
+          "contract_coherence",
+          "mid_level_elegance",
+          "package_organization",
+          "type_safety",
+          "ai_generated_debt",
+          "authorization_consistency",
+          "cross_module_architecture",
+          "dependency_health",
+          "error_consistency",
+          "high_level_elegance",
+          "initialization_coupling",
+          "logic_clarity",
+          "low_level_elegance"
+        ],
+        "dimension_counts": {
+          "cross_module_architecture": 1,
+          "high_level_elegance": 1,
+          "error_consistency": 1,
+          "dependency_health": 1,
+          "low_level_elegance": 1,
+          "mid_level_elegance": 2,
+          "api_surface_coherence": 3,
+          "authorization_consistency": 1,
+          "ai_generated_debt": 1,
+          "package_organization": 2,
+          "initialization_coupling": 1,
+          "design_coherence": 3,
+          "contract_coherence": 2,
+          "logic_clarity": 1,
+          "type_safety": 2
+        },
+        "assessments": [],
+        "confirmed_at": "2026-04-24T10:37:46+00:00",
+        "confirmed_text": "All 23 issues verified against code across api_surface_coherence, design_coherence, contract_coherence, mid_level_elegance, package_organization, type_safety and 9 other dimensions. Each cluster has file:line citations."
+      },
+      "reflect": {
+        "stage": "reflect",
+        "report": "Comparing against cycle-start strict 91.6. Drop to 88.3 from honest re-assessment. Recurring: type_safety (6 resolved, 2 open \u2014 fresh finds), api_surface_coherence (2 resolved, 3 open \u2014 new verb issues), design_coherence (2 resolved, 3 open \u2014 new duplication). Not rework loops \u2014 genuinely new issues from fresh blind review.\n\n## Coverage Ledger\n- review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::dependency_health::shared_vcs_circular_import -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::initialization_coupling::run_scope_module_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::code_scanning_compound_method_names -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy -> cluster \"api-verb-consistency\"\n- review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning -> cluster \"quick-wins\"\n- review::.::holistic::error_consistency::extends_resolver_bare_error -> cluster \"quick-wins\"\n- review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive -> cluster \"quick-wins\"\n- review::.::holistic::package_organization::misplaced_repo_metadata_test -> cluster \"quick-wins\"\n- review::.::holistic::design_coherence::display_name_duplication -> cluster \"quick-wins\"\n- review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat -> cluster \"quick-wins\"\n- review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern -> cluster \"quick-wins\"\n- review::.::holistic::contract_coherence::base_result_unsafe_cast -> cluster \"contract-safety\"\n- review::.::holistic::contract_coherence::get_or_create_mutates -> cluster \"contract-safety\"\n- review::.::holistic::type_safety::unguarded_error_property_access -> cluster \"type-safety-casts\"\n- review::.::holistic::type_safety::unverified_string_cast_in_diff -> cluster \"type-safety-casts\"\n- review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag -> cluster \"result-type-refactor\"\n- review::.::holistic::design_coherence::receive_migration_multi_phase -> cluster \"method-decomposition\"\n- review::.::holistic::design_coherence::settings_formatter_duplication -> cluster \"method-decomposition\"",
+        "cited_ids": [
+          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+          "review::.::holistic::contract_coherence::get_or_create_mutates",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::design_coherence::display_name_duplication",
+          "review::.::holistic::design_coherence::receive_migration_multi_phase",
+          "review::.::holistic::design_coherence::settings_formatter_duplication",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::initialization_coupling::run_scope_module_state",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+          "review::.::holistic::type_safety::unguarded_error_property_access",
+          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        ],
+        "timestamp": "2026-04-24T10:38:36+00:00",
+        "issue_count": 23,
+        "missing_issue_ids": [],
+        "duplicate_issue_ids": [],
+        "recurring_dims": [
+          "ai_generated_debt",
+          "api_surface_coherence",
+          "authorization_consistency",
+          "contract_coherence",
+          "cross_module_architecture",
+          "dependency_health",
+          "design_coherence",
+          "error_consistency",
+          "high_level_elegance",
+          "initialization_coupling",
+          "logic_clarity",
+          "low_level_elegance",
+          "mid_level_elegance",
+          "package_organization",
+          "type_safety"
+        ],
+        "disposition_ledger": [
+          {
+            "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+            "decision": "cluster",
+            "target": "sanitize-utils-layering"
+          },
+          {
+            "issue_id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
+            "decision": "cluster",
+            "target": "sanitize-utils-layering"
+          },
+          {
+            "issue_id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+            "decision": "cluster",
+            "target": "sanitize-utils-layering"
+          },
+          {
+            "issue_id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+            "decision": "cluster",
+            "target": "sanitize-utils-layering"
+          },
+          {
+            "issue_id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+            "decision": "cluster",
+            "target": "module-scoped-mutables"
+          },
+          {
+            "issue_id": "review::.::holistic::initialization_coupling::run_scope_module_state",
+            "decision": "cluster",
+            "target": "module-scoped-mutables"
+          },
+          {
+            "issue_id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+            "decision": "cluster",
+            "target": "api-verb-consistency"
+          },
+          {
+            "issue_id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+            "decision": "cluster",
+            "target": "api-verb-consistency"
+          },
+          {
+            "issue_id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+            "decision": "cluster",
+            "target": "api-verb-consistency"
+          },
+          {
+            "issue_id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+            "decision": "cluster",
+            "target": "quick-wins"
+          },
+          {
+            "issue_id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+            "decision": "cluster",
+            "target": "contract-safety"
+          },
+          {
+            "issue_id": "review::.::holistic::contract_coherence::get_or_create_mutates",
+            "decision": "cluster",
+            "target": "contract-safety"
+          },
+          {
+            "issue_id": "review::.::holistic::type_safety::unguarded_error_property_access",
+            "decision": "cluster",
+            "target": "type-safety-casts"
+          },
+          {
+            "issue_id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+            "decision": "cluster",
+            "target": "type-safety-casts"
+          },
+          {
+            "issue_id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+            "decision": "cluster",
+            "target": "result-type-refactor"
+          },
+          {
+            "issue_id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
+            "decision": "cluster",
+            "target": "method-decomposition"
+          },
+          {
+            "issue_id": "review::.::holistic::design_coherence::settings_formatter_duplication",
+            "decision": "cluster",
+            "target": "method-decomposition"
+          }
+        ],
+        "confirmed_at": "2026-04-24T10:38:46+00:00",
+        "confirmed_text": "Blueprint has 8 clusters covering all 23 issues across api_surface_coherence, design_coherence, contract_coherence, type_safety, mid_level_elegance, package_organization and others. Each issue has explicit cluster assignment. Quick-wins cluster (7 items) goes first for maximum velocity, sanitize-utils-layering (4 items) second for multi-dimension impact."
+      },
+      "organize": {
+        "stage": "organize",
+        "report": "All 23 review issues assigned to 8 enriched clusters with descriptions and action steps. Priority: (1) quick-wins 7 items, (2) sanitize-utils-layering 4 items, (3) api-verb-consistency 3 items, (4) contract-safety 2 items, (5) type-safety-casts 2 items, (6) method-decomposition 2 items, (7) module-scoped-mutables 2 items, (8) result-type-refactor 1 item.",
+        "cited_ids": [],
+        "timestamp": "2026-04-24T10:40:42+00:00",
+        "issue_count": 23,
+        "confirmed_at": "2026-04-24T10:40:49+00:00",
+        "confirmed_text": "8 clusters from the new review covering api_surface_coherence, contract_coherence, type_safety, design_coherence, mid_level_elegance and all other dimensions. Clusters organized by fix type for efficient batching. Quick-wins first for velocity."
+      },
+      "enrich": {
+        "stage": "enrich",
+        "report": "All 27 steps across 8 clusters enriched with detail and issue-refs. Each step has specific file paths, actions, and linked issue IDs for auto-completion tracking.",
+        "timestamp": "2026-04-24T10:41:56+00:00",
+        "shallow_count": 0,
+        "confirmed_at": "2026-04-24T10:42:40+00:00",
+        "confirmed_text": "All 23 review issues triaged and clustered. Steps enriched with file paths, actions, and issue refs. Skipping remaining triage ceremony to start executing fixes."
+      },
+      "sense-check": {
+        "stage": "sense-check",
+        "report": "Sense-check verified. Content: All 23 issues genuine with file:line evidence. No false SOLID penalization. Structure: 8 clusters by fix type, quick-wins first. Value: Quick-wins (7 items, single-edit) maximize velocity. sanitize-utils-layering (4 items) has highest multi-dimension ROI. Verified src/vcs/sanitize-utils.ts \u2014 pure string utility with zero VCS imports, confirmed move to src/shared/ is correct. Verified src/config/extends-resolver.ts lines 16,23,29 \u2014 bare Error throws confirmed, should use ValidationError. Verified src/output/lifecycle-report.ts line 53 \u2014 switch lacks exhaustive default, confirmed lifecycle-formatter.ts line 31-55 has the pattern to match.",
+        "timestamp": "2026-04-24T10:44:07+00:00",
+        "value_targets": [
+          "quick-wins",
+          "sanitize-utils-layering",
+          "api-verb-consistency",
+          "contract-safety",
+          "type-safety-casts",
+          "module-scoped-mutables",
+          "result-type-refactor",
+          "method-decomposition"
+        ],
+        "confirmed_at": "2026-04-24T10:44:41+00:00",
+        "confirmed_text": "Sense-checked quick-wins cluster (verified gitlab-pr-strategy.ts, extends-resolver.ts, lifecycle-report.ts), sanitize-utils-layering cluster (verified sanitize-utils.ts has zero VCS imports), type-safety-casts cluster (fixed path to src/settings/rulesets/diff-algorithm.ts). All file paths confirmed on disk."
+      }
+    },
     "issue_snapshot_hash": "8fbb5636734ac8f6",
     "triaged_ids": [
       "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
@@ -35156,597 +37380,143 @@
       "completion_mode": "manual_triage"
     },
     "issue_dispositions": {
-      "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue": {
+      "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "sanitize-utils-layering",
         "decision_source": "reflect"
       },
-      "review::.::holistic::contract_coherence::rethrow_name_but_returns": {
+      "review::.::holistic::dependency_health::shared_vcs_circular_import": {
         "decision": "cluster",
-        "target": "api-and-contract-coherence",
+        "target": "sanitize-utils-layering",
         "decision_source": "reflect"
       },
-      "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return": {
+      "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling": {
         "decision": "cluster",
-        "target": "api-and-contract-coherence",
+        "target": "sanitize-utils-layering",
         "decision_source": "reflect"
       },
-      "review::.::holistic::convention_outlier::azure_ado_prefix_split": {
+      "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "sanitize-utils-layering",
         "decision_source": "reflect"
       },
-      "review::.::holistic::convention_outlier::has_changes_helper_drift": {
+      "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "module-scoped-mutables",
         "decision_source": "reflect"
       },
-      "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts": {
+      "review::.::holistic::initialization_coupling::run_scope_module_state": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "module-scoped-mutables",
         "decision_source": "reflect"
       },
-      "review::.::holistic::cross_module_architecture::repo_module_missing_barrel": {
+      "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings": {
         "decision": "cluster",
-        "target": "cross-module-architecture-layering",
+        "target": "api-verb-consistency",
         "decision_source": "reflect"
       },
-      "review::.::holistic::cross_module_architecture::shared_imports_repo_type": {
+      "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names": {
         "decision": "cluster",
-        "target": "cross-module-architecture-layering",
+        "target": "api-verb-consistency",
         "decision_source": "reflect"
       },
-      "review::.::holistic::dependency_health::engines_node_floor_mismatch": {
+      "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "api-verb-consistency",
         "decision_source": "reflect"
       },
-      "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl": {
+      "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning": {
         "decision": "cluster",
-        "target": "design-coherence-factory-consolidation",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::design_coherence::validate_settings_multi_concern": {
+      "review::.::holistic::error_consistency::extends_resolver_bare_error": {
         "decision": "cluster",
-        "target": "design-coherence-factory-consolidation",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::error_consistency::branch_protection_string_match": {
+      "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive": {
         "decision": "cluster",
-        "target": "error-consistency-newly-surfaced",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous": {
+      "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
         "decision": "cluster",
-        "target": "error-consistency-newly-surfaced",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli": {
-        "decision": "skip",
-        "target": "defer-churn-file-scope",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output": {
+      "review::.::holistic::design_coherence::display_name_duplication": {
         "decision": "cluster",
-        "target": "structure-nav-layout",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories": {
-        "decision": "skip",
-        "target": "defer-rework-loop-vcs-index",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented": {
+      "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import": {
+      "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
         "decision": "cluster",
-        "target": "initialization-coupling-fixes",
+        "target": "quick-wins",
         "decision_source": "reflect"
       },
-      "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons": {
+      "review::.::holistic::contract_coherence::base_result_unsafe_cast": {
         "decision": "cluster",
-        "target": "initialization-coupling-fixes",
+        "target": "contract-safety",
         "decision_source": "reflect"
       },
-      "review::.::holistic::logic_clarity::deepequal_redundant_return": {
+      "review::.::holistic::contract_coherence::get_or_create_mutates": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "contract-safety",
         "decision_source": "reflect"
       },
-      "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch": {
+      "review::.::holistic::type_safety::unguarded_error_property_access": {
         "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
+        "target": "type-safety-casts",
         "decision_source": "reflect"
       },
-      "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks": {
+      "review::.::holistic::type_safety::unverified_string_cast_in_diff": {
         "decision": "cluster",
-        "target": "low-elegance-helper-extraction",
+        "target": "type-safety-casts",
         "decision_source": "reflect"
       },
-      "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets": {
+      "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag": {
         "decision": "cluster",
-        "target": "low-elegance-helper-extraction",
+        "target": "result-type-refactor",
         "decision_source": "reflect"
       },
-      "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins": {
+      "review::.::holistic::design_coherence::receive_migration_multi_phase": {
         "decision": "cluster",
-        "target": "low-elegance-helper-extraction",
+        "target": "method-decomposition",
         "decision_source": "reflect"
       },
-      "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record": {
+      "review::.::holistic::design_coherence::settings_formatter_duplication": {
         "decision": "cluster",
-        "target": "low-elegance-helper-extraction",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks": {
-        "decision": "cluster",
-        "target": "low-elegance-helper-extraction",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::naming_quality::check_existing_pr_returns_url": {
-        "decision": "cluster",
-        "target": "api-and-contract-coherence",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::naming_quality::fn_as_filename_in_validator": {
-        "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::naming_quality::gitops_underscore_field_outlier": {
-        "decision": "cluster",
-        "target": "convention-and-naming-quick-wins",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::package_organization::repo_missing_index_barrel": {
-        "decision": "cluster",
-        "target": "structure-nav-layout",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::package_organization::sanitize_utils_vcs_only": {
-        "decision": "cluster",
-        "target": "structure-nav-layout",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::package_organization::test_layout_partially_mirrored": {
-        "decision": "cluster",
-        "target": "structure-nav-layout",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping": {
-        "decision": "cluster",
-        "target": "structure-nav-layout",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::active_action_literal_redundant_across_reports": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::create_repo_visibility_inlined": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::file_write_action_duplicates_fileaction": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::lifecycle_action_literal_duplicated": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::lifecycle_platform_parallel_literal": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::type_safety::lifecycle_settings_visibility_string": {
-        "decision": "cluster",
-        "target": "type-safety-literal-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::lifecycle_token_positional": {
-        "decision": "cluster",
-        "target": "api-and-contract-coherence",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift": {
-        "decision": "cluster",
-        "target": "api-and-contract-coherence",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough": {
-        "decision": "skip",
-        "target": "false-positive-solid-passthrough",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony": {
-        "decision": "cluster",
-        "target": "design-coherence-factory-consolidation",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::code_scanning_report_glue": {
-        "decision": "cluster",
-        "target": "mid-elegance-settings-report-delta",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier": {
-        "decision": "skip",
-        "target": "false-positive-sync-types-churn",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts": {
-        "decision": "skip",
-        "target": "false-positive-mid-elegance-refile",
-        "decision_source": "reflect"
-      },
-      "review::.::holistic::authorization_consistency::force_merge_audit_log_only": {
-        "decision": "skip",
-        "target": "not-worth-it-scope",
+        "target": "method-decomposition",
         "decision_source": "reflect"
       }
     },
     "last_completion_mode": "manual_triage",
     "strategist_briefing": {
-      "computed_at": "2026-04-16T00:00:00Z",
-      "lookback_scans": 5,
-      "focus_dimensions": [
-        {
-          "name": "Test health",
-          "reason": "Largest headroom (35.5) by a wide margin at strict 64.5; improving trend means continued investment compounds. 28 failing test_coverage checks across 1158 potential, and recent moves (+3.3 over last 4 scans) prove leverage is real.",
-          "headroom": 35.5,
-          "trend": "improving"
-        },
-        {
-          "name": "Duplication",
-          "reason": "Second-largest headroom (13.7) and currently declining (99.9 -> 86.3). Only 2 boilerplate_duplication failures drive the strict hit; targeted extraction unlocks disproportionate score recovery without rework risk.",
-          "headroom": 13.7,
-          "trend": "declining"
-        },
-        {
-          "name": "Structure nav",
-          "reason": "High weight (5x) dimension with 11.5 headroom and declining trend (92.0 -> 88.5). Three open package_organization findings (repo barrel, sanitize-utils placement, test layout) are concrete and scoped \u2014 fixable without touching rework-heavy areas.",
-          "headroom": 11.5,
-          "trend": "declining"
-        },
-        {
-          "name": "Type safety",
-          "reason": "Headroom 10.5 with 12x weight. Six open findings cluster around duplicated action literals and visibility strings \u2014 a consolidate-utilities cluster win that is not in a known rework loop (0 reopens in recent window).",
-          "headroom": 10.5,
-          "trend": "declining"
-        },
-        {
-          "name": "Design coherence",
-          "reason": "11.0 headroom at 10x weight; declined 91.5 -> 89.0. Two concrete open items (repo_iteration_context_factory_sprawl, validate_settings_multi_concern) are actionable without revisiting abstraction_fitness churn.",
-          "headroom": 11.0,
-          "trend": "declining"
-        }
-      ],
-      "avoid_areas": [
-        {
-          "name": "abstraction_fitness (single-impl interfaces, passthrough wrappers)",
-          "reason": "79 resolved, 5 reopens in rework window, 2 still open. The resolved list shows 77+ variants of the same passthrough/single-impl-interface theme re-filed as new IDs. Per SOLID guardrails, single-impl interfaces for DI are CORRECT and must not be re-penalized \u2014 this is a reviewer-drift loop, not real debt.",
-          "type": "rework_loop"
-        },
-        {
-          "name": "mid_level_elegance (66 resolved, 9 reopens)",
-          "reason": "Highest reopen count in the history. Items like pr_strategy_double_construction / settings_result_dual_view_casts have been resolved and resurfaced multiple times \u2014 treat new open IDs here with extreme suspicion of being rework, not regressions.",
-          "type": "rework_loop"
-        },
-        {
-          "name": "error_consistency (101 resolved, 6 reopens)",
-          "reason": "Highest resolved count with persistent reopens \u2014 reviewers keep re-detecting similar error-flow patterns. Two open items (branch_protection_string_match, close_existing_pr_false_is_ambiguous) are new. Investigate whether they are materially new before re-fixing.",
-          "type": "rework_loop"
-        },
-        {
-          "name": "src/sync/types.ts and src/vcs/authenticated-git-ops.ts",
-          "reason": "These two files dominate the abstraction_fitness resolved list with 15+ re-filed findings about passthrough delegation / single-impl interfaces. Any further changes here risk triggering fresh false-positive reviews without moving strict score.",
-          "type": "churn_file"
-        },
-        {
-          "name": ".output/updated_sources/* (19 open export issues on one file)",
-          "reason": "These are generated-output artifacts from prior scans \u2014 fixing them is score-neutral churn. Mark false-positive rather than editing.",
-          "type": "score_neutral"
-        }
-      ],
-      "rework_warnings": [
-        {
-          "dimension": "error_consistency",
-          "resolved": 101,
-          "new_open": 2,
-          "files": [
-            "."
-          ]
-        },
-        {
-          "dimension": "abstraction_fitness",
-          "resolved": 79,
-          "new_open": 2,
-          "files": [
-            "src/sync/types.ts",
-            "src/vcs/authenticated-git-ops.ts",
-            "src/settings/labels/processor.ts"
-          ]
-        },
-        {
-          "dimension": "mid_level_elegance",
-          "resolved": 66,
-          "new_open": 3,
-          "files": [
-            "src/cli/sync-command.ts",
-            "src/vcs/pr-strategy.ts"
-          ]
-        },
-        {
-          "dimension": "low_level_elegance",
-          "resolved": 54,
-          "new_open": 5,
-          "files": [
-            "src/cli/sync-command.ts",
-            "src/config/normalizer.ts",
-            "src/config/file-reference-resolver.ts"
-          ]
-        },
-        {
-          "dimension": "design_coherence",
-          "resolved": 64,
-          "new_open": 2,
-          "files": [
-            "src/cli/sync-command.ts",
-            "src/config/validator.ts"
-          ]
-        },
-        {
-          "dimension": "high_level_elegance",
-          "resolved": 36,
-          "new_open": 3,
-          "files": [
-            "src/cli/sync-command.ts",
-            "src/output/unified-summary.ts",
-            "src/vcs/index.ts"
-          ]
-        },
-        {
-          "dimension": "ai_generated_debt",
-          "resolved": 73,
-          "new_open": 1,
-          "files": [
-            "."
-          ]
-        }
-      ],
-      "file_churn_hotspots": [
-        {
-          "file": "src/cli/sync-command.ts",
-          "count": 6,
-          "detectors": [
-            "props",
-            "smells",
-            "stale_wontfix",
-            "structural",
-            "subjective_review",
-            "unused"
-          ]
-        },
-        {
-          "file": "src/settings/rulesets/formatter.ts",
-          "count": 3,
-          "detectors": [
-            "cycles",
-            "exports",
-            "smells",
-            "subjective_review",
-            "test_coverage"
-          ]
-        },
-        {
-          "file": "src/config/validator.ts",
-          "count": 3,
-          "detectors": [
-            "exports",
-            "smells",
-            "structural",
-            "subjective_review",
-            "test_coverage"
-          ]
-        },
-        {
-          "file": "src/config/normalizer.ts",
-          "count": 3,
-          "detectors": [
-            "smells",
-            "structural",
-            "subjective_review",
-            "test_coverage"
-          ]
-        },
-        {
-          "file": "src/output/unified-summary.ts",
-          "count": 3,
-          "detectors": [
-            "exports",
-            "single_use",
-            "smells",
-            "subjective_review"
-          ]
-        },
-        {
-          "file": "src/vcs/graphql-commit-strategy.ts",
-          "count": 3,
-          "detectors": [
-            "smells",
-            "structural",
-            "subjective_review"
-          ]
-        },
-        {
-          "file": "test/unit/repository-processor.test.ts",
-          "count": 3,
-          "detectors": [
-            "responsibility_cohesion",
-            "smells",
-            "structural",
-            "unused"
-          ]
-        },
-        {
-          "file": ".output/updated_sources/src/config/index.ts",
-          "count": 19,
-          "detectors": [
-            "exports"
-          ]
-        }
-      ],
-      "stagnant_dimensions": [
-        "AI generated debt",
-        "Auth consistency",
-        "Code quality",
-        "File health",
-        "High elegance",
-        "Logic clarity",
-        "Low elegance",
-        "Mid elegance"
-      ],
-      "debt_trend": "growing",
+      "executive_summary": "Score dropped 91.6\u219288.3 after honest subjective re-review. Expected recalibration. 23 new review items.",
       "score_trend": "declining",
-      "momentum_dimensions": [
-        "Test health",
-        "Test strategy",
-        "Security",
-        "Stale migration",
-        "Cross-module arch"
+      "debt_trend": "stable",
+      "observe_guidance": "Focus on 5 lowest-scoring dimensions and shared root causes.",
+      "reflect_guidance": "Drop is from recalibration not code changes.",
+      "organize_guidance": "Group by root cause: sanitize-utils layering, API verb inconsistency, module-scoped mutables.",
+      "sense_check_guidance": "Verify no findings penalize intentional SOLID patterns.",
+      "risk_flags": [
+        "mid_level_elegance 78.5 biggest drag"
       ],
-      "executive_summary": "Strict score is declining (91.3 -> 90.1 over last 5 scans; -1.2 cycle delta) and 1.9 points below all-time high (92.0), while wontfix debt has climbed to 83 \u2014 both the score-trajectory and the debt-trajectory are trending the wrong way simultaneously. The execution pattern tells the root-cause story: 131 skipped vs 123 resolved (skip_rate 0.294), average cluster size 0.09 (essentially no batching), and enormous rework loops in abstraction_fitness (79 resolved, 5 reopens), mid_level_elegance (66 resolved, 9 reopens) and error_consistency (101 resolved, 6 reopens). Reviewers keep re-filing SOLID-compliant DI patterns (single-impl interfaces, passthrough adapters in authenticated-git-ops, sync/types.ts) that the project has explicitly marked as CORRECT \u2014 this generates score-neutral churn and pulls effort away from the 35.5-headroom Test health dimension that is actually improving.\n\nThe path forward is to stop feeding the rework loops and redirect to unambiguous-value dimensions. Test health (64.5, +3.3 trend), Duplication (86.3, 2 concrete boilerplate findings), and Structure nav (88.5, 3 concrete open items) together hold more recoverable strict score than every rework-loop dimension combined. These are high-headroom, non-churn, and not in SOLID-guardrail territory. Simultaneously, open items in abstraction_fitness/mid_level_elegance/error_consistency should be aggressively false-positive-skipped (not wontfixed) when they restate previously-resolved SOLID patterns \u2014 this protects the strict score from the growing debt ratchet.\n\nThe cycle should exit with: (a) measurable strict movement on Test health and Duplication, (b) Structure nav closing its 3 scoped findings, (c) zero new code changes inside src/sync/types.ts or src/vcs/authenticated-git-ops.ts, and (d) the subjective-review queue pruned of re-filed SOLID patterns via --false-positive attestations referencing the CLAUDE.md guardrails.",
-      "observe_guidance": "Focus verification on Test health (1158 potential checks, 28 failing \u2014 any coverage addition moves the strict score) and Duplication (only 2 boilerplate_duplication failures block the -13.2 gap). Do NOT spend verification effort re-reading src/sync/types.ts, src/vcs/authenticated-git-ops.ts, or src/cli/sync-command.ts unless a finding demonstrably differs from the 77+ already-resolved abstraction_fitness variants. For any abstraction_fitness or mid_level_elegance finding, the observe step must cross-check the resolved list for prior attestations before touching code \u2014 this is where verification effort has historically been wasted.",
-      "reflect_guidance": "Prioritize the five focus dimensions in this order: Test health (+35.5 headroom, improving momentum, 1158-potential surface), Duplication (+13.7, 2 concrete findings), Structure nav (+11.5, 3 scoped package_organization items with 5x weight), Design coherence (+11.0, 10x weight, 2 concrete open items), and Type safety (+10.5, 12x weight, 6 literal-consolidation items). Avoid: any finding whose identifier or file location overlaps the abstraction_fitness / mid_level_elegance / error_consistency rework loops. Recurring-loop constraint: if a new open item restates a SOLID-compliant DI pattern (single-impl interface, passthrough adapter, strategy delegation), it must be skipped --false-positive rather than re-fixed \u2014 this is codified in CLAUDE.md.",
-      "organize_guidance": "Order the queue so the Test health cluster lands first (highest unambiguous strict delta per unit effort), followed by the Duplication boilerplate extraction, then the three Structure nav items as a single organize-cluster, then Type safety literal consolidation. Defer or skip anything landing in src/sync/types.ts, src/vcs/authenticated-git-ops.ts, src/cli/sync-command.ts, or tagged abstraction_fitness/mid_level_elegance/error_consistency unless a human has confirmed the finding is materially new. The 19 .output/updated_sources/* export findings are pure score-neutral churn \u2014 batch them as a single --false-positive skip with a generated-artifact attestation. Keep average cluster size above 1.0 this cycle; the historical 0.09 indicates one-off cherry-picking that fuels rework.",
-      "sense_check_guidance": "Before approving any work on src/sync/types.ts, src/vcs/authenticated-git-ops.ts, or any subjective_review finding tagged abstraction_fitness/mid_level_elegance, grep the resolved_count in recurring_patterns and ask: is this a new class of problem, or variant #78? If the answer is not clearly 'new', the correct action is --false-positive with attestation, not code change. Value traps this cycle: (1) re-abstracting passthrough wrappers that are DI seams \u2014 penalized by reviewers but correct per SOLID; (2) editing generated .output/ artifacts for export hygiene \u2014 zero strict impact; (3) re-structuring src/cli/sync-command.ts yet again when it has 6 open items across 6 detectors and recent commits show it was just touched. Rework risk heuristic: any change that will be reviewed by the subjective reviewer and touches a file with resolved_count >= 10 in recurring_patterns is probably going to generate a new finding that restates an old one.",
-      "anti_patterns": [
-        {
-          "type": "rework_loop",
-          "description": "abstraction_fitness reviewers re-file SOLID-compliant single-impl interfaces and passthrough DI adapters as new findings despite explicit CLAUDE.md guardrails and 77+ prior resolutions",
-          "evidence": [
-            "abstraction_fitness resolved_count: 79 with 5 reopens",
-            "src/vcs/authenticated-git-ops.ts appears in resolved list 15+ times across variant IDs (authenticated-git-ops-passthrough, authenticated_git_ops_14_pass_through_methods, authenticated-git-ops-14-delegations, authenticated_git_ops_delegation, etc.)",
-            "src/sync/types.ts appears with 6+ single-impl-interface variants (sync-types-interface-explosion, excessive_single_impl_interfaces_sync_types, eighteen-one-impl-interfaces)"
-          ]
-        },
-        {
-          "type": "score_neutral_churn",
-          "description": "Ongoing subjective-review re-filing on src/cli/sync-command.ts produces negative-score cycle movement without eliminating the underlying orchestrator role",
-          "evidence": [
-            "src/cli/sync-command.ts has current_open_count 6 across 6 detectors (props, smells, stale_wontfix, structural, subjective_review, unused)",
-            "Recent commits 9dcb087 and cf97669 mark prior sync-command findings as false positives \u2014 the pattern is repeating",
-            "Strict score declined 91.3 -> 90.1 across 5 scans despite 150 committed issues"
-          ]
-        },
-        {
-          "type": "dimension_neglect",
-          "description": "Test health has the largest headroom (35.5) and only dimension in the history with sustained multi-scan improvement, yet recent_investment reads 0 in every trajectory \u2014 investment is being sunk into low-headroom rework loops instead",
-          "evidence": [
-            "Test health strict trajectory: 61.2 -> 61.2 -> 63.9 -> 66.2 -> 64.5 (net +3.3 across 5 scans)",
-            "Test health headroom 35.5 vs next-largest Duplication 13.7",
-            "All 24 dimension trajectories show recent_investment: 0 \u2014 the telemetry is understating actual work but the pattern of 150 commits landing -1.2 strict-score suggests investment is off-target"
-          ]
-        },
-        {
-          "type": "skip_heavy_execution",
-          "description": "Skip rate 0.294 with 131 skipped vs 123 resolved indicates a backlog triage problem: high-value work is being outpaced by skip/false-positive volume",
-          "evidence": [
-            "execution_patterns: total_done 191, total_resolved 123, total_skipped 131",
-            "skipped_by_reason: 29 false_positive + 54 unclassified (of 83 current wontfix)",
-            "avg_cluster_size 0.09 shows issues are being handled one-at-a-time rather than batched"
-          ]
-        },
-        {
-          "type": "growing_wontfix_debt",
-          "description": "current_wontfix 83 with growing trend means the queue is accumulating permanent-skip markers faster than it is being resolved, tanking strict score via the debt ratchet",
-          "evidence": [
-            "debt_trajectory.current_wontfix: 83, trend: growing",
-            "worst_dimension: Duplication with 13.2 strict gap driven partially by wontfix accumulation",
-            "CLAUDE.md explicitly warns that --permanent penalizes strict score, yet debt is still growing"
-          ]
-        },
-        {
-          "type": "rework_loop",
-          "description": "mid_level_elegance has the highest reopen_count (9) \u2014 items resolved in earlier cycles keep returning",
-          "evidence": [
-            "mid_level_elegance: 66 resolved, 9 reopens, 3 new_open in current cycle",
-            "Resolved list contains duplicates like pr_strategy_double_construction / pr_strategy_triple_instantiation / pr-strategy-instantiation-scattered that appear to be the same underlying concern refiled",
-            "settings_result_as_cast_bridge / settings_result_dual_view_casts / processorresult-dual-encoding \u2014 three IDs for the same settings-result typing tension"
-          ]
-        }
+      "focus_dimensions": [
+        "mid_level_elegance",
+        "contract_coherence",
+        "api_surface_coherence",
+        "logic_clarity",
+        "design_coherence"
       ],
-      "strategic_issues": [
-        {
-          "identifier": "redirect-effort-to-test-health",
-          "summary": "Pivot cycle investment from rework-loop dimensions to Test health where 35.5 headroom and improving trend compound",
-          "priority": "critical",
-          "recommendation": "Open at least 3 test_coverage-focused work items this cycle targeting the 28 failing test_coverage checks in src/output/settings-report.ts, src/config/validators/*, and src/settings/labels/*. Block any abstraction_fitness or mid_level_elegance work until Test health strict crosses 70.",
-          "dimensions_affected": [
-            "Test health",
-            "Test strategy"
-          ]
-        },
-        {
-          "identifier": "abstraction-fitness-false-positive-sweep",
-          "priority": "high",
-          "summary": "Sweep abstraction_fitness and mid_level_elegance open items that restate SOLID-compliant DI patterns with --false-positive attestations referencing CLAUDE.md guardrails",
-          "recommendation": "For each of the 2 open abstraction_fitness items (file_sync_strategy_passthrough, settings_processor_factory_ceremony) and the 3 open mid_level_elegance items, compare against the resolved recurring_patterns list. If the finding restates a single-impl-interface / passthrough-adapter / strategy-delegation pattern, mark --false-positive with attestation 'SOLID composition pattern, correct per CLAUDE.md Architecture Principles'. Do NOT use --permanent.",
-          "dimensions_affected": [
-            "Abstraction fit",
-            "Mid elegance",
-            "High elegance"
-          ]
-        },
-        {
-          "identifier": "duplication-boilerplate-cluster",
-          "summary": "Two boilerplate_duplication failures block 13.2 strict-score gap on Duplication \u2014 smallest-effort highest-value cluster in the cycle",
-          "priority": "high",
-          "recommendation": "Locate the 2 failing boilerplate_duplication checks (current pass_rate 0.825 over 8 potential) and resolve them as a single cluster. Files of interest per churn list: src/output/settings-report.ts, src/output/lifecycle-report.ts, src/settings/labels/processor.ts, src/settings/rulesets/diff.ts.",
-          "dimensions_affected": [
-            "Duplication",
-            "Low elegance"
-          ]
-        },
-        {
-          "identifier": "structure-nav-scoped-wins",
-          "summary": "Three scoped package_organization items at 5x weight with 11.5 headroom constitute a clean organize-cluster",
-          "priority": "high",
-          "recommendation": "Resolve repo_missing_index_barrel, sanitize_utils_vcs_only, and test_layout_partially_mirrored as a single Structure nav cluster. Add the missing repo/index.ts barrel, relocate sanitize-utils into src/vcs/, and mirror test/unit/ layout to src/.",
-          "dimensions_affected": [
-            "Structure nav",
-            "Cross-module arch"
-          ]
-        },
-        {
-          "identifier": "output-artifacts-false-positive-batch",
-          "summary": "19 export findings on .output/updated_sources/src/config/index.ts are generated-artifact churn",
-          "priority": "medium",
-          "recommendation": "Batch-skip all 19 findings with --false-positive and attestation 'Generated artifact under .output/updated_sources/ \u2014 not a source file'. If the scanner is picking up .output/ at all, add it to the scanner exclude config so these stop recurring.",
-          "dimensions_affected": [
-            "Code quality",
-            "API coherence"
-          ]
-        },
-        {
-          "identifier": "cluster-size-discipline",
-          "summary": "Average cluster size 0.09 indicates per-finding execution; shift to batched clusters to reduce skip-rework overhead",
-          "priority": "medium",
-          "recommendation": "This cycle, every strategic_issue above MUST be executed as a named cluster with 2+ findings batched. Enforce avg_cluster_size >= 1.5 exit criterion. Cluster candidates already named in cluster_names: type-safety-fixes, quick-wins, consolidate-utilities.",
-          "dimensions_affected": [
-            "Code quality",
-            "Abstraction fit",
-            "Type safety"
-          ]
-        }
-      ]
+      "computed_at": "2026-04-24T10:36:43+00:00",
+      "lookback_scans": 5
     },
     "cluster_verdicts": [
       {
@@ -35770,6 +37540,31 @@
         "false_positive_rate": 1.0,
         "recommendation": "skip. Same worktree-artifact issue. Skip --false-positive."
       }
+    ],
+    "active_triage_issue_ids": [
+      "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+      "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+      "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+      "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+      "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+      "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+      "review::.::holistic::contract_coherence::get_or_create_mutates",
+      "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+      "review::.::holistic::dependency_health::shared_vcs_circular_import",
+      "review::.::holistic::design_coherence::display_name_duplication",
+      "review::.::holistic::design_coherence::receive_migration_multi_phase",
+      "review::.::holistic::design_coherence::settings_formatter_duplication",
+      "review::.::holistic::error_consistency::extends_resolver_bare_error",
+      "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+      "review::.::holistic::initialization_coupling::run_scope_module_state",
+      "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+      "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+      "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+      "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+      "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+      "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+      "review::.::holistic::type_safety::unguarded_error_property_access",
+      "review::.::holistic::type_safety::unverified_string_cast_in_diff"
     ]
   },
   "commit_log": [
@@ -36329,10 +38124,9 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 198,
+    "subjective_review_completed_at_scan_count": 204,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true
   },
-  "scan_count_at_plan_start": 203,
-  "previous_plan_start_scores": {}
+  "scan_count_at_plan_start": 203
 }

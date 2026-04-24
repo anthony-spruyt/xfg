@@ -1,90 +1,510 @@
 {
-  "command": "review",
-  "action": "import",
-  "mode": "holistic",
-  "diff": {
-    "new": 23,
-    "auto_resolved": 77,
-    "reopened": 0,
-    "total_current": 23,
-    "suspect_detectors": [
-      "boilerplate_duplication",
-      "exports",
-      "facade",
-      "flat_dirs",
-      "naming",
-      "props",
-      "responsibility_cohesion",
-      "review",
-      "signature",
-      "single_use",
-      "smells",
-      "structural"
-    ],
-    "chronic_reopeners": [
+  "command": "show",
+  "query": "review",
+  "status_filter": "open",
+  "total": 23,
+  "summary": {
+    "by_tier": {
+      "T1": 11,
+      "T2": 11,
+      "T3": 1
+    },
+    "by_detector": {
+      "review": 23
+    },
+    "files": 1
+  },
+  "by_file": {
+    ".": [
       {
-        "id": "facade::src/settings/labels/index.ts",
-        "detector": "facade",
-        "file": "src/settings/labels/index.ts",
+        "id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "IRepoSettingsStrategy uses both 'update' and 'set' prefixes for semantically identical boolean toggle operations",
+        "detail": {
+          "holistic": true,
+          "dimension": "api_surface_coherence",
+          "related_files": [
+            "src/settings/repo-settings/types.ts"
+          ],
+          "evidence": [
+            "updateVulnerabilityAlerts uses 'update' prefix while setAutomatedSecurityFixes and setPrivateVulnerabilityReporting use 'set' prefix \u2014 all three toggle a boolean feature on/off"
+          ],
+          "suggestion": "Standardize on 'update' prefix to match the interface's primary get/update convention: rename setAutomatedSecurityFixes to updateAutomatedSecurityFixes and setPrivateVulnerabilityReporting to updatePrivateVulnerabilityReporting",
+          "reasoning": "",
+          "summary_hash": "905ab762"
+        }
+      },
+      {
+        "id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "GitLab force-merge path omits privilege-bypass warning that GitHub and ADO strategies both log",
+        "detail": {
+          "holistic": true,
+          "dimension": "authorization_consistency",
+          "related_files": [
+            "src/vcs/gitlab-pr-strategy.ts",
+            "src/vcs/github-pr-strategy.ts",
+            "src/vcs/ado-pr-strategy.ts"
+          ],
+          "evidence": [
+            "github-pr-strategy.ts:292 logs this.log?.warn(`Force-merging PR ... using admin privileges (bypasses branch protection)`) before force merge",
+            "ado-pr-strategy.ts:270 logs this.log?.warn(`Bypassing policies for PR ... (reason: ...)`) before force merge",
+            "gitlab-pr-strategy.ts:308-322 executes force merge with no warning log at all"
+          ],
+          "suggestion": "Add a this.log?.warn() call before the force merge in gitlab-pr-strategy.ts, e.g. this.log?.warn(`Force-merging MR ${mrInfo.mrIid} immediately (bypasses pipeline requirements)`) to match the audit pattern of the sibling strategies.",
+          "reasoning": "",
+          "summary_hash": "23f24925"
+        }
+      },
+      {
+        "id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "shared/ imports sanitizeCredentials from vcs/sanitize-utils.ts, inverting the shared-as-leaf layering",
+        "detail": {
+          "holistic": true,
+          "dimension": "cross_module_architecture",
+          "related_files": [
+            "src/shared/command-executor.ts",
+            "src/shared/retry-utils.ts",
+            "src/vcs/sanitize-utils.ts"
+          ],
+          "evidence": [
+            "src/shared/command-executor.ts line 2: import { sanitizeCredentials } from \"../vcs/sanitize-utils.js\" -- runtime import, not type-only",
+            "src/shared/retry-utils.ts line 2: import { sanitizeCredentials } from \"../vcs/sanitize-utils.js\" -- runtime import, not type-only",
+            "sanitize-utils.ts contains a single pure function that does URL/header credential masking with no VCS-specific dependencies",
+            "command-executor.ts has 46 importers, making this layering violation high-impact in the dependency graph"
+          ],
+          "suggestion": "Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. Update the two imports in shared/ to use local paths (\"./sanitize-utils.js\"), and update the three imports in vcs/ (ado-pr-strategy.ts, github-pr-strategy.ts, gitlab-pr-strategy.ts) to use \"../shared/sanitize-utils.js\". This restores shared/ as a true leaf layer with no upward dependencies.",
+          "reasoning": "",
+          "summary_hash": "c5a42db7"
+        }
+      },
+      {
+        "id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "sanitize-utils.ts in vcs/ creates circular dependency with shared/",
+        "detail": {
+          "holistic": true,
+          "dimension": "dependency_health",
+          "related_files": [
+            "src/vcs/sanitize-utils.ts",
+            "src/shared/command-executor.ts",
+            "src/shared/retry-utils.ts"
+          ],
+          "evidence": [
+            "shared/command-executor.ts imports sanitizeCredentials from ../vcs/sanitize-utils.js",
+            "shared/retry-utils.ts imports sanitizeCredentials from ../vcs/sanitize-utils.js",
+            "vcs/ modules import extensively from shared/ (command-executor, retry-utils, errors, shell-utils, xfg-template)",
+            "sanitizeCredentials is a pure string function with zero VCS-specific dependencies \u2014 it only uses regex replacements on URL credentials and auth headers"
+          ],
+          "suggestion": "Move sanitize-utils.ts from src/vcs/ to src/shared/ and update all import paths. The function has no VCS dependencies and is consumed by shared utilities, making shared/ its natural home.",
+          "reasoning": "",
+          "summary_hash": "195f6c00"
+        }
+      },
+      {
+        "id": "review::.::holistic::design_coherence::display_name_duplication",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "getRepoDisplayName logic duplicated between repo/utils.ts and xfg-template.ts repo.fullName case",
+        "detail": {
+          "holistic": true,
+          "dimension": "design_coherence",
+          "related_files": [
+            "src/repo/utils.ts",
+            "src/shared/xfg-template.ts"
+          ],
+          "evidence": [
+            "repo/utils.ts lines 66-74: getRepoDisplayName formats azure-devops as org/project/repo, gitlab as namespace/repo, github as owner/repo",
+            "xfg-template.ts lines 99-105: repo.fullName case repeats the exact same three-branch platform-specific formatting logic"
+          ],
+          "suggestion": "Have the xfg-template.ts repo.fullName case call getRepoDisplayName(repoInfo) directly instead of reimplementing the platform-specific formatting inline.",
+          "reasoning": "",
+          "summary_hash": "0d5d0c14"
+        }
+      },
+      {
+        "id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "extends-resolver.ts throws bare Error instead of ValidationError for config validation failures",
+        "detail": {
+          "holistic": true,
+          "dimension": "error_consistency",
+          "related_files": [
+            "src/config/extends-resolver.ts"
+          ],
+          "evidence": [
+            "Lines 16, 23, 29 throw new Error() for circular extends, missing group, and depth exceeded -- all config validation failures",
+            "Every other file in src/config/ (loader.ts, config-merger.ts, file-reference-resolver.ts, normalizer.ts, validator.ts) uses ValidationError for config-related errors",
+            "ValidationError is specifically designed for config validation failures and is imported by retry-utils.ts to classify as permanent (non-retryable)"
+          ],
+          "suggestion": "Import ValidationError from ../shared/errors.js in extends-resolver.ts and replace the three bare Error throws with ValidationError throws. This aligns with the rest of the config module and ensures retry logic correctly classifies these as permanent errors.",
+          "reasoning": "",
+          "summary_hash": "25072124"
+        }
+      },
+      {
+        "id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "src/shared/ imports sanitize-utils.ts from src/vcs/, reversing the expected dependency direction",
+        "detail": {
+          "holistic": true,
+          "dimension": "high_level_elegance",
+          "related_files": [
+            "src/shared/command-executor.ts",
+            "src/shared/retry-utils.ts",
+            "src/vcs/sanitize-utils.ts"
+          ],
+          "evidence": [
+            "src/shared/command-executor.ts:2 imports sanitizeCredentials from '../vcs/sanitize-utils.js'",
+            "src/shared/retry-utils.ts:2 imports sanitizeCredentials from '../vcs/sanitize-utils.js'",
+            "sanitize-utils.ts has zero imports itself - it is a standalone utility with no vcs-specific dependencies"
+          ],
+          "suggestion": "Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. It is a pure string utility with no dependencies, and its only consumers outside vcs/ are already in shared/. Update the two import paths in command-executor.ts and retry-utils.ts accordingly.",
+          "reasoning": "",
+          "summary_hash": "cab5c970"
+        }
+      },
+      {
+        "id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "switch in renderActionDiffLines lacks exhaustive default, unlike equivalent in lifecycle-formatter.ts",
+        "detail": {
+          "holistic": true,
+          "dimension": "logic_clarity",
+          "related_files": [
+            "src/output/lifecycle-report.ts"
+          ],
+          "evidence": [
+            "lifecycle-report.ts line 53: switch(action.action) handles 'created', 'forked', 'migrated' but has no default case after filtering out 'existed' on line 51",
+            "lifecycle-formatter.ts line 31-55: equivalent switch uses 'default: { const _exhaustive: never = result.action; throw new SyncError(...); }' pattern for compile-time safety",
+            "LifecycleActionKind is 'existed' | 'created' | 'forked' | 'migrated' \u2014 adding a new action would silently pass through the lifecycle-report switch"
+          ],
+          "suggestion": "Add a default case with exhaustive never check after the 'existed' filter, matching the pattern in lifecycle-formatter.ts. Alternatively, restructure to use the same function for both reporting locations.",
+          "reasoning": "",
+          "summary_hash": "cec2e50c"
+        }
+      },
+      {
+        "id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "sync-command.ts uses module-scoped mutable state (_runScopeExecutor, _runScopeLogger) as implicit DI for free functions, contradicting the explicit DI used throughout the rest of the codebase",
+        "detail": {
+          "holistic": true,
+          "dimension": "mid_level_elegance",
+          "related_files": [
+            "src/cli/sync-command.ts"
+          ],
+          "evidence": [
+            "Lines 51-66: _runScopeExecutor and _runScopeLogger are module-level let variables, set once at the top of runSync (line 628-629) and accessed via getDefaultExecutor()/getLogger() throughout 20+ call sites",
+            "The free functions (logSettingsResult, applyRepoSettings, displayReports, runLifecyclePhase, runFileSyncPhase) all implicitly depend on this state rather than receiving it as parameters",
+            "This pattern prevents concurrent invocations and makes the dependency graph invisible at call sites - a developer reading logSettingsResult sees no logger parameter but the function uses one"
+          ],
+          "suggestion": "Refactor the free functions to accept logger and executor as explicit parameters, or consolidate them into a class that receives dependencies via constructor injection, consistent with the pattern used in SyncWorkflow, RepositoryProcessor, and all other modules.",
+          "reasoning": "",
+          "summary_hash": "23edb878"
+        }
+      },
+      {
+        "id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "repo-metadata-provider.test.ts is in test/unit/shared/ but tests src/repo/GitHubRepoMetadataProvider",
+        "detail": {
+          "holistic": true,
+          "dimension": "package_organization",
+          "related_files": [
+            "test/unit/shared/repo-metadata-provider.test.ts"
+          ],
+          "evidence": [
+            "test/unit/shared/repo-metadata-provider.test.ts imports GitHubRepoMetadataProvider from '../../../src/repo/index.js'",
+            "All other repo/ tests (detector.test.ts, utils.test.ts) correctly reside in test/unit/repo/"
+          ],
+          "suggestion": "Move test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/repo-metadata-provider.test.ts. Run: npm test to validate.",
+          "reasoning": "",
+          "summary_hash": "1563456c"
+        }
+      },
+      {
+        "id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+        "tier": 1,
+        "confidence": "high",
+        "summary": "shared/ imports from vcs/sanitize-utils.ts creating bidirectional coupling with the utility layer",
+        "detail": {
+          "holistic": true,
+          "dimension": "package_organization",
+          "related_files": [
+            "src/vcs/sanitize-utils.ts",
+            "src/shared/command-executor.ts",
+            "src/shared/retry-utils.ts"
+          ],
+          "evidence": [
+            "shared/command-executor.ts line 2: import { sanitizeCredentials } from '../vcs/sanitize-utils.js'",
+            "shared/retry-utils.ts line 2: import { sanitizeCredentials } from '../vcs/sanitize-utils.js'",
+            "sanitize-utils.ts is a pure string utility (20 LOC, zero imports from vcs/) that sanitizes credential patterns in strings",
+            "Coupling matrix shows vcs/ -> shared/ has 59 edges while shared/ -> vcs/ has 2 edges, both for this file"
+          ],
+          "suggestion": "Staged reorg plan: (1) Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. (2) Update imports in src/shared/command-executor.ts and src/shared/retry-utils.ts to use './sanitize-utils.js'. (3) Update imports in src/vcs/github-pr-strategy.ts, src/vcs/ado-pr-strategy.ts, src/vcs/gitlab-pr-strategy.ts to use '../shared/sanitize-utils.js'. (4) Update test/unit/vcs/sanitize-utils.test.ts path to test/unit/shared/sanitize-utils.test.ts. (5) Run: npm run build && npm test to validate.",
+          "reasoning": "",
+          "summary_hash": "2717261d"
+        }
+      },
+      {
+        "id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
         "tier": 2,
         "confidence": "medium",
-        "summary": "Re-export facade (8 LOC): imports from ./formatter.js, ./processor.js, ./github-labels-strategy.js (1 importers)",
+        "summary": "Multi-line JSDoc blocks on self-explanatory 1-3 line functions add noise without insight",
         "detail": {
-          "loc": 8,
-          "importers": 1,
-          "imports_from": [
-            "./formatter.js",
-            "./processor.js",
-            "./github-labels-strategy.js"
+          "holistic": true,
+          "dimension": "ai_generated_debt",
+          "related_files": [
+            "src/settings/base-processor.ts",
+            "src/config/normalizer.ts"
           ],
-          "kind": "file"
-        },
-        "status": "open",
-        "note": "Reopened (\u00d77) \u2014 reappeared in scan (was false_positive)",
-        "first_seen": "2026-03-05T01:16:56+00:00",
-        "last_seen": "2026-04-24T09:48:47+00:00",
-        "resolved_at": null,
-        "reopen_count": 7,
-        "lang": "typescript",
-        "zone": "production",
-        "suppressed": false,
-        "suppressed_at": null,
-        "suppression_pattern": null,
-        "wontfix_scan_count": 112,
-        "wontfix_snapshot": {
-          "captured_at": "2026-03-06T08:15:04+00:00",
-          "scan_count": 112,
-          "tier": 2,
-          "confidence": "medium",
-          "detail": {
-            "loc": 5,
-            "importers": 1,
-            "imports_from": [
-              "./formatter.js",
-              "./processor.js"
-            ],
-            "kind": "file"
-          }
-        },
-        "work_item_kind": "mechanical_defect",
-        "issue_kind": "mechanical_defect",
-        "origin": "scan"
+          "evidence": [
+            "base-processor.ts:117 has 4-line JSDoc '/** Common action literals shared by all settings processors. */' on a 1-line type alias",
+            "base-processor.ts:123 has 18-line JSDoc on isActiveAction which is a 1-line type predicate (entry.action !== 'unchanged')",
+            "normalizer.ts:107 has 4-line JSDoc 'Normalizes header to array format' on a 3-line function whose name already communicates intent",
+            "normalizer.ts:323 has 4-line JSDoc on applyFileLayer that adds context about merge semantics \u2014 this one is valuable; the pattern is inconsistent"
+          ],
+          "suggestion": "Remove or reduce JSDoc on trivial functions where the name fully communicates intent. Keep JSDoc on functions with non-obvious behavior, edge cases, or API contracts. A good heuristic: if the JSDoc restates the function name/signature without adding new information, remove it.",
+          "reasoning": "",
+          "summary_hash": "40acc03a"
+        }
+      },
+      {
+        "id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "IRepoSettingsStrategy includes branchExists() which is a repository query unrelated to settings management",
+        "detail": {
+          "holistic": true,
+          "dimension": "api_surface_coherence",
+          "related_files": [
+            "src/settings/repo-settings/types.ts",
+            "src/settings/repo-settings/processor.ts"
+          ],
+          "evidence": [
+            "branchExists(repoInfo, branch, options) is a repo-level query method placed on a settings strategy interface alongside get/update/set* methods that manage settings. It's only used in the processor to validate a default branch change."
+          ],
+          "suggestion": "Extract branchExists to a separate focused interface (e.g. IBranchQuery or IRepoBranchCheck) and inject it into RepoSettingsProcessor independently. This preserves ISP and keeps the settings strategy focused on settings operations.",
+          "reasoning": "",
+          "summary_hash": "7c8fb30d"
+        }
+      },
+      {
+        "id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "ICodeScanningStrategy uses compound method names (getDefaultSetup/updateDefaultSetup) unlike sibling strategies' bare verbs",
+        "detail": {
+          "holistic": true,
+          "dimension": "api_surface_coherence",
+          "related_files": [
+            "src/settings/code-scanning/types.ts"
+          ],
+          "evidence": [
+            "ILabelsStrategy uses list/create/update/delete, IRulesetStrategy uses list/get/create/update/delete, IRepoSettingsStrategy uses get/update, but ICodeScanningStrategy uses getDefaultSetup/updateDefaultSetup"
+          ],
+          "suggestion": "Rename to get/update to match sibling strategy interfaces. The interface name ICodeScanningStrategy already provides the 'code scanning' context, so the 'DefaultSetup' qualifier is redundant in method names.",
+          "reasoning": "",
+          "summary_hash": "ec52a7e5"
+        }
+      },
+      {
+        "id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "baseResult<TResult>() relies on unsafe 'as TResult' cast with only a comment-level contract",
+        "detail": {
+          "holistic": true,
+          "dimension": "contract_coherence",
+          "related_files": [
+            "src/settings/base-processor.ts"
+          ],
+          "evidence": [
+            "The function casts BaseProcessorResult to TResult with the comment 'All TResult subtypes only extend BaseProcessorResult with optional fields' - if any processor result type adds a required field, the cast silently produces an invalid object with no type error"
+          ],
+          "suggestion": "Consider using a conditional type or runtime check to validate the result shape, or enforce the optional-only constraint with a mapped type",
+          "reasoning": "",
+          "summary_hash": "d4262891"
+        }
+      },
+      {
+        "id": "review::.::holistic::contract_coherence::get_or_create_mutates",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "ResultsCollector.getOrCreate() mutates internal state behind getter-like name",
+        "detail": {
+          "holistic": true,
+          "dimension": "contract_coherence",
+          "related_files": [
+            "src/cli/results-collector.ts"
+          ],
+          "evidence": [
+            "getOrCreate() creates a new ProcessorResults entry and pushes it to the internal array when no match exists, hiding a side effect behind a name that starts with 'get'"
+          ],
+          "suggestion": "Rename to ensureResult() or findOrCreate() to signal the mutation, or split into find() and create() methods",
+          "reasoning": "",
+          "summary_hash": "63cfb287"
+        }
+      },
+      {
+        "id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "receiveMigration bundles ref cleanup, branch rename, repo creation, and mirror push in one 130-line method",
+        "detail": {
+          "holistic": true,
+          "dimension": "design_coherence",
+          "related_files": [
+            "src/lifecycle/github-lifecycle-provider.ts"
+          ],
+          "evidence": [
+            "Lines 424-557: receiveMigration sequentially handles (1) removing origin remote, (2) cleaning non-standard refs, (3) renaming default branch, (4) creating the repo via gh CLI, and (5) pushing mirror content. Each is a distinct phase with its own error handling."
+          ],
+          "suggestion": "Extract the four phases into private methods: cleanMirrorRefs(sourceDir), renameMirrorDefaultBranch(sourceDir, settings), createEmptyRepo(repoInfo, settings, tokenEnv), and pushMirrorContent(repoInfo, sourceDir, token, tokenEnv). The receiveMigration method becomes a 20-line orchestrator calling these in sequence.",
+          "reasoning": "",
+          "summary_hash": "46a59376"
+        }
+      },
+      {
+        "id": "review::.::holistic::design_coherence::settings_formatter_duplication",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "Create/update formatting loop duplicated between code-scanning and repo-settings formatters",
+        "detail": {
+          "holistic": true,
+          "dimension": "design_coherence",
+          "related_files": [
+            "src/settings/code-scanning/formatter.ts",
+            "src/settings/repo-settings/formatter.ts"
+          ],
+          "evidence": [
+            "code-scanning/formatter.ts lines 38-61 and repo-settings/formatter.ts lines 73-95 contain the same chalk.green/chalk.yellow formatting loop for create/update changes, differing only in whether warnings are collected"
+          ],
+          "suggestion": "Extract a shared formatChangeEntries(changes) helper in a common settings formatter utility that returns {lines, entries, creates, updates}. The repo-settings formatter can wrap it to add its warnings pass.",
+          "reasoning": "",
+          "summary_hash": "8a5f326c"
+        }
+      },
+      {
+        "id": "review::.::holistic::initialization_coupling::run_scope_module_state",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "Module-level mutable variables _runScopeExecutor and _runScopeLogger create implicit boot-order dependency within sync-command.ts",
+        "detail": {
+          "holistic": true,
+          "dimension": "initialization_coupling",
+          "related_files": [
+            "src/cli/sync-command.ts"
+          ],
+          "evidence": [
+            "Lines 51-52: let _runScopeExecutor and _runScopeLogger are module-scoped mutable variables set by runSync() (lines 628-629) and accessed by getDefaultExecutor()/getLogger() closures used throughout the file (e.g. logSettingsResult, displayReports, processSingleRepo).",
+            "Any function calling getLogger() or getDefaultExecutor() will throw if runSync() has not been called first, creating an implicit ordering dependency within the module."
+          ],
+          "suggestion": "Thread the executor and logger through the RepoIterationContext object (which already exists) and pass them explicitly to functions like logSettingsResult, displayReports, etc., eliminating the module-level mutable state.",
+          "reasoning": "",
+          "summary_hash": "87e8fa48"
+        }
+      },
+      {
+        "id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "mergePROptions uses verbose intermediate-variable-per-field pattern instead of spread",
+        "detail": {
+          "holistic": true,
+          "dimension": "low_level_elegance",
+          "related_files": [
+            "src/config/normalizer.ts"
+          ],
+          "evidence": [
+            "Lines 130-143: each of the 5 PRMergeOptions fields is assigned to a local variable (const merge = perRepo.merge ?? global.merge) then conditionally set on the result (if (merge !== undefined) result.merge = merge). This is 14 lines of mechanical code that grows linearly with field count."
+          ],
+          "suggestion": "Replace with a spread-and-filter pattern: `const merged = { ...global, ...perRepo }; return Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined))` or use a utility that strips undefined. This maintains the same semantics (no undefined keys) with less ceremony.",
+          "reasoning": "",
+          "summary_hash": "f12571f4"
+        }
+      },
+      {
+        "id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "ProcessorResult uses optional fields (prUrl, mergeResult, skipped, diffStats, fileChanges) instead of discriminated union variants, making outcome semantics ambiguous at consumer sites",
+        "detail": {
+          "holistic": true,
+          "dimension": "mid_level_elegance",
+          "related_files": [
+            "src/sync/types.ts",
+            "src/sync/sync-workflow.ts",
+            "src/cli/sync-command.ts"
+          ],
+          "evidence": [
+            "types.ts lines 194-207: ProcessorResult has success, repoName, message as required, then 5 optional fields that are semantically correlated but not type-enforced (e.g. prUrl is only meaningful when success is true and not direct mode)",
+            "sync-workflow.ts returns at least 4 different shapes of ProcessorResult (auth skip, no changes, direct push, PR result) all through the same flat type",
+            "sync-command.ts line 156-162 determineMergeOutcome must inspect multiple optional fields to reconstruct what happened - this is glue logic that a discriminated union would eliminate"
+          ],
+          "suggestion": "Introduce a discriminated union on a 'kind' or 'outcome' field (e.g. 'skipped' | 'direct_push' | 'pr_created' | 'error') so consumers can pattern-match on the outcome rather than inspecting combinations of optional fields.",
+          "reasoning": "",
+          "summary_hash": "65d8f8a2"
+        }
+      },
+      {
+        "id": "review::.::holistic::type_safety::unguarded_error_property_access",
+        "tier": 2,
+        "confidence": "medium",
+        "summary": "attachRetryAfter/attachValidationDetails cast unknown error to access .stdout without type guard",
+        "detail": {
+          "holistic": true,
+          "dimension": "type_safety",
+          "related_files": [
+            "src/shared/gh-api-utils.ts"
+          ],
+          "evidence": [
+            "Line 87: (error as { stdout?: string | Buffer }).stdout casts unknown error without checking if it has a stdout property",
+            "Line 106: Same pattern repeated in attachValidationDetails",
+            "These functions mutate the error object by adding retryAfter property via cast on line 94"
+          ],
+          "suggestion": "Add a type guard function like isExecError(error): error is { stdout?: string | Buffer } that checks typeof error === 'object' && error !== null && 'stdout' in error before accessing. This is a single-function addition that replaces the unsafe casts.",
+          "reasoning": "",
+          "summary_hash": "1d143c5c"
+        }
+      },
+      {
+        "id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+        "tier": 3,
+        "confidence": "low",
+        "summary": "diff-algorithm.ts casts item.type to string without verifying runtime type",
+        "detail": {
+          "holistic": true,
+          "dimension": "type_safety",
+          "related_files": [
+            "src/settings/rulesets/diff-algorithm.ts"
+          ],
+          "evidence": [
+            "Line 115: const type = item.type as string -- item is Record<string, unknown>, so item.type is unknown",
+            "Line 123: Same pattern for desiredItem.type as string",
+            "While preceded by 'type' in item check and followed by truthiness check, the value could be a number or object at runtime"
+          ],
+          "suggestion": "Replace 'item.type as string' with 'typeof item.type === \"string\" ? item.type : String(item.type)' or add typeof check before the cast. This ensures the assertion matches runtime reality.",
+          "reasoning": "",
+          "summary_hash": "31b8d98e"
+        }
       }
-    ],
-    "skipped_other_lang": 0,
-    "resolved_out_of_scope": 0,
-    "ignored": 0,
-    "ignore_patterns": 0,
-    "raw_issues": 23,
-    "suppressed_pct": 0.0
+    ]
   },
-  "next_command": "desloppify show review --status open",
-  "subjective_at_target": [],
-  "assessment_import": {
-    "mode": "trusted_internal",
-    "trusted": true,
-    "reason": "trusted import-run replay from 20260424_095015"
-  },
+  "total_matching": 23,
+  "noise_budget": 0,
+  "noise_global_budget": 0,
   "narrative": {
     "phase": "regression",
     "headline": "Score shifted 3.3 pts \u2014 this is normal after structural changes. Rescan after your next fix to see the real trend. (23 review work items \u2014 run `desloppify show review --status open`)",
