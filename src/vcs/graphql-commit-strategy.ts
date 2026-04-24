@@ -213,6 +213,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       }
     }
 
+    // Defensive — loop always exits via return or throw, but TS needs this for exhaustiveness
     throw (
       lastError ?? new GraphQLApiError("Unexpected error in GraphQL commit")
     );

@@ -209,7 +209,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       if (isHttp404Error(error)) {
         return false; // 404 = disabled
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   }
 
@@ -256,7 +256,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       if (isHttp404Error(error)) {
         return false; // 404 = not available (e.g. private repos)
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   }
 }

@@ -570,11 +570,7 @@ async function runFileSyncPhase(
     ctx.reportResults.push({
       repoName: repo.repoName,
       success: result.success,
-      fileChanges: (result.fileChanges ?? []).map((f) => ({
-        path: f.path,
-        action: f.action,
-        ...(f.diffLines ? { diffLines: f.diffLines } : {}),
-      })),
+      fileChanges: result.fileChanges ?? [],
       prUrl: result.prUrl,
       mergeOutcome,
       error: result.success ? undefined : result.message,
