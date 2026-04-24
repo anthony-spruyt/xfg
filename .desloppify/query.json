@@ -1,11 +1,11 @@
 {
   "command": "resolve",
   "patterns": [
-    "receivemigration_monolith"
+    "output_missing_barrel_index"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::low_level_elegance::receivemigration_monolith"
+    "review::.::holistic::high_level_elegance::output_missing_barrel_index"
   ],
   "count": 1,
   "next_command": "desloppify next",
@@ -17,10 +17,10 @@
   "prev_objective_score": 98.8,
   "prev_strict_score": 88.5,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers and I am not gaming the score.",
+  "attestation": "I have actually Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel and I am not gaming the score.",
   "narrative": {
     "phase": "refinement",
-    "headline": "All T1 items cleared! (5 review work items \u2014 run `desloppify show review --status open`)",
+    "headline": "All T1 items cleared! (2 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
@@ -197,8 +197,8 @@
       {
         "type": "refactor",
         "detector": "review",
-        "count": 5,
-        "description": "5 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "count": 2,
+        "description": "2 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
         "command": "desloppify show review --status open",
         "impact": 0.0,
         "dimension": "Unknown",
@@ -220,7 +220,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 150,
+        "total_count": 141,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -287,7 +287,7 @@
         }
       },
       "can_parallelize": false,
-      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 5 issue(s) \u2014 `desloppify show review --status open`."
+      "hint": "Work through actions in priority order. Rescan after each fix to track progress. Review: 2 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -333,7 +333,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 5 issue(s) \u2014 `desloppify show review --status open`.",
+    "why_now": "Work through actions in priority order. Rescan after each fix to track progress. Review: 2 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"

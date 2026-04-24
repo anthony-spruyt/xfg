@@ -12,8 +12,8 @@
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 175,
-    "fixed": 301,
-    "open": 140,
+    "fixed": 304,
+    "open": 137,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 91,
-        "fixed": 138,
-        "open": 5,
+        "fixed": 140,
+        "open": 3,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -39,8 +39,8 @@
         "auto_resolved": 713,
         "deferred": 0,
         "false_positive": 77,
-        "fixed": 26,
-        "open": 135,
+        "fixed": 27,
+        "open": 134,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -92,7 +92,10 @@
     "cross_module_architecture": {
       "score": 90.2,
       "source": "holistic",
-      "assessed_at": "2026-04-24T14:27:46+00:00"
+      "assessed_at": "2026-04-24T14:27:46+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T15:26:02+00:00"
     },
     "convention_outlier": {
       "score": 90.5,
@@ -159,7 +162,10 @@
     "high_level_elegance": {
       "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T14:27:46+00:00"
+      "assessed_at": "2026-04-24T14:27:46+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T15:26:03+00:00"
     },
     "mid_level_elegance": {
       "score": 82.0,
@@ -3167,13 +3173,13 @@
       "strict": 90.2,
       "verified_strict_score": 90.2,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.902,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.98,
           "assessment_score": 90.2,
           "placeholder": false,
@@ -3251,13 +3257,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -74529,11 +74535,11 @@
         "reasoning": "",
         "summary_hash": "90174c45"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added LifecycleActionKind export to lifecycle barrel, updated lifecycle-report.ts to import from barrel",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:26:01+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74541,7 +74547,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added LifecycleActionKind export to lifecycle barrel, updated lifecycle-report.ts to import from barrel and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:26:01+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting": {
       "id": "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
@@ -74565,11 +74577,11 @@
         "reasoning": "",
         "summary_hash": "17cbfac4"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved formatDiffLine from sync/diff-utils.ts to output/diff-format.ts, fixed backwards dependency",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:26:02+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74577,7 +74589,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved formatDiffLine from sync/diff-utils.ts to output/diff-format.ts, fixed backwards dependency and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:26:02+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::output_missing_barrel_index": {
       "id": "review::.::holistic::high_level_elegance::output_missing_barrel_index",
@@ -74605,11 +74623,11 @@
         "reasoning": "",
         "summary_hash": "ad8bc0ec"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:26:03+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74617,7 +74635,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:26:03+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix": {
       "id": "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",

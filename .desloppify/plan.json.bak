@@ -1,11 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T15:14:34+00:00",
+  "updated": "2026-04-24T15:26:04+00:00",
   "queue_order": [
-    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
-    "review::.::holistic::high_level_elegance::output_missing_barrel_index",
-    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
   ],
@@ -1262,7 +1259,7 @@
       "skipped_at_scan": 205
     }
   },
-  "active_cluster": "lifecycle-decomposition",
+  "active_cluster": "output-module-structure",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3787,20 +3784,20 @@
     "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass": {
       "issue_id": "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
       "created_at": "2026-04-24T14:53:22+00:00",
-      "cluster": "output-module-structure",
-      "updated_at": "2026-04-24T14:53:22+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:26:01+00:00"
     },
     "review::.::holistic::high_level_elegance::output_missing_barrel_index": {
       "issue_id": "review::.::holistic::high_level_elegance::output_missing_barrel_index",
       "created_at": "2026-04-24T14:53:22+00:00",
-      "cluster": "output-module-structure",
-      "updated_at": "2026-04-24T14:53:22+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:26:04+00:00"
     },
     "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting": {
       "issue_id": "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
       "created_at": "2026-04-24T14:53:22+00:00",
-      "cluster": "output-module-structure",
-      "updated_at": "2026-04-24T14:53:22+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:26:02+00:00"
     },
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix": {
       "issue_id": "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
@@ -6172,8 +6169,8 @@
       "description": "Create output barrel index.ts, fix lifecycle barrel bypass, move formatDiffLine from sync/ to output/",
       "issue_ids": [
         "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
-        "review::.::holistic::high_level_elegance::output_missing_barrel_index",
-        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting"
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index"
       ],
       "created_at": "2026-04-24T14:53:11+00:00",
       "updated_at": "2026-04-24T14:57:23+00:00",
@@ -6191,7 +6188,8 @@
           "issue_refs": [
             "lifecycle_barrel_bypass"
           ],
-          "detail": "Add export type { LifecycleActionKind } from ./types.js to src/lifecycle/index.ts. Update import in src/output/lifecycle-report.ts to use ../lifecycle/index.js."
+          "detail": "Add export type { LifecycleActionKind } from ./types.js to src/lifecycle/index.ts. Update import in src/output/lifecycle-report.ts to use ../lifecycle/index.js.",
+          "done": true
         },
         {
           "title": "Move formatDiffLine from sync/diff-utils.ts to shared/ or output/, update imports",
@@ -6199,7 +6197,8 @@
           "issue_refs": [
             "output_depends_on_sync_for_formatting"
           ],
-          "detail": "Move formatDiffLine function out of sync/diff-utils.ts. Create a new file in output/ for it. Update import in sync-report.ts. Keep re-export in sync/diff-utils.ts for backward compat."
+          "detail": "Move formatDiffLine function out of sync/diff-utils.ts. Create a new file in output/ for it. Update import in sync-report.ts. Keep re-export in sync/diff-utils.ts for backward compat.",
+          "done": true
         },
         {
           "title": "Create src/output/index.ts barrel, update ~11 import sites in cli/",
@@ -6207,7 +6206,8 @@
           "issue_refs": [
             "output_missing_barrel_index"
           ],
-          "detail": "Create barrel file in output/ directory re-exporting formatSyncReportCLI, formatSettingsReportCLI, formatLifecycleReportCLI, writeGitHubStepSummary, types. Update ~11 import sites in cli/."
+          "detail": "Create barrel file in output/ directory re-exporting formatSyncReportCLI, formatSettingsReportCLI, formatLifecycleReportCLI, writeGitHubStepSummary, types. Update ~11 import sites in cli/.",
+          "done": true
         }
       ],
       "depends_on_clusters": [
@@ -9665,9 +9665,6 @@
     }
   },
   "promoted_ids": [
-    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
-    "review::.::holistic::high_level_elegance::output_missing_barrel_index",
-    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
     "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
     "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
   ],
@@ -38544,6 +38541,139 @@
         "status": "fixed",
         "attestation": "I have actually Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers and I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T15:14:46+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+        "review::.::holistic::low_level_elegance::receivemigration_monolith"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "lifecycle-decomposition cluster: receiveMigration decomposed into 4 private helpers",
+      "detail": {
+        "sha": "4d0952266903",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:15:11+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "lifecycle-decomposition"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:15:11+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:15:12+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:26:01+00:00",
+      "action": "done",
+      "issue_ids": [
+        "lifecycle_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added LifecycleActionKind export to lifecycle barrel, updated lifecycle-report.ts to import from barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:26:01+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added LifecycleActionKind export to lifecycle barrel, updated lifecycle-report.ts to import from barrel",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added LifecycleActionKind export to lifecycle barrel, updated lifecycle-report.ts to import from barrel and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:26:02+00:00",
+      "action": "done",
+      "issue_ids": [
+        "output_depends_on_sync_for_formatting"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved formatDiffLine from sync/diff-utils.ts to output/diff-format.ts, fixed backwards dependency",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:26:02+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved formatDiffLine from sync/diff-utils.ts to output/diff-format.ts, fixed backwards dependency",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved formatDiffLine from sync/diff-utils.ts to output/diff-format.ts, fixed backwards dependency and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:26:03+00:00",
+      "action": "done",
+      "issue_ids": [
+        "output_missing_barrel_index"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:26:04+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Created src/output/index.ts barrel re-exporting all public APIs, updated cli/ imports to use barrel and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -39572,11 +39702,23 @@
       "recorded_at": "2026-04-24T15:08:32+00:00",
       "note": "quick-code-fixes cluster: deepEqual dedup, typeof simplification, RepoSettingsAction narrowing",
       "cluster_name": null
+    },
+    {
+      "sha": "4d0952266903",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+        "review::.::holistic::low_level_elegance::receivemigration_monolith"
+      ],
+      "recorded_at": "2026-04-24T15:14:46+00:00",
+      "note": "lifecycle-decomposition cluster: receiveMigration decomposed into 4 private helpers",
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [
-    "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
-    "review::.::holistic::low_level_elegance::receivemigration_monolith"
+    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+    "review::.::holistic::high_level_elegance::output_missing_barrel_index"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
