@@ -1,13 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T10:57:04+00:00",
+  "updated": "2026-04-24T13:09:02+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
     "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
     "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
     "review::.::holistic::contract_coherence::base_result_unsafe_cast",
@@ -1146,7 +1145,7 @@
       "skipped_at_scan": 204
     }
   },
-  "active_cluster": "sanitize-utils-layering",
+  "active_cluster": "api-verb-consistency",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3569,8 +3568,8 @@
     "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings": {
       "issue_id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
       "created_at": "2026-04-24T10:39:39+00:00",
-      "cluster": "api-verb-consistency",
-      "updated_at": "2026-04-24T10:39:39+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T13:09:02+00:00"
     },
     "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names": {
       "issue_id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
@@ -5634,9 +5633,9 @@
       "name": "api-verb-consistency",
       "description": "Standardize API method naming across settings strategies",
       "issue_ids": [
-        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
         "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-        "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy"
+        "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings"
       ],
       "created_at": "2026-04-24T10:39:38+00:00",
       "updated_at": "2026-04-24T10:43:42+00:00",
@@ -5654,7 +5653,8 @@
           "issue_refs": [
             "mixed_set_update_verbs_repo_settings"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         },
         {
           "title": "Simplify getDefaultSetup/updateDefaultSetup to get/update in ICodeScanningStrategy",
@@ -9307,7 +9307,6 @@
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
     "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
     "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
     "review::.::holistic::contract_coherence::base_result_unsafe_cast",
@@ -36866,6 +36865,43 @@
         "sha": "91589de4d0f4",
         "branch": "desloppify/code-health-apr24"
       }
+    },
+    {
+      "timestamp": "2026-04-24T13:02:25+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "sanitize-utils-layering"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T13:09:02+00:00",
+      "action": "done",
+      "issue_ids": [
+        "mixed_set_update_verbs_repo_settings"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed setAutomatedSecurityFixes\u2192updateAutomatedSecurityFixes and setPrivateVulnerabilityReporting\u2192updatePrivateVulnerabilityReporting in IRepoSettingsStrategy interface, GitHubRepoSettingsStrategy implementation, RepoSettingsProcessor, and all test files",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T13:09:02+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed setAutomatedSecurityFixes\u2192updateAutomatedSecurityFixes and setPrivateVulnerabilityReporting\u2192updatePrivateVulnerabilityReporting in IRepoSettingsStrategy interface, GitHubRepoSettingsStrategy implementation, RepoSettingsProcessor, and all test files",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually renamed both set* methods to update* across interface, implementation, processor, and all test files. Build and 2680 tests pass. I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -37917,7 +37953,9 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 204,

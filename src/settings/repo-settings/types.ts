@@ -72,7 +72,7 @@ export interface IRepoSettingsStrategy {
   /**
    * Enables or disables automated security fixes.
    */
-  setAutomatedSecurityFixes(
+  updateAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -81,7 +81,7 @@ export interface IRepoSettingsStrategy {
   /**
    * Enables or disables private vulnerability reporting.
    */
-  setPrivateVulnerabilityReporting(
+  updatePrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions

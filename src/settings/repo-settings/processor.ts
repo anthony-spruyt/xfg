@@ -192,7 +192,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     // Handle private vulnerability reporting (separate endpoint)
     if (privateVulnerabilityReporting !== undefined) {
-      await this.strategy.setPrivateVulnerabilityReporting(
+      await this.strategy.updatePrivateVulnerabilityReporting(
         repoInfo,
         privateVulnerabilityReporting,
         options
@@ -202,7 +202,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     // Handle automated security fixes (separate endpoint)
     // Done last to ensure vulnerability alerts have been fully processed
     if (automatedSecurityFixes !== undefined) {
-      await this.strategy.setAutomatedSecurityFixes(
+      await this.strategy.updateAutomatedSecurityFixes(
         repoInfo,
         automatedSecurityFixes,
         options

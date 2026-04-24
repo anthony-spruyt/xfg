@@ -154,7 +154,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call(method, endpoint, { options });
   }
 
-  async setAutomatedSecurityFixes(
+  async updateAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -166,7 +166,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call(method, endpoint, { options });
   }
 
-  async setPrivateVulnerabilityReporting(
+  async updatePrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
