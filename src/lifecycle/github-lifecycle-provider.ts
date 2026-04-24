@@ -429,8 +429,19 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const tokenEnv = buildTokenEnv(token);
 
-    // Remove existing "origin" remote if present (e.g., from git clone --mirror).
-    // gh repo create --source --push needs to set its own origin remote.
+    await this.removeOriginRemote(sourceDir);
+    await this.cleanNonStandardRefs(sourceDir);
+    await this.renameMirrorDefaultBranch(sourceDir, settings?.defaultBranch);
+    await this.createRepoAndPushMirror(
+      repoInfo,
+      sourceDir,
+      settings,
+      token,
+      tokenEnv
+    );
+  }
+
+  private async removeOriginRemote(sourceDir: string): Promise<void> {
     try {
       await this.executor.exec(
         `git -C ${escapeShellArg(sourceDir)} remote remove origin`,
@@ -441,12 +452,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         `Cleanup: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
+  }
 
-    // Remove all non-standard refs that GitHub rejects on push.
-    // Mirror clones include ALL refs from the source, but GitHub only
-    // accepts branches (refs/heads/*) and tags (refs/tags/*).
-    // Other refs like refs/pull/* (GitHub), refs/merge-requests/* (GitLab),
-    // refs/keep-around/* etc. must be removed.
+  // Mirror clones include ALL refs from the source, but GitHub only
+  // accepts branches (refs/heads/*) and tags (refs/tags/*).
+  private async cleanNonStandardRefs(sourceDir: string): Promise<void> {
     try {
       const allRefs = await this.executor.exec(
         `git -C ${escapeShellArg(sourceDir)} for-each-ref --format='%(refname)'`,
@@ -469,42 +479,53 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         `Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`
       );
     }
+  }
 
-    // Rename default branch in mirror clone if requested.
-    if (settings?.defaultBranch) {
-      const headRef = (
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
-          this.cwd
-        )
-      ).trim();
+  private async renameMirrorDefaultBranch(
+    sourceDir: string,
+    targetBranch?: string
+  ): Promise<void> {
+    if (!targetBranch) return;
 
-      const prefix = "refs/heads/";
-      if (!headRef.startsWith(prefix)) {
-        throw new LifecycleError(
-          `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
-            `Cannot rename default branch.`
-        );
-      }
+    const headRef = (
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
+        this.cwd
+      )
+    ).trim();
 
-      const sourceBranch = headRef.slice(prefix.length);
-
-      if (sourceBranch !== settings.defaultBranch) {
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(settings.defaultBranch)}`,
-          this.cwd
-        );
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(settings.defaultBranch)}`,
-          this.cwd
-        );
-      }
+    const prefix = "refs/heads/";
+    if (!headRef.startsWith(prefix)) {
+      throw new LifecycleError(
+        `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
+          `Cannot rename default branch.`
+      );
     }
 
-    // Split create and push into two steps. gh repo create --source --push
-    // does both atomically, but if the git backend hasn't propagated after
-    // the GraphQL create, the push fails with "Repository not found". A
-    // retry then hits "Name already exists" on the create step.
+    const sourceBranch = headRef.slice(prefix.length);
+
+    if (sourceBranch !== targetBranch) {
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(targetBranch)}`,
+        this.cwd
+      );
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(targetBranch)}`,
+        this.cwd
+      );
+    }
+  }
+
+  private async createRepoAndPushMirror(
+    repoInfo: GitHubRepoInfo,
+    sourceDir: string,
+    settings: LifecycleReceiveMigrationParams["settings"],
+    token: string | undefined,
+    tokenEnv: Record<string, string> | undefined
+  ): Promise<void> {
+    // Split create and push: gh repo create --source --push does both
+    // atomically, but if the git backend hasn't propagated after the
+    // GraphQL create, the push fails with "Repository not found".
     const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
     const createParts: string[] = ["gh repo create", escapeShellArg(repoSlug)];
     buildRepoCreateFlags(createParts, settings);
@@ -529,9 +550,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       }
     }
 
-    // Push mirror content via authenticated URL. Retries handle the git
-    // backend propagation delay (POST_CREATE_PERMANENT_PATTERNS allows
-    // retry on 404/not-found).
     const remoteUrl = token
       ? `https://x-access-token:${token}@${repoInfo.host}/${repoSlug}.git`
       : `https://${repoInfo.host}/${repoSlug}.git`;
