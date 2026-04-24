@@ -1,34 +1,28 @@
 {
   "command": "resolve",
   "patterns": [
-    "test_coverage::src/cli/branch-utils.ts::transitive_only"
+    "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only"
   ],
   "status": "fixed",
   "resolved": [
-    "test_coverage::src/cli/branch-utils.ts::transitive_only"
+    "test_coverage::src/cli/lifecycle-report-builder.ts::transitive_only"
   ],
   "count": 1,
   "next_command": "desloppify next",
-  "overall_score": 91.5,
-  "objective_score": 92.8,
-  "strict_score": 90.3,
+  "overall_score": 92.7,
+  "objective_score": 97.6,
+  "strict_score": 91.4,
   "verified_strict_score": 90.3,
-  "prev_overall_score": 91.5,
-  "prev_objective_score": 92.7,
-  "prev_strict_score": 90.2,
+  "prev_overall_score": 92.6,
+  "prev_objective_score": 97.5,
+  "prev_strict_score": 91.4,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Added branch-utils.test.ts with tests for sanitizeBranchName and validateBranchName and I am not gaming the score.",
+  "attestation": "I have actually Added lifecycle-report-builder.test.ts with tests for totals counting, action preservation, and settings pass-through and I am not gaming the score.",
   "narrative": {
     "phase": "stagnation",
     "headline": "\u26a0 1 security issue \u2014 review before other cleanup. All T1 items cleared!",
     "dimensions": {
       "lowest_dimensions": [
-        {
-          "name": "Test health",
-          "strict": 66.0,
-          "failing": 26,
-          "impact": 0.0
-        },
         {
           "name": "Duplication",
           "strict": 86.0,
@@ -38,6 +32,14 @@
         {
           "name": "Structure nav",
           "strict": 88.5,
+          "failing": 0,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
+        },
+        {
+          "name": "Design coherence",
+          "strict": 89.0,
           "failing": 0,
           "impact": 0.0,
           "subjective": true,
@@ -54,9 +56,9 @@
         },
         {
           "name": "Test health",
-          "lenient": 71.5,
-          "strict": 66.0,
-          "gap": 5.5,
+          "lenient": 96.2,
+          "strict": 90.6,
+          "gap": 5.6,
           "wontfix_count": 0
         },
         {
@@ -180,8 +182,8 @@
       {
         "type": "refactor",
         "detector": "test_coverage",
-        "count": 26,
-        "description": "26 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
+        "count": 6,
+        "description": "6 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
@@ -269,7 +271,7 @@
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 210,
+        "total_count": 190,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -348,7 +350,7 @@
           "actions": [
             7
           ],
-          "file_count": 26,
+          "file_count": 6,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -415,8 +417,8 @@
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 90.3,
-      "gap": -5.3,
+      "current": 91.4,
+      "gap": -6.4,
       "state": "above",
       "warning": null
     },
