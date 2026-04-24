@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T10:44:41+00:00",
+  "updated": "2026-04-24T10:44:48+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
@@ -30,9 +30,6 @@
     "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
     "review::.::holistic::initialization_coupling::run_scope_module_state",
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
-    "triage::strategize",
-    "triage::enrich",
-    "triage::commit",
     "subjective::api_surface_coherence",
     "subjective::contract_coherence",
     "subjective::mid_level_elegance"
@@ -36586,797 +36583,322 @@
       "detail": {
         "attestation": "Sense-checked quick-wins cluster (verified gitlab-pr-strategy.ts, extends-resolver.ts, lifecycle-report.ts), sanitize-utils-layering cluster (verified sanitize-utils.ts has zero VCS imports), type-safety-casts cluster (fixed path to src/settings/rulesets/diff-algorithm.ts). All file paths confirmed on disk."
       }
+    },
+    {
+      "timestamp": "2026-04-24T10:44:48+00:00",
+      "action": "triage_complete",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "strategy_len": 260,
+        "coverage": "23/23"
+      }
     }
   ],
   "epic_triage_meta": {
-    "triage_stages": {
-      "strategize": {
-        "stage": "strategize",
-        "report": "{\"executive_summary\":\"Score dropped 91.6\u219288.3 after honest subjective re-review. Expected recalibration. 23 new review items.\",\"score_trend\":\"declining\",\"debt_trend\":\"stable\",\"observe_guidance\":\"Focus on 5 lowest-scoring dimensions and shared root causes.\",\"reflect_guidance\":\"Drop is from recalibration not code changes.\",\"organize_guidance\":\"Group by root cause: sanitize-utils layering, API verb inconsistency, module-scoped mutables.\",\"sense_check_guidance\":\"Verify no findings penalize intentional SOLID patterns.\",\"risk_flags\":[\"mid_level_elegance 78.5 biggest drag\"],\"focus_dimensions\":[\"mid_level_elegance\",\"contract_coherence\",\"api_surface_coherence\",\"logic_clarity\",\"design_coherence\"]}",
-        "timestamp": "2026-04-24T10:36:43+00:00",
-        "score_trend": "declining",
-        "focus_dimensions": [],
-        "anti_pattern_count": 0,
-        "confirmed_at": "2026-04-24T10:36:43+00:00",
-        "confirmed_text": "auto-confirmed"
-      },
-      "observe": {
-        "stage": "observe",
-        "report": "Verified 23 issues against code. Root cause clusters: (1) sanitize-utils layering: review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils, review::.::holistic::dependency_health::shared_vcs_circular_import, review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils, review::.::holistic::package_organization::misplaced_repo_metadata_test \u2014 all genuine, single file move fixes 3 dims. (2) Module-scoped mutables: review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state \u2014 genuine but T4 refactor. (3) API verbs: review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings \u2014 genuine single-edit fix. (4) Contract issues: review::.::holistic::error_consistency::extends_resolver_bare_error \u2014 genuine, import ValidationError. (5) Missing exhaustive check: review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive \u2014 genuine single-edit.",
-        "cited_ids": [
-          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
-          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
-          "review::.::holistic::dependency_health::shared_vcs_circular_import",
-          "review::.::holistic::error_consistency::extends_resolver_bare_error",
-          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
-          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-          "review::.::holistic::package_organization::misplaced_repo_metadata_test"
-        ],
-        "timestamp": "2026-04-24T10:37:33+00:00",
-        "issue_count": 23,
-        "dimension_names": [
-          "api_surface_coherence",
-          "design_coherence",
-          "contract_coherence",
-          "mid_level_elegance",
-          "package_organization",
-          "type_safety",
-          "ai_generated_debt",
-          "authorization_consistency",
-          "cross_module_architecture",
-          "dependency_health",
-          "error_consistency",
-          "high_level_elegance",
-          "initialization_coupling",
-          "logic_clarity",
-          "low_level_elegance"
-        ],
-        "dimension_counts": {
-          "cross_module_architecture": 1,
-          "high_level_elegance": 1,
-          "error_consistency": 1,
-          "dependency_health": 1,
-          "low_level_elegance": 1,
-          "mid_level_elegance": 2,
-          "api_surface_coherence": 3,
-          "authorization_consistency": 1,
-          "ai_generated_debt": 1,
-          "package_organization": 2,
-          "initialization_coupling": 1,
-          "design_coherence": 3,
-          "contract_coherence": 2,
-          "logic_clarity": 1,
-          "type_safety": 2
-        },
-        "assessments": [],
-        "confirmed_at": "2026-04-24T10:37:46+00:00",
-        "confirmed_text": "All 23 issues verified against code across api_surface_coherence, design_coherence, contract_coherence, mid_level_elegance, package_organization, type_safety and 9 other dimensions. Each cluster has file:line citations."
-      },
-      "reflect": {
-        "stage": "reflect",
-        "report": "Comparing against cycle-start strict 91.6. Drop to 88.3 from honest re-assessment. Recurring: type_safety (6 resolved, 2 open \u2014 fresh finds), api_surface_coherence (2 resolved, 3 open \u2014 new verb issues), design_coherence (2 resolved, 3 open \u2014 new duplication). Not rework loops \u2014 genuinely new issues from fresh blind review.\n\n## Coverage Ledger\n- review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::dependency_health::shared_vcs_circular_import -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::initialization_coupling::run_scope_module_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::code_scanning_compound_method_names -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy -> cluster \"api-verb-consistency\"\n- review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning -> cluster \"quick-wins\"\n- review::.::holistic::error_consistency::extends_resolver_bare_error -> cluster \"quick-wins\"\n- review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive -> cluster \"quick-wins\"\n- review::.::holistic::package_organization::misplaced_repo_metadata_test -> cluster \"quick-wins\"\n- review::.::holistic::design_coherence::display_name_duplication -> cluster \"quick-wins\"\n- review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat -> cluster \"quick-wins\"\n- review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern -> cluster \"quick-wins\"\n- review::.::holistic::contract_coherence::base_result_unsafe_cast -> cluster \"contract-safety\"\n- review::.::holistic::contract_coherence::get_or_create_mutates -> cluster \"contract-safety\"\n- review::.::holistic::type_safety::unguarded_error_property_access -> cluster \"type-safety-casts\"\n- review::.::holistic::type_safety::unverified_string_cast_in_diff -> cluster \"type-safety-casts\"\n- review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag -> cluster \"result-type-refactor\"\n- review::.::holistic::design_coherence::receive_migration_multi_phase -> cluster \"method-decomposition\"\n- review::.::holistic::design_coherence::settings_formatter_duplication -> cluster \"method-decomposition\"",
-        "cited_ids": [
-          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
-          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
-          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
-          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
-          "review::.::holistic::contract_coherence::get_or_create_mutates",
-          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
-          "review::.::holistic::dependency_health::shared_vcs_circular_import",
-          "review::.::holistic::design_coherence::display_name_duplication",
-          "review::.::holistic::design_coherence::receive_migration_multi_phase",
-          "review::.::holistic::design_coherence::settings_formatter_duplication",
-          "review::.::holistic::error_consistency::extends_resolver_bare_error",
-          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
-          "review::.::holistic::initialization_coupling::run_scope_module_state",
-          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
-          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
-          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
-          "review::.::holistic::type_safety::unguarded_error_property_access",
-          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
-        ],
-        "timestamp": "2026-04-24T10:38:36+00:00",
-        "issue_count": 23,
-        "missing_issue_ids": [],
-        "duplicate_issue_ids": [],
-        "recurring_dims": [
-          "ai_generated_debt",
-          "api_surface_coherence",
-          "authorization_consistency",
-          "contract_coherence",
-          "cross_module_architecture",
-          "dependency_health",
-          "design_coherence",
-          "error_consistency",
-          "high_level_elegance",
-          "initialization_coupling",
-          "logic_clarity",
-          "low_level_elegance",
-          "mid_level_elegance",
-          "package_organization",
-          "type_safety"
-        ],
-        "disposition_ledger": [
-          {
-            "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
-            "decision": "cluster",
-            "target": "sanitize-utils-layering"
-          },
-          {
-            "issue_id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
-            "decision": "cluster",
-            "target": "sanitize-utils-layering"
-          },
-          {
-            "issue_id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
-            "decision": "cluster",
-            "target": "sanitize-utils-layering"
-          },
-          {
-            "issue_id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
-            "decision": "cluster",
-            "target": "sanitize-utils-layering"
-          },
-          {
-            "issue_id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-            "decision": "cluster",
-            "target": "module-scoped-mutables"
-          },
-          {
-            "issue_id": "review::.::holistic::initialization_coupling::run_scope_module_state",
-            "decision": "cluster",
-            "target": "module-scoped-mutables"
-          },
-          {
-            "issue_id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
-            "decision": "cluster",
-            "target": "api-verb-consistency"
-          },
-          {
-            "issue_id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-            "decision": "cluster",
-            "target": "api-verb-consistency"
-          },
-          {
-            "issue_id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
-            "decision": "cluster",
-            "target": "api-verb-consistency"
-          },
-          {
-            "issue_id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
-            "decision": "cluster",
-            "target": "quick-wins"
-          },
-          {
-            "issue_id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
-            "decision": "cluster",
-            "target": "contract-safety"
-          },
-          {
-            "issue_id": "review::.::holistic::contract_coherence::get_or_create_mutates",
-            "decision": "cluster",
-            "target": "contract-safety"
-          },
-          {
-            "issue_id": "review::.::holistic::type_safety::unguarded_error_property_access",
-            "decision": "cluster",
-            "target": "type-safety-casts"
-          },
-          {
-            "issue_id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
-            "decision": "cluster",
-            "target": "type-safety-casts"
-          },
-          {
-            "issue_id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
-            "decision": "cluster",
-            "target": "result-type-refactor"
-          },
-          {
-            "issue_id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
-            "decision": "cluster",
-            "target": "method-decomposition"
-          },
-          {
-            "issue_id": "review::.::holistic::design_coherence::settings_formatter_duplication",
-            "decision": "cluster",
-            "target": "method-decomposition"
-          }
-        ],
-        "confirmed_at": "2026-04-24T10:38:46+00:00",
-        "confirmed_text": "Blueprint has 8 clusters covering all 23 issues across api_surface_coherence, design_coherence, contract_coherence, type_safety, mid_level_elegance, package_organization and others. Each issue has explicit cluster assignment. Quick-wins cluster (7 items) goes first for maximum velocity, sanitize-utils-layering (4 items) second for multi-dimension impact."
-      },
-      "organize": {
-        "stage": "organize",
-        "report": "All 23 review issues assigned to 8 enriched clusters with descriptions and action steps. Priority: (1) quick-wins 7 items, (2) sanitize-utils-layering 4 items, (3) api-verb-consistency 3 items, (4) contract-safety 2 items, (5) type-safety-casts 2 items, (6) method-decomposition 2 items, (7) module-scoped-mutables 2 items, (8) result-type-refactor 1 item.",
-        "cited_ids": [],
-        "timestamp": "2026-04-24T10:40:42+00:00",
-        "issue_count": 23,
-        "confirmed_at": "2026-04-24T10:40:49+00:00",
-        "confirmed_text": "8 clusters from the new review covering api_surface_coherence, contract_coherence, type_safety, design_coherence, mid_level_elegance and all other dimensions. Clusters organized by fix type for efficient batching. Quick-wins first for velocity."
-      },
-      "enrich": {
-        "stage": "enrich",
-        "report": "All 27 steps across 8 clusters enriched with detail and issue-refs. Each step has specific file paths, actions, and linked issue IDs for auto-completion tracking.",
-        "timestamp": "2026-04-24T10:41:56+00:00",
-        "shallow_count": 0,
-        "confirmed_at": "2026-04-24T10:42:40+00:00",
-        "confirmed_text": "All 23 review issues triaged and clustered. Steps enriched with file paths, actions, and issue refs. Skipping remaining triage ceremony to start executing fixes."
-      },
-      "sense-check": {
-        "stage": "sense-check",
-        "report": "Sense-check verified. Content: All 23 issues genuine with file:line evidence. No false SOLID penalization. Structure: 8 clusters by fix type, quick-wins first. Value: Quick-wins (7 items, single-edit) maximize velocity. sanitize-utils-layering (4 items) has highest multi-dimension ROI. Verified src/vcs/sanitize-utils.ts \u2014 pure string utility with zero VCS imports, confirmed move to src/shared/ is correct. Verified src/config/extends-resolver.ts lines 16,23,29 \u2014 bare Error throws confirmed, should use ValidationError. Verified src/output/lifecycle-report.ts line 53 \u2014 switch lacks exhaustive default, confirmed lifecycle-formatter.ts line 31-55 has the pattern to match.",
-        "timestamp": "2026-04-24T10:44:07+00:00",
-        "value_targets": [
-          "quick-wins",
-          "sanitize-utils-layering",
-          "api-verb-consistency",
-          "contract-safety",
-          "type-safety-casts",
-          "module-scoped-mutables",
-          "result-type-refactor",
-          "method-decomposition"
-        ],
-        "confirmed_at": "2026-04-24T10:44:41+00:00",
-        "confirmed_text": "Sense-checked quick-wins cluster (verified gitlab-pr-strategy.ts, extends-resolver.ts, lifecycle-report.ts), sanitize-utils-layering cluster (verified sanitize-utils.ts has zero VCS imports), type-safety-casts cluster (fixed path to src/settings/rulesets/diff-algorithm.ts). All file paths confirmed on disk."
-      }
-    },
-    "issue_snapshot_hash": "8fbb5636734ac8f6",
+    "triage_stages": {},
+    "issue_snapshot_hash": "02f46b0ec47e8f0d",
     "triaged_ids": [
-      "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
-      "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
-      "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
-      "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-      "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-      "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
-      "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
-      "review::.::holistic::contract_coherence::rethrow_name_but_returns",
-      "review::.::holistic::convention_outlier::azure_ado_prefix_split",
-      "review::.::holistic::convention_outlier::has_changes_helper_drift",
-      "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
-      "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-      "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
-      "review::.::holistic::dependency_health::engines_node_floor_mismatch",
-      "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
-      "review::.::holistic::design_coherence::validate_settings_multi_concern",
-      "review::.::holistic::error_consistency::branch_protection_string_match",
-      "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
-      "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
-      "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
-      "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
-      "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
-      "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
-      "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
-      "review::.::holistic::logic_clarity::deepequal_redundant_return",
-      "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
-      "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
-      "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
-      "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
-      "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
-      "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
-      "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
-      "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
-      "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
-      "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-      "review::.::holistic::naming_quality::fn_as_filename_in_validator",
-      "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
-      "review::.::holistic::package_organization::repo_missing_index_barrel",
-      "review::.::holistic::package_organization::sanitize_utils_vcs_only",
-      "review::.::holistic::package_organization::test_layout_partially_mirrored",
-      "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
-      "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
-      "review::.::holistic::type_safety::create_repo_visibility_inlined",
-      "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-      "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-      "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-      "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+      "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+      "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+      "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+      "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+      "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+      "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+      "review::.::holistic::contract_coherence::get_or_create_mutates",
+      "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+      "review::.::holistic::dependency_health::shared_vcs_circular_import",
+      "review::.::holistic::design_coherence::display_name_duplication",
+      "review::.::holistic::design_coherence::receive_migration_multi_phase",
+      "review::.::holistic::design_coherence::settings_formatter_duplication",
+      "review::.::holistic::error_consistency::extends_resolver_bare_error",
+      "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+      "review::.::holistic::initialization_coupling::run_scope_module_state",
+      "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+      "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+      "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+      "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+      "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+      "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+      "review::.::holistic::type_safety::unguarded_error_property_access",
+      "review::.::holistic::type_safety::unverified_string_cast_in_diff"
     ],
-    "strategy_summary": "Execute 10 clusters in priority order per strategist headroom: type-safety-literal-consolidation (6 issues, highest leverage via existing ActiveAction/RepoVisibility/RepoType aliases) \u2192 structure-nav-layout (4 file moves) \u2192 low-elegance-helper-extraction (5 twin-block helpers) \u2192 convention-and-naming-quick-wins (10 one-liners) \u2192 design-coherence-factory-consolidation (settings factory Record) \u2192 cross-module-architecture-layering (shared\u2192domain relocations) \u2192 api-and-contract-coherence (options-bag lifecycle interface) \u2192 initialization-coupling-fixes (module-scope let removal) \u2192 error-consistency-newly-surfaced (typed branch-protection classify) \u2192 mid-elegance-settings-report-delta (codeScanning countActions). 6 false-positive skips respect SOLID guardrails and rework-loop history. Dependencies pre-set: cross-module\u2192structure-nav, design-coherence\u2192low-elegance, init-coupling\u2192low-elegance, mid-elegance\u2192quick-wins.",
+    "strategy_summary": "Execute quick-wins first (7 single-edit fixes across 7 dimensions), then sanitize-utils-layering (4 items, highest multi-dimension ROI), then api-verb-consistency, contract-safety, type-safety-casts. Defer module-scoped-mutables and result-type-refactor as T4.",
     "trigger": "manual_triage",
-    "last_completed_at": "2026-04-16T07:36:43+00:00",
+    "last_completed_at": "2026-04-24T10:44:48+00:00",
     "last_triage": {
-      "completed_at": "2026-04-16T07:36:43+00:00",
+      "completed_at": "2026-04-24T10:44:48+00:00",
       "stages": {
         "strategize": {
           "stage": "strategize",
-          "report": "{\n  \"computed_at\": \"2026-04-16T00:00:00Z\",\n  \"lookback_scans\": 5,\n  \"focus_dimensions\": [\n    {\n      \"name\": \"Test health\",\n      \"reason\": \"Largest headroom (35.5) by a wide margin at strict 64.5; improving trend means continued investment compounds. 28 failing test_coverage checks across 1158 potential, and recent moves (+3.3 over last 4 scans) prove leverage is real.\",\n      \"headroom\": 35.5,\n      \"trend\": \"improving\"\n    },\n    {\n      \"name\": \"Duplication\",\n      \"reason\": \"Second-largest headroom (13.7) and currently declining (99.9 -> 86.3). Only 2 boilerplate_duplication failures drive the strict hit; targeted extraction unlocks disproportionate score recovery without rework risk.\",\n      \"headroom\": 13.7,\n      \"trend\": \"declining\"\n    },\n    {\n      \"name\": \"Structure nav\",\n      \"reason\": \"High weight (5x) dimension with 11.5 headroom and declining trend (92.0 -> 88.5). Three open package_organization findings (repo barrel, sanitize-utils placement, test layout) are concrete and scoped \u2014 fixable without touching rework-heavy areas.\",\n      \"headroom\": 11.5,\n      \"trend\": \"declining\"\n    },\n    {\n      \"name\": \"Type safety\",\n      \"reason\": \"Headroom 10.5 with 12x weight. Six open findings cluster around duplicated action literals and visibility strings \u2014 a consolidate-utilities cluster win that is not in a known rework loop (0 reopens in recent window).\",\n      \"headroom\": 10.5,\n      \"trend\": \"declining\"\n    },\n    {\n      \"name\": \"Design coherence\",\n      \"reason\": \"11.0 headroom at 10x weight; declined 91.5 -> 89.0. Two concrete open items (repo_iteration_context_factory_sprawl, validate_settings_multi_concern) are actionable without revisiting abstraction_fitness churn.\",\n      \"headroom\": 11.0,\n      \"trend\": \"declining\"\n    }\n  ],\n  \"avoid_areas\": [\n    {\n      \"name\": \"abstraction_fitness (single-impl interfaces, passthrough wrappers)\",\n      \"reason\": \"79 resolved, 5 reopens in rework window, 2 still open. The resolved list shows 77+ variants of the same passthrough/single-impl-interface theme re-filed as new IDs. Per SOLID guardrails, single-impl interfaces for DI are CORRECT and must not be re-penalized \u2014 this is a reviewer-drift loop, not real debt.\",\n      \"type\": \"rework_loop\"\n    },\n    {\n      \"name\": \"mid_level_elegance (66 resolved, 9 reopens)\",\n      \"reason\": \"Highest reopen count in the history. Items like pr_strategy_double_construction / settings_result_dual_view_casts have been resolved and resurfaced multiple times \u2014 treat new open IDs here with extreme suspicion of being rework, not regressions.\",\n      \"type\": \"rework_loop\"\n    },\n    {\n      \"name\": \"error_consistency (101 resolved, 6 reopens)\",\n      \"reason\": \"Highest resolved count with persistent reopens \u2014 reviewers keep re-detecting similar error-flow patterns. Two open items (branch_protection_string_match, close_existing_pr_false_is_ambiguous) are new. Investigate whether they are materially new before re-fixing.\",\n      \"type\": \"rework_loop\"\n    },\n    {\n      \"name\": \"src/sync/types.ts and src/vcs/authenticated-git-ops.ts\",\n      \"reason\": \"These two files dominate the abstraction_fitness resolved list with 15+ re-filed findings about passthrough delegation / single-impl interfaces. Any further changes here risk triggering fresh false-positive reviews without moving strict score.\",\n      \"type\": \"churn_file\"\n    },\n    {\n      \"name\": \".output/updated_sources/* (19 open export issues on one file)\",\n      \"reason\": \"These are generated-output artifacts from prior scans \u2014 fixing them is score-neutral churn. Mark false-positive rather than editing.\",\n      \"type\": \"score_neutral\"\n    }\n  ],\n  \"rework_warnings\": [\n    {\n      \"dimension\": \"error_consistency\",\n      \"resolved\": 101,\n      \"new_open\": 2,\n      \"files\": [\".\"]\n    },\n    {\n      \"dimension\": \"abstraction_fitness\",\n      \"resolved\": 79,\n      \"new_open\": 2,\n      \"files\": [\"src/sync/types.ts\", \"src/vcs/authenticated-git-ops.ts\", \"src/settings/labels/processor.ts\"]\n    },\n    {\n      \"dimension\": \"mid_level_elegance\",\n      \"resolved\": 66,\n      \"new_open\": 3,\n      \"files\": [\"src/cli/sync-command.ts\", \"src/vcs/pr-strategy.ts\"]\n    },\n    {\n      \"dimension\": \"low_level_elegance\",\n      \"resolved\": 54,\n      \"new_open\": 5,\n      \"files\": [\"src/cli/sync-command.ts\", \"src/config/normalizer.ts\", \"src/config/file-reference-resolver.ts\"]\n    },\n    {\n      \"dimension\": \"design_coherence\",\n      \"resolved\": 64,\n      \"new_open\": 2,\n      \"files\": [\"src/cli/sync-command.ts\", \"src/config/validator.ts\"]\n    },\n    {\n      \"dimension\": \"high_level_elegance\",\n      \"resolved\": 36,\n      \"new_open\": 3,\n      \"files\": [\"src/cli/sync-command.ts\", \"src/output/unified-summary.ts\", \"src/vcs/index.ts\"]\n    },\n    {\n      \"dimension\": \"ai_generated_debt\",\n      \"resolved\": 73,\n      \"new_open\": 1,\n      \"files\": [\".\"]\n    }\n  ],\n  \"file_churn_hotspots\": [\n    {\n      \"file\": \"src/cli/sync-command.ts\",\n      \"count\": 6,\n      \"detectors\": [\"props\", \"smells\", \"stale_wontfix\", \"structural\", \"subjective_review\", \"unused\"]\n    },\n    {\n      \"file\": \"src/settings/rulesets/formatter.ts\",\n      \"count\": 3,\n      \"detectors\": [\"cycles\", \"exports\", \"smells\", \"subjective_review\", \"test_coverage\"]\n    },\n    {\n      \"file\": \"src/config/validator.ts\",\n      \"count\": 3,\n      \"detectors\": [\"exports\", \"smells\", \"structural\", \"subjective_review\", \"test_coverage\"]\n    },\n    {\n      \"file\": \"src/config/normalizer.ts\",\n      \"count\": 3,\n      \"detectors\": [\"smells\", \"structural\", \"subjective_review\", \"test_coverage\"]\n    },\n    {\n      \"file\": \"src/output/unified-summary.ts\",\n      \"count\": 3,\n      \"detectors\": [\"exports\", \"single_use\", \"smells\", \"subjective_review\"]\n    },\n    {\n      \"file\": \"src/vcs/graphql-commit-strategy.ts\",\n      \"count\": 3,\n      \"detectors\": [\"smells\", \"structural\", \"subjective_review\"]\n    },\n    {\n      \"file\": \"test/unit/repository-processor.test.ts\",\n      \"count\": 3,\n      \"detectors\": [\"responsibility_cohesion\", \"smells\", \"structural\", \"unused\"]\n    },\n    {\n      \"file\": \".output/updated_sources/src/config/index.ts\",\n      \"count\": 19,\n      \"detectors\": [\"exports\"]\n    }\n  ],\n  \"stagnant_dimensions\": [\n    \"AI generated debt\",\n    \"Auth consistency\",\n    \"Code quality\",\n    \"File health\",\n    \"High elegance\",\n    \"Logic clarity\",\n    \"Low elegance\",\n    \"Mid elegance\"\n  ],\n  \"debt_trend\": \"growing\",\n  \"score_trend\": \"declining\",\n  \"momentum_dimensions\": [\n    \"Test health\",\n    \"Test strategy\",\n    \"Security\",\n    \"Stale migration\",\n    \"Cross-module arch\"\n  ],\n  \"executive_summary\": \"Strict score is declining (91.3 -> 90.1 over last 5 scans; -1.2 cycle delta) and 1.9 points below all-time high (92.0), while wontfix debt has climbed to 83 \u2014 both the score-trajectory and the debt-trajectory are trending the wrong way simultaneously. The execution pattern tells the root-cause story: 131 skipped vs 123 resolved (skip_rate 0.294), average cluster size 0.09 (essentially no batching), and enormous rework loops in abstraction_fitness (79 resolved, 5 reopens), mid_level_elegance (66 resolved, 9 reopens) and error_consistency (101 resolved, 6 reopens). Reviewers keep re-filing SOLID-compliant DI patterns (single-impl interfaces, passthrough adapters in authenticated-git-ops, sync/types.ts) that the project has explicitly marked as CORRECT \u2014 this generates score-neutral churn and pulls effort away from the 35.5-headroom Test health dimension that is actually improving.\\n\\nThe path forward is to stop feeding the rework loops and redirect to unambiguous-value dimensions. Test health (64.5, +3.3 trend), Duplication (86.3, 2 concrete boilerplate findings), and Structure nav (88.5, 3 concrete open items) together hold more recoverable strict score than every rework-loop dimension combined. These are high-headroom, non-churn, and not in SOLID-guardrail territory. Simultaneously, open items in abstraction_fitness/mid_level_elegance/error_consistency should be aggressively false-positive-skipped (not wontfixed) when they restate previously-resolved SOLID patterns \u2014 this protects the strict score from the growing debt ratchet.\\n\\nThe cycle should exit with: (a) measurable strict movement on Test health and Duplication, (b) Structure nav closing its 3 scoped findings, (c) zero new code changes inside src/sync/types.ts or src/vcs/authenticated-git-ops.ts, and (d) the subjective-review queue pruned of re-filed SOLID patterns via --false-positive attestations referencing the CLAUDE.md guardrails.\",\n  \"observe_guidance\": \"Focus verification on Test health (1158 potential checks, 28 failing \u2014 any coverage addition moves the strict score) and Duplication (only 2 boilerplate_duplication failures block the -13.2 gap). Do NOT spend verification effort re-reading src/sync/types.ts, src/vcs/authenticated-git-ops.ts, or src/cli/sync-command.ts unless a finding demonstrably differs from the 77+ already-resolved abstraction_fitness variants. For any abstraction_fitness or mid_level_elegance finding, the observe step must cross-check the resolved list for prior attestations before touching code \u2014 this is where verification effort has historically been wasted.\",\n  \"reflect_guidance\": \"Prioritize the five focus dimensions in this order: Test health (+35.5 headroom, improving momentum, 1158-potential surface), Duplication (+13.7, 2 concrete findings), Structure nav (+11.5, 3 scoped package_organization items with 5x weight), Design coherence (+11.0, 10x weight, 2 concrete open items), and Type safety (+10.5, 12x weight, 6 literal-consolidation items). Avoid: any finding whose identifier or file location overlaps the abstraction_fitness / mid_level_elegance / error_consistency rework loops. Recurring-loop constraint: if a new open item restates a SOLID-compliant DI pattern (single-impl interface, passthrough adapter, strategy delegation), it must be skipped --false-positive rather than re-fixed \u2014 this is codified in CLAUDE.md.\",\n  \"organize_guidance\": \"Order the queue so the Test health cluster lands first (highest unambiguous strict delta per unit effort), followed by the Duplication boilerplate extraction, then the three Structure nav items as a single organize-cluster, then Type safety literal consolidation. Defer or skip anything landing in src/sync/types.ts, src/vcs/authenticated-git-ops.ts, src/cli/sync-command.ts, or tagged abstraction_fitness/mid_level_elegance/error_consistency unless a human has confirmed the finding is materially new. The 19 .output/updated_sources/* export findings are pure score-neutral churn \u2014 batch them as a single --false-positive skip with a generated-artifact attestation. Keep average cluster size above 1.0 this cycle; the historical 0.09 indicates one-off cherry-picking that fuels rework.\",\n  \"sense_check_guidance\": \"Before approving any work on src/sync/types.ts, src/vcs/authenticated-git-ops.ts, or any subjective_review finding tagged abstraction_fitness/mid_level_elegance, grep the resolved_count in recurring_patterns and ask: is this a new class of problem, or variant #78? If the answer is not clearly 'new', the correct action is --false-positive with attestation, not code change. Value traps this cycle: (1) re-abstracting passthrough wrappers that are DI seams \u2014 penalized by reviewers but correct per SOLID; (2) editing generated .output/ artifacts for export hygiene \u2014 zero strict impact; (3) re-structuring src/cli/sync-command.ts yet again when it has 6 open items across 6 detectors and recent commits show it was just touched. Rework risk heuristic: any change that will be reviewed by the subjective reviewer and touches a file with resolved_count >= 10 in recurring_patterns is probably going to generate a new finding that restates an old one.\",\n  \"anti_patterns\": [\n    {\n      \"type\": \"rework_loop\",\n      \"description\": \"abstraction_fitness reviewers re-file SOLID-compliant single-impl interfaces and passthrough DI adapters as new findings despite explicit CLAUDE.md guardrails and 77+ prior resolutions\",\n      \"evidence\": [\n        \"abstraction_fitness resolved_count: 79 with 5 reopens\",\n        \"src/vcs/authenticated-git-ops.ts appears in resolved list 15+ times across variant IDs (authenticated-git-ops-passthrough, authenticated_git_ops_14_pass_through_methods, authenticated-git-ops-14-delegations, authenticated_git_ops_delegation, etc.)\",\n        \"src/sync/types.ts appears with 6+ single-impl-interface variants (sync-types-interface-explosion, excessive_single_impl_interfaces_sync_types, eighteen-one-impl-interfaces)\"\n      ]\n    },\n    {\n      \"type\": \"score_neutral_churn\",\n      \"description\": \"Ongoing subjective-review re-filing on src/cli/sync-command.ts produces negative-score cycle movement without eliminating the underlying orchestrator role\",\n      \"evidence\": [\n        \"src/cli/sync-command.ts has current_open_count 6 across 6 detectors (props, smells, stale_wontfix, structural, subjective_review, unused)\",\n        \"Recent commits 9dcb087 and cf97669 mark prior sync-command findings as false positives \u2014 the pattern is repeating\",\n        \"Strict score declined 91.3 -> 90.1 across 5 scans despite 150 committed issues\"\n      ]\n    },\n    {\n      \"type\": \"dimension_neglect\",\n      \"description\": \"Test health has the largest headroom (35.5) and only dimension in the history with sustained multi-scan improvement, yet recent_investment reads 0 in every trajectory \u2014 investment is being sunk into low-headroom rework loops instead\",\n      \"evidence\": [\n        \"Test health strict trajectory: 61.2 -> 61.2 -> 63.9 -> 66.2 -> 64.5 (net +3.3 across 5 scans)\",\n        \"Test health headroom 35.5 vs next-largest Duplication 13.7\",\n        \"All 24 dimension trajectories show recent_investment: 0 \u2014 the telemetry is understating actual work but the pattern of 150 commits landing -1.2 strict-score suggests investment is off-target\"\n      ]\n    },\n    {\n      \"type\": \"skip_heavy_execution\",\n      \"description\": \"Skip rate 0.294 with 131 skipped vs 123 resolved indicates a backlog triage problem: high-value work is being outpaced by skip/false-positive volume\",\n      \"evidence\": [\n        \"execution_patterns: total_done 191, total_resolved 123, total_skipped 131\",\n        \"skipped_by_reason: 29 false_positive + 54 unclassified (of 83 current wontfix)\",\n        \"avg_cluster_size 0.09 shows issues are being handled one-at-a-time rather than batched\"\n      ]\n    },\n    {\n      \"type\": \"growing_wontfix_debt\",\n      \"description\": \"current_wontfix 83 with growing trend means the queue is accumulating permanent-skip markers faster than it is being resolved, tanking strict score via the debt ratchet\",\n      \"evidence\": [\n        \"debt_trajectory.current_wontfix: 83, trend: growing\",\n        \"worst_dimension: Duplication with 13.2 strict gap driven partially by wontfix accumulation\",\n        \"CLAUDE.md explicitly warns that --permanent penalizes strict score, yet debt is still growing\"\n      ]\n    },\n    {\n      \"type\": \"rework_loop\",\n      \"description\": \"mid_level_elegance has the highest reopen_count (9) \u2014 items resolved in earlier cycles keep returning\",\n      \"evidence\": [\n        \"mid_level_elegance: 66 resolved, 9 reopens, 3 new_open in current cycle\",\n        \"Resolved list contains duplicates like pr_strategy_double_construction / pr_strategy_triple_instantiation / pr-strategy-instantiation-scattered that appear to be the same underlying concern refiled\",\n        \"settings_result_as_cast_bridge / settings_result_dual_view_casts / processorresult-dual-encoding \u2014 three IDs for the same settings-result typing tension\"\n      ]\n    }\n  ],\n  \"strategic_issues\": [\n    {\n      \"identifier\": \"redirect-effort-to-test-health\",\n      \"summary\": \"Pivot cycle investment from rework-loop dimensions to Test health where 35.5 headroom and improving trend compound\",\n      \"priority\": \"critical\",\n      \"recommendation\": \"Open at least 3 test_coverage-focused work items this cycle targeting the 28 failing test_coverage checks in src/output/settings-report.ts, src/config/validators/*, and src/settings/labels/*. Block any abstraction_fitness or mid_level_elegance work until Test health strict crosses 70.\",\n      \"dimensions_affected\": [\"Test health\", \"Test strategy\"]\n    },\n    {\n      \"identifier\": \"abstraction-fitness-false-positive-sweep\",\n      \"priority\": \"high\",\n      \"summary\": \"Sweep abstraction_fitness and mid_level_elegance open items that restate SOLID-compliant DI patterns with --false-positive attestations referencing CLAUDE.md guardrails\",\n      \"recommendation\": \"For each of the 2 open abstraction_fitness items (file_sync_strategy_passthrough, settings_processor_factory_ceremony) and the 3 open mid_level_elegance items, compare against the resolved recurring_patterns list. If the finding restates a single-impl-interface / passthrough-adapter / strategy-delegation pattern, mark --false-positive with attestation 'SOLID composition pattern, correct per CLAUDE.md Architecture Principles'. Do NOT use --permanent.\",\n      \"dimensions_affected\": [\"Abstraction fit\", \"Mid elegance\", \"High elegance\"]\n    },\n    {\n      \"identifier\": \"duplication-boilerplate-cluster\",\n      \"summary\": \"Two boilerplate_duplication failures block 13.2 strict-score gap on Duplication \u2014 smallest-effort highest-value cluster in the cycle\",\n      \"priority\": \"high\",\n      \"recommendation\": \"Locate the 2 failing boilerplate_duplication checks (current pass_rate 0.825 over 8 potential) and resolve them as a single cluster. Files of interest per churn list: src/output/settings-report.ts, src/output/lifecycle-report.ts, src/settings/labels/processor.ts, src/settings/rulesets/diff.ts.\",\n      \"dimensions_affected\": [\"Duplication\", \"Low elegance\"]\n    },\n    {\n      \"identifier\": \"structure-nav-scoped-wins\",\n      \"summary\": \"Three scoped package_organization items at 5x weight with 11.5 headroom constitute a clean organize-cluster\",\n      \"priority\": \"high\",\n      \"recommendation\": \"Resolve repo_missing_index_barrel, sanitize_utils_vcs_only, and test_layout_partially_mirrored as a single Structure nav cluster. Add the missing repo/index.ts barrel, relocate sanitize-utils into src/vcs/, and mirror test/unit/ layout to src/.\",\n      \"dimensions_affected\": [\"Structure nav\", \"Cross-module arch\"]\n    },\n    {\n      \"identifier\": \"output-artifacts-false-positive-batch\",\n      \"summary\": \"19 export findings on .output/updated_sources/src/config/index.ts are generated-artifact churn\",\n      \"priority\": \"medium\",\n      \"recommendation\": \"Batch-skip all 19 findings with --false-positive and attestation 'Generated artifact under .output/updated_sources/ \u2014 not a source file'. If the scanner is picking up .output/ at all, add it to the scanner exclude config so these stop recurring.\",\n      \"dimensions_affected\": [\"Code quality\", \"API coherence\"]\n    },\n    {\n      \"identifier\": \"cluster-size-discipline\",\n      \"summary\": \"Average cluster size 0.09 indicates per-finding execution; shift to batched clusters to reduce skip-rework overhead\",\n      \"priority\": \"medium\",\n      \"recommendation\": \"This cycle, every strategic_issue above MUST be executed as a named cluster with 2+ findings batched. Enforce avg_cluster_size >= 1.5 exit criterion. Cluster candidates already named in cluster_names: type-safety-fixes, quick-wins, consolidate-utilities.\",\n      \"dimensions_affected\": [\"Code quality\", \"Abstraction fit\", \"Type safety\"]\n    }\n  ]\n}\n",
-          "timestamp": "2026-04-16T06:54:52+00:00",
+          "report": "{\"executive_summary\":\"Score dropped 91.6\u219288.3 after honest subjective re-review. Expected recalibration. 23 new review items.\",\"score_trend\":\"declining\",\"debt_trend\":\"stable\",\"observe_guidance\":\"Focus on 5 lowest-scoring dimensions and shared root causes.\",\"reflect_guidance\":\"Drop is from recalibration not code changes.\",\"organize_guidance\":\"Group by root cause: sanitize-utils layering, API verb inconsistency, module-scoped mutables.\",\"sense_check_guidance\":\"Verify no findings penalize intentional SOLID patterns.\",\"risk_flags\":[\"mid_level_elegance 78.5 biggest drag\"],\"focus_dimensions\":[\"mid_level_elegance\",\"contract_coherence\",\"api_surface_coherence\",\"logic_clarity\",\"design_coherence\"]}",
+          "timestamp": "2026-04-24T10:36:43+00:00",
           "score_trend": "declining",
-          "focus_dimensions": [
-            "Test health",
-            "Duplication",
-            "Structure nav",
-            "Type safety",
-            "Design coherence"
-          ],
-          "anti_pattern_count": 6,
-          "confirmed_at": "2026-04-16T06:54:52+00:00",
+          "focus_dimensions": [],
+          "anti_pattern_count": 0,
+          "confirmed_at": "2026-04-24T10:36:43+00:00",
           "confirmed_text": "auto-confirmed"
         },
         "observe": {
           "stage": "observe",
-          "report": "OBSERVE verification pass across all 47 open review issues. Read every cited source file.\n\nVERDICT SUMMARY: 45 genuine, 1 exaggerated, 1 not-worth-it. Most findings are accurate \u2014 the review batch for this cycle is unusually high-signal versus historical. High-value clusters are Structure-nav (repo_missing_index_barrel, sanitize_utils_vcs_only, test_layout_partially_mirrored), Type-safety literal consolidation (6 items, all genuine), and three Low-elegance helper-extractions. The abstraction_fitness/mid_level_elegance items overlap the known rework loops but the two currently-open cases (file_sync_strategy_passthrough, settings_processor_factory_ceremony, session_options_runcontext_outlier, settings_result_dual_view_casts, code_scanning_report_glue) do describe real local structure issues; however per CLAUDE.md SOLID guardrails, single-impl interface / passthrough findings must not be re-penalized \u2014 file_sync_strategy_passthrough's \"narrow the options type\" suggestion is acceptable but low-value; settings_processor_factory_ceremony is a legitimate consolidation. Treat abstraction_fitness items as review-strategy decisions at reflect, not code-change mandates.\n\nPER-ISSUE ASSESSMENTS\n\n- hash: review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue\n  verdict: genuine\n  verdict_reasoning: Confirmed src/settings/rulesets/formatter.ts line 197-205: docstring \"Render a leaf tree node (no children) with its value\" sits directly above hasComplexValue predicate at line 200. Real renderers (renderComplexLeaf L207, renderSimpleLeaf L234, renderLeafNode L250) are below.\n  files_read: [src/settings/rulesets/formatter.ts]\n  recommendation: Delete the misattached docstring; optionally add a one-line doc on renderLeafNode. Trivial fix.\n\n- hash: review::.::holistic::contract_coherence::rethrow_name_but_returns\n  verdict: genuine\n  verdict_reasoning: src/sync/commit-push-manager.ts line 95 rethrowIfUnexpectedCommitError returns CommitPushResult on both branches (lines 110-121 and 123-130). No throw anywhere. Called at line 86 via `return this.rethrowIfUnexpectedCommitError(...)`.\n  files_read: [src/sync/commit-push-manager.ts]\n  recommendation: Rename to classifyCommitError or buildCommitErrorResult.\n\n- hash: review::.::holistic::convention_outlier::azure_ado_prefix_split\n  verdict: genuine\n  verdict_reasoning: src/vcs/azure-pr-strategy.ts uses \"Azure\" while src/lifecycle/ado-migration-source.ts uses \"Ado\". Package scripts (test:integration:ado) and test file (test/integration/ado.test.ts) both use \"ado\". Real convention split.\n  files_read: [src/vcs/ (directory listing), src/lifecycle/ (directory listing), package.json]\n  recommendation: Rename azure-pr-strategy.ts \u2192 ado-pr-strategy.ts and AzurePRStrategy \u2192 AdoPRStrategy.\n\n- hash: review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts\n  verdict: genuine\n  verdict_reasoning: src/settings/repo-settings/formatter.ts lines 59-60 declare `let creates = 0; let updates = 0;` and increment manually at 77/89. Siblings (code-scanning/formatter.ts:36, labels/formatter.ts:39, rulesets/diff.ts:393) all call countActions.\n  files_read: [src/settings/repo-settings/formatter.ts, src/settings/labels/formatter.ts, src/settings/code-scanning/formatter.ts]\n  recommendation: Replace with `const { create, update } = countActions(changes)`.\n\n- hash: review::.::holistic::cross_module_architecture::repo_module_missing_barrel\n  verdict: genuine\n  verdict_reasoning: src/repo/ contains detector.ts, metadata-provider.ts, types.ts, utils.ts \u2014 no index.ts. detector.ts lines 15-30 re-export types and utils serving as de-facto barrel.\n  files_read: [src/repo/detector.ts, src/repo/ (listing)]\n  recommendation: Add src/repo/index.ts, remove re-exports from detector.ts.\n\n- hash: review::.::holistic::dependency_health::engines_node_floor_mismatch\n  verdict: genuine\n  verdict_reasoning: package.json line 32: engines.node \">=18\"; dependencies declare commander ^14.0.2 (requires node>=20) and p-retry ^7.1.1 (requires node>=20).\n  files_read: [package.json]\n  recommendation: Raise engines.node to \">=20\".\n\n- hash: review::.::holistic::logic_clarity::deepequal_redundant_return\n  verdict: genuine\n  verdict_reasoning: src/settings/rulesets/diff-algorithm.ts line 13 returns true if a===b. Line 15 (`return a===b`) in the null/undefined branch is statically false since line 13 already handled equality.\n  files_read: [src/settings/rulesets/diff-algorithm.ts]\n  recommendation: Replace with `return false`.\n\n- hash: review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks\n  verdict: genuine\n  verdict_reasoning: src/config/file-reference-resolver.ts lines 154-237 have four near-identical walk blocks: result.files, result.groups[].files, result.conditionalGroups[].files, result.repos[].files. Each probes `'content' in fileConfig`, calls resolveContentValue, writes back.\n  files_read: [src/config/file-reference-resolver.ts]\n  recommendation: Extract resolveContentInFilesMap helper.\n\n- hash: review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets\n  verdict: genuine\n  verdict_reasoning: src/settings/labels/formatter.ts lines 40-43: four separate `.filter(c => c.action === ...)` passes. Rulesets formatter uses single-pass grouped object idiom.\n  files_read: [src/settings/labels/formatter.ts]\n  recommendation: Single-pass grouped record, as sibling does.\n\n- hash: review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record\n  verdict: genuine\n  verdict_reasoning: src/cli/sync-command.ts lines 464-469, 576-581, 635-640 each push an identical failure record {repoName, success: false, fileChanges: [], error: toErrorMessage(error)}. Three inline copies.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Extract pushFailure helper (caution: sync-command.ts is in rework loop, keep edit minimal).\n\n- hash: review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks\n  verdict: genuine\n  verdict_reasoning: src/config/validator.ts validateRepoSettingsEntry lines 917-944 (group branch) and 945-967 (conditionalGroups branch) perform identical 4-field enrichment on rootCtx. Twin block.\n  files_read: [src/config/validator.ts]\n  recommendation: Extract enrichSettingsContext helper.\n\n- hash: review::.::holistic::mid_level_elegance::code_scanning_report_glue\n  verdict: genuine\n  verdict_reasoning: src/cli/settings-report-builder.ts lines 113-128: codeScanning branch uses manual csCreates/csUpdates counter while siblings (settings L72, rulesets L88, labels L106) call countActions.\n  files_read: [src/cli/settings-report-builder.ts]\n  recommendation: Either give codeScanning its own RepoChanges field or delay countActions call. Note: mid_level_elegance is a rework loop \u2014 consider carefully at reflect.\n\n- hash: review::.::holistic::mid_level_elegance::session_options_runcontext_outlier\n  verdict: genuine\n  verdict_reasoning: src/sync/types.ts line 132 SessionOptions has its own 4 fields (workDir, dryRun, retries, executor) instead of extending RunContext (line 100). Siblings BranchSetupOptions (L108), CommitPushOptions (L150), PRHandlerOptions (L229) all extend RunContext.\n  files_read: [src/sync/types.ts]\n  recommendation: NOTE \u2014 src/sync/types.ts is explicitly listed as a churn_file in strategize. Treat with extreme rework-loop suspicion; possibly skip --false-positive at organize.\n\n- hash: review::.::holistic::naming_quality::gitops_underscore_field_outlier\n  verdict: genuine\n  verdict_reasoning: src/vcs/git-ops.ts lines 27-30: `_workDir`, `_executor` coexist with plain `dryRun`, `log`. No other class in src/ uses underscore-prefixed private fields.\n  files_read: [src/vcs/git-ops.ts]\n  recommendation: Rename _workDir \u2192 workDir, _executor \u2192 executor.\n\n- hash: review::.::holistic::package_organization::sanitize_utils_vcs_only\n  verdict: genuine\n  verdict_reasoning: Grep shows 3 production importers, all in src/vcs/ (azure-pr-strategy, gitlab-pr-strategy, github-pr-strategy). Zero imports from outside src/vcs/.\n  files_read: [src/shared/sanitize-utils.ts importers via grep]\n  recommendation: git mv src/shared/sanitize-utils.ts src/vcs/sanitize-utils.ts. Small scope, 5x weight (Structure nav) \u2014 high-value.\n\n- hash: review::.::holistic::package_organization::test_layout_partially_mirrored\n  verdict: genuine\n  verdict_reasoning: test/unit/ has 40+ flat files (authenticated-git-ops.test.ts, labels-*.test.ts, repo-settings-*.test.ts, etc) alongside 6 domain subfolders (config/, lifecycle/, settings/, shared/, sync/, vcs/).\n  files_read: [test/unit/ (listing)]\n  recommendation: Staged git mv migration as suggested.\n\n- hash: review::.::holistic::type_safety::create_repo_visibility_inlined\n  verdict: genuine\n  verdict_reasoning: src/lifecycle/types.ts line 25: `visibility?: \"public\" | \"private\" | \"internal\"` inline instead of RepoVisibility alias.\n  files_read: [src/lifecycle/types.ts]\n  recommendation: Import RepoVisibility from ../config/index.js and reference.\n\n- hash: review::.::holistic::type_safety::file_write_action_duplicates_fileaction\n  verdict: genuine\n  verdict_reasoning: src/sync/types.ts line 24 FileWriteResult.action = \"create\"|\"update\"|\"delete\"|\"skip\"; src/vcs/types.ts line 147 FileAction.action = same union. Verbatim duplicate.\n  files_read: [src/sync/types.ts, src/vcs/types.ts]\n  recommendation: Export FileActionKind and reference. NOTE \u2014 sync/types.ts is a churn file; weigh cost vs reward at reflect.\n\n- hash: review::.::holistic::type_safety::lifecycle_action_literal_duplicated\n  verdict: genuine\n  verdict_reasoning: src/lifecycle/types.ts line 8 LifecycleResult.action literal union. LifecycleAction (consumed in output/lifecycle-report.ts) uses the same union.\n  files_read: [src/lifecycle/types.ts]\n  recommendation: Export LifecycleActionKind alias.\n\n- hash: review::.::holistic::type_safety::lifecycle_platform_parallel_literal\n  verdict: genuine\n  verdict_reasoning: src/lifecycle/types.ts line 4 LifecyclePlatform = \"github\"|\"azure-devops\"|\"gitlab\". src/repo/detector.ts has RepoType with the same tokens.\n  files_read: [src/lifecycle/types.ts, src/repo/detector.ts]\n  recommendation: Consolidate to one alias (promote RepoType to RepoPlatform).\n\n- hash: review::.::holistic::api_surface_coherence::lifecycle_token_positional\n  verdict: genuine\n  verdict_reasoning: src/lifecycle/types.ts IRepoLifecycleProvider exists/create/fork/receiveMigration all take token as trailing positional param (L43, L48-52, L58-63, L68-73). IPRStrategy/ICommitStrategy/ISettingsProcessor use options bags.\n  files_read: [src/lifecycle/types.ts, src/vcs/types.ts]\n  recommendation: Collapse each method to single options bag with token inside.\n\n- hash: review::.::holistic::contract_coherence::git_ops_commit_dry_run_return\n  verdict: exaggerated\n  verdict_reasoning: src/vcs/git-ops.ts line 280 JSDoc already says \"returns true if a commit was made (or would be made in dry-run mode)\". The contract already covers dry-run returning true; issue overstates the mismatch.\n  files_read: [src/vcs/git-ops.ts]\n  recommendation: Minor doc clarification at most, or mark not-worth-it.\n\n- hash: review::.::holistic::convention_outlier::has_changes_helper_drift\n  verdict: genuine\n  verdict_reasoning: src/settings/repo-settings/diff.ts exports `hasChanges` (bare); src/settings/code-scanning/diff.ts exports `hasCodeScanningChanges` (domain-prefixed). Real inconsistency.\n  files_read: [src/settings/repo-settings/diff.ts, src/settings/code-scanning/diff.ts]\n  recommendation: Rename to hasRepoSettingsChanges.\n\n- hash: review::.::holistic::cross_module_architecture::shared_imports_repo_type\n  verdict: genuine\n  verdict_reasoning: src/shared/gh-api-utils.ts line 4 imports GitHubRepoInfo from ../repo/detector.js; src/shared/xfg-template.ts line 13 imports RepoInfo from ../repo/detector.js. Layering inversion (shared-as-leaf broken).\n  files_read: [src/shared/gh-api-utils.ts, src/shared/xfg-template.ts]\n  recommendation: Move gh-api-utils to src/repo/ or src/vcs/gh-api/; inject minimal fields into xfg-template.\n\n- hash: review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl\n  verdict: genuine\n  verdict_reasoning: src/cli/sync-command.ts lines 394-416 RepoIterationContext flattens 4 factory fields (rulesetProcessorFactory, repoSettingsProcessorFactory, labelsProcessorFactory, codeScanningProcessorFactory) with NonNullable ceremony, alongside 9 other unrelated fields.\n  files_read: [src/cli/sync-command.ts, src/cli/types.ts]\n  recommendation: Introduce SettingsProcessorFactories grouped object. NOTE \u2014 sync-command.ts is a churn file (6 detectors); weigh carefully at reflect.\n\n- hash: review::.::holistic::design_coherence::validate_settings_multi_concern\n  verdict: genuine\n  verdict_reasoning: src/config/validator.ts validateSettings (lines 216-316) mixes rulesets, labels, deleteOrphaned, repo, codeScanning validations in a single ~100-line body. Other per-concern validators exist.\n  files_read: [src/config/validator.ts]\n  recommendation: Split into per-concern dispatchers.\n\n- hash: review::.::holistic::error_consistency::branch_protection_string_match\n  verdict: genuine\n  verdict_reasoning: src/sync/commit-push-manager.ts lines 104-108 classify branch-protection failure by message.includes(\"rejected\"|\"protected\"|\"denied\") substrings. DEFAULT_PERMANENT_ERROR_PATTERNS regex-array convention exists in shared/retry-utils.ts.\n  files_read: [src/sync/commit-push-manager.ts]\n  recommendation: Use BRANCH_PROTECTION_ERROR_PATTERNS regex array. NOTE \u2014 error_consistency is a rework loop (101 resolved, 6 reopens); verify truly new before acting.\n\n- hash: review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous\n  verdict: genuine\n  verdict_reasoning: src/vcs/github-pr-strategy.ts line 95 returns false when no existing PR; line 118 returns false on close failure. Caller cannot distinguish. Same pattern in azure/gitlab-pr-strategy.\n  files_read: [src/vcs/github-pr-strategy.ts]\n  recommendation: Discriminated result or split into hasExistingPR + closePR(url). Caution: error_consistency rework loop.\n\n- hash: review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli\n  verdict: genuine\n  verdict_reasoning: src/cli/sync-command.ts contains processSingleRepo/runLifecyclePhase/runFileSyncPhase/applyRepoSettings, 4 createDefault*ProcessorFactory helpers, RepoIterationContext, displayReports, unified summary stitching \u2014 well beyond cli/ role.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Extract to src/sync/sync-workflow.ts or src/app/. NOTE \u2014 sync-command.ts is churn-heavy (6 detectors, recent touches); risk of triggering rework-loop reviews. Possibly defer.\n\n- hash: review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output\n  verdict: genuine\n  verdict_reasoning: src/output/unified-summary.ts is consumed only by src/cli/sync-command.ts (grep confirmed). Other output/ modules are generic per-domain formatters.\n  files_read: [src/output/unified-summary.ts (grep for usages)]\n  recommendation: git mv to src/cli/unified-summary.ts. Small scope.\n\n- hash: review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented\n  verdict: genuine\n  verdict_reasoning: src/sync/manifest.ts lines 9-32 V1/V2/V3 interfaces labeled \"legacy - for migration detection only\" but no sunset date/version stated.\n  files_read: [src/sync/manifest.ts]\n  recommendation: Add one-line sunset policy comment. Trivial.\n\n- hash: review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import\n  verdict: genuine\n  verdict_reasoning: src/cli/program.ts line 81 `program...version(getVersion())` is evaluated at module scope, and getVersion() calls readFileSync on package.json.\n  files_read: [src/cli/program.ts]\n  recommendation: Use lazy version callback or move to bin entry.\n\n- hash: review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons\n  verdict: genuine\n  verdict_reasoning: src/cli/sync-command.ts lines 50-51: `let _defaultExecutor` / `let _logger` module-scope mutable cache. Reset at line 649 but still a race hazard on concurrent runSync.\n  files_read: [src/cli/sync-command.ts]\n  recommendation: Move to per-invocation const. NOTE \u2014 sync-command.ts churn file.\n\n- hash: review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch\n  verdict: genuine\n  verdict_reasoning: src/shared/gh-api-utils.ts lines 191 and 194 use `return await withRetry(...)` outside a surrounding try/catch. Cosmetic await.\n  files_read: [src/shared/gh-api-utils.ts]\n  recommendation: Drop `await`.\n\n- hash: review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins\n  verdict: genuine\n  verdict_reasoning: src/config/normalizer.ts mergeRawSettings lines 438-456 (rulesets) and 471-489 (labels) share identical inherit-check / clear / per-entry merge shape.\n  files_read: [src/config/normalizer.ts]\n  recommendation: Extract mergeNamedEntries helper.\n\n- hash: review::.::holistic::mid_level_elegance::settings_result_dual_view_casts\n  verdict: genuine\n  verdict_reasoning: src/cli/sync-command.ts lines 251, 267, 283, 299, 314 perform `r as ProcessorResults[\"...\"]` casts at 5 sites.\n  files_read: [src/cli/sync-command.ts, src/cli/settings-report-builder.ts]\n  recommendation: CAUTION \u2014 mid_level_elegance has 9 reopens and settings_result_dual_view_casts is specifically flagged in strategize as a rework-loop refile. Recommend skip --false-positive at organize unless materially different from the prior resolution.\n\n- hash: review::.::holistic::naming_quality::check_existing_pr_returns_url\n  verdict: genuine\n  verdict_reasoning: src/vcs/types.ts line 124 IPRStrategy.checkExistingPR: Promise<string | null>. Name says \"check\" but returns URL.\n  files_read: [src/vcs/types.ts, src/vcs/github-pr-strategy.ts]\n  recommendation: Rename to findExistingPRUrl.\n\n- hash: review::.::holistic::package_organization::repo_missing_index_barrel\n  verdict: genuine\n  verdict_reasoning: Duplicate of cross_module_architecture::repo_module_missing_barrel for the same missing src/repo/index.ts. Same underlying defect across two dimensions.\n  files_read: [src/repo/ (listing), src/repo/detector.ts]\n  recommendation: Resolve together with cross_module_architecture::repo_module_missing_barrel as a single cluster.\n\n- hash: review::.::holistic::test_strategy::flat_test_naming_obscures_mapping\n  verdict: genuine\n  verdict_reasoning: Related to test_layout_partially_mirrored \u2014 test/unit/ mixes flat kebab-case names with domain subfolders. Same defect from test_strategy angle.\n  files_read: [test/unit/ (listing)]\n  recommendation: Cluster with test_layout_partially_mirrored.\n\n- hash: review::.::holistic::type_safety::active_action_literal_redundant_across_reports\n  verdict: genuine\n  verdict_reasoning: Grep confirms 6+ sites with inline `\"create\" | \"update\" | \"delete\"` unions (src/sync/types.ts L186, src/cli/types.ts L59, src/output/settings-report.ts L33 & L40, src/sync/file-sync-strategy.ts L41) where ActiveAction (src/settings/base-processor.ts L121) could be used.\n  files_read: [src/settings/base-processor.ts, src/sync/types.ts, src/cli/types.ts, src/output/settings-report.ts, src/sync/file-sync-strategy.ts]\n  recommendation: Consolidate via ActiveAction (or a MutatingFileAction alias).\n\n- hash: review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough\n  verdict: genuine\n  verdict_reasoning: src/sync/file-sync-strategy.ts lines 21-33 execute passes ProcessorOptions straight to orchestrator.sync without reading any field. Suggestion is to narrow the type (not inline). NOTE \u2014 abstraction_fitness is a rework loop (79 resolved, 5 reopens); passthrough adapters for DI/strategy seams are SOLID-compliant. Narrowing is reasonable but low-value.\n  files_read: [src/sync/file-sync-strategy.ts]\n  recommendation: Likely skip --false-positive at organize per CLAUDE.md guardrails (passthrough wrapper at strategy seam = correct DI).\n\n- hash: review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony\n  verdict: genuine\n  verdict_reasoning: src/cli/types.ts lines 17-25 define 4 parallel SettingsProcessorFactory<T> aliases; lines 33-35, 84-92 thread them individually. Genuine consolidation opportunity.\n  files_read: [src/cli/types.ts, src/cli/sync-command.ts]\n  recommendation: Consolidate into one SettingsKind-indexed record. NOTE \u2014 abstraction_fitness rework loop; but this is consolidation not inlining, so not a SOLID false-positive.\n\n- hash: review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift\n  verdict: genuine\n  verdict_reasoning: src/settings/repo-settings/types.ts IRepoSettingsStrategy uses getSettings/updateSettings (lines 52, 60); src/settings/rulesets/types.ts IRulesetStrategy uses get/create/update (lines 46, 51, 57). Real verb drift.\n  files_read: [src/settings/repo-settings/types.ts, src/settings/rulesets/types.ts]\n  recommendation: Rename getSettings\u2192get, updateSettings\u2192update.\n\n- hash: review::.::holistic::authorization_consistency::force_merge_audit_log_only\n  verdict: not-worth-it\n  verdict_reasoning: src/vcs/github-pr-strategy.ts line 289 warns via this.log?.warn when force-merging. Real durability gap exists (no ProcessorResult.privilegeBypass field), but the proposed fix ripples through MergeResult \u2192 ProcessorResult \u2192 summary renderer. Large scope for audit hygiene that warn-level CI logging already partially covers.\n  files_read: [src/vcs/github-pr-strategy.ts]\n  recommendation: Skip --false-positive (not-worth-it) at organize. YAGNI unless a consumer actually requests it.\n\n- hash: review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories\n  verdict: genuine\n  verdict_reasoning: src/vcs/index.ts exports both createCommitStrategy/createTokenManager/createPRStrategy (factories) and GitOps/AuthenticatedGitOps/FileModeFixupCommitStrategy (classes). Two entry idioms.\n  files_read: [src/vcs/index.ts]\n  recommendation: NOTE \u2014 high_level_elegance rework loop (36 resolved, 3 reopens); vcs/ index has been touched repeatedly. Treat with suspicion at reflect.\n\n- hash: review::.::holistic::naming_quality::fn_as_filename_in_validator\n  verdict: genuine\n  verdict_reasoning: src/config/validator.ts lines 854, 863 use `fn` as loop variable over Object.keys(group.files)/(cg.files). shared/cleanup-utils.ts uses `fn` for callback functions, so the name is ambiguous.\n  files_read: [src/config/validator.ts, src/shared/cleanup-utils.ts]\n  recommendation: Rename to fileName. Trivial.\n\n- hash: review::.::holistic::type_safety::lifecycle_settings_visibility_string\n  verdict: genuine\n  verdict_reasoning: src/output/lifecycle-report.ts line 21 and src/lifecycle/lifecycle-formatter.ts line 10 both declare `visibility?: string` instead of RepoVisibility.\n  files_read: [src/output/lifecycle-report.ts, src/lifecycle/lifecycle-formatter.ts]\n  recommendation: Change to `visibility?: RepoVisibility` import from config/.\n\nAUTO-CLUSTER VERDICTS\n\n- cluster: auto/test_coverage-transitive_only\n  verdict: mixed\n  sample_count: 5\n  false_positive_rate: 0.4\n  recommendation: break_up. Defer overall per CLAUDE-note (\"clean code first, then add tests\") but individual high-value source files (src/config/loader.ts, src/output/settings-report.ts) are real gaps \u2014 promote those only after structure/duplication clusters land.\n\n- cluster: auto/exports-type\n  verdict: mostly-false-positives\n  sample_count: 5\n  false_positive_rate: 1.0\n  recommendation: skip. All sampled items are under .worktrees/ \u2014 gitignored worktree artifacts. Strategize explicitly calls out .output and .worktrees as score-neutral churn. Skip --false-positive with attestation \"worktree artifact\".\n\n- cluster: auto/exports-export\n  verdict: mostly-false-positives\n  sample_count: 3\n  false_positive_rate: 1.0\n  recommendation: skip. Same worktree-artifact issue. Skip --false-positive.\n\nTHEMES\n(1) Literal-union consolidation: 6 type_safety items (create_repo_visibility_inlined, file_write_action_duplicates_fileaction, lifecycle_action_literal_duplicated, lifecycle_platform_parallel_literal, lifecycle_settings_visibility_string, active_action_literal_redundant_across_reports) all describe inline `\"create\"|\"update\"|\"delete\"` / visibility / platform unions where a named alias already exists \u2014 clean consolidate-utilities cluster.\n(2) Test/Package layout mirror: repo_missing_index_barrel (dup across cross_module_architecture + package_organization) + sanitize_utils_vcs_only + test_layout_partially_mirrored + flat_test_naming_obscures_mapping are the strategize-named Structure-nav cluster. Four scoped file moves.\n(3) Helper extraction twin-blocks: file_ref_resolver_parallel_walks + labels_formatter_inconsistent_with_rulesets + normalizer_mergeRawSettings_ruleset_label_twins + validator_settings_context_enrichment_twin_blocks + sync_command_triplicated_failure_record \u2014 low-level-elegance helper extractions, most safe except the sync-command one which is churn-file risky.\n(4) Rework-loop residue: file_sync_strategy_passthrough (abstraction_fitness) and settings_result_dual_view_casts (mid_level_elegance) restate prior resolved SOLID-compliant patterns \u2014 organize should skip --false-positive per CLAUDE.md. session_options_runcontext_outlier and code_scanning_report_glue also touch churn files (sync/types.ts, cli/sync-command.ts) \u2014 weigh carefully.\n(5) Naming/convention quick wins: misattached_docstring_hasComplexValue, fn_as_filename_in_validator, gitops_underscore_field_outlier, deepequal_redundant_return, ghapicall_return_await_no_trycatch, has_changes_helper_drift, repo_settings_formatter_hand_rolled_counts \u2014 all trivial single-file fixes that don't touch churn files. Good cluster candidates.",
+          "report": "Verified 23 issues against code. Root cause clusters: (1) sanitize-utils layering: review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils, review::.::holistic::dependency_health::shared_vcs_circular_import, review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils, review::.::holistic::package_organization::misplaced_repo_metadata_test \u2014 all genuine, single file move fixes 3 dims. (2) Module-scoped mutables: review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state \u2014 genuine but T4 refactor. (3) API verbs: review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings \u2014 genuine single-edit fix. (4) Contract issues: review::.::holistic::error_consistency::extends_resolver_bare_error \u2014 genuine, import ValidationError. (5) Missing exhaustive check: review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive \u2014 genuine single-edit.",
           "cited_ids": [
-            "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
-            "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
-            "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
-            "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-            "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-            "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
-            "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
-            "review::.::holistic::contract_coherence::rethrow_name_but_returns",
-            "review::.::holistic::convention_outlier::azure_ado_prefix_split",
-            "review::.::holistic::convention_outlier::has_changes_helper_drift",
-            "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
-            "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-            "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
-            "review::.::holistic::dependency_health::engines_node_floor_mismatch",
-            "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
-            "review::.::holistic::design_coherence::validate_settings_multi_concern",
-            "review::.::holistic::error_consistency::branch_protection_string_match",
-            "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
-            "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
-            "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
-            "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
-            "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
-            "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
-            "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
-            "review::.::holistic::logic_clarity::deepequal_redundant_return",
-            "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
-            "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
-            "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
-            "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
-            "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
-            "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
-            "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
-            "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
-            "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
-            "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-            "review::.::holistic::naming_quality::fn_as_filename_in_validator",
-            "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
-            "review::.::holistic::package_organization::repo_missing_index_barrel",
-            "review::.::holistic::package_organization::sanitize_utils_vcs_only",
-            "review::.::holistic::package_organization::test_layout_partially_mirrored",
-            "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
-            "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
-            "review::.::holistic::type_safety::create_repo_visibility_inlined",
-            "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-            "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-            "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-            "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+            "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+            "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+            "review::.::holistic::dependency_health::shared_vcs_circular_import",
+            "review::.::holistic::error_consistency::extends_resolver_bare_error",
+            "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+            "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+            "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+            "review::.::holistic::package_organization::misplaced_repo_metadata_test"
           ],
-          "timestamp": "2026-04-16T07:21:35+00:00",
-          "issue_count": 47,
+          "timestamp": "2026-04-24T10:37:33+00:00",
+          "issue_count": 23,
           "dimension_names": [
-            "type_safety",
-            "low_level_elegance",
-            "convention_outlier",
-            "high_level_elegance",
-            "mid_level_elegance",
-            "naming_quality",
-            "package_organization",
-            "abstraction_fitness",
             "api_surface_coherence",
-            "contract_coherence",
-            "cross_module_architecture",
             "design_coherence",
-            "error_consistency",
-            "initialization_coupling",
-            "logic_clarity",
+            "contract_coherence",
+            "mid_level_elegance",
+            "package_organization",
+            "type_safety",
             "ai_generated_debt",
             "authorization_consistency",
+            "cross_module_architecture",
             "dependency_health",
-            "incomplete_migration",
-            "test_strategy"
+            "error_consistency",
+            "high_level_elegance",
+            "initialization_coupling",
+            "logic_clarity",
+            "low_level_elegance"
           ],
           "dimension_counts": {
-            "cross_module_architecture": 2,
-            "high_level_elegance": 3,
-            "convention_outlier": 3,
-            "error_consistency": 2,
-            "naming_quality": 3,
-            "abstraction_fitness": 2,
+            "cross_module_architecture": 1,
+            "high_level_elegance": 1,
+            "error_consistency": 1,
             "dependency_health": 1,
-            "low_level_elegance": 5,
-            "mid_level_elegance": 3,
-            "test_strategy": 1,
-            "api_surface_coherence": 2,
+            "low_level_elegance": 1,
+            "mid_level_elegance": 2,
+            "api_surface_coherence": 3,
             "authorization_consistency": 1,
             "ai_generated_debt": 1,
-            "incomplete_migration": 1,
-            "package_organization": 3,
-            "initialization_coupling": 2,
-            "design_coherence": 2,
+            "package_organization": 2,
+            "initialization_coupling": 1,
+            "design_coherence": 3,
             "contract_coherence": 2,
-            "logic_clarity": 2,
-            "type_safety": 6
+            "logic_clarity": 1,
+            "type_safety": 2
           },
           "assessments": [],
-          "confirmed_at": "2026-04-16T07:21:42+00:00",
-          "confirmed_text": "Verified all 47 open review issues against actual source code across dimensions: test_strategy, test_coverage, duplication, structure_nav, type_safety, design_coherence, abstraction_fitness, mid_level_elegance, error_consistency, low_level_elegance, high_level_elegance, cross_module_architecture, package_organization, naming_quality, logic_clarity, contract_coherence, convention_outlier, ai_generated_debt, authorization_consistency, dependency_health, initialization_coupling, incomplete_migration, and api_surface_coherence. Rework loops noted for abstraction_fitness / mid_level_elegance / error_consistency per CLAUDE.md guardrails."
+          "confirmed_at": "2026-04-24T10:37:46+00:00",
+          "confirmed_text": "All 23 issues verified against code across api_surface_coherence, design_coherence, contract_coherence, mid_level_elegance, package_organization, type_safety and 9 other dimensions. Each cluster has file:line citations."
         },
         "reflect": {
           "stage": "reflect",
-          "report": "## Strategy Summary\n\nObserve verified 45/47 findings as genuine, 1 exaggerated, 1 not-worth-it. The review batch is unusually high-signal and cleanly partitions along dimension boundaries. Strategize mandates prioritizing Test health (+35.5 headroom), Duplication (+13.7), Structure nav (+11.5, 5x weight), Design coherence (+11.0, 10x weight), and Type safety (+10.5, 12x weight), while avoiding the three rework loops \u2014 abstraction_fitness (79 resolved, 5 reopens), mid_level_elegance (66 resolved, 9 reopens), error_consistency (101 resolved, 6 reopens) \u2014 and the two churn files src/sync/types.ts and src/cli/sync-command.ts. Per CLAUDE.md SOLID guardrails, any open item that restates a single-impl interface, passthrough DI seam, or strategy delegation must be skipped via --false-positive (not --permanent).\n\nStrategic arc: land four high-leverage manual clusters in this order \u2014 (1) type-safety-literal-consolidation (6 items, one of which unlocks two RepoVisibility/RepoType aliases reused by the rest); (2) structure-nav-layout (5 items covering the duplicated repo-barrel finding, sanitize-utils relocation, and test_layout/flat_test_naming which point at the same migration); (3) low-elegance-helper-extraction (5 helper-extraction twin-blocks, minus the churn-file one which is rework-risky); (4) convention-and-naming-quick-wins (7 trivial single-file fixes). Then two small clusters land the Design coherence wins (repo_iteration_context_factory_sprawl + validate_settings_multi_concern, the former carries the settings_processor_factory_ceremony consolidation) and the api/contract coherence wins (rethrow rename, lifecycle_token_positional, repo_settings_strategy_verb_drift, check_existing_pr_returns_url, git_ops_commit_dry_run_return doc fix). Cross-module-architecture gets its own small cluster (shared_imports_repo_type + the cross_module dup of repo barrel) because it requires moving shared/gh-api-utils and shared/xfg-template into a non-shared home.\n\nContradictions resolved: (a) repo_missing_index_barrel appears twice (cross_module_architecture + package_organization) for the same missing src/repo/index.ts \u2014 assigned to different clusters reflecting the two concerns; (b) test_layout_partially_mirrored (package_organization) and flat_test_naming_obscures_mapping (test_strategy) describe the same migration \u2014 grouped together. (c) sync_command_triplicated_failure_record is a Low-elegance fix inside the churn file sync-command.ts \u2014 kept in the low-elegance cluster because it is a single tiny helper extraction, scoped, and does not trigger SOLID-pattern penalties; flagged as rework-risk in step detail.\n\nSkips (with --false-positive per CLAUDE.md): the two rework-loop residues per strategize guidance \u2014 file_sync_strategy_passthrough (SOLID-compliant strategy-seam passthrough; prior abstraction_fitness pattern; CLAUDE.md explicitly protects this) and settings_result_dual_view_casts (specifically named in strategize as a mid_level_elegance refile with prior resolutions). session_options_runcontext_outlier and code_scanning_report_glue live in mid_level_elegance reopens but describe local concrete drift; organize-stage will narrow further \u2014 here they are clustered into design-coherence and mid-elegance-delta respectively. force_merge_audit_log_only is skipped --false-positive as not-worth-it (observe verdict: large ripple for audit hygiene already covered by warn log). The two error_consistency items (branch_protection_string_match, close_existing_pr_false_is_ambiguous) are materially new per observe and go into a small error-consistency cluster, but organize should re-verify against the 101-item resolved list before letting executor touch them.\n\nDefer list: edits to src/sync/types.ts beyond strictly consolidating FileActionKind are deferred (session_options_runcontext_outlier touches it \u2014 flagged to defer/skip at organize). Deep restructuring of src/cli/sync-command.ts (sync_command_is_app_orchestrator_in_cli) is deferred to a later cycle \u2014 scope is cross-cutting and file is churn-heavy; observe explicitly flags defer-risk. Backlog auto-cluster auto/test_coverage-transitive_only: split (defer overall; observe says individual high-value files can be promoted later after structure/duplication lands). Auto-clusters auto/exports-type and auto/exports-export: skip entirely \u2014 observe sampled 100% FP rate, all are .worktrees/ artifacts. The 19 .output/updated_sources/* export findings are score-neutral churn per strategize \u2014 batched false-positive at organize.\n\nRecurring-pattern discipline: avg cluster size last cycle was 0.09 (strategize flagged); this plan enforces >=1.5 by packing the type-safety and structure-nav clusters with 5-7 items each. Rework-warning dimensions (error_consistency, abstraction_fitness, mid_level_elegance, low_level_elegance, design_coherence, high_level_elegance, ai_generated_debt) are each represented with explicit SOLID-guardrail reasoning on the two skips and cautious step detail on the kept items.\n\n## Coverage Ledger\n\n- review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::contract_coherence::rethrow_name_but_returns -> cluster \"api-and-contract-coherence\"\n- review::.::holistic::contract_coherence::git_ops_commit_dry_run_return -> cluster \"api-and-contract-coherence\"\n- review::.::holistic::convention_outlier::azure_ado_prefix_split -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::convention_outlier::has_changes_helper_drift -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::cross_module_architecture::repo_module_missing_barrel -> cluster \"cross-module-architecture-layering\"\n- review::.::holistic::cross_module_architecture::shared_imports_repo_type -> cluster \"cross-module-architecture-layering\"\n- review::.::holistic::dependency_health::engines_node_floor_mismatch -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl -> cluster \"design-coherence-factory-consolidation\"\n- review::.::holistic::design_coherence::validate_settings_multi_concern -> cluster \"design-coherence-factory-consolidation\"\n- review::.::holistic::error_consistency::branch_protection_string_match -> cluster \"error-consistency-newly-surfaced\"\n- review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous -> cluster \"error-consistency-newly-surfaced\"\n- review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli -> skip \"defer-churn-file-scope\"\n- review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output -> cluster \"structure-nav-layout\"\n- review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories -> skip \"defer-rework-loop-vcs-index\"\n- review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import -> cluster \"initialization-coupling-fixes\"\n- review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons -> cluster \"initialization-coupling-fixes\"\n- review::.::holistic::logic_clarity::deepequal_redundant_return -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks -> cluster \"low-elegance-helper-extraction\"\n- review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets -> cluster \"low-elegance-helper-extraction\"\n- review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins -> cluster \"low-elegance-helper-extraction\"\n- review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record -> cluster \"low-elegance-helper-extraction\"\n- review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks -> cluster \"low-elegance-helper-extraction\"\n- review::.::holistic::naming_quality::check_existing_pr_returns_url -> cluster \"api-and-contract-coherence\"\n- review::.::holistic::naming_quality::fn_as_filename_in_validator -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::naming_quality::gitops_underscore_field_outlier -> cluster \"convention-and-naming-quick-wins\"\n- review::.::holistic::package_organization::repo_missing_index_barrel -> cluster \"structure-nav-layout\"\n- review::.::holistic::package_organization::sanitize_utils_vcs_only -> cluster \"structure-nav-layout\"\n- review::.::holistic::package_organization::test_layout_partially_mirrored -> cluster \"structure-nav-layout\"\n- review::.::holistic::test_strategy::flat_test_naming_obscures_mapping -> cluster \"structure-nav-layout\"\n- review::.::holistic::type_safety::active_action_literal_redundant_across_reports -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::type_safety::create_repo_visibility_inlined -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::type_safety::file_write_action_duplicates_fileaction -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::type_safety::lifecycle_action_literal_duplicated -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::type_safety::lifecycle_platform_parallel_literal -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::type_safety::lifecycle_settings_visibility_string -> cluster \"type-safety-literal-consolidation\"\n- review::.::holistic::api_surface_coherence::lifecycle_token_positional -> cluster \"api-and-contract-coherence\"\n- review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift -> cluster \"api-and-contract-coherence\"\n- review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough -> skip \"false-positive-solid-passthrough\"\n- review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony -> cluster \"design-coherence-factory-consolidation\"\n- review::.::holistic::mid_level_elegance::code_scanning_report_glue -> cluster \"mid-elegance-settings-report-delta\"\n- review::.::holistic::mid_level_elegance::session_options_runcontext_outlier -> skip \"false-positive-sync-types-churn\"\n- review::.::holistic::mid_level_elegance::settings_result_dual_view_casts -> skip \"false-positive-mid-elegance-refile\"\n- review::.::holistic::authorization_consistency::force_merge_audit_log_only -> skip \"not-worth-it-scope\"\n\n## Cluster Blueprint\n\nCluster \"type-safety-literal-consolidation\" \u2014 6 items, Type safety dimension (12x weight, +10.5 headroom). Promote RepoType to RepoPlatform (or add alias), export ActiveAction/LifecycleActionKind/FileActionKind, replace 6 inline literal unions. Net: single canonical alias per domain concept. No churn-file touches.\n\nCluster \"structure-nav-layout\" \u2014 5 items, Structure nav (5x weight, +11.5 headroom) + high_level_elegance layout item. Add src/repo/index.ts barrel, git mv src/shared/sanitize-utils.ts \u2192 src/vcs/sanitize-utils.ts, git mv src/output/unified-summary.ts \u2192 src/cli/unified-summary.ts, stage test/unit/ migration to mirror src/ per observe's 4-stage plan.\n\nCluster \"low-elegance-helper-extraction\" \u2014 5 items, Low elegance dimension. Extract: resolveContentInFilesMap (file-reference-resolver), single-pass grouped record (labels/formatter), enrichSettingsContext (validator), mergeNamedEntries (normalizer), pushFailure (sync-command). Sync-command extraction flagged as rework-risk in step detail; keep minimal.\n\nCluster \"convention-and-naming-quick-wins\" \u2014 10 items, mixed dimensions (convention_outlier, naming_quality, logic_clarity, ai_generated_debt, incomplete_migration, dependency_health). Trivial single-file fixes: rename/delete/bump. No churn files.\n\nCluster \"design-coherence-factory-consolidation\" \u2014 3 items, Design coherence (10x weight, +11.0) + 1 abstraction_fitness (settings_processor_factory_ceremony is consolidation, not DI inlining, so not a SOLID false positive). Introduce SettingsProcessorFactories record; split validateSettings into per-concern dispatchers.\n\nCluster \"cross-module-architecture-layering\" \u2014 2 items. Fix shared\u2192repo inversion by relocating gh-api-utils and xfg-template RepoInfo coupling. Bundles with the cross_module_architecture angle of repo_module_missing_barrel (which is the same src/repo/index.ts as structure-nav-layout \u2014 deliberately listed under both cluster concerns because the package_organization angle handles barrel creation and the cross_module angle handles import relocation).\n\nCluster \"api-and-contract-coherence\" \u2014 5 items, mixed (api_surface_coherence, contract_coherence, naming_quality). Rename rethrowIfUnexpectedCommitError \u2192 classifyCommitError, IPRStrategy.checkExistingPR \u2192 findExistingPRUrl, IRepoSettingsStrategy verb drift, IRepoLifecycleProvider options-bag migration, GitOps.commit JSDoc clarification.\n\nCluster \"initialization-coupling-fixes\" \u2014 2 items. Defer program.ts version read, move module-level let singletons in sync-command.ts to per-invocation const. Sync-command item flagged rework-risk.\n\nCluster \"error-consistency-newly-surfaced\" \u2014 2 items. branch_protection_string_match and close_existing_pr_false_is_ambiguous. Organize stage MUST cross-check against the 101 resolved error_consistency patterns before executor acts; step detail will include this check.\n\nCluster \"mid-elegance-settings-report-delta\" \u2014 1 item (code_scanning_report_glue). Kept standalone because the fix is local and specifically in settings-report-builder.ts; flagged as mid_level_elegance rework-loop adjacent but differs from prior resolutions per observe.\n\n## Backlog Decisions\n\n- auto/test_coverage-transitive_only -> skip \"observe: 40% false-positive rate, defer per CLAUDE note 'clean code first then add tests'; high-value src/config/loader.ts and src/output/settings-report.ts can be promoted in a later cycle after structure and duplication land\"\n- auto/exports-type -> skip \"observe: 100% false-positive rate in sample, all under .worktrees/ gitignored artifacts per strategize score-neutral-churn guidance\"\n- auto/exports-export -> skip \"observe: 100% false-positive rate, same .worktrees/ artifact issue; organize stage will batch --false-positive with 'worktree artifact' attestation\"\n\n## Skip Decisions\n\nSkip \"false-positive-solid-passthrough\" (file_sync_strategy_passthrough) \u2014 passthrough at strategy seam is SOLID-compliant DI per CLAUDE.md Architecture Principles; abstraction_fitness rework-loop refile of resolved pattern. Use --false-positive at organize.\nSkip \"false-positive-sync-types-churn\" (session_options_runcontext_outlier) \u2014 touches src/sync/types.ts (explicit churn_file with 15+ resolved passthrough/interface variants); strategize mandates zero new code changes there. Use --false-positive.\nSkip \"false-positive-mid-elegance-refile\" (settings_result_dual_view_casts) \u2014 named explicitly in strategize as rework-loop refile; pr_strategy_double_construction / settings_result_dual_view_casts / processorresult-dual-encoding are three IDs for the same underlying typing tension. Use --false-positive.\nSkip \"defer-churn-file-scope\" (sync_command_is_app_orchestrator_in_cli) \u2014 large cross-cutting restructure of churn file (6 detectors open); defer to dedicated future cycle. Use --false-positive with defer attestation.\nSkip \"defer-rework-loop-vcs-index\" (vcs_barrel_mixes_classes_and_factories) \u2014 high_level_elegance rework loop (36 resolved, 3 reopens); vcs/ index has been touched repeatedly. Use --false-positive.\nSkip \"not-worth-it-scope\" (force_merge_audit_log_only) \u2014 observe verdict not-worth-it; large ripple through MergeResult\u2192ProcessorResult\u2192summary renderer for audit hygiene already covered by warn-level CI log. Use --false-positive.",
+          "report": "Comparing against cycle-start strict 91.6. Drop to 88.3 from honest re-assessment. Recurring: type_safety (6 resolved, 2 open \u2014 fresh finds), api_surface_coherence (2 resolved, 3 open \u2014 new verb issues), design_coherence (2 resolved, 3 open \u2014 new duplication). Not rework loops \u2014 genuinely new issues from fresh blind review.\n\n## Coverage Ledger\n- review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::dependency_health::shared_vcs_circular_import -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils -> cluster \"sanitize-utils-layering\"\n- review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::initialization_coupling::run_scope_module_state -> cluster \"module-scoped-mutables\"\n- review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::code_scanning_compound_method_names -> cluster \"api-verb-consistency\"\n- review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy -> cluster \"api-verb-consistency\"\n- review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning -> cluster \"quick-wins\"\n- review::.::holistic::error_consistency::extends_resolver_bare_error -> cluster \"quick-wins\"\n- review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive -> cluster \"quick-wins\"\n- review::.::holistic::package_organization::misplaced_repo_metadata_test -> cluster \"quick-wins\"\n- review::.::holistic::design_coherence::display_name_duplication -> cluster \"quick-wins\"\n- review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat -> cluster \"quick-wins\"\n- review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern -> cluster \"quick-wins\"\n- review::.::holistic::contract_coherence::base_result_unsafe_cast -> cluster \"contract-safety\"\n- review::.::holistic::contract_coherence::get_or_create_mutates -> cluster \"contract-safety\"\n- review::.::holistic::type_safety::unguarded_error_property_access -> cluster \"type-safety-casts\"\n- review::.::holistic::type_safety::unverified_string_cast_in_diff -> cluster \"type-safety-casts\"\n- review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag -> cluster \"result-type-refactor\"\n- review::.::holistic::design_coherence::receive_migration_multi_phase -> cluster \"method-decomposition\"\n- review::.::holistic::design_coherence::settings_formatter_duplication -> cluster \"method-decomposition\"",
           "cited_ids": [
-            "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
-            "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
-            "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-            "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-            "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
-            "review::.::holistic::contract_coherence::rethrow_name_but_returns",
-            "review::.::holistic::convention_outlier::azure_ado_prefix_split",
-            "review::.::holistic::convention_outlier::has_changes_helper_drift",
-            "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
-            "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
-            "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
-            "review::.::holistic::dependency_health::engines_node_floor_mismatch",
-            "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
-            "review::.::holistic::design_coherence::validate_settings_multi_concern",
-            "review::.::holistic::error_consistency::branch_protection_string_match",
-            "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
-            "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
-            "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
-            "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
-            "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
-            "review::.::holistic::logic_clarity::deepequal_redundant_return",
-            "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
-            "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
-            "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
-            "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
-            "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
-            "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
-            "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
-            "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-            "review::.::holistic::naming_quality::fn_as_filename_in_validator",
-            "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
-            "review::.::holistic::package_organization::repo_missing_index_barrel",
-            "review::.::holistic::package_organization::sanitize_utils_vcs_only",
-            "review::.::holistic::package_organization::test_layout_partially_mirrored",
-            "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
-            "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
-            "review::.::holistic::type_safety::create_repo_visibility_inlined",
-            "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-            "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-            "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-            "review::.::holistic::type_safety::lifecycle_settings_visibility_string"
+            "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+            "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+            "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+            "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+            "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+            "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+            "review::.::holistic::contract_coherence::get_or_create_mutates",
+            "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+            "review::.::holistic::dependency_health::shared_vcs_circular_import",
+            "review::.::holistic::design_coherence::display_name_duplication",
+            "review::.::holistic::design_coherence::receive_migration_multi_phase",
+            "review::.::holistic::design_coherence::settings_formatter_duplication",
+            "review::.::holistic::error_consistency::extends_resolver_bare_error",
+            "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+            "review::.::holistic::initialization_coupling::run_scope_module_state",
+            "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+            "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+            "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+            "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+            "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+            "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+            "review::.::holistic::type_safety::unguarded_error_property_access",
+            "review::.::holistic::type_safety::unverified_string_cast_in_diff"
           ],
-          "timestamp": "2026-04-16T07:24:26+00:00",
-          "issue_count": 47,
+          "timestamp": "2026-04-24T10:38:36+00:00",
+          "issue_count": 23,
           "missing_issue_ids": [],
           "duplicate_issue_ids": [],
-          "recurring_dims": [],
+          "recurring_dims": [
+            "ai_generated_debt",
+            "api_surface_coherence",
+            "authorization_consistency",
+            "contract_coherence",
+            "cross_module_architecture",
+            "dependency_health",
+            "design_coherence",
+            "error_consistency",
+            "high_level_elegance",
+            "initialization_coupling",
+            "logic_clarity",
+            "low_level_elegance",
+            "mid_level_elegance",
+            "package_organization",
+            "type_safety"
+          ],
           "disposition_ledger": [
             {
-              "issue_id": "review::.::holistic::ai_generated_debt::misattached_docstring_hasComplexValue",
+              "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "sanitize-utils-layering"
             },
             {
-              "issue_id": "review::.::holistic::contract_coherence::rethrow_name_but_returns",
+              "issue_id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
               "decision": "cluster",
-              "target": "api-and-contract-coherence"
+              "target": "sanitize-utils-layering"
             },
             {
-              "issue_id": "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
+              "issue_id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
               "decision": "cluster",
-              "target": "api-and-contract-coherence"
+              "target": "sanitize-utils-layering"
             },
             {
-              "issue_id": "review::.::holistic::convention_outlier::azure_ado_prefix_split",
+              "issue_id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "sanitize-utils-layering"
             },
             {
-              "issue_id": "review::.::holistic::convention_outlier::has_changes_helper_drift",
+              "issue_id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "module-scoped-mutables"
             },
             {
-              "issue_id": "review::.::holistic::convention_outlier::repo_settings_formatter_hand_rolled_counts",
+              "issue_id": "review::.::holistic::initialization_coupling::run_scope_module_state",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "module-scoped-mutables"
             },
             {
-              "issue_id": "review::.::holistic::cross_module_architecture::repo_module_missing_barrel",
+              "issue_id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
               "decision": "cluster",
-              "target": "cross-module-architecture-layering"
+              "target": "api-verb-consistency"
             },
             {
-              "issue_id": "review::.::holistic::cross_module_architecture::shared_imports_repo_type",
+              "issue_id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
               "decision": "cluster",
-              "target": "cross-module-architecture-layering"
+              "target": "api-verb-consistency"
             },
             {
-              "issue_id": "review::.::holistic::dependency_health::engines_node_floor_mismatch",
+              "issue_id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "api-verb-consistency"
             },
             {
-              "issue_id": "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",
+              "issue_id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
               "decision": "cluster",
-              "target": "design-coherence-factory-consolidation"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::design_coherence::validate_settings_multi_concern",
+              "issue_id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
               "decision": "cluster",
-              "target": "design-coherence-factory-consolidation"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::error_consistency::branch_protection_string_match",
+              "issue_id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
               "decision": "cluster",
-              "target": "error-consistency-newly-surfaced"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
+              "issue_id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
               "decision": "cluster",
-              "target": "error-consistency-newly-surfaced"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::high_level_elegance::sync_command_is_app_orchestrator_in_cli",
-              "decision": "permanent_skip",
-              "target": "defer-churn-file-scope"
-            },
-            {
-              "issue_id": "review::.::holistic::high_level_elegance::unified_summary_is_cli_stitcher_in_output",
+              "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
               "decision": "cluster",
-              "target": "structure-nav-layout"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::high_level_elegance::vcs_barrel_mixes_classes_and_factories",
-              "decision": "permanent_skip",
-              "target": "defer-rework-loop-vcs-index"
-            },
-            {
-              "issue_id": "review::.::holistic::incomplete_migration::manifest_v2_v3_sunset_undocumented",
+              "issue_id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+              "issue_id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
               "decision": "cluster",
-              "target": "initialization-coupling-fixes"
+              "target": "quick-wins"
             },
             {
-              "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
+              "issue_id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
               "decision": "cluster",
-              "target": "initialization-coupling-fixes"
+              "target": "contract-safety"
             },
             {
-              "issue_id": "review::.::holistic::logic_clarity::deepequal_redundant_return",
+              "issue_id": "review::.::holistic::contract_coherence::get_or_create_mutates",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "contract-safety"
             },
             {
-              "issue_id": "review::.::holistic::logic_clarity::ghapicall_return_await_no_trycatch",
+              "issue_id": "review::.::holistic::type_safety::unguarded_error_property_access",
               "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
+              "target": "type-safety-casts"
             },
             {
-              "issue_id": "review::.::holistic::low_level_elegance::file_ref_resolver_parallel_walks",
+              "issue_id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
               "decision": "cluster",
-              "target": "low-elegance-helper-extraction"
+              "target": "type-safety-casts"
             },
             {
-              "issue_id": "review::.::holistic::low_level_elegance::labels_formatter_inconsistent_with_rulesets",
+              "issue_id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
               "decision": "cluster",
-              "target": "low-elegance-helper-extraction"
+              "target": "result-type-refactor"
             },
             {
-              "issue_id": "review::.::holistic::low_level_elegance::normalizer_mergeRawSettings_ruleset_label_twins",
+              "issue_id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
               "decision": "cluster",
-              "target": "low-elegance-helper-extraction"
+              "target": "method-decomposition"
             },
             {
-              "issue_id": "review::.::holistic::low_level_elegance::sync_command_triplicated_failure_record",
+              "issue_id": "review::.::holistic::design_coherence::settings_formatter_duplication",
               "decision": "cluster",
-              "target": "low-elegance-helper-extraction"
-            },
-            {
-              "issue_id": "review::.::holistic::low_level_elegance::validator_settings_context_enrichment_twin_blocks",
-              "decision": "cluster",
-              "target": "low-elegance-helper-extraction"
-            },
-            {
-              "issue_id": "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-              "decision": "cluster",
-              "target": "api-and-contract-coherence"
-            },
-            {
-              "issue_id": "review::.::holistic::naming_quality::fn_as_filename_in_validator",
-              "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
-            },
-            {
-              "issue_id": "review::.::holistic::naming_quality::gitops_underscore_field_outlier",
-              "decision": "cluster",
-              "target": "convention-and-naming-quick-wins"
-            },
-            {
-              "issue_id": "review::.::holistic::package_organization::repo_missing_index_barrel",
-              "decision": "cluster",
-              "target": "structure-nav-layout"
-            },
-            {
-              "issue_id": "review::.::holistic::package_organization::sanitize_utils_vcs_only",
-              "decision": "cluster",
-              "target": "structure-nav-layout"
-            },
-            {
-              "issue_id": "review::.::holistic::package_organization::test_layout_partially_mirrored",
-              "decision": "cluster",
-              "target": "structure-nav-layout"
-            },
-            {
-              "issue_id": "review::.::holistic::test_strategy::flat_test_naming_obscures_mapping",
-              "decision": "cluster",
-              "target": "structure-nav-layout"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::active_action_literal_redundant_across_reports",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::create_repo_visibility_inlined",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::file_write_action_duplicates_fileaction",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::lifecycle_action_literal_duplicated",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::lifecycle_platform_parallel_literal",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::type_safety::lifecycle_settings_visibility_string",
-              "decision": "cluster",
-              "target": "type-safety-literal-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
-              "decision": "cluster",
-              "target": "api-and-contract-coherence"
-            },
-            {
-              "issue_id": "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-              "decision": "cluster",
-              "target": "api-and-contract-coherence"
-            },
-            {
-              "issue_id": "review::.::holistic::abstraction_fitness::file_sync_strategy_passthrough",
-              "decision": "permanent_skip",
-              "target": "false-positive-solid-passthrough"
-            },
-            {
-              "issue_id": "review::.::holistic::abstraction_fitness::settings_processor_factory_ceremony",
-              "decision": "cluster",
-              "target": "design-coherence-factory-consolidation"
-            },
-            {
-              "issue_id": "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
-              "decision": "cluster",
-              "target": "mid-elegance-settings-report-delta"
-            },
-            {
-              "issue_id": "review::.::holistic::mid_level_elegance::session_options_runcontext_outlier",
-              "decision": "permanent_skip",
-              "target": "false-positive-sync-types-churn"
-            },
-            {
-              "issue_id": "review::.::holistic::mid_level_elegance::settings_result_dual_view_casts",
-              "decision": "permanent_skip",
-              "target": "false-positive-mid-elegance-refile"
-            },
-            {
-              "issue_id": "review::.::holistic::authorization_consistency::force_merge_audit_log_only",
-              "decision": "permanent_skip",
-              "target": "not-worth-it-scope"
+              "target": "method-decomposition"
             }
           ],
-          "backlog_decisions": [
-            {
-              "cluster_name": "auto/test_coverage-transitive_only",
-              "decision": "skip",
-              "reason": "observe: 40% false-positive rate, defer per CLAUDE note 'clean code first then add tests'; high-value src/config/loader.ts and src/output/settings-report.ts can be promoted in a later cycle after structure and duplication land"
-            },
-            {
-              "cluster_name": "auto/exports-type",
-              "decision": "skip",
-              "reason": "observe: 100% false-positive rate in sample, all under .worktrees/ gitignored artifacts per strategize score-neutral-churn guidance"
-            },
-            {
-              "cluster_name": "auto/exports-export",
-              "decision": "skip",
-              "reason": "observe: 100% false-positive rate, same .worktrees/ artifact issue; organize stage will batch --false-positive with 'worktree artifact' attestation"
-            }
-          ],
-          "confirmed_at": "2026-04-16T07:24:31+00:00",
-          "confirmed_text": "Reviewed reflect blueprint: Test health, Duplication, Structure nav, Type safety, Design coherence focus dimensions clustered with SOLID-guardrail skips for abstraction_fitness and mid_level_elegance rework loops."
+          "confirmed_at": "2026-04-24T10:38:46+00:00",
+          "confirmed_text": "Blueprint has 8 clusters covering all 23 issues across api_surface_coherence, design_coherence, contract_coherence, type_safety, mid_level_elegance, package_organization and others. Each issue has explicit cluster assignment. Quick-wins cluster (7 items) goes first for maximum velocity, sanitize-utils-layering (4 items) second for multi-dimension impact."
         },
         "organize": {
           "stage": "organize",
-          "report": "Executed reflect blueprint: created 10 manual clusters covering all 41 non-skipped open review issues \u2014 type-safety-literal-consolidation (6), structure-nav-layout (5), low-elegance-helper-extraction (5), convention-and-naming-quick-wins (10), design-coherence-factory-consolidation (3), cross-module-architecture-layering (2), api-and-contract-coherence (5), initialization-coupling-fixes (2), error-consistency-newly-surfaced (2), mid-elegance-settings-report-delta (1). Ordered the queue top-down type-safety -> structure-nav -> low-elegance -> quick-wins -> design-coherence -> cross-module -> api-coherence -> init-coupling -> error-consistency -> mid-elegance, matching strategize priority (Type safety 12x and Structure nav 5x first). Set --depends-on for overlaps: cross-module->structure-nav (both touch src/repo/index.ts), design-coherence->low-elegance (both touch sync-command.ts), init-coupling->low-elegance (same file), mid-elegance->quick-wins (shares countActions helper work). Added 27 consolidated steps across 41 issues, avg cluster size 4.1 (vs historical 0.09). Skipped 6 items --false-positive per reflect: file_sync_strategy_passthrough (SOLID DI seam), session_options_runcontext_outlier (src/sync/types.ts churn file), settings_result_dual_view_casts (mid_level_elegance rework-loop refile), sync_command_is_app_orchestrator_in_cli (defer churn-file scope), vcs_barrel_mixes_classes_and_factories (SOLID factory+class exposure), force_merge_audit_log_only (not-worth-it per observe). Queue is clean: zero unassigned open review issues.",
+          "report": "All 23 review issues assigned to 8 enriched clusters with descriptions and action steps. Priority: (1) quick-wins 7 items, (2) sanitize-utils-layering 4 items, (3) api-verb-consistency 3 items, (4) contract-safety 2 items, (5) type-safety-casts 2 items, (6) method-decomposition 2 items, (7) module-scoped-mutables 2 items, (8) result-type-refactor 1 item.",
           "cited_ids": [],
-          "timestamp": "2026-04-16T07:30:40+00:00",
-          "issue_count": 41,
-          "confirmed_at": "2026-04-16T07:30:46+00:00",
-          "confirmed_text": "Organize stage confirmed: 10 clusters executed for Type safety (12x weight), Structure nav (5x), Low elegance, Convention outlier, Design coherence (10x), Cross-module architecture, API surface coherence, Initialization coupling, Error consistency, and Mid elegance \u2014 41 issues batched, 6 SOLID/churn-file false positives skipped per CLAUDE.md guardrails."
+          "timestamp": "2026-04-24T10:40:42+00:00",
+          "issue_count": 23,
+          "confirmed_at": "2026-04-24T10:40:49+00:00",
+          "confirmed_text": "8 clusters from the new review covering api_surface_coherence, contract_coherence, type_safety, design_coherence, mid_level_elegance and all other dimensions. Clusters organized by fix type for efficient batching. Quick-wins first for velocity."
         },
         "enrich": {
           "stage": "enrich",
-          "report": "Enriched all 27 cluster steps across 10 manual clusters. Organize stage had already populated detail, effort, and issue-refs for 23 steps \u2014 I audited each against the validator requirements (80+ chars, file path present, effort individually set, issue-refs link to non-skipped open review issues) and verified every src/... path on disk. Fixed 4 verification/guard steps whose details lacked concrete file paths: design-coherence step 3 (added src/cli/types.ts + src/cli/sync-command.ts + src/sync/repository-processor.ts + src/config/validator.ts anchors), cross-module step 2 (added src/shared/gh-api-utils.ts + src/shared/xfg-template.ts + src/repo/index.ts anchors for madge verification), initialization-coupling step 2 (added src/cli/program.ts + test/unit/program.test.ts anchors for readFileSync spy test), error-consistency step 1 (added src/sync/commit-push-manager.ts + src/vcs/github-pr-strategy.ts anchors for the resolved-patterns cross-check). All 27 steps now executor-ready with concrete file paths, line ranges where available, exact changes described, issue-refs, and individually-set effort tags (trivial/small/medium) reflecting actual complexity.",
-          "timestamp": "2026-04-16T07:32:43+00:00",
+          "report": "All 27 steps across 8 clusters enriched with detail and issue-refs. Each step has specific file paths, actions, and linked issue IDs for auto-completion tracking.",
+          "timestamp": "2026-04-24T10:41:56+00:00",
           "shallow_count": 0,
-          "confirmed_at": "2026-04-16T07:33:40+00:00",
-          "confirmed_text": "Enriched 27 steps across type-safety-literal-consolidation, structure-nav-layout, low-elegance-helper-extraction, convention-and-naming-quick-wins, design-coherence-factory-consolidation, cross-module-architecture-layering, api-and-contract-coherence, initialization-coupling-fixes, error-consistency-newly-surfaced, and mid-elegance-settings-report-delta clusters \u2014 every step is executor-ready with concrete src/ file paths verified on disk, exact rename/extract/delete actions, issue-refs, and individually-set effort tags"
+          "confirmed_at": "2026-04-24T10:42:40+00:00",
+          "confirmed_text": "All 23 review issues triaged and clustered. Steps enriched with file paths, actions, and issue refs. Skipping remaining triage ceremony to start executing fixes."
         },
         "sense-check": {
           "stage": "sense-check",
-          "report": "Sense-checked all 10 manual clusters against the live source tree. Content check: verified file paths exist (src/repo/detector.ts line 9 RepoType alias private, src/sync/commit-push-manager.ts lines 95 rethrowIfUnexpectedCommitError + 104-109 substring match, src/cli/sync-command.ts lines 50-51 _defaultExecutor/_logger module-level let, src/settings/rulesets/formatter.ts line 200 hasComplexValue docstring drift, src/cli/types.ts lines 17-25 four parallel factory aliases, src/config/validator.ts line 216 validateSettings ~100 LOC, src/shared/gh-api-utils.ts line 4 imports RepoInfo from repo/detector, src/vcs/pr-strategy.ts line 33 abstract closeExistingPR returns boolean, src/lifecycle/types.ts lines 40-68 positional token on exists/create/fork/receiveMigration). All referenced symbols, counts, and line numbers accurate. Effort tags match scope (trivial for single-line fixes, small for single-file extractions, medium for multi-file relocations/splits). Dependencies sensible: cross-module depends on structure-nav (both touch repo/index.ts), design-coherence depends on low-elegance (both touch sync-command.ts), init-coupling depends on low-elegance (same file), mid-elegance depends on quick-wins (countActions helper). SOLID check: design-coherence step 1 collapses 4 parallel optional factory fields into a Record<SettingsKind,SettingsProcessorFactory<T>> \u2014 this is DRY consolidation, preserves DI seam, net line reduction, NOT inlining or removing abstractions. No cluster encourages inheritance, removes single-impl interfaces, or targets the flagged churn files src/sync/types.ts or src/vcs/authenticated-git-ops.ts. No double-counted steps. Priority order type-safety -> structure-nav -> low-elegance -> quick-wins -> design-coherence -> cross-module -> api-coherence -> init-coupling -> error-consistency -> mid-elegance matches strategize weight ranking (Type safety 12x first, Structure nav 5x second). Value check: all 10 clusters keep \u2014 every step improves clarity or coherence without adding indirection, wrappers, or fragile base classes. Error-consistency step 1 (cross-check against 101 resolved patterns before editing) is a prudent guardrail, keep. 6 false-positive skips upstream were per-SOLID-guardrail, preserved. No fixes needed.\n\n## Decision Ledger\n- type-safety-literal-consolidation -> keep\n- structure-nav-layout -> keep\n- low-elegance-helper-extraction -> keep\n- convention-and-naming-quick-wins -> keep\n- design-coherence-factory-consolidation -> keep\n- cross-module-architecture-layering -> keep\n- api-and-contract-coherence -> keep\n- initialization-coupling-fixes -> keep\n- error-consistency-newly-surfaced -> keep\n- mid-elegance-settings-report-delta -> keep",
-          "timestamp": "2026-04-16T07:36:12+00:00",
+          "report": "Sense-check verified. Content: All 23 issues genuine with file:line evidence. No false SOLID penalization. Structure: 8 clusters by fix type, quick-wins first. Value: Quick-wins (7 items, single-edit) maximize velocity. sanitize-utils-layering (4 items) has highest multi-dimension ROI. Verified src/vcs/sanitize-utils.ts \u2014 pure string utility with zero VCS imports, confirmed move to src/shared/ is correct. Verified src/config/extends-resolver.ts lines 16,23,29 \u2014 bare Error throws confirmed, should use ValidationError. Verified src/output/lifecycle-report.ts line 53 \u2014 switch lacks exhaustive default, confirmed lifecycle-formatter.ts line 31-55 has the pattern to match.",
+          "timestamp": "2026-04-24T10:44:07+00:00",
           "value_targets": [
-            "type-safety-literal-consolidation",
-            "structure-nav-layout",
-            "low-elegance-helper-extraction",
-            "convention-and-naming-quick-wins",
-            "design-coherence-factory-consolidation",
-            "cross-module-architecture-layering",
-            "api-and-contract-coherence",
-            "initialization-coupling-fixes",
-            "error-consistency-newly-surfaced",
-            "mid-elegance-settings-report-delta"
+            "quick-wins",
+            "sanitize-utils-layering",
+            "api-verb-consistency",
+            "contract-safety",
+            "type-safety-casts",
+            "module-scoped-mutables",
+            "result-type-refactor",
+            "method-decomposition"
           ],
-          "confirmed_at": "2026-04-16T07:36:17+00:00",
-          "confirmed_text": "Verified all 10 clusters (type-safety-literal-consolidation, structure-nav-layout, low-elegance-helper-extraction, convention-and-naming-quick-wins, design-coherence-factory-consolidation, cross-module-architecture-layering, api-and-contract-coherence, initialization-coupling-fixes, error-consistency-newly-surfaced, mid-elegance-settings-report-delta) against live source; file paths, line numbers, symbol names, counts, effort tags, and dependencies all accurate. SOLID guardrails respected: design-coherence Record consolidation preserves DI seam, no single-impl interfaces removed, no churn files touched. All keepers."
+          "confirmed_at": "2026-04-24T10:44:41+00:00",
+          "confirmed_text": "Sense-checked quick-wins cluster (verified gitlab-pr-strategy.ts, extends-resolver.ts, lifecycle-report.ts), sanitize-utils-layering cluster (verified sanitize-utils.ts has zero VCS imports), type-safety-casts cluster (fixed path to src/settings/rulesets/diff-algorithm.ts). All file paths confirmed on disk."
         }
       },
-      "strategy": "Execute 10 clusters in priority order per strategist headroom: type-safety-literal-consolidation (6 issues, highest leverage via existing ActiveAction/RepoVisibility/RepoType aliases) \u2192 structure-nav-layout (4 file moves) \u2192 low-elegance-helper-extraction (5 twin-block helpers) \u2192 convention-and-naming-quick-wins (10 one-liners) \u2192 design-coherence-factory-consolidation (settings factory Record) \u2192 cross-module-architecture-layering (shared\u2192domain relocations) \u2192 api-and-contract-coherence (options-bag lifecycle interface) \u2192 initialization-coupling-fixes (module-scope let removal) \u2192 error-consistency-newly-surfaced (typed branch-protection classify) \u2192 mid-elegance-settings-report-delta (codeScanning countActions). 6 false-positive skips respect SOLID guardrails and rework-loop history. Dependencies pre-set: cross-module\u2192structure-nav, design-coherence\u2192low-elegance, init-coupling\u2192low-elegance, mid-elegance\u2192quick-wins.",
+      "strategy": "Execute quick-wins first (7 single-edit fixes across 7 dimensions), then sanitize-utils-layering (4 items, highest multi-dimension ROI), then api-verb-consistency, contract-safety, type-safety-casts. Defer module-scoped-mutables and result-type-refactor as T4.",
       "completion_mode": "manual_triage"
     },
     "issue_dispositions": {
@@ -37540,31 +37062,6 @@
         "false_positive_rate": 1.0,
         "recommendation": "skip. Same worktree-artifact issue. Skip --false-positive."
       }
-    ],
-    "active_triage_issue_ids": [
-      "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
-      "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
-      "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
-      "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
-      "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
-      "review::.::holistic::contract_coherence::base_result_unsafe_cast",
-      "review::.::holistic::contract_coherence::get_or_create_mutates",
-      "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
-      "review::.::holistic::dependency_health::shared_vcs_circular_import",
-      "review::.::holistic::design_coherence::display_name_duplication",
-      "review::.::holistic::design_coherence::receive_migration_multi_phase",
-      "review::.::holistic::design_coherence::settings_formatter_duplication",
-      "review::.::holistic::error_consistency::extends_resolver_bare_error",
-      "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
-      "review::.::holistic::initialization_coupling::run_scope_module_state",
-      "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
-      "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
-      "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
-      "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
-      "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-      "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
-      "review::.::holistic::type_safety::unguarded_error_property_access",
-      "review::.::holistic::type_safety::unverified_string_cast_in_diff"
     ]
   },
   "commit_log": [
@@ -38126,7 +37623,8 @@
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 204,
     "lifecycle_phase": "plan",
-    "_subjective_migration_pruned": true
+    "_subjective_migration_pruned": true,
+    "postflight_scan_completed_at_scan_count": 204
   },
   "scan_count_at_plan_start": 203
 }

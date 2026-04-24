@@ -306,7 +306,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
 
     if (config.mode === "force") {
-      // Force merge immediately
+      this.log?.warn(
+        `Force-merging MR ${mrInfo.mrIid} immediately (bypasses pipeline requirements)`
+      );
       const forceFlagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
       const forceCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${forceFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 

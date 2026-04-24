@@ -11,18 +11,18 @@
     "total": 1758,
     "auto_resolved": 1160,
     "deferred": 0,
-    "false_positive": 161,
+    "false_positive": 162,
     "fixed": 277,
-    "open": 158,
+    "open": 157,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
       "1": {
         "auto_resolved": 8,
         "deferred": 0,
-        "false_positive": 5,
+        "false_positive": 6,
         "fixed": 105,
-        "open": 11,
+        "open": 10,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -171,7 +171,10 @@
     "design_coherence": {
       "score": 87.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T10:35:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-24T10:47:06+00:00"
     },
     "contract_coherence": {
       "score": 82.5,
@@ -3185,13 +3188,13 @@
       "strict": 87.5,
       "verified_strict_score": 87.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.875,
-          "failing": 3,
+          "failing": 2,
           "weighted_failures": 1.25,
           "assessment_score": 87.5,
           "placeholder": false,
@@ -74073,11 +74076,11 @@
         "reasoning": "",
         "summary_hash": "0d5d0c14"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-24T10:35:24+00:00",
       "last_seen": "2026-04-24T10:35:24+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T10:47:06+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74085,7 +74088,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this \u2014 xfg-template.ts is in src/shared/ which must not import from src/repo/ per SOLID layering. The duplicate fullName logic is intentional to maintain shared-as-leaf dependency direction. I am not gaming the score by suppressing a real defect.",
+        "attested_at": "2026-04-24T10:47:06+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::receive_migration_multi_phase": {
       "id": "review::.::holistic::design_coherence::receive_migration_multi_phase",

@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T10:44:48+00:00",
+  "updated": "2026-04-24T10:47:06+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
@@ -11,7 +11,6 @@
     "review::.::holistic::error_consistency::extends_resolver_bare_error",
     "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
     "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-    "review::.::holistic::design_coherence::display_name_duplication",
     "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
     "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
     "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
@@ -1145,6 +1144,16 @@
       "created_at": "2026-04-24T09:49:22+00:00",
       "review_after": null,
       "skipped_at_scan": 203
+    },
+    "review::.::holistic::design_coherence::display_name_duplication": {
+      "issue_id": "review::.::holistic::design_coherence::display_name_duplication",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 xfg-template.ts is in src/shared/ which must not import from src/repo/ per SOLID layering. The duplicate fullName logic is intentional to maintain shared-as-leaf dependency direction. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T10:47:06+00:00",
+      "review_after": null,
+      "skipped_at_scan": 204
     }
   },
   "active_cluster": null,
@@ -9305,7 +9314,6 @@
     "review::.::holistic::error_consistency::extends_resolver_bare_error",
     "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
     "review::.::holistic::package_organization::misplaced_repo_metadata_test",
-    "review::.::holistic::design_coherence::display_name_duplication",
     "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
     "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
     "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
@@ -36594,6 +36602,20 @@
       "detail": {
         "strategy_len": 260,
         "coverage": "23/23"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:47:06+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::display_name_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
       }
     }
   ],

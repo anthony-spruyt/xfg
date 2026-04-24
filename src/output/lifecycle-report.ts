@@ -66,6 +66,11 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
           `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
         );
         break;
+
+      default: {
+        const _exhaustive: never = action.action;
+        throw new Error(`Unexpected lifecycle action: ${_exhaustive}`);
+      }
     }
 
     if (action.settings) {

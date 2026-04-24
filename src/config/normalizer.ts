@@ -127,18 +127,10 @@ function mergePROptions(
   if (!global) return perRepo;
   if (!perRepo) return global;
 
-  const result: PRMergeOptions = {};
-  const merge = perRepo.merge ?? global.merge;
-  const mergeStrategy = perRepo.mergeStrategy ?? global.mergeStrategy;
-  const deleteBranch = perRepo.deleteBranch ?? global.deleteBranch;
-  const bypassReason = perRepo.bypassReason ?? global.bypassReason;
-  const labels = perRepo.labels ?? global.labels;
-
-  if (merge !== undefined) result.merge = merge;
-  if (mergeStrategy !== undefined) result.mergeStrategy = mergeStrategy;
-  if (deleteBranch !== undefined) result.deleteBranch = deleteBranch;
-  if (bypassReason !== undefined) result.bypassReason = bypassReason;
-  if (labels !== undefined) result.labels = labels;
+  const merged = { ...global, ...perRepo };
+  const result = Object.fromEntries(
+    Object.entries(merged).filter(([, v]) => v !== undefined)
+  ) as PRMergeOptions;
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
