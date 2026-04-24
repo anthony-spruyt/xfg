@@ -12,8 +12,8 @@
     "auto_resolved": 1095,
     "deferred": 0,
     "false_positive": 87,
-    "fixed": 262,
-    "open": 218,
+    "fixed": 264,
+    "open": 216,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 50,
-        "fixed": 120,
-        "open": 37,
+        "fixed": 122,
+        "open": 35,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -228,7 +228,10 @@
     "initialization_coupling": {
       "score": 94.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00"
+      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T04:20:24+00:00"
     },
     "logic_clarity": {
       "score": 93.5,
@@ -3319,13 +3322,13 @@
       "strict": 94.5,
       "verified_strict_score": 94.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.945,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 0.55,
           "assessment_score": 94.5,
           "placeholder": false,
@@ -70142,11 +70145,11 @@
         "reasoning": "",
         "summary_hash": "90c65410"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced module-scope let singletons with per-runSync scoped instances",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T04:20:24+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70154,7 +70157,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Replaced module-scope let singletons with per-runSync scoped instances and I am not gaming the score.",
+        "attested_at": "2026-04-24T04:20:24+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import": {
       "id": "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
@@ -70178,11 +70187,11 @@
         "reasoning": "",
         "summary_hash": "c7b952df"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved getVersion() call from module scope to cli.ts entry point",
       "first_seen": "2026-04-16T05:39:25+00:00",
       "last_seen": "2026-04-16T05:39:25+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T04:20:24+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -70190,7 +70199,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved getVersion() call from module scope to cli.ts entry point and I am not gaming the score.",
+        "attested_at": "2026-04-24T04:20:24+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl": {
       "id": "review::.::holistic::design_coherence::repo_iteration_context_factory_sprawl",

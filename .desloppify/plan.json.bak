@@ -1,11 +1,8 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-16T09:37:00+00:00",
+  "updated": "2026-04-24T04:20:25+00:00",
   "queue_order": [
-    "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
-    "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
-    "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
     "review::.::holistic::error_consistency::branch_protection_string_match",
     "review::.::holistic::error_consistency::close_existing_pr_false_is_ambiguous",
     "review::.::holistic::mid_level_elegance::code_scanning_report_glue",
@@ -399,7 +396,7 @@
       "skipped_at_scan": 199
     }
   },
-  "active_cluster": "api-and-contract-coherence",
+  "active_cluster": "initialization-coupling-fixes",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -2714,20 +2711,20 @@
     "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift": {
       "issue_id": "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
       "created_at": "2026-04-16T07:26:26+00:00",
-      "cluster": "api-and-contract-coherence",
-      "updated_at": "2026-04-16T07:26:26+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-16T09:37:01+00:00"
     },
     "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import": {
       "issue_id": "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
       "created_at": "2026-04-16T07:26:28+00:00",
-      "cluster": "initialization-coupling-fixes",
-      "updated_at": "2026-04-16T07:26:28+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T04:20:24+00:00"
     },
     "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons": {
       "issue_id": "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons",
       "created_at": "2026-04-16T07:26:28+00:00",
-      "cluster": "initialization-coupling-fixes",
-      "updated_at": "2026-04-16T07:26:28+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T04:20:25+00:00"
     },
     "review::.::holistic::error_consistency::branch_protection_string_match": {
       "issue_id": "review::.::holistic::error_consistency::branch_protection_string_match",
@@ -4583,11 +4580,11 @@
       "name": "api-and-contract-coherence",
       "description": "Rename rethrowIfUnexpectedCommitError to classifyCommitError, IPRStrategy.checkExistingPR to findExistingPRUrl, fix IRepoSettingsStrategy verbs, migrate IRepoLifecycleProvider to options bag, clarify GitOps.commit dry-run JSDoc",
       "issue_ids": [
-        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
         "review::.::holistic::contract_coherence::rethrow_name_but_returns",
         "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
         "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-        "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
+        "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift"
       ],
       "created_at": "2026-04-16T07:25:47+00:00",
       "updated_at": "2026-04-16T09:36:50+00:00",
@@ -4657,7 +4654,8 @@
           "issue_refs": [
             "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
             "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
-          ]
+          ],
+          "done": true
         },
         {
           "title": "Verify no other transitive importers trigger the package.json readFileSync at import time",
@@ -4666,7 +4664,8 @@
           "issue_refs": [
             "program_ts_version_readfilesync_at_import",
             "sync_command_module_level_let_singletons"
-          ]
+          ],
+          "done": true
         }
       ]
     },
@@ -31919,6 +31918,82 @@
       "actor": "user",
       "note": "Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts.",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-04-16T09:37:01+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Renamed IRepoSettingsStrategy methods: getSettings->get, updateSettings->update, setVulnerabilityAlerts->updateVulnerabilityAlerts. and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:13:49+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "api-and-contract-coherence"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:20:23+00:00",
+      "action": "done",
+      "issue_ids": [
+        "program_ts_version_readfilesync_at_import"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved getVersion() call from module scope to cli.ts entry point",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:20:24+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Moved getVersion() call from module scope to cli.ts entry point",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Moved getVersion() call from module scope to cli.ts entry point and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T04:20:24+00:00",
+      "action": "done",
+      "issue_ids": [
+        "sync_command_module_level_let_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced module-scope let singletons with per-runSync scoped instances",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T04:20:25+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Replaced module-scope let singletons with per-runSync scoped instances",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Replaced module-scope let singletons with per-runSync scoped instances and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -33546,7 +33621,10 @@
     "review::.::holistic::contract_coherence::rethrow_name_but_returns",
     "review::.::holistic::contract_coherence::git_ops_commit_dry_run_return",
     "review::.::holistic::naming_quality::check_existing_pr_returns_url",
-    "review::.::holistic::api_surface_coherence::lifecycle_token_positional"
+    "review::.::holistic::api_surface_coherence::lifecycle_token_positional",
+    "review::.::holistic::api_surface_coherence::repo_settings_strategy_verb_drift",
+    "review::.::holistic::initialization_coupling::program_ts_version_readfilesync_at_import",
+    "review::.::holistic::initialization_coupling::sync_command_module_level_let_singletons"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
