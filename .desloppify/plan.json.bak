@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T08:59:47+00:00",
+  "updated": "2026-04-24T08:59:48+00:00",
   "queue_order": [
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -1140,6 +1140,16 @@
       "note": null,
       "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
       "created_at": "2026-04-24T08:59:47+00:00",
+      "review_after": null,
+      "skipped_at_scan": 200
+    },
+    "stale_exclude::.worktrees::.worktrees": {
+      "issue_id": "stale_exclude::.worktrees::.worktrees",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
+      "created_at": "2026-04-24T08:59:48+00:00",
       "review_after": null,
       "skipped_at_scan": 200
     }
@@ -34279,6 +34289,20 @@
       "action": "skip",
       "issue_ids": [
         "smells::src/shared/type-guards.ts::async_no_await"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T08:59:48+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "stale_exclude::.worktrees::.worktrees"
       ],
       "cluster_name": null,
       "actor": "user",
