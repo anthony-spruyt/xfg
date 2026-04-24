@@ -1,13 +1,12 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T13:31:05+00:00",
+  "updated": "2026-04-24T13:35:55+00:00",
   "queue_order": [
     "review::.::holistic::logic_clarity::is_valid_git_url_verbose_boolean",
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::design_coherence::settings_formatter_duplication",
     "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
     "review::.::holistic::initialization_coupling::run_scope_module_state",
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
@@ -3647,8 +3646,8 @@
     "review::.::holistic::design_coherence::settings_formatter_duplication": {
       "issue_id": "review::.::holistic::design_coherence::settings_formatter_duplication",
       "created_at": "2026-04-24T10:39:48+00:00",
-      "cluster": "method-decomposition",
-      "updated_at": "2026-04-24T10:39:48+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T13:35:55+00:00"
     }
   },
   "clusters": {
@@ -5879,8 +5878,8 @@
       "name": "method-decomposition",
       "description": "Extract long methods into focused sub-methods",
       "issue_ids": [
-        "review::.::holistic::design_coherence::settings_formatter_duplication",
-        "review::.::holistic::design_coherence::receive_migration_multi_phase"
+        "review::.::holistic::design_coherence::receive_migration_multi_phase",
+        "review::.::holistic::design_coherence::settings_formatter_duplication"
       ],
       "created_at": "2026-04-24T10:39:47+00:00",
       "updated_at": "2026-04-24T10:43:50+00:00",
@@ -5907,7 +5906,8 @@
           "issue_refs": [
             "settings_formatter_duplication"
           ],
-          "effort": "small"
+          "effort": "small",
+          "done": true
         }
       ]
     }
@@ -9328,7 +9328,6 @@
     "review::.::holistic::ai_generated_debt::formulaic_cache_comments",
     "review::.::holistic::low_level_elegance::renderTree_nested_conditionals",
     "review::.::holistic::initialization_coupling::sync_command_module_level_singletons",
-    "review::.::holistic::design_coherence::settings_formatter_duplication",
     "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
     "review::.::holistic::initialization_coupling::run_scope_module_state",
     "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag"
@@ -37069,6 +37068,31 @@
         "status": "fixed",
         "attestation": "I have actually extracted all four phases into focused private methods. Build and all tests pass. I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T13:35:54+00:00",
+      "action": "done",
+      "issue_ids": [
+        "settings_formatter_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted shared formatChangeLines helper into base-processor.ts used by both code-scanning/formatter.ts and repo-settings/formatter.ts. PlanEntry type shared via type alias. Repo-settings formatter retains its warnings pass.",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T13:35:55+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::settings_formatter_duplication"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Extracted shared formatChangeLines helper into base-processor.ts used by both code-scanning/formatter.ts and repo-settings/formatter.ts. PlanEntry type shared via type alias. Repo-settings formatter retains its warnings pass.",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually extracted the duplicated create/update formatting loop into a shared utility. Build and all 2680 tests pass. I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -38126,7 +38150,8 @@
     "review::.::holistic::contract_coherence::get_or_create_mutates",
     "review::.::holistic::type_safety::unguarded_error_property_access",
     "review::.::holistic::type_safety::unverified_string_cast_in_diff",
-    "review::.::holistic::design_coherence::receive_migration_multi_phase"
+    "review::.::holistic::design_coherence::receive_migration_multi_phase",
+    "review::.::holistic::design_coherence::settings_formatter_duplication"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {
