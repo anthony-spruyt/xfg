@@ -1,38 +1,38 @@
 {
   "command": "resolve",
   "patterns": [
-    "structure-nav-scoped-wins"
+    "test_coverage::src/cli/branch-utils.ts::transitive_only"
   ],
   "status": "fixed",
   "resolved": [
-    "strategy::structure-nav-scoped-wins"
+    "test_coverage::src/cli/branch-utils.ts::transitive_only"
   ],
   "count": 1,
   "next_command": "desloppify next",
-  "overall_score": 91.4,
-  "objective_score": 92.7,
-  "strict_score": 90.2,
+  "overall_score": 91.5,
+  "objective_score": 92.8,
+  "strict_score": 90.3,
   "verified_strict_score": 90.3,
-  "prev_overall_score": 91.4,
+  "prev_overall_score": 91.5,
   "prev_objective_score": 92.7,
   "prev_strict_score": 90.2,
   "prev_verified_strict_score": 90.3,
-  "attestation": "I have actually Strategy guidance acknowledged - will address in next cycle and I am not gaming the score.",
+  "attestation": "I have actually Added branch-utils.test.ts with tests for sanitizeBranchName and validateBranchName and I am not gaming the score.",
   "narrative": {
-    "phase": "refinement",
+    "phase": "stagnation",
     "headline": "\u26a0 1 security issue \u2014 review before other cleanup. All T1 items cleared!",
     "dimensions": {
       "lowest_dimensions": [
         {
           "name": "Test health",
-          "strict": 64.5,
-          "failing": 28,
+          "strict": 66.0,
+          "failing": 26,
           "impact": 0.0
         },
         {
           "name": "Duplication",
-          "strict": 86.3,
-          "failing": 2,
+          "strict": 86.0,
+          "failing": 5,
           "impact": 0.0
         },
         {
@@ -47,35 +47,35 @@
       "biggest_gap_dimensions": [
         {
           "name": "Duplication",
-          "lenient": 99.5,
-          "strict": 86.3,
-          "gap": 13.2,
+          "lenient": 98.8,
+          "strict": 86.0,
+          "gap": 12.8,
           "wontfix_count": 0
         },
         {
           "name": "Test health",
-          "lenient": 70.2,
-          "strict": 64.5,
-          "gap": 5.7,
+          "lenient": 71.5,
+          "strict": 66.0,
+          "gap": 5.5,
           "wontfix_count": 0
         },
         {
           "name": "Security",
           "lenient": 99.6,
-          "strict": 95.1,
-          "gap": 4.5,
+          "strict": 95.2,
+          "gap": 4.4,
           "wontfix_count": 0
         }
       ],
       "stagnant_dimensions": [
         {
           "name": "Code quality",
-          "strict": 94.4,
+          "strict": 94.2,
           "stuck_scans": 5
         },
         {
           "name": "File health",
-          "strict": 96.4,
+          "strict": 96.5,
           "stuck_scans": 5
         },
         {
@@ -124,13 +124,24 @@
       },
       {
         "type": "reorganize",
-        "detector": "single_use",
-        "count": 2,
-        "description": "2 single_use issues \u2014 inline or relocate with `desloppify move`",
-        "command": "desloppify show single_use --status open",
+        "detector": "naming",
+        "count": 1,
+        "description": "1 naming issues \u2014 rename files with `desloppify move` to fix conventions",
+        "command": "desloppify show naming --status open",
         "impact": 0.0,
         "dimension": "Code quality",
         "priority": 2,
+        "lane": "restructure"
+      },
+      {
+        "type": "reorganize",
+        "detector": "single_use",
+        "count": 1,
+        "description": "1 single_use issues \u2014 inline or relocate with `desloppify move`",
+        "command": "desloppify show single_use --status open",
+        "impact": 0.0,
+        "dimension": "Code quality",
+        "priority": 3,
         "lane": "restructure"
       },
       {
@@ -141,18 +152,18 @@
         "command": "desloppify show facade --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 3,
+        "priority": 4,
         "lane": "restructure"
       },
       {
         "type": "refactor",
         "detector": "structural",
-        "count": 44,
-        "description": "44 structural work items \u2014 review large files \u2014 split only when responsibilities are clearly separable",
+        "count": 46,
+        "description": "46 structural work items \u2014 review large files \u2014 split only when responsibilities are clearly separable",
         "command": "desloppify show structural --status open",
         "impact": 0.0,
         "dimension": "File health",
-        "priority": 4,
+        "priority": 5,
         "lane": "refactor_0"
       },
       {
@@ -163,18 +174,18 @@
         "command": "desloppify show props --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 5,
+        "priority": 6,
         "lane": "refactor_0"
       },
       {
         "type": "refactor",
         "detector": "test_coverage",
-        "count": 28,
-        "description": "28 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
+        "count": 26,
+        "description": "26 test_coverage work items \u2014 review test coverage gaps \u2014 focus on critical modules with many importers first; defer test writing until code quality issues are resolved",
         "command": "desloppify show test_coverage --status open",
         "impact": 0.0,
         "dimension": "Test health",
-        "priority": 6,
+        "priority": 7,
         "lane": "test_coverage"
       },
       {
@@ -185,7 +196,7 @@
         "command": "desloppify show signature --status open",
         "impact": 0.0,
         "dimension": "Unknown",
-        "priority": 7,
+        "priority": 8,
         "lane": "refactor_0"
       },
       {
@@ -196,18 +207,18 @@
         "command": "desloppify show responsibility_cohesion --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 8,
+        "priority": 9,
         "lane": "refactor_1"
       },
       {
         "type": "refactor",
         "detector": "boilerplate_duplication",
-        "count": 2,
-        "description": "2 boilerplate_duplication work items \u2014 extract shared boilerplate into reusable helpers or base classes",
+        "count": 5,
+        "description": "5 boilerplate_duplication work items \u2014 extract shared boilerplate into reusable helpers or base classes",
         "command": "desloppify show boilerplate_duplication --status open",
         "impact": 0.0,
         "dimension": "Duplication",
-        "priority": 9,
+        "priority": 10,
         "lane": "refactor_2"
       },
       {
@@ -218,7 +229,7 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 10,
+        "priority": 11,
         "lane": "refactor_0"
       },
       {
@@ -229,7 +240,7 @@
         "command": "desloppify show exports --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 11,
+        "priority": 12,
         "lane": "refactor_3"
       },
       {
@@ -240,7 +251,7 @@
         "command": "desloppify show stale_exclude --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 12,
+        "priority": 13,
         "lane": "refactor_4"
       },
       {
@@ -251,14 +262,14 @@
         "command": "desloppify show security --status open",
         "impact": 0.0,
         "dimension": "Security",
-        "priority": 13,
+        "priority": 14,
         "lane": "refactor_5"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 207,
+        "total_count": 210,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -268,7 +279,8 @@
           "actions": [
             1,
             2,
-            3
+            3,
+            4
           ],
           "file_count": 4,
           "total_impact": 0.0,
@@ -277,19 +289,19 @@
         },
         "refactor_0": {
           "actions": [
-            4,
             5,
-            7,
-            10
+            6,
+            8,
+            11
           ],
-          "file_count": 94,
+          "file_count": 95,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_1": {
           "actions": [
-            8
+            9
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -298,16 +310,16 @@
         },
         "refactor_2": {
           "actions": [
-            9
+            10
           ],
-          "file_count": 2,
+          "file_count": 3,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
         },
         "refactor_3": {
           "actions": [
-            11
+            12
           ],
           "file_count": 9,
           "total_impact": 0.0,
@@ -316,7 +328,7 @@
         },
         "refactor_4": {
           "actions": [
-            12
+            13
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -325,7 +337,7 @@
         },
         "refactor_5": {
           "actions": [
-            13
+            14
           ],
           "file_count": 1,
           "total_impact": 0.0,
@@ -334,9 +346,9 @@
         },
         "test_coverage": {
           "actions": [
-            6
+            7
           ],
-          "file_count": 28,
+          "file_count": 26,
           "total_impact": 0.0,
           "automation": "manual",
           "run_first": false
@@ -363,7 +375,7 @@
       "move": {
         "available": true,
         "relevant": true,
-        "reason": "2 single-use files + 1 flat directories",
+        "reason": "1 single-use files + 1 flat directories + 1 naming issues",
         "usage": "desloppify move <source> <dest> [--dry-run]"
       },
       "plan": {
@@ -381,7 +393,7 @@
       "overall_gap": 0.9,
       "wontfix_count": 2,
       "worst_dimension": "Duplication",
-      "worst_gap": 13.2,
+      "worst_gap": 12.8,
       "trend": "growing"
     },
     "milestone": "All T1 items cleared!",
@@ -403,8 +415,8 @@
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 90.2,
-      "gap": -5.2,
+      "current": 90.3,
+      "gap": -5.3,
       "state": "above",
       "warning": null
     },
@@ -428,7 +440,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 142,
+      "report_scores": 143,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,
