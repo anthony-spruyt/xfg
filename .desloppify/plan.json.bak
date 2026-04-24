@@ -1,15 +1,13 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T15:08:25+00:00",
+  "updated": "2026-04-24T15:14:34+00:00",
   "queue_order": [
-    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix",
-    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
     "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
-    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
-    "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
     "review::.::holistic::high_level_elegance::output_missing_barrel_index",
-    "review::.::holistic::low_level_elegance::receivemigration_monolith"
+    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
   ],
   "deferred": [],
   "skipped": {
@@ -1264,7 +1262,7 @@
       "skipped_at_scan": 205
     }
   },
-  "active_cluster": "quick-code-fixes",
+  "active_cluster": "lifecycle-decomposition",
   "overrides": {
     "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only": {
       "issue_id": "test_coverage::src/config/validators/ruleset-validator.ts::transitive_only",
@@ -3777,14 +3775,14 @@
     "review::.::holistic::design_coherence::receive_migration_multi_responsibility": {
       "issue_id": "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
       "created_at": "2026-04-24T14:53:21+00:00",
-      "cluster": "lifecycle-decomposition",
-      "updated_at": "2026-04-24T14:53:21+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:14:33+00:00"
     },
     "review::.::holistic::low_level_elegance::receivemigration_monolith": {
       "issue_id": "review::.::holistic::low_level_elegance::receivemigration_monolith",
       "created_at": "2026-04-24T14:53:21+00:00",
-      "cluster": "lifecycle-decomposition",
-      "updated_at": "2026-04-24T14:53:21+00:00"
+      "cluster": null,
+      "updated_at": "2026-04-24T15:14:34+00:00"
     },
     "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass": {
       "issue_id": "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
@@ -6155,7 +6153,8 @@
             "receive_migration_multi_responsibility",
             "receivemigration_monolith"
           ],
-          "detail": "Extract from github-lifecycle-provider.ts lines 424-557: cleanMirrorRefs (lines 450-471), renameMirrorDefaultBranch (lines 474-502), createRepo (lines 508-535), pushMirrorToRemote (lines 536-556)."
+          "detail": "Extract from github-lifecycle-provider.ts lines 424-557: cleanMirrorRefs (lines 450-471), renameMirrorDefaultBranch (lines 474-502), createRepo (lines 508-535), pushMirrorToRemote (lines 536-556).",
+          "done": true
         },
         {
           "title": "Refactor receiveMigration into thin orchestrator calling the 4 new helpers in sequence",
@@ -6163,7 +6162,8 @@
           "issue_refs": [
             "receive_migration_multi_responsibility"
           ],
-          "detail": "Replace 133-line body with ~20-line orchestrator: removeOriginRemote, cleanMirrorRefs, renameMirrorDefaultBranch, createRepo, pushMirrorToRemote in sequence."
+          "detail": "Replace 133-line body with ~20-line orchestrator: removeOriginRemote, cleanMirrorRefs, renameMirrorDefaultBranch, createRepo, pushMirrorToRemote in sequence.",
+          "done": true
         }
       ]
     },
@@ -9664,7 +9664,13 @@
       "candidates": []
     }
   },
-  "promoted_ids": [],
+  "promoted_ids": [
+    "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+    "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+    "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting",
+    "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+    "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+  ],
   "plan_start_scores": {
     "strict": 91.6,
     "overall": 92.8,
@@ -38414,6 +38420,130 @@
         "status": "fixed",
         "attestation": "I have actually Simplified redundant typeof === object check to simple truthy check in validator.ts hasActionableSettings and I am not gaming the score."
       }
+    },
+    {
+      "timestamp": "2026-04-24T15:08:32+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::duplicate_deep_equal",
+        "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+        "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "quick-code-fixes cluster: deepEqual dedup, typeof simplification, RepoSettingsAction narrowing",
+      "detail": {
+        "sha": "713c36457e1e",
+        "branch": "desloppify/code-health-apr24"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:08:50+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+        "review::.::holistic::low_level_elegance::receivemigration_monolith"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:08:51+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::cross_module_architecture::lifecycle_barrel_bypass",
+        "review::.::holistic::high_level_elegance::output_missing_barrel_index",
+        "review::.::holistic::cross_module_architecture::output_depends_on_sync_for_formatting"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:08:52+00:00",
+      "action": "promote",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::lifecycle_redundant_file_prefix",
+        "review::.::holistic::convention_outlier::code_scanning_test_name_prefix"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "position": "bottom",
+        "target": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:09:05+00:00",
+      "action": "focus",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "action": "clear",
+        "previous": "quick-code-fixes"
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:14:33+00:00",
+      "action": "done",
+      "issue_ids": [
+        "receive_migration_multi_responsibility"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Decomposed receiveMigration into removeOriginRemote, cleanNonStandardRefs, renameMirrorDefaultBranch, createRepoAndPushMirror private helpers",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:14:33+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::design_coherence::receive_migration_multi_responsibility"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Decomposed receiveMigration into removeOriginRemote, cleanNonStandardRefs, renameMirrorDefaultBranch, createRepoAndPushMirror private helpers",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Decomposed receiveMigration into removeOriginRemote, cleanNonStandardRefs, renameMirrorDefaultBranch, createRepoAndPushMirror private helpers and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-04-24T15:14:34+00:00",
+      "action": "done",
+      "issue_ids": [
+        "receivemigration_monolith"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-04-24T15:14:34+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::low_level_elegance::receivemigration_monolith"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers and I am not gaming the score."
+      }
     }
   ],
   "epic_triage_meta": {
@@ -39430,12 +39560,23 @@
       "recorded_at": "2026-04-24T14:28:01+00:00",
       "note": "Review import \u2014 20 dimensions scored by blind subagent review",
       "cluster_name": null
+    },
+    {
+      "sha": "713c36457e1e",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::duplicate_deep_equal",
+        "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
+        "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning"
+      ],
+      "recorded_at": "2026-04-24T15:08:32+00:00",
+      "note": "quick-code-fixes cluster: deepEqual dedup, typeof simplification, RepoSettingsAction narrowing",
+      "cluster_name": null
     }
   ],
   "uncommitted_issues": [
-    "review::.::holistic::logic_clarity::duplicate_deep_equal",
-    "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
-    "review::.::holistic::logic_clarity::redundant_typeof_check_code_scanning"
+    "review::.::holistic::design_coherence::receive_migration_multi_responsibility",
+    "review::.::holistic::low_level_elegance::receivemigration_monolith"
   ],
   "commit_tracking_branch": null,
   "refresh_state": {

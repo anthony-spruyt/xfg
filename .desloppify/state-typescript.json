@@ -12,8 +12,8 @@
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 175,
-    "fixed": 299,
-    "open": 142,
+    "fixed": 301,
+    "open": 140,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 0,
         "false_positive": 6,
-        "fixed": 116,
-        "open": 1,
+        "fixed": 117,
+        "open": 0,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 0,
         "false_positive": 91,
-        "fixed": 137,
-        "open": 6,
+        "fixed": 138,
+        "open": 5,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -174,13 +174,16 @@
       "source": "holistic",
       "assessed_at": "2026-04-24T14:27:46+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-24T14:53:39+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T15:14:34+00:00"
     },
     "design_coherence": {
       "score": 86.5,
       "source": "holistic",
-      "assessed_at": "2026-04-24T14:27:46+00:00"
+      "assessed_at": "2026-04-24T14:27:46+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-24T15:14:33+00:00"
     },
     "contract_coherence": {
       "score": 89.5,
@@ -3206,13 +3209,13 @@
       "strict": 86.5,
       "verified_strict_score": 86.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.865,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.35,
           "assessment_score": 86.5,
           "placeholder": false,
@@ -3332,13 +3335,13 @@
       "strict": 82.0,
       "verified_strict_score": 82.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.82,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.8,
           "assessment_score": 82.0,
           "placeholder": false,
@@ -74878,11 +74881,11 @@
         "reasoning": "",
         "summary_hash": "6fdc66e0"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:14:34+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -74890,7 +74893,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Same fix as receive_migration_multi_responsibility \u2014 receiveMigration decomposed into 4 focused private helpers and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:14:34+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::settings_descriptor_repetition": {
       "id": "review::.::holistic::low_level_elegance::settings_descriptor_repetition",
@@ -75120,11 +75129,11 @@
         "reasoning": "",
         "summary_hash": "1134a048"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Decomposed receiveMigration into removeOriginRemote, cleanNonStandardRefs, renameMirrorDefaultBranch, createRepoAndPushMirror private helpers",
       "first_seen": "2026-04-24T14:27:46+00:00",
       "last_seen": "2026-04-24T14:27:46+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-24T15:14:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -75132,7 +75141,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Decomposed receiveMigration into removeOriginRemote, cleanNonStandardRefs, renameMirrorDefaultBranch, createRepoAndPushMirror private helpers and I am not gaming the score.",
+        "attested_at": "2026-04-24T15:14:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission": {
       "id": "review::.::holistic::contract_coherence::repo_settings_diff_unchanged_omission",
