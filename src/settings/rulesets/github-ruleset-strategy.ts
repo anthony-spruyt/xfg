@@ -10,6 +10,7 @@ import type {
   GitHubBypassActor,
   GitHubRulesetConditions,
   GitHubRule,
+  RulesetCreateParams,
   RulesetUpdateParams,
 } from "./types.js";
 
@@ -188,14 +189,13 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
 
   async create(
     repoInfo: RepoInfo,
-    name: string,
-    ruleset: Ruleset,
+    params: RulesetCreateParams,
     options?: GhApiOptions
   ): Promise<GitHubRuleset> {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
-    const payload = configToGitHub(name, ruleset);
+    const payload = configToGitHub(params.name, params.ruleset);
     const result = await this.api.call("POST", endpoint, { payload, options });
 
     return parseApiJson<GitHubRuleset>(result, "ruleset response");

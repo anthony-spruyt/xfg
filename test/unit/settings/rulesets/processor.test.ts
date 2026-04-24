@@ -50,11 +50,10 @@ class MockRulesetStrategy {
 
   async create(
     _repo: GitHubRepoInfo,
-    name: string,
-    ruleset: Ruleset
+    params: { name: string; ruleset: Ruleset }
   ): Promise<GitHubRuleset> {
-    this.calls.push({ method: "create", args: [name, ruleset] });
-    return { ...this.createResponse, name };
+    this.calls.push({ method: "create", args: [params.name, params.ruleset] });
+    return { ...this.createResponse, name: params.name };
   }
 
   async update(

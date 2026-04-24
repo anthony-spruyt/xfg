@@ -191,11 +191,10 @@ describe("GitHubRulesetStrategy", () => {
         rules: [{ type: "pull_request" }],
       };
 
-      const result = await strategy.create(
-        mockGitHubRepo,
-        "new-rules",
-        ruleset
-      );
+      const result = await strategy.create(mockGitHubRepo, {
+        name: "new-rules",
+        ruleset,
+      });
 
       assert.equal(result.id, 456);
       assert.equal(result.name, "new-rules");
@@ -218,7 +217,10 @@ describe("GitHubRulesetStrategy", () => {
         },
       };
 
-      await strategy.create(mockGitHubRepo, "test-rules", ruleset);
+      await strategy.create(mockGitHubRepo, {
+        name: "test-rules",
+        ruleset,
+      });
 
       const command = mockExecutor.commands[0];
       assert.ok(command.includes("--input -"), "Should use stdin for payload");
@@ -227,7 +229,11 @@ describe("GitHubRulesetStrategy", () => {
 
     test("throws error for non-GitHub repos", async () => {
       await assert.rejects(
-        () => strategy.create(mockAzureRepo, "test", { target: "branch" }),
+        () =>
+          strategy.create(mockAzureRepo, {
+            name: "test",
+            ruleset: { target: "branch" },
+          }),
         /GitHub Ruleset strategy requires GitHub repositories/
       );
     });
