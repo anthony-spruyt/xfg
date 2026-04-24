@@ -1,25 +1,34 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T09:49:22+00:00",
+  "updated": "2026-04-24T10:35:25+00:00",
   "queue_order": [
-    "subjective::abstraction_fitness",
-    "subjective::ai_generated_debt",
+    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+    "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+    "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+    "review::.::holistic::contract_coherence::get_or_create_mutates",
+    "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::dependency_health::shared_vcs_circular_import",
+    "review::.::holistic::design_coherence::display_name_duplication",
+    "review::.::holistic::design_coherence::receive_migration_multi_phase",
+    "review::.::holistic::design_coherence::settings_formatter_duplication",
+    "review::.::holistic::error_consistency::extends_resolver_bare_error",
+    "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+    "review::.::holistic::initialization_coupling::run_scope_module_state",
+    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+    "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+    "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+    "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+    "review::.::holistic::type_safety::unguarded_error_property_access",
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff",
     "subjective::api_surface_coherence",
-    "subjective::authorization_consistency",
     "subjective::contract_coherence",
-    "subjective::convention_outlier",
-    "subjective::design_coherence",
-    "subjective::error_consistency",
-    "subjective::high_level_elegance",
-    "subjective::incomplete_migration",
-    "subjective::initialization_coupling",
-    "subjective::logic_clarity",
-    "subjective::mid_level_elegance",
-    "subjective::naming_quality",
-    "subjective::package_organization",
-    "subjective::test_strategy",
-    "subjective::type_safety"
+    "subjective::mid_level_elegance"
   ],
   "deferred": [],
   "skipped": {
@@ -3487,108 +3496,6 @@
       "created_at": "2026-04-24T04:50:52+00:00",
       "cluster": null,
       "updated_at": "2026-04-24T09:00:22+00:00"
-    },
-    "subjective::abstraction_fitness": {
-      "issue_id": "subjective::abstraction_fitness",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::ai_generated_debt": {
-      "issue_id": "subjective::ai_generated_debt",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::api_surface_coherence": {
-      "issue_id": "subjective::api_surface_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::authorization_consistency": {
-      "issue_id": "subjective::authorization_consistency",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::contract_coherence": {
-      "issue_id": "subjective::contract_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::convention_outlier": {
-      "issue_id": "subjective::convention_outlier",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::design_coherence": {
-      "issue_id": "subjective::design_coherence",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::error_consistency": {
-      "issue_id": "subjective::error_consistency",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::high_level_elegance": {
-      "issue_id": "subjective::high_level_elegance",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::incomplete_migration": {
-      "issue_id": "subjective::incomplete_migration",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::initialization_coupling": {
-      "issue_id": "subjective::initialization_coupling",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::logic_clarity": {
-      "issue_id": "subjective::logic_clarity",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::mid_level_elegance": {
-      "issue_id": "subjective::mid_level_elegance",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::naming_quality": {
-      "issue_id": "subjective::naming_quality",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::package_organization": {
-      "issue_id": "subjective::package_organization",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::test_strategy": {
-      "issue_id": "subjective::test_strategy",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
-    },
-    "subjective::type_safety": {
-      "issue_id": "subjective::type_safety",
-      "created_at": "2026-04-24T04:50:52+00:00",
-      "cluster": "auto/stale-review",
-      "updated_at": "2026-04-24T09:48:48+00:00"
     }
   },
   "clusters": {
@@ -5490,25 +5397,7 @@
     "auto/stale-review": {
       "name": "auto/stale-review",
       "description": "Re-review 17 stale subjective dimensions",
-      "issue_ids": [
-        "subjective::abstraction_fitness",
-        "subjective::ai_generated_debt",
-        "subjective::api_surface_coherence",
-        "subjective::authorization_consistency",
-        "subjective::contract_coherence",
-        "subjective::convention_outlier",
-        "subjective::design_coherence",
-        "subjective::error_consistency",
-        "subjective::high_level_elegance",
-        "subjective::incomplete_migration",
-        "subjective::initialization_coupling",
-        "subjective::logic_clarity",
-        "subjective::mid_level_elegance",
-        "subjective::naming_quality",
-        "subjective::package_organization",
-        "subjective::test_strategy",
-        "subjective::type_safety"
-      ],
+      "issue_ids": [],
       "created_at": "2026-04-24T04:50:52+00:00",
       "updated_at": "2026-04-24T04:50:52+00:00",
       "auto": true,
@@ -34629,6 +34518,138 @@
         "kind": "false_positive",
         "reason": null
       }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:25+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:25+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+          "review::.::holistic::contract_coherence::get_or_create_mutates",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::design_coherence::display_name_duplication",
+          "review::.::holistic::design_coherence::receive_migration_multi_phase",
+          "review::.::holistic::design_coherence::settings_formatter_duplication",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::initialization_coupling::run_scope_module_state",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+          "review::.::holistic::type_safety::unguarded_error_property_access",
+          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+          "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+          "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+          "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+          "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+          "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+          "review::.::holistic::contract_coherence::get_or_create_mutates",
+          "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::dependency_health::shared_vcs_circular_import",
+          "review::.::holistic::design_coherence::display_name_duplication",
+          "review::.::holistic::design_coherence::receive_migration_multi_phase",
+          "review::.::holistic::design_coherence::settings_formatter_duplication",
+          "review::.::holistic::error_consistency::extends_resolver_bare_error",
+          "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+          "review::.::holistic::initialization_coupling::run_scope_module_state",
+          "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+          "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+          "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+          "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+          "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+          "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+          "review::.::holistic::type_safety::unguarded_error_property_access",
+          "review::.::holistic::type_safety::unverified_string_cast_in_diff"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 23,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 77,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [
+          "subjective::api_surface_coherence",
+          "subjective::contract_coherence",
+          "subjective::mid_level_elegance"
+        ],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -36329,10 +36350,9 @@
   "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 198,
+    "subjective_review_completed_at_scan_count": 204,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true
   },
-  "scan_count_at_plan_start": 203,
-  "previous_plan_start_scores": {}
+  "scan_count_at_plan_start": 203
 }

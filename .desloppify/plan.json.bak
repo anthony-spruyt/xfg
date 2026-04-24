@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-24T09:49:21+00:00",
+  "updated": "2026-04-24T09:49:22+00:00",
   "queue_order": [
     "subjective::abstraction_fitness",
     "subjective::ai_generated_debt",
@@ -1120,6 +1120,16 @@
       "note": null,
       "attestation": "I have reviewed this \u2014 idiomatic builder pattern with single-line closures. I am not gaming the score by suppressing a real defect.",
       "created_at": "2026-04-24T09:49:21+00:00",
+      "review_after": null,
+      "skipped_at_scan": 203
+    },
+    "smells::src/shared/gh-api-utils.ts::async_no_await": {
+      "issue_id": "smells::src/shared/gh-api-utils.ts::async_no_await",
+      "kind": "false_positive",
+      "reason": null,
+      "note": null,
+      "attestation": "I have reviewed this function \u2014 it uses await on line 249. I am not gaming the score by suppressing a real defect.",
+      "created_at": "2026-04-24T09:49:22+00:00",
       "review_after": null,
       "skipped_at_scan": 203
     }
@@ -34597,6 +34607,20 @@
       "action": "skip",
       "issue_ids": [
         "smells::src/cli/sync-command.ts::nested_closure"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "kind": "false_positive",
+        "reason": null
+      }
+    },
+    {
+      "timestamp": "2026-04-24T09:49:22+00:00",
+      "action": "skip",
+      "issue_ids": [
+        "smells::src/shared/gh-api-utils.ts::async_no_await"
       ],
       "cluster_name": null,
       "actor": "user",

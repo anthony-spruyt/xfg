@@ -1,19 +1,19 @@
 {
   "version": 3,
   "created": "2026-03-03T09:08:56+00:00",
-  "last_scan": "2026-04-24T09:48:47+00:00",
-  "scan_count": 203,
-  "overall_score": 93.0,
+  "last_scan": "2026-04-24T10:35:24+00:00",
+  "scan_count": 204,
+  "overall_score": 89.5,
   "objective_score": 98.8,
-  "strict_score": 91.7,
+  "strict_score": 88.3,
   "verified_strict_score": 90.3,
   "stats": {
-    "total": 1735,
+    "total": 1758,
     "auto_resolved": 1160,
     "deferred": 0,
     "false_positive": 161,
     "fixed": 277,
-    "open": 135,
+    "open": 158,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
@@ -22,7 +22,7 @@
         "deferred": 0,
         "false_positive": 5,
         "fixed": 105,
-        "open": 0,
+        "open": 11,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -31,7 +31,7 @@
         "deferred": 0,
         "false_positive": 79,
         "fixed": 127,
-        "open": 1,
+        "open": 12,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -40,7 +40,7 @@
         "deferred": 0,
         "false_positive": 76,
         "fixed": 25,
-        "open": 134,
+        "open": 135,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -83,40 +83,34 @@
   },
   "subjective_integrity": {
     "status": "disabled",
-    "target_score": 100.0,
+    "target_score": null,
     "matched_count": 0,
     "matched_dimensions": [],
     "reset_dimensions": []
   },
   "subjective_assessments": {
     "cross_module_architecture": {
-      "score": 93.5,
+      "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "assessed_at": "2026-04-24T10:35:24+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:20:50+00:00"
+      "refresh_reason": "mechanical_issues_changed",
+      "stale_since": "2026-04-24T10:35:24+00:00"
     },
     "convention_outlier": {
-      "score": 91.5,
+      "score": 92.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:31+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "error_consistency": {
-      "score": 92.0,
+      "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-24T04:39:38+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "abstraction_fitness": {
-      "score": 90.5,
+      "score": 89.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "assessed_at": "2026-04-24T10:35:24+00:00",
       "components": [
         "Abstraction Leverage",
         "Indirection Cost",
@@ -127,143 +121,95 @@
       ],
       "component_scores": {
         "Abstraction Leverage": 92.0,
-        "Indirection Cost": 88.0,
-        "Interface Honesty": 94.0,
-        "Delegation Density": 95.0,
-        "Definition Directness": 90.0,
-        "Type Discipline": 93.0
-      },
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:14:45+00:00"
+        "Indirection Cost": 93.0,
+        "Interface Honesty": 91.0,
+        "Delegation Density": 97.0,
+        "Definition Directness": 95.0,
+        "Type Discipline": 96.0
+      }
     },
     "api_surface_coherence": {
-      "score": 92.0,
+      "score": 84.2,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:37:00+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "authorization_consistency": {
-      "score": 95.0,
+      "score": 90.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_false_positive",
-      "stale_since": "2026-04-16T07:26:53+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "ai_generated_debt": {
-      "score": 93.5,
+      "score": 88.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:29+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "incomplete_migration": {
-      "score": 97.5,
+      "score": 95.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:32+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "package_organization": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T08:33:34+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "high_level_elegance": {
-      "score": 91.0,
+      "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T08:33:48+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "mid_level_elegance": {
-      "score": 92.0,
+      "score": 78.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-24T04:43:50+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "low_level_elegance": {
-      "score": 89.0,
+      "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:04:35+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "design_coherence": {
-      "score": 89.0,
+      "score": 87.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:14:44+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "contract_coherence": {
-      "score": 92.5,
+      "score": 82.5,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:36:59+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "dependency_health": {
-      "score": 94.5,
+      "score": 90.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
+      "assessed_at": "2026-04-24T10:35:24+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:32+00:00"
+      "refresh_reason": "mechanical_issues_changed",
+      "stale_since": "2026-04-24T10:35:24+00:00"
     },
     "initialization_coupling": {
-      "score": 94.5,
+      "score": 89.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-24T04:20:24+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "logic_clarity": {
-      "score": 93.5,
+      "score": 85.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:52:33+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "naming_quality": {
-      "score": 91.5,
+      "score": 93.2,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T09:36:59+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "test_strategy": {
-      "score": 92.0,
+      "score": 88.0,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T08:33:37+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     },
     "type_safety": {
-      "score": 89.5,
+      "score": 92.3,
       "source": "holistic",
-      "assessed_at": "2026-04-16T05:39:25+00:00",
-      "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-04-16T07:43:39+00:00"
+      "assessed_at": "2026-04-24T10:35:24+00:00"
     }
   },
   "lang_capabilities": {
@@ -284,135 +230,6 @@
     "test": 123
   },
   "scan_history": [
-    {
-      "timestamp": "2026-03-26T22:47:10+00:00",
-      "lang": "typescript",
-      "strict_score": 92.0,
-      "verified_strict_score": 95.6,
-      "objective_score": 97.6,
-      "overall_score": 93.3,
-      "open": 180,
-      "diff_new": 0,
-      "diff_resolved": 71,
-      "ignored": 0,
-      "raw_issues": 138,
-      "suppressed_pct": 0.0,
-      "ignore_patterns": 1,
-      "subjective_integrity": {
-        "status": "disabled",
-        "matched_count": 0,
-        "reset_count": 0,
-        "target_score": 100.0
-      },
-      "score_confidence": {
-        "status": "full",
-        "confidence": 1.0,
-        "detector_count": 0,
-        "dimension_count": 0
-      },
-      "dimension_scores": {
-        "Code quality": {
-          "score": 96.5,
-          "strict": 92.9
-        },
-        "Security": {
-          "score": 99.5,
-          "strict": 94.5
-        },
-        "File health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Duplication": {
-          "score": 98.7,
-          "strict": 84.5
-        },
-        "Test health": {
-          "score": 97.4,
-          "strict": 92.6
-        },
-        "Abstraction fit": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "AI generated debt": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "API coherence": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Auth consistency": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Contracts": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Convention drift": {
-          "score": 94.0,
-          "strict": 94.0
-        },
-        "Cross-module arch": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Dep health": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Design coherence": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Error consistency": {
-          "score": 94.5,
-          "strict": 94.5
-        },
-        "High elegance": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Stale migration": {
-          "score": 96.0,
-          "strict": 96.0
-        },
-        "Init coupling": {
-          "score": 93.0,
-          "strict": 93.0
-        },
-        "Logic clarity": {
-          "score": 93.5,
-          "strict": 93.5
-        },
-        "Low elegance": {
-          "score": 89.5,
-          "strict": 89.5
-        },
-        "Mid elegance": {
-          "score": 90.5,
-          "strict": 90.5
-        },
-        "Naming quality": {
-          "score": 92.0,
-          "strict": 92.0
-        },
-        "Structure nav": {
-          "score": 92.5,
-          "strict": 92.5
-        },
-        "Test strategy": {
-          "score": 91.5,
-          "strict": 91.5
-        },
-        "Type safety": {
-          "score": 92.5,
-          "strict": 92.5
-        }
-      }
-    },
     {
       "timestamp": "2026-03-26T22:59:43+00:00",
       "lang": "typescript",
@@ -2863,10 +2680,139 @@
           "strict": 89.5
         }
       }
+    },
+    {
+      "timestamp": "2026-04-24T10:35:24+00:00",
+      "lang": "typescript",
+      "strict_score": 88.3,
+      "verified_strict_score": 90.3,
+      "objective_score": 98.8,
+      "overall_score": 89.5,
+      "open": 158,
+      "diff_new": 23,
+      "diff_resolved": 77,
+      "ignored": 0,
+      "raw_issues": 23,
+      "suppressed_pct": 0.0,
+      "ignore_patterns": 0,
+      "subjective_integrity": {
+        "status": "disabled",
+        "matched_count": 0,
+        "reset_count": 0,
+        "target_score": null
+      },
+      "score_confidence": {
+        "status": "full",
+        "confidence": 1.0,
+        "detector_count": 0,
+        "dimension_count": 0
+      },
+      "dimension_scores": {
+        "Code quality": {
+          "score": 99.0,
+          "strict": 96.0
+        },
+        "Security": {
+          "score": 100.0,
+          "strict": 95.6
+        },
+        "File health": {
+          "score": 96.5,
+          "strict": 96.5
+        },
+        "Duplication": {
+          "score": 98.8,
+          "strict": 86.0
+        },
+        "Test health": {
+          "score": 100.0,
+          "strict": 94.5
+        },
+        "Abstraction fit": {
+          "score": 89.5,
+          "strict": 89.5
+        },
+        "AI generated debt": {
+          "score": 88.0,
+          "strict": 88.0
+        },
+        "API coherence": {
+          "score": 84.2,
+          "strict": 84.2
+        },
+        "Auth consistency": {
+          "score": 90.5,
+          "strict": 90.5
+        },
+        "Contracts": {
+          "score": 82.5,
+          "strict": 82.5
+        },
+        "Convention drift": {
+          "score": 92.5,
+          "strict": 92.5
+        },
+        "Cross-module arch": {
+          "score": 88.5,
+          "strict": 88.5
+        },
+        "Dep health": {
+          "score": 90.0,
+          "strict": 90.0
+        },
+        "Design coherence": {
+          "score": 87.5,
+          "strict": 87.5
+        },
+        "Error consistency": {
+          "score": 88.5,
+          "strict": 88.5
+        },
+        "High elegance": {
+          "score": 88.5,
+          "strict": 88.5
+        },
+        "Stale migration": {
+          "score": 95.0,
+          "strict": 95.0
+        },
+        "Init coupling": {
+          "score": 89.0,
+          "strict": 89.0
+        },
+        "Logic clarity": {
+          "score": 85.0,
+          "strict": 85.0
+        },
+        "Low elegance": {
+          "score": 88.5,
+          "strict": 88.5
+        },
+        "Mid elegance": {
+          "score": 78.5,
+          "strict": 78.5
+        },
+        "Naming quality": {
+          "score": 93.2,
+          "strict": 93.2
+        },
+        "Structure nav": {
+          "score": 88.5,
+          "strict": 88.5
+        },
+        "Test strategy": {
+          "score": 88.0,
+          "strict": 88.0
+        },
+        "Type safety": {
+          "score": 92.3,
+          "strict": 92.3
+        }
+      }
     }
   ],
   "tool_hash": "9790f983f730",
-  "scan_path": ".",
+  "scan_path": null,
   "scan_completeness": {
     "typescript": "full"
   },
@@ -2893,7 +2839,8 @@
       "subjective_review": 20,
       "boilerplate_duplication": 8,
       "dupes": 295,
-      "stale_wontfix": 0
+      "stale_wontfix": 0,
+      "review": 10
     }
   },
   "codebase_metrics": {
@@ -3051,19 +2998,19 @@
       }
     },
     "Abstraction fit": {
-      "score": 90.5,
-      "strict": 90.5,
-      "verified_strict_score": 90.5,
+      "score": 89.5,
+      "strict": 89.5,
+      "verified_strict_score": 89.5,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.905,
+          "pass_rate": 0.895,
           "failing": 0,
-          "weighted_failures": 0.95,
-          "assessment_score": 90.5,
+          "weighted_failures": 1.05,
+          "assessment_score": 89.5,
           "placeholder": false,
           "dimension_key": "abstraction_fitness",
           "configured_weight": 8.0,
@@ -3077,29 +3024,29 @@
           ],
           "component_scores": {
             "Abstraction Leverage": 92.0,
-            "Indirection Cost": 88.0,
-            "Interface Honesty": 94.0,
-            "Delegation Density": 95.0,
-            "Definition Directness": 90.0,
-            "Type Discipline": 93.0
+            "Indirection Cost": 93.0,
+            "Interface Honesty": 91.0,
+            "Delegation Density": 97.0,
+            "Definition Directness": 95.0,
+            "Type Discipline": 96.0
           }
         }
       }
     },
     "AI generated debt": {
-      "score": 93.5,
-      "strict": 93.5,
-      "verified_strict_score": 93.5,
+      "score": 88.0,
+      "strict": 88.0,
+      "verified_strict_score": 88.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.935,
-          "failing": 0,
-          "weighted_failures": 0.65,
-          "assessment_score": 93.5,
+          "pass_rate": 0.88,
+          "failing": 1,
+          "weighted_failures": 1.2,
+          "assessment_score": 88.0,
           "placeholder": false,
           "dimension_key": "ai_generated_debt",
           "configured_weight": 1.0,
@@ -3108,19 +3055,19 @@
       }
     },
     "API coherence": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
+      "score": 84.2,
+      "strict": 84.2,
+      "verified_strict_score": 84.2,
       "checks": 10,
-      "failing": 0,
+      "failing": 3,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.92,
-          "failing": 0,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
+          "pass_rate": 0.842,
+          "failing": 3,
+          "weighted_failures": 1.58,
+          "assessment_score": 84.2,
           "placeholder": false,
           "dimension_key": "api_surface_coherence",
           "configured_weight": 1.0,
@@ -3129,19 +3076,19 @@
       }
     },
     "Auth consistency": {
-      "score": 95.0,
-      "strict": 95.0,
-      "verified_strict_score": 95.0,
+      "score": 90.5,
+      "strict": 90.5,
+      "verified_strict_score": 90.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.95,
-          "failing": 0,
-          "weighted_failures": 0.5,
-          "assessment_score": 95.0,
+          "pass_rate": 0.905,
+          "failing": 1,
+          "weighted_failures": 0.95,
+          "assessment_score": 90.5,
           "placeholder": false,
           "dimension_key": "authorization_consistency",
           "configured_weight": 1.0,
@@ -3150,6 +3097,27 @@
       }
     },
     "Contracts": {
+      "score": 82.5,
+      "strict": 82.5,
+      "verified_strict_score": 82.5,
+      "checks": 10,
+      "failing": 2,
+      "tier": 4,
+      "detectors": {
+        "subjective_assessment": {
+          "potential": 10,
+          "pass_rate": 0.825,
+          "failing": 2,
+          "weighted_failures": 1.75,
+          "assessment_score": 82.5,
+          "placeholder": false,
+          "dimension_key": "contract_coherence",
+          "configured_weight": 12.0,
+          "components": []
+        }
+      }
+    },
+    "Convention drift": {
       "score": 92.5,
       "strict": 92.5,
       "verified_strict_score": 92.5,
@@ -3164,27 +3132,6 @@
           "weighted_failures": 0.75,
           "assessment_score": 92.5,
           "placeholder": false,
-          "dimension_key": "contract_coherence",
-          "configured_weight": 12.0,
-          "components": []
-        }
-      }
-    },
-    "Convention drift": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
-      "checks": 10,
-      "failing": 0,
-      "tier": 4,
-      "detectors": {
-        "subjective_assessment": {
-          "potential": 10,
-          "pass_rate": 0.915,
-          "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
-          "placeholder": false,
           "dimension_key": "convention_outlier",
           "configured_weight": 1.0,
           "components": []
@@ -3192,19 +3139,19 @@
       }
     },
     "Cross-module arch": {
-      "score": 93.5,
-      "strict": 93.5,
-      "verified_strict_score": 93.5,
+      "score": 88.5,
+      "strict": 88.5,
+      "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.935,
-          "failing": 0,
-          "weighted_failures": 0.65,
-          "assessment_score": 93.5,
+          "pass_rate": 0.885,
+          "failing": 1,
+          "weighted_failures": 1.15,
+          "assessment_score": 88.5,
           "placeholder": false,
           "dimension_key": "cross_module_architecture",
           "configured_weight": 1.0,
@@ -3213,19 +3160,19 @@
       }
     },
     "Dep health": {
-      "score": 94.5,
-      "strict": 94.5,
-      "verified_strict_score": 94.5,
+      "score": 90.0,
+      "strict": 90.0,
+      "verified_strict_score": 90.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.945,
-          "failing": 0,
-          "weighted_failures": 0.55,
-          "assessment_score": 94.5,
+          "pass_rate": 0.9,
+          "failing": 1,
+          "weighted_failures": 1.0,
+          "assessment_score": 90.0,
           "placeholder": false,
           "dimension_key": "dependency_health",
           "configured_weight": 1.0,
@@ -3234,19 +3181,19 @@
       }
     },
     "Design coherence": {
-      "score": 89.0,
-      "strict": 89.0,
-      "verified_strict_score": 89.0,
+      "score": 87.5,
+      "strict": 87.5,
+      "verified_strict_score": 87.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 3,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.89,
-          "failing": 0,
-          "weighted_failures": 1.1,
-          "assessment_score": 89.0,
+          "pass_rate": 0.875,
+          "failing": 3,
+          "weighted_failures": 1.25,
+          "assessment_score": 87.5,
           "placeholder": false,
           "dimension_key": "design_coherence",
           "configured_weight": 10.0,
@@ -3255,19 +3202,19 @@
       }
     },
     "Error consistency": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
+      "score": 88.5,
+      "strict": 88.5,
+      "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.92,
-          "failing": 0,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
+          "pass_rate": 0.885,
+          "failing": 1,
+          "weighted_failures": 1.15,
+          "assessment_score": 88.5,
           "placeholder": false,
           "dimension_key": "error_consistency",
           "configured_weight": 3.0,
@@ -3276,19 +3223,19 @@
       }
     },
     "High elegance": {
-      "score": 91.0,
-      "strict": 91.0,
-      "verified_strict_score": 91.0,
+      "score": 88.5,
+      "strict": 88.5,
+      "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.91,
-          "failing": 0,
-          "weighted_failures": 0.9,
-          "assessment_score": 91.0,
+          "pass_rate": 0.885,
+          "failing": 1,
+          "weighted_failures": 1.15,
+          "assessment_score": 88.5,
           "placeholder": false,
           "dimension_key": "high_level_elegance",
           "configured_weight": 22.0,
@@ -3297,19 +3244,19 @@
       }
     },
     "Stale migration": {
-      "score": 97.5,
-      "strict": 97.5,
-      "verified_strict_score": 97.5,
+      "score": 95.0,
+      "strict": 95.0,
+      "verified_strict_score": 95.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.975,
+          "pass_rate": 0.95,
           "failing": 0,
-          "weighted_failures": 0.25,
-          "assessment_score": 97.5,
+          "weighted_failures": 0.5,
+          "assessment_score": 95.0,
           "placeholder": false,
           "dimension_key": "incomplete_migration",
           "configured_weight": 1.0,
@@ -3318,19 +3265,19 @@
       }
     },
     "Init coupling": {
-      "score": 94.5,
-      "strict": 94.5,
-      "verified_strict_score": 94.5,
+      "score": 89.0,
+      "strict": 89.0,
+      "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.945,
-          "failing": 0,
-          "weighted_failures": 0.55,
-          "assessment_score": 94.5,
+          "pass_rate": 0.89,
+          "failing": 1,
+          "weighted_failures": 1.1,
+          "assessment_score": 89.0,
           "placeholder": false,
           "dimension_key": "initialization_coupling",
           "configured_weight": 1.0,
@@ -3339,19 +3286,19 @@
       }
     },
     "Logic clarity": {
-      "score": 93.5,
-      "strict": 93.5,
-      "verified_strict_score": 93.5,
+      "score": 85.0,
+      "strict": 85.0,
+      "verified_strict_score": 85.0,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.935,
-          "failing": 0,
-          "weighted_failures": 0.65,
-          "assessment_score": 93.5,
+          "pass_rate": 0.85,
+          "failing": 1,
+          "weighted_failures": 1.5,
+          "assessment_score": 85.0,
           "placeholder": false,
           "dimension_key": "logic_clarity",
           "configured_weight": 6.0,
@@ -3360,19 +3307,19 @@
       }
     },
     "Low elegance": {
-      "score": 89.0,
-      "strict": 89.0,
-      "verified_strict_score": 89.0,
+      "score": 88.5,
+      "strict": 88.5,
+      "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.89,
-          "failing": 0,
-          "weighted_failures": 1.1,
-          "assessment_score": 89.0,
+          "pass_rate": 0.885,
+          "failing": 1,
+          "weighted_failures": 1.15,
+          "assessment_score": 88.5,
           "placeholder": false,
           "dimension_key": "low_level_elegance",
           "configured_weight": 12.0,
@@ -3381,19 +3328,19 @@
       }
     },
     "Mid elegance": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
+      "score": 78.5,
+      "strict": 78.5,
+      "verified_strict_score": 78.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.92,
-          "failing": 0,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
+          "pass_rate": 0.785,
+          "failing": 2,
+          "weighted_failures": 2.15,
+          "assessment_score": 78.5,
           "placeholder": false,
           "dimension_key": "mid_level_elegance",
           "configured_weight": 22.0,
@@ -3402,19 +3349,19 @@
       }
     },
     "Naming quality": {
-      "score": 91.5,
-      "strict": 91.5,
-      "verified_strict_score": 91.5,
+      "score": 93.2,
+      "strict": 93.2,
+      "verified_strict_score": 93.2,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.915,
+          "pass_rate": 0.932,
           "failing": 0,
-          "weighted_failures": 0.85,
-          "assessment_score": 91.5,
+          "weighted_failures": 0.68,
+          "assessment_score": 93.2,
           "placeholder": false,
           "dimension_key": "naming_quality",
           "configured_weight": 2.0,
@@ -3427,13 +3374,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 0,
+          "failing": 2,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3444,19 +3391,19 @@
       }
     },
     "Test strategy": {
-      "score": 92.0,
-      "strict": 92.0,
-      "verified_strict_score": 92.0,
+      "score": 88.0,
+      "strict": 88.0,
+      "verified_strict_score": 88.0,
       "checks": 10,
       "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.92,
+          "pass_rate": 0.88,
           "failing": 0,
-          "weighted_failures": 0.8,
-          "assessment_score": 92.0,
+          "weighted_failures": 1.2,
+          "assessment_score": 88.0,
           "placeholder": false,
           "dimension_key": "test_strategy",
           "configured_weight": 1.0,
@@ -3465,19 +3412,19 @@
       }
     },
     "Type safety": {
-      "score": 89.5,
-      "strict": 89.5,
-      "verified_strict_score": 89.5,
+      "score": 92.3,
+      "strict": 92.3,
+      "verified_strict_score": 92.3,
       "checks": 10,
-      "failing": 0,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
-          "pass_rate": 0.895,
-          "failing": 0,
-          "weighted_failures": 1.05,
-          "assessment_score": 89.5,
+          "pass_rate": 0.923,
+          "failing": 2,
+          "weighted_failures": 0.77,
+          "assessment_score": 92.3,
           "placeholder": false,
           "dimension_key": "type_safety",
           "configured_weight": 12.0,
@@ -3503,9 +3450,9 @@
   },
   "review_cache": {
     "holistic": {
-      "reviewed_at": "2026-04-16T05:39:25+00:00",
-      "file_count_at_review": 117,
-      "issue_count": 47,
+      "reviewed_at": "2026-04-24T10:35:25+00:00",
+      "file_count_at_review": 119,
+      "issue_count": 23,
       "reviewed_files_count": 0,
       "full_sweep_included": false
     },
@@ -6443,6 +6390,19 @@
       "attest": "",
       "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260416_043242/holistic_issues_merged.json",
       "packet_sha256": "425e38340b4dc1f3ca9c8599643c9e7da76b0a9d68c9ed686076a9bc1b2bc01f"
+    },
+    {
+      "timestamp": "2026-04-24T10:35:25+00:00",
+      "mode": "trusted_internal",
+      "trusted": true,
+      "reason": "trusted import-run replay from 20260424_095015",
+      "override_used": false,
+      "attested_external": false,
+      "provisional": false,
+      "provisional_count": 0,
+      "attest": "",
+      "import_file": "/workspaces/xfg/.desloppify/subagents/runs/20260424_095015/holistic_issues_merged.json",
+      "packet_sha256": "10a98182aee83b067a985cfa9836a0b5e10ba84aa53d89325964ffb921b1e0ae"
     }
   ],
   "scan_metadata": {
@@ -7970,7 +7930,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:14+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -8041,7 +8001,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:13+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -8077,7 +8037,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:14+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -10342,7 +10302,7 @@
         "text": "I have reviewed this finding against the code: secretScanning is a GitHub Settings API property name for the secret-scanning feature, not a hardcoded secret value. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-04-16T04:40:29+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -10361,7 +10321,7 @@
         "remediation": "Move secret to environment variable or secrets manager"
       },
       "status": "false_positive",
-      "note": "",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-03-03T09:10:57+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
       "resolved_at": "2026-04-24T09:49:20+00:00",
@@ -10392,7 +10352,9 @@
         "kind": "manual",
         "text": "I have reviewed this code \u2014 secretScanning is a GitHub feature name property key, not a secret. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-04-24T09:49:20+00:00",
-        "scan_verified": false
+        "scan_verified": true,
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
     "security::src/cli/program.ts::security::json_parse_unguarded::src/cli/program.ts::12": {
@@ -23608,7 +23570,7 @@
         "text": "I have reviewed this finding - program.ts is a CLI entry point (composition root) that wires Commander.js options. It is tested via integration tests, not unit tests. CLI entry points are composition roots not suitable for unit testing. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-03-22T07:47:33+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -26944,7 +26906,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -26981,7 +26943,7 @@
         "text": "I have actually Added 47 secondary assertions across 43 tests \u2014 verifying return types, placeholder absence, structural properties, and input immutability and I am not gaming the score.",
         "attested_at": "2026-04-24T09:46:36+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -27590,7 +27552,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:13+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -36053,7 +36015,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -48156,7 +48118,7 @@
         "text": "I have actually Already marked false-positive \u2014 catch returns MergeResult with success:false, not silent failure and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:55+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -48809,7 +48771,7 @@
         "text": "I have actually Already marked false-positive \u2014 async needed for early-return dry-run paths and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:56+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -52880,7 +52842,7 @@
         "loc_weight": 9.591663046625438
       },
       "status": "false_positive",
-      "note": "",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-03-06T08:52:20+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
       "resolved_at": "2026-04-24T09:49:19+00:00",
@@ -52897,7 +52859,9 @@
         "kind": "manual",
         "text": "I have reviewed this file \u2014 pure type definitions, zero runtime code. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-04-24T09:49:19+00:00",
-        "scan_verified": false
+        "scan_verified": true,
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
     "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity": {
@@ -55971,7 +55935,7 @@
         "text": "I have actually Already marked false-positive \u2014 runSync contains multiple await calls and I am not gaming the score.",
         "attested_at": "2026-03-18T09:30:57+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56010,7 +55974,7 @@
         "text": "I have actually Already marked false-positive \u2014 console.error + process.exit(1) is correct CLI entry point pattern and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56049,7 +56013,7 @@
         "text": "I have actually Already marked false-positive \u2014 CLI composition root excluded from coverage and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:04+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56088,7 +56052,7 @@
         "text": "I have actually Already marked false-positive \u2014 has await tokenManager?.getTokenForRepo() and I am not gaming the score.",
         "attested_at": "2026-03-18T09:31:05+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -56876,7 +56840,7 @@
         "text": "I have reviewed this \u2014 json-utils.test.ts exists with direct tests added this session. Not gaming the score.",
         "attested_at": "2026-04-24T08:50:09+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -57840,7 +57804,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. unified-summary.ts imports renderSyncLines from sync-report.ts (one direction only). sync-report.ts does NOT import from unified-summary.ts \u2014 verified with grep.",
         "attested_at": "2026-03-22T06:30:12+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -57919,7 +57883,7 @@
         "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Line 6 imports ILocalGitOps, not AuthenticatedGitOpsOptions. ILocalGitOps is used at lines 11, 29, 752.",
         "attested_at": "2026-03-22T06:30:02+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -59232,7 +59196,7 @@
         "text": "I have reviewed this and I am not gaming the score \u2014 file has direct test coverage that the scanner did not detect",
         "attested_at": "2026-03-22T21:14:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -60768,7 +60732,7 @@
         "text": "I have reviewed this \u2014 options is used extensively throughout the function (lines 195, 196, 244, 380, etc). Not gaming the score \u2014 this is a false detection.",
         "attested_at": "2026-03-27T11:24:08+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -61132,7 +61096,7 @@
         "references": 0
       },
       "status": "false_positive",
-      "note": "",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-03-22T09:00:15+00:00",
       "last_seen": "2026-04-16T05:39:33+00:00",
       "resolved_at": "2026-04-24T08:59:48+00:00",
@@ -61148,7 +61112,9 @@
         "kind": "manual",
         "text": "I have reviewed this \u2014 either inherently complex by design (validators/formatters), false async detection (function does use await), or worktree artifact. Not gaming the score.",
         "attested_at": "2026-04-24T08:59:48+00:00",
-        "scan_verified": false
+        "scan_verified": true,
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
     "review::.::holistic::cross_module_architecture::config_barrel_bypass_types": {
@@ -62698,7 +62664,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62732,7 +62698,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62766,7 +62732,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62800,7 +62766,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62834,7 +62800,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62868,7 +62834,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62902,7 +62868,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62936,7 +62902,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -62970,7 +62936,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63004,7 +62970,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63038,7 +63004,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63072,7 +63038,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63106,7 +63072,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63140,7 +63106,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63174,7 +63140,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63208,7 +63174,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63242,7 +63208,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63276,7 +63242,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63310,7 +63276,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -63344,7 +63310,7 @@
         "text": "Dimension assessment imported; coverage marker superseded",
         "attested_at": "2026-03-22T09:36:15+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66070,7 +66036,7 @@
         "text": "I have reviewed this \u2014 string-utils.test.ts already exists with direct tests. Not gaming the score.",
         "attested_at": "2026-04-24T08:50:07+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66305,7 +66271,7 @@
         "text": "I have reviewed this \u2014 loader.ts is tested via config.test.ts integration-style tests. Direct test would duplicate coverage with added I/O mocking complexity. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:59+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66341,7 +66307,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:32+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66377,7 +66343,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:40+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66413,7 +66379,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:29+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66449,7 +66415,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:35+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66485,7 +66451,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:33+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66521,7 +66487,7 @@
         "text": "I have actually Added lifecycle-report-builder.test.ts with tests for totals counting, action preservation, and settings pass-through and I am not gaming the score.",
         "attested_at": "2026-04-24T08:49:51+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66558,7 +66524,7 @@
         "text": "I have reviewed this file \u2014 it contains only type/interface definitions with no executable logic. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:19+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66594,7 +66560,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:30+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66630,7 +66596,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:37+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66666,7 +66632,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:34+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66702,7 +66668,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:41+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66738,7 +66704,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:29+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66802,7 +66768,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:38+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66838,7 +66804,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:32+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66875,7 +66841,7 @@
         "text": "I have reviewed src/sync/types.ts against the code: it contains only TypeScript interfaces and type aliases, no runtime exports, so direct unit tests are not meaningful. I am not gaming the score by suppressing a real defect.",
         "attested_at": "2026-04-16T04:57:04+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66911,7 +66877,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:35+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66947,7 +66913,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:31+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -66983,7 +66949,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:36+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -67019,7 +66985,7 @@
         "text": "I have reviewed this \u2014 errors.test.ts exists with direct tests added this session. Not gaming the score.",
         "attested_at": "2026-04-24T08:50:08+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -67055,7 +67021,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:38+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -67091,7 +67057,7 @@
         "text": "I have reviewed this \u2014 existing test file covers this module directly. Desloppify transitive-only detection is incorrect. Not gaming the score.",
         "attested_at": "2026-04-24T08:49:39+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -67975,7 +67941,7 @@
         "text": "I have actually Added cleanup-utils.test.ts with tests for sync/async cleanup and error swallowing and I am not gaming the score.",
         "attested_at": "2026-04-24T04:50:52+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -68011,7 +67977,7 @@
         "text": "I have actually Added branch-utils.test.ts with tests for sanitizeBranchName and validateBranchName and I am not gaming the score.",
         "attested_at": "2026-04-24T04:50:54+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -68048,7 +68014,7 @@
         "text": "I have actually moved the four repo-* files from src/shared/ into a new src/repo/ domain folder and split the RepoInfo types out into repo/types.ts so that utils.ts only depends on types.ts, eliminating the import cycle between detector and utils. I am not gaming the score by resolving without fixing.",
         "attested_at": "2026-04-16T04:49:25+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -68911,7 +68877,7 @@
         "remediation": "Move secret to environment variable or secrets manager"
       },
       "status": "false_positive",
-      "note": "Reopened (\u00d75) \u2014 reappeared in scan (was false_positive)",
+      "note": "Still absent from scan after manual resolution",
       "first_seen": "2026-04-16T04:31:56+00:00",
       "last_seen": "2026-04-24T09:48:47+00:00",
       "resolved_at": null,
@@ -68923,7 +68889,12 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "scan_verified": true,
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
+        "scan_verification_text": "Absent from detector output in latest scan"
+      }
     },
     "boilerplate_duplication::src/shared/repo-info-utils.ts::467d6fd28ff1b3bb": {
       "id": "boilerplate_duplication::src/shared/repo-info-utils.ts::467d6fd28ff1b3bb",
@@ -71125,7 +71096,7 @@
         "text": "I have reviewed this \u2014 repo/utils.test.ts was added this session with full coverage. Not gaming the score.",
         "attested_at": "2026-04-24T08:53:49+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71207,7 +71178,7 @@
         "text": "I have actually Acknowledged - will pivot to test coverage after completing remaining planned items and I am not gaming the score.",
         "attested_at": "2026-04-24T04:44:32+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71248,7 +71219,7 @@
         "text": "I have actually No open abstraction_fitness or mid_level_elegance items found - all already resolved and I am not gaming the score.",
         "attested_at": "2026-04-24T04:44:38+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71288,7 +71259,7 @@
         "text": "I have actually No open or actionable boilerplate_duplication findings exist - strict gap from historic wontfix and I am not gaming the score.",
         "attested_at": "2026-04-24T04:45:17+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71328,7 +71299,7 @@
         "text": "I have actually Strategy guidance acknowledged - will address in next cycle and I am not gaming the score.",
         "attested_at": "2026-04-24T04:45:18+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71368,7 +71339,7 @@
         "text": "I have actually .output is already excluded from scanning via config and I am not gaming the score.",
         "attested_at": "2026-04-24T04:44:39+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -71409,7 +71380,7 @@
         "text": "I have actually Acknowledged - strategy guidance for future batching and I am not gaming the score.",
         "attested_at": "2026-04-24T04:44:40+00:00",
         "scan_verified": true,
-        "scan_verified_at": "2026-04-24T09:48:47+00:00",
+        "scan_verified_at": "2026-04-24T10:35:24+00:00",
         "scan_verification_text": "Absent from detector output in latest scan"
       }
     },
@@ -73531,6 +73502,835 @@
       "suppressed": false,
       "suppressed_at": null,
       "suppression_pattern": null
+    },
+    "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils": {
+      "id": "review::.::holistic::cross_module_architecture::shared_imports_vcs_sanitize_utils",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "shared/ imports sanitizeCredentials from vcs/sanitize-utils.ts, inverting the shared-as-leaf layering",
+      "detail": {
+        "holistic": true,
+        "dimension": "cross_module_architecture",
+        "related_files": [
+          "src/shared/command-executor.ts",
+          "src/shared/retry-utils.ts",
+          "src/vcs/sanitize-utils.ts"
+        ],
+        "evidence": [
+          "src/shared/command-executor.ts line 2: import { sanitizeCredentials } from \"../vcs/sanitize-utils.js\" -- runtime import, not type-only",
+          "src/shared/retry-utils.ts line 2: import { sanitizeCredentials } from \"../vcs/sanitize-utils.js\" -- runtime import, not type-only",
+          "sanitize-utils.ts contains a single pure function that does URL/header credential masking with no VCS-specific dependencies",
+          "command-executor.ts has 46 importers, making this layering violation high-impact in the dependency graph"
+        ],
+        "suggestion": "Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. Update the two imports in shared/ to use local paths (\"./sanitize-utils.js\"), and update the three imports in vcs/ (ado-pr-strategy.ts, github-pr-strategy.ts, gitlab-pr-strategy.ts) to use \"../shared/sanitize-utils.js\". This restores shared/ as a true leaf layer with no upward dependencies.",
+        "reasoning": "",
+        "summary_hash": "c5a42db7"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils": {
+      "id": "review::.::holistic::high_level_elegance::shared_imports_vcs_sanitize_utils",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "src/shared/ imports sanitize-utils.ts from src/vcs/, reversing the expected dependency direction",
+      "detail": {
+        "holistic": true,
+        "dimension": "high_level_elegance",
+        "related_files": [
+          "src/shared/command-executor.ts",
+          "src/shared/retry-utils.ts",
+          "src/vcs/sanitize-utils.ts"
+        ],
+        "evidence": [
+          "src/shared/command-executor.ts:2 imports sanitizeCredentials from '../vcs/sanitize-utils.js'",
+          "src/shared/retry-utils.ts:2 imports sanitizeCredentials from '../vcs/sanitize-utils.js'",
+          "sanitize-utils.ts has zero imports itself - it is a standalone utility with no vcs-specific dependencies"
+        ],
+        "suggestion": "Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. It is a pure string utility with no dependencies, and its only consumers outside vcs/ are already in shared/. Update the two import paths in command-executor.ts and retry-utils.ts accordingly.",
+        "reasoning": "",
+        "summary_hash": "cab5c970"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::error_consistency::extends_resolver_bare_error": {
+      "id": "review::.::holistic::error_consistency::extends_resolver_bare_error",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "extends-resolver.ts throws bare Error instead of ValidationError for config validation failures",
+      "detail": {
+        "holistic": true,
+        "dimension": "error_consistency",
+        "related_files": [
+          "src/config/extends-resolver.ts"
+        ],
+        "evidence": [
+          "Lines 16, 23, 29 throw new Error() for circular extends, missing group, and depth exceeded -- all config validation failures",
+          "Every other file in src/config/ (loader.ts, config-merger.ts, file-reference-resolver.ts, normalizer.ts, validator.ts) uses ValidationError for config-related errors",
+          "ValidationError is specifically designed for config validation failures and is imported by retry-utils.ts to classify as permanent (non-retryable)"
+        ],
+        "suggestion": "Import ValidationError from ../shared/errors.js in extends-resolver.ts and replace the three bare Error throws with ValidationError throws. This aligns with the rest of the config module and ensures retry logic correctly classifies these as permanent errors.",
+        "reasoning": "",
+        "summary_hash": "25072124"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::dependency_health::shared_vcs_circular_import": {
+      "id": "review::.::holistic::dependency_health::shared_vcs_circular_import",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "sanitize-utils.ts in vcs/ creates circular dependency with shared/",
+      "detail": {
+        "holistic": true,
+        "dimension": "dependency_health",
+        "related_files": [
+          "src/vcs/sanitize-utils.ts",
+          "src/shared/command-executor.ts",
+          "src/shared/retry-utils.ts"
+        ],
+        "evidence": [
+          "shared/command-executor.ts imports sanitizeCredentials from ../vcs/sanitize-utils.js",
+          "shared/retry-utils.ts imports sanitizeCredentials from ../vcs/sanitize-utils.js",
+          "vcs/ modules import extensively from shared/ (command-executor, retry-utils, errors, shell-utils, xfg-template)",
+          "sanitizeCredentials is a pure string function with zero VCS-specific dependencies \u2014 it only uses regex replacements on URL credentials and auth headers"
+        ],
+        "suggestion": "Move sanitize-utils.ts from src/vcs/ to src/shared/ and update all import paths. The function has no VCS dependencies and is consumed by shared utilities, making shared/ its natural home.",
+        "reasoning": "",
+        "summary_hash": "195f6c00"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern": {
+      "id": "review::.::holistic::low_level_elegance::merge_pr_options_verbose_field_pattern",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "mergePROptions uses verbose intermediate-variable-per-field pattern instead of spread",
+      "detail": {
+        "holistic": true,
+        "dimension": "low_level_elegance",
+        "related_files": [
+          "src/config/normalizer.ts"
+        ],
+        "evidence": [
+          "Lines 130-143: each of the 5 PRMergeOptions fields is assigned to a local variable (const merge = perRepo.merge ?? global.merge) then conditionally set on the result (if (merge !== undefined) result.merge = merge). This is 14 lines of mechanical code that grows linearly with field count."
+        ],
+        "suggestion": "Replace with a spread-and-filter pattern: `const merged = { ...global, ...perRepo }; return Object.fromEntries(Object.entries(merged).filter(([, v]) => v !== undefined))` or use a utility that strips undefined. This maintains the same semantics (no undefined keys) with less ceremony.",
+        "reasoning": "",
+        "summary_hash": "f12571f4"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state": {
+      "id": "review::.::holistic::mid_level_elegance::sync_command_module_scoped_mutable_state",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "sync-command.ts uses module-scoped mutable state (_runScopeExecutor, _runScopeLogger) as implicit DI for free functions, contradicting the explicit DI used throughout the rest of the codebase",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "Lines 51-66: _runScopeExecutor and _runScopeLogger are module-level let variables, set once at the top of runSync (line 628-629) and accessed via getDefaultExecutor()/getLogger() throughout 20+ call sites",
+          "The free functions (logSettingsResult, applyRepoSettings, displayReports, runLifecyclePhase, runFileSyncPhase) all implicitly depend on this state rather than receiving it as parameters",
+          "This pattern prevents concurrent invocations and makes the dependency graph invisible at call sites - a developer reading logSettingsResult sees no logger parameter but the function uses one"
+        ],
+        "suggestion": "Refactor the free functions to accept logger and executor as explicit parameters, or consolidate them into a class that receives dependencies via constructor injection, consistent with the pattern used in SyncWorkflow, RepositoryProcessor, and all other modules.",
+        "reasoning": "",
+        "summary_hash": "23edb878"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag": {
+      "id": "review::.::holistic::mid_level_elegance::processor_result_flat_optional_bag",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "ProcessorResult uses optional fields (prUrl, mergeResult, skipped, diffStats, fileChanges) instead of discriminated union variants, making outcome semantics ambiguous at consumer sites",
+      "detail": {
+        "holistic": true,
+        "dimension": "mid_level_elegance",
+        "related_files": [
+          "src/sync/types.ts",
+          "src/sync/sync-workflow.ts",
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "types.ts lines 194-207: ProcessorResult has success, repoName, message as required, then 5 optional fields that are semantically correlated but not type-enforced (e.g. prUrl is only meaningful when success is true and not direct mode)",
+          "sync-workflow.ts returns at least 4 different shapes of ProcessorResult (auth skip, no changes, direct push, PR result) all through the same flat type",
+          "sync-command.ts line 156-162 determineMergeOutcome must inspect multiple optional fields to reconstruct what happened - this is glue logic that a discriminated union would eliminate"
+        ],
+        "suggestion": "Introduce a discriminated union on a 'kind' or 'outcome' field (e.g. 'skipped' | 'direct_push' | 'pr_created' | 'error') so consumers can pattern-match on the outcome rather than inspecting combinations of optional fields.",
+        "reasoning": "",
+        "summary_hash": "65d8f8a2"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings": {
+      "id": "review::.::holistic::api_surface_coherence::mixed_set_update_verbs_repo_settings",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "IRepoSettingsStrategy uses both 'update' and 'set' prefixes for semantically identical boolean toggle operations",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/settings/repo-settings/types.ts"
+        ],
+        "evidence": [
+          "updateVulnerabilityAlerts uses 'update' prefix while setAutomatedSecurityFixes and setPrivateVulnerabilityReporting use 'set' prefix \u2014 all three toggle a boolean feature on/off"
+        ],
+        "suggestion": "Standardize on 'update' prefix to match the interface's primary get/update convention: rename setAutomatedSecurityFixes to updateAutomatedSecurityFixes and setPrivateVulnerabilityReporting to updatePrivateVulnerabilityReporting",
+        "reasoning": "",
+        "summary_hash": "905ab762"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names": {
+      "id": "review::.::holistic::api_surface_coherence::code_scanning_compound_method_names",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "ICodeScanningStrategy uses compound method names (getDefaultSetup/updateDefaultSetup) unlike sibling strategies' bare verbs",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/settings/code-scanning/types.ts"
+        ],
+        "evidence": [
+          "ILabelsStrategy uses list/create/update/delete, IRulesetStrategy uses list/get/create/update/delete, IRepoSettingsStrategy uses get/update, but ICodeScanningStrategy uses getDefaultSetup/updateDefaultSetup"
+        ],
+        "suggestion": "Rename to get/update to match sibling strategy interfaces. The interface name ICodeScanningStrategy already provides the 'code scanning' context, so the 'DefaultSetup' qualifier is redundant in method names.",
+        "reasoning": "",
+        "summary_hash": "ec52a7e5"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy": {
+      "id": "review::.::holistic::api_surface_coherence::branch_exists_on_settings_strategy",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "IRepoSettingsStrategy includes branchExists() which is a repository query unrelated to settings management",
+      "detail": {
+        "holistic": true,
+        "dimension": "api_surface_coherence",
+        "related_files": [
+          "src/settings/repo-settings/types.ts",
+          "src/settings/repo-settings/processor.ts"
+        ],
+        "evidence": [
+          "branchExists(repoInfo, branch, options) is a repo-level query method placed on a settings strategy interface alongside get/update/set* methods that manage settings. It's only used in the processor to validate a default branch change."
+        ],
+        "suggestion": "Extract branchExists to a separate focused interface (e.g. IBranchQuery or IRepoBranchCheck) and inject it into RepoSettingsProcessor independently. This preserves ISP and keeps the settings strategy focused on settings operations.",
+        "reasoning": "",
+        "summary_hash": "7c8fb30d"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning": {
+      "id": "review::.::holistic::authorization_consistency::gitlab_force_merge_no_warning",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "GitLab force-merge path omits privilege-bypass warning that GitHub and ADO strategies both log",
+      "detail": {
+        "holistic": true,
+        "dimension": "authorization_consistency",
+        "related_files": [
+          "src/vcs/gitlab-pr-strategy.ts",
+          "src/vcs/github-pr-strategy.ts",
+          "src/vcs/ado-pr-strategy.ts"
+        ],
+        "evidence": [
+          "github-pr-strategy.ts:292 logs this.log?.warn(`Force-merging PR ... using admin privileges (bypasses branch protection)`) before force merge",
+          "ado-pr-strategy.ts:270 logs this.log?.warn(`Bypassing policies for PR ... (reason: ...)`) before force merge",
+          "gitlab-pr-strategy.ts:308-322 executes force merge with no warning log at all"
+        ],
+        "suggestion": "Add a this.log?.warn() call before the force merge in gitlab-pr-strategy.ts, e.g. this.log?.warn(`Force-merging MR ${mrInfo.mrIid} immediately (bypasses pipeline requirements)`) to match the audit pattern of the sibling strategies.",
+        "reasoning": "",
+        "summary_hash": "23f24925"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat": {
+      "id": "review::.::holistic::ai_generated_debt::trivial_function_docstring_bloat",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Multi-line JSDoc blocks on self-explanatory 1-3 line functions add noise without insight",
+      "detail": {
+        "holistic": true,
+        "dimension": "ai_generated_debt",
+        "related_files": [
+          "src/settings/base-processor.ts",
+          "src/config/normalizer.ts"
+        ],
+        "evidence": [
+          "base-processor.ts:117 has 4-line JSDoc '/** Common action literals shared by all settings processors. */' on a 1-line type alias",
+          "base-processor.ts:123 has 18-line JSDoc on isActiveAction which is a 1-line type predicate (entry.action !== 'unchanged')",
+          "normalizer.ts:107 has 4-line JSDoc 'Normalizes header to array format' on a 3-line function whose name already communicates intent",
+          "normalizer.ts:323 has 4-line JSDoc on applyFileLayer that adds context about merge semantics \u2014 this one is valuable; the pattern is inconsistent"
+        ],
+        "suggestion": "Remove or reduce JSDoc on trivial functions where the name fully communicates intent. Keep JSDoc on functions with non-obvious behavior, edge cases, or API contracts. A good heuristic: if the JSDoc restates the function name/signature without adding new information, remove it.",
+        "reasoning": "",
+        "summary_hash": "40acc03a"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling": {
+      "id": "review::.::holistic::package_organization::sanitize_utils_bidirectional_coupling",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "shared/ imports from vcs/sanitize-utils.ts creating bidirectional coupling with the utility layer",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "src/vcs/sanitize-utils.ts",
+          "src/shared/command-executor.ts",
+          "src/shared/retry-utils.ts"
+        ],
+        "evidence": [
+          "shared/command-executor.ts line 2: import { sanitizeCredentials } from '../vcs/sanitize-utils.js'",
+          "shared/retry-utils.ts line 2: import { sanitizeCredentials } from '../vcs/sanitize-utils.js'",
+          "sanitize-utils.ts is a pure string utility (20 LOC, zero imports from vcs/) that sanitizes credential patterns in strings",
+          "Coupling matrix shows vcs/ -> shared/ has 59 edges while shared/ -> vcs/ has 2 edges, both for this file"
+        ],
+        "suggestion": "Staged reorg plan: (1) Move src/vcs/sanitize-utils.ts to src/shared/sanitize-utils.ts. (2) Update imports in src/shared/command-executor.ts and src/shared/retry-utils.ts to use './sanitize-utils.js'. (3) Update imports in src/vcs/github-pr-strategy.ts, src/vcs/ado-pr-strategy.ts, src/vcs/gitlab-pr-strategy.ts to use '../shared/sanitize-utils.js'. (4) Update test/unit/vcs/sanitize-utils.test.ts path to test/unit/shared/sanitize-utils.test.ts. (5) Run: npm run build && npm test to validate.",
+        "reasoning": "",
+        "summary_hash": "2717261d"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::package_organization::misplaced_repo_metadata_test": {
+      "id": "review::.::holistic::package_organization::misplaced_repo_metadata_test",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "repo-metadata-provider.test.ts is in test/unit/shared/ but tests src/repo/GitHubRepoMetadataProvider",
+      "detail": {
+        "holistic": true,
+        "dimension": "package_organization",
+        "related_files": [
+          "test/unit/shared/repo-metadata-provider.test.ts"
+        ],
+        "evidence": [
+          "test/unit/shared/repo-metadata-provider.test.ts imports GitHubRepoMetadataProvider from '../../../src/repo/index.js'",
+          "All other repo/ tests (detector.test.ts, utils.test.ts) correctly reside in test/unit/repo/"
+        ],
+        "suggestion": "Move test/unit/shared/repo-metadata-provider.test.ts to test/unit/repo/repo-metadata-provider.test.ts. Run: npm test to validate.",
+        "reasoning": "",
+        "summary_hash": "1563456c"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::initialization_coupling::run_scope_module_state": {
+      "id": "review::.::holistic::initialization_coupling::run_scope_module_state",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Module-level mutable variables _runScopeExecutor and _runScopeLogger create implicit boot-order dependency within sync-command.ts",
+      "detail": {
+        "holistic": true,
+        "dimension": "initialization_coupling",
+        "related_files": [
+          "src/cli/sync-command.ts"
+        ],
+        "evidence": [
+          "Lines 51-52: let _runScopeExecutor and _runScopeLogger are module-scoped mutable variables set by runSync() (lines 628-629) and accessed by getDefaultExecutor()/getLogger() closures used throughout the file (e.g. logSettingsResult, displayReports, processSingleRepo).",
+          "Any function calling getLogger() or getDefaultExecutor() will throw if runSync() has not been called first, creating an implicit ordering dependency within the module."
+        ],
+        "suggestion": "Thread the executor and logger through the RepoIterationContext object (which already exists) and pass them explicitly to functions like logSettingsResult, displayReports, etc., eliminating the module-level mutable state.",
+        "reasoning": "",
+        "summary_hash": "87e8fa48"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::display_name_duplication": {
+      "id": "review::.::holistic::design_coherence::display_name_duplication",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "getRepoDisplayName logic duplicated between repo/utils.ts and xfg-template.ts repo.fullName case",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "src/repo/utils.ts",
+          "src/shared/xfg-template.ts"
+        ],
+        "evidence": [
+          "repo/utils.ts lines 66-74: getRepoDisplayName formats azure-devops as org/project/repo, gitlab as namespace/repo, github as owner/repo",
+          "xfg-template.ts lines 99-105: repo.fullName case repeats the exact same three-branch platform-specific formatting logic"
+        ],
+        "suggestion": "Have the xfg-template.ts repo.fullName case call getRepoDisplayName(repoInfo) directly instead of reimplementing the platform-specific formatting inline.",
+        "reasoning": "",
+        "summary_hash": "0d5d0c14"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::receive_migration_multi_phase": {
+      "id": "review::.::holistic::design_coherence::receive_migration_multi_phase",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "receiveMigration bundles ref cleanup, branch rename, repo creation, and mirror push in one 130-line method",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "src/lifecycle/github-lifecycle-provider.ts"
+        ],
+        "evidence": [
+          "Lines 424-557: receiveMigration sequentially handles (1) removing origin remote, (2) cleaning non-standard refs, (3) renaming default branch, (4) creating the repo via gh CLI, and (5) pushing mirror content. Each is a distinct phase with its own error handling."
+        ],
+        "suggestion": "Extract the four phases into private methods: cleanMirrorRefs(sourceDir), renameMirrorDefaultBranch(sourceDir, settings), createEmptyRepo(repoInfo, settings, tokenEnv), and pushMirrorContent(repoInfo, sourceDir, token, tokenEnv). The receiveMigration method becomes a 20-line orchestrator calling these in sequence.",
+        "reasoning": "",
+        "summary_hash": "46a59376"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::design_coherence::settings_formatter_duplication": {
+      "id": "review::.::holistic::design_coherence::settings_formatter_duplication",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "Create/update formatting loop duplicated between code-scanning and repo-settings formatters",
+      "detail": {
+        "holistic": true,
+        "dimension": "design_coherence",
+        "related_files": [
+          "src/settings/code-scanning/formatter.ts",
+          "src/settings/repo-settings/formatter.ts"
+        ],
+        "evidence": [
+          "code-scanning/formatter.ts lines 38-61 and repo-settings/formatter.ts lines 73-95 contain the same chalk.green/chalk.yellow formatting loop for create/update changes, differing only in whether warnings are collected"
+        ],
+        "suggestion": "Extract a shared formatChangeEntries(changes) helper in a common settings formatter utility that returns {lines, entries, creates, updates}. The repo-settings formatter can wrap it to add its warnings pass.",
+        "reasoning": "",
+        "summary_hash": "8a5f326c"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::get_or_create_mutates": {
+      "id": "review::.::holistic::contract_coherence::get_or_create_mutates",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "ResultsCollector.getOrCreate() mutates internal state behind getter-like name",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "src/cli/results-collector.ts"
+        ],
+        "evidence": [
+          "getOrCreate() creates a new ProcessorResults entry and pushes it to the internal array when no match exists, hiding a side effect behind a name that starts with 'get'"
+        ],
+        "suggestion": "Rename to ensureResult() or findOrCreate() to signal the mutation, or split into find() and create() methods",
+        "reasoning": "",
+        "summary_hash": "63cfb287"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::contract_coherence::base_result_unsafe_cast": {
+      "id": "review::.::holistic::contract_coherence::base_result_unsafe_cast",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "baseResult<TResult>() relies on unsafe 'as TResult' cast with only a comment-level contract",
+      "detail": {
+        "holistic": true,
+        "dimension": "contract_coherence",
+        "related_files": [
+          "src/settings/base-processor.ts"
+        ],
+        "evidence": [
+          "The function casts BaseProcessorResult to TResult with the comment 'All TResult subtypes only extend BaseProcessorResult with optional fields' - if any processor result type adds a required field, the cast silently produces an invalid object with no type error"
+        ],
+        "suggestion": "Consider using a conditional type or runtime check to validate the result shape, or enforce the optional-only constraint with a mapped type",
+        "reasoning": "",
+        "summary_hash": "d4262891"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive": {
+      "id": "review::.::holistic::logic_clarity::lifecycle_report_switch_not_exhaustive",
+      "detector": "review",
+      "file": ".",
+      "tier": 1,
+      "confidence": "high",
+      "summary": "switch in renderActionDiffLines lacks exhaustive default, unlike equivalent in lifecycle-formatter.ts",
+      "detail": {
+        "holistic": true,
+        "dimension": "logic_clarity",
+        "related_files": [
+          "src/output/lifecycle-report.ts"
+        ],
+        "evidence": [
+          "lifecycle-report.ts line 53: switch(action.action) handles 'created', 'forked', 'migrated' but has no default case after filtering out 'existed' on line 51",
+          "lifecycle-formatter.ts line 31-55: equivalent switch uses 'default: { const _exhaustive: never = result.action; throw new SyncError(...); }' pattern for compile-time safety",
+          "LifecycleActionKind is 'existed' | 'created' | 'forked' | 'migrated' \u2014 adding a new action would silently pass through the lifecycle-report switch"
+        ],
+        "suggestion": "Add a default case with exhaustive never check after the 'existed' filter, matching the pattern in lifecycle-formatter.ts. Alternatively, restructure to use the same function for both reporting locations.",
+        "reasoning": "",
+        "summary_hash": "cec2e50c"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::unguarded_error_property_access": {
+      "id": "review::.::holistic::type_safety::unguarded_error_property_access",
+      "detector": "review",
+      "file": ".",
+      "tier": 2,
+      "confidence": "medium",
+      "summary": "attachRetryAfter/attachValidationDetails cast unknown error to access .stdout without type guard",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "src/shared/gh-api-utils.ts"
+        ],
+        "evidence": [
+          "Line 87: (error as { stdout?: string | Buffer }).stdout casts unknown error without checking if it has a stdout property",
+          "Line 106: Same pattern repeated in attachValidationDetails",
+          "These functions mutate the error object by adding retryAfter property via cast on line 94"
+        ],
+        "suggestion": "Add a type guard function like isExecError(error): error is { stdout?: string | Buffer } that checks typeof error === 'object' && error !== null && 'stdout' in error before accessing. This is a single-function addition that replaces the unsafe casts.",
+        "reasoning": "",
+        "summary_hash": "1d143c5c"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "review::.::holistic::type_safety::unverified_string_cast_in_diff": {
+      "id": "review::.::holistic::type_safety::unverified_string_cast_in_diff",
+      "detector": "review",
+      "file": ".",
+      "tier": 3,
+      "confidence": "low",
+      "summary": "diff-algorithm.ts casts item.type to string without verifying runtime type",
+      "detail": {
+        "holistic": true,
+        "dimension": "type_safety",
+        "related_files": [
+          "src/settings/rulesets/diff-algorithm.ts"
+        ],
+        "evidence": [
+          "Line 115: const type = item.type as string -- item is Record<string, unknown>, so item.type is unknown",
+          "Line 123: Same pattern for desiredItem.type as string",
+          "While preceded by 'type' in item check and followed by truthiness check, the value could be a number or object at runtime"
+        ],
+        "suggestion": "Replace 'item.type as string' with 'typeof item.type === \"string\" ? item.type : String(item.type)' or add typeof check before the cast. This ensures the assertion matches runtime reality.",
+        "reasoning": "",
+        "summary_hash": "31b8d98e"
+      },
+      "status": "open",
+      "note": null,
+      "first_seen": "2026-04-24T10:35:24+00:00",
+      "last_seen": "2026-04-24T10:35:24+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "work_item_kind": "review_defect",
+      "issue_kind": "review_defect",
+      "origin": "review_import",
+      "lang": "typescript",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
     }
   },
   "concern_dismissals": {
@@ -73545,15 +74345,12 @@
       ]
     },
     "282579fe3a5a263d": {
-      "dismissed_at": "2026-03-26T22:59:43+00:00",
-      "reasoning": "sync-command.ts at 694 lines is the CLI composition root. It is well-decomposed into focused helper functions (runLifecyclePhase, runFileSyncPhase, applyRepoSettings, displayReports, buildSettingsDescriptors) with context objects (RepoIterationContext, RepoPhaseParams, ApplyRepoSettingsContext) that prevent parameter sprawl. The complexity is inherent to orchestration.",
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "sync-command.ts is a CLI composition root as allowed by CLAUDE.md. It legitimately touches multiple concerns (config loading, lifecycle, file sync, settings, reporting) because that is its job as an orchestrator. The RepoIterationContext and RepoPhaseParams types prevent parameter sprawl, and the phases are well-extracted into runLifecyclePhase, runFileSyncPhase, and applyRepoSettings.",
       "concern_type": "",
       "concern_file": "",
       "source_issue_ids": [
         "props::src/cli/sync-command.ts::RepoIterationContext",
-        "smells::src/cli/sync-command.ts::async_no_await",
-        "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
-        "smells::src/cli/sync-command.ts::nested_closure",
         "smells::src/cli/sync-command.ts::stub_function",
         "structural::src/cli/sync-command.ts"
       ]
@@ -73627,55 +74424,6 @@
         "boilerplate_duplication::src/output/lifecycle-report.ts::97715be496f47690",
         "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity",
         "smells::src/output/lifecycle-report.ts::switch_no_default"
-      ]
-    },
-    "b4ce9aa98944c946": {
-      "dismissed_at": "2026-03-26T22:37:16+00:00",
-      "reasoning": "The duplication signals in settings-report.ts reflect structural similarity with labels/formatter.ts and repo-settings/formatter.ts, but these serve different output targets: settings-report.ts renders plain-text/markdown diffs while the formatters produce chalk-colored CLI plan output. The shared scalar formatting has been extracted to formatScalarValue. The remaining formatValuePlain wrapper (4 lines) adds JSON.stringify for objects, which is specific to the markdown context. The 2x high cyclomatic complexity flags are on renderRepoSettingsDiffLines (rendering three entity types for a single diff view) and renderRulesetConfig (recursive tree rendering) - both have coherent single responsibilities appropriate to their domain.",
-      "concern_type": "",
-      "concern_file": "",
-      "source_issue_ids": [
-        "boilerplate_duplication::src/output/settings-report.ts::551649bf5b0873ed",
-        "boilerplate_duplication::src/output/settings-report.ts::669c75479d5082cb",
-        "boilerplate_duplication::src/output/settings-report.ts::6c0bbd8dceecd5d3",
-        "boilerplate_duplication::src/output/settings-report.ts::f65536bfde59e29e",
-        "boilerplate_duplication::src/output/settings-report.ts::f864c821dcb23209",
-        "smells::src/output/settings-report.ts::high_cyclomatic_complexity"
-      ]
-    },
-    "2b658cf1e55740ad": {
-      "dismissed_at": "2026-03-18T10:25:46+00:00",
-      "reasoning": "labels/formatter.ts has one function (formatLabelsPlan) with cyclomatic complexity from handling four action types (create/update/delete/unchanged) with type-specific formatting. This is a single coherent responsibility.",
-      "concern_type": "",
-      "concern_file": "",
-      "source_issue_ids": [
-        "boilerplate_duplication::src/settings/labels/formatter.ts::cabff18d9e0560e2",
-        "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity"
-      ]
-    },
-    "975a48fc7b86f11b": {
-      "dismissed_at": "2026-04-16T05:39:25+00:00",
-      "reasoning": "Complexity reflects external schema shape, not internal design failure.",
-      "concern_type": "",
-      "concern_file": "",
-      "source_issue_ids": [
-        "smells::src/cli/settings-report-builder.ts::high_cyclomatic_complexity",
-        "smells::src/cli/sync-command.ts::high_cyclomatic_complexity",
-        "smells::src/config/file-reference-resolver.ts::high_cyclomatic_complexity",
-        "smells::src/config/formatter.ts::high_cyclomatic_complexity",
-        "smells::src/config/normalizer.ts::high_cyclomatic_complexity",
-        "smells::src/config/validator.ts::high_cyclomatic_complexity",
-        "smells::src/config/validators/repo-settings-validator.ts::high_cyclomatic_complexity",
-        "smells::src/config/validators/ruleset-validator.ts::high_cyclomatic_complexity",
-        "smells::src/output/github-summary.ts::high_cyclomatic_complexity",
-        "smells::src/output/lifecycle-report.ts::high_cyclomatic_complexity",
-        "smells::src/output/settings-report.ts::high_cyclomatic_complexity",
-        "smells::src/output/unified-summary.ts::high_cyclomatic_complexity",
-        "smells::src/settings/labels/formatter.ts::high_cyclomatic_complexity",
-        "smells::src/settings/rulesets/diff-algorithm.ts::high_cyclomatic_complexity",
-        "smells::src/settings/rulesets/formatter.ts::high_cyclomatic_complexity",
-        "smells::src/settings/rulesets/github-ruleset-strategy.ts::high_cyclomatic_complexity",
-        "smells::src/shared/gh-api-utils.ts::high_cyclomatic_complexity"
       ]
     },
     "79b732f6982ee423": {
@@ -73805,13 +74553,13 @@
       ]
     },
     "b3aeef706f04fca3": {
-      "dismissed_at": "2026-03-20T02:58:18+00:00",
-      "reasoning": "The switch_no_default pattern across 7 files is correct TypeScript practice. All instances switch on exhaustive union types (FileStatus, EditOp.type, DiffAction, SettingsAction) where TypeScript's type narrowing catches unhandled cases at compile time. Adding default cases would weaken type safety by hiding future union member additions. This is a deliberate convention, not a gap.",
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "All 7 switch statements flagged use exhaustive matching on TypeScript string literal union types (FileStatus, lifecycle action, etc.). TypeScript's exhaustiveness checking ensures all cases are covered, making a default clause unnecessary and potentially hiding future type errors.",
       "concern_type": "",
       "concern_file": "",
       "source_issue_ids": [
+        "smells::src/cli/unified-summary.ts::switch_no_default",
         "smells::src/output/lifecycle-report.ts::switch_no_default",
-        "smells::src/output/unified-summary.ts::switch_no_default",
         "smells::src/settings/labels/processor.ts::switch_no_default",
         "smells::src/settings/rulesets/formatter.ts::switch_no_default",
         "smells::src/settings/rulesets/processor.ts::switch_no_default",
@@ -73897,8 +74645,8 @@
       ]
     },
     "193400e1a8dc7bbc": {
-      "dismissed_at": "2026-03-26T22:05:32+00:00",
-      "reasoning": "magic_number in 6 files: production constants (MAX_PAYLOAD_SIZE = 50*1024*1024, RATE_LIMIT_FALLBACK_DELAY_SECONDS = 60) are already named. The remaining occurrences are in test files where literal values in assertions are standard practice. No systemic design issue.",
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "The magic numbers across the 7 files are retry counts (3), timeout values (60000, 15000), poll intervals (2000, 1000), and test constants. retry-utils.ts already defines named constants for its values (RATE_LIMIT_FALLBACK_DELAY_SECONDS = 60, etc.), and the remaining instances in test files and strategy defaults are standard configuration values that are clear in context.",
       "concern_type": "",
       "concern_file": "",
       "source_issue_ids": [
@@ -73906,7 +74654,8 @@
         "smells::src/vcs/github-app-token-manager.ts::magic_number",
         "smells::src/vcs/graphql-commit-strategy.ts::magic_number",
         "smells::test/integration/test-helpers.ts::magic_number",
-        "smells::test/unit/github-app-token-manager.test.ts::magic_number",
+        "smells::test/unit/sync/file-writer-mode-drift.test.ts::magic_number",
+        "smells::test/unit/vcs/github-app-token-manager.test.ts::magic_number",
         "smells::test/unit/vcs/graphql-commit-strategy.test.ts::magic_number"
       ]
     },
@@ -73943,17 +74692,6 @@
       "concern_file": "",
       "source_issue_ids": []
     },
-    "04ae4462bc4dc86c": {
-      "dismissed_at": "2026-03-27T12:13:44+00:00",
-      "reasoning": "Inspected src/shared/gh-api-utils.ts line 165 directly: GhApiClient.call is not declared async. The open issue has been resolved.",
-      "concern_type": "",
-      "concern_file": "",
-      "source_issue_ids": [
-        "single_use::src/output/unified-summary.ts",
-        "smells::src/output/unified-summary.ts::high_cyclomatic_complexity",
-        "smells::src/output/unified-summary.ts::switch_no_default"
-      ]
-    },
     "50f2e68c6c1e6487": {
       "dismissed_at": "2026-03-27T12:13:44+00:00",
       "reasoning": "DiffAction is a closed string union with three members, all handled. TypeScript's exhaustiveness checking enforces this at compile time. A default branch would be unreachable dead code.",
@@ -73988,15 +74726,6 @@
       "concern_file": "",
       "source_issue_ids": [
         "boilerplate_duplication::src/settings/code-scanning/formatter.ts::5b8b1a4c421d105a"
-      ]
-    },
-    "1a53bed41e06f7b1": {
-      "dismissed_at": "2026-04-16T05:39:25+00:00",
-      "reasoning": "Flagged file no longer exists; residual overlap is small and context-specific.",
-      "concern_type": "",
-      "concern_file": "",
-      "source_issue_ids": [
-        "boilerplate_duplication::src/shared/repo-info-utils.ts::467d6fd28ff1b3bb"
       ]
     },
     "66034b6fb526ea49": {
@@ -74065,6 +74794,34 @@
         "structural::test/unit/sync-command.test.ts",
         "structural::test/unit/vcs/file-mode-fixup-commit-strategy.test.ts",
         "structural::test/unit/vcs/graphql-commit-strategy.test.ts"
+      ]
+    },
+    "9e6e18bdc59ed417": {
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "At 1174 lines, validator.ts is large but has a single coherent responsibility: validating every facet of the config schema. It decomposes cleanly into focused functions (validateLabel, validateSettingsRulesets, validateGroupExtends, validateRepoFiles, etc.) that compose into validateRawConfig. The size is proportional to the config schema's complexity, not mixed concerns.",
+      "concern_type": "",
+      "concern_file": "",
+      "source_issue_ids": [
+        "structural::src/config/validator.ts"
+      ]
+    },
+    "04a4183dc1270a2c": {
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "normalizer.ts at 745 lines follows a clean pipeline architecture: expand git arrays, merge groups, merge conditional groups, resolve file entries, interpolate. Each function handles one merge facet (mergeLabels, mergeRuleset, mergeGroupFiles). The complexity reflects the domain (multi-layer config merging with inheritance), not structural confusion.",
+      "concern_type": "",
+      "concern_file": "",
+      "source_issue_ids": [
+        "structural::src/config/normalizer.ts"
+      ]
+    },
+    "162145d8ef6ed0c1": {
+      "dismissed_at": "2026-04-24T10:35:24+00:00",
+      "reasoning": "The duplication between ado-pr-strategy.ts and gitlab-pr-strategy.ts (write description file, then create PR) is intentional variation: the two strategies construct platform-specific CLI commands (az repos pr create vs glab mr create) with different flag syntax and output parsing. Extracting the 'write temp file' part would save ~5 lines but add coupling between otherwise independent strategy implementations.",
+      "concern_type": "",
+      "concern_file": "",
+      "source_issue_ids": [
+        "boilerplate_duplication::src/vcs/ado-pr-strategy.ts::884092945baec5ca",
+        "boilerplate_duplication::src/vcs/ado-pr-strategy.ts::a37d73e1270d2a9a"
       ]
     }
   },
