@@ -21,7 +21,7 @@ MCP tools use the GitHub App identity. CLI uses the user's token. Prefer MCP.
 | Merge PRs | No — use CLI |
 | Review PRs | No — use CLI |
 | Search issues/PRs/code | Yes |
-| Close issues | No — use CLI |
+| Close issues | Yes |
 | PR checks/status | No — use CLI |
 | Raw API calls | No — use CLI |
 | Checkout PR branch | No — use CLI |
