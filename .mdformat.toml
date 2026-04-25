@@ -1,2 +1,7 @@
 wrap = 400
 end_of_line = "lf"
+
+# Python 3.13+ only
+exclude = [
+    ".claude/**",
+]

@@ -42,7 +42,6 @@ repos:
     rev: "1.0.0"
     hooks:
       - id: "mdformat"
-        exclude: "^\\.claude/"
         additional_dependencies:
           - "mdformat-gfm"
           - "mdformat-frontmatter"
