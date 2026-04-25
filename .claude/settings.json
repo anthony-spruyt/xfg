@@ -149,7 +149,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "file_path=$(jq -r '.tool_input.file_path // .tool_input.notebook_path' < /dev/stdin); npx prettier --write \"$file_path\" 2>/dev/null || true"
+            "command": "file_path=$(jq -r '.tool_input.file_path // .tool_input.notebook_path' < /dev/stdin); case \"$file_path\" in *.md) mdformat \"$file_path\" 2>/dev/null || true ;; *) npx prettier --write \"$file_path\" 2>/dev/null || true ;; esac"
           }
         ]
       }
