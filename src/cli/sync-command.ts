@@ -30,6 +30,7 @@ import {
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
 } from "../settings/index.js";
+import type { BaseProcessorOptions } from "../settings/base-processor.js";
 import { GitHubRepoMetadataProvider } from "../repo/index.js";
 import { ShellCommandExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
@@ -179,15 +180,15 @@ interface SettingsDescriptor {
   run: () => Promise<SettingsResult>;
 }
 
-async function runAndStoreResult(
-  factory: () => ISettingsProcessor,
+async function runAndStoreResult<TResult extends SettingsResult>(
+  factory: () => ISettingsProcessor<BaseProcessorOptions, TResult>,
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
   opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
   repoName: string,
   settingsCollector: ResultsCollector,
-  assign: (entry: ProcessorResults, result: SettingsResult) => void
-): Promise<SettingsResult> {
+  assign: (entry: ProcessorResults, result: TResult) => void
+): Promise<TResult> {
   const result = await runSettingsProcessor(
     factory,
     repoConfig,
@@ -225,7 +226,7 @@ function buildSettingsDescriptors(
           repoName,
           settingsCollector,
           (e, r) => {
-            e.rulesetResult = r as ProcessorResults["rulesetResult"];
+            e.rulesetResult = r;
           }
         ),
     },
@@ -241,7 +242,7 @@ function buildSettingsDescriptors(
           repoName,
           settingsCollector,
           (e, r) => {
-            e.labelsResult = r as ProcessorResults["labelsResult"];
+            e.labelsResult = r;
           }
         ),
     },
@@ -257,7 +258,7 @@ function buildSettingsDescriptors(
           repoName,
           settingsCollector,
           (e, r) => {
-            e.settingsResult = r as ProcessorResults["settingsResult"];
+            e.settingsResult = r;
           }
         ),
     },
@@ -273,22 +274,20 @@ function buildSettingsDescriptors(
           repoName,
           settingsCollector,
           (e, r) => {
-            e.codeScanningResult = r as ProcessorResults["codeScanningResult"];
+            e.codeScanningResult = r;
           }
         ),
     },
   ];
 }
 
-function runSettingsProcessor(
-  factory: () => ISettingsProcessor,
+function runSettingsProcessor<TResult extends SettingsResult>(
+  factory: () => ISettingsProcessor<BaseProcessorOptions, TResult>,
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
   processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string }
-): Promise<SettingsResult> {
-  return factory()
-    .process(repoConfig, repoInfo, processOptions)
-    .then((result) => result as SettingsResult);
+): Promise<TResult> {
+  return factory().process(repoConfig, repoInfo, processOptions);
 }
 
 async function applyRepoSettings(ctx: ApplyRepoSettingsContext): Promise<void> {
