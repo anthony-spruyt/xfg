@@ -13,17 +13,29 @@ export interface GitHubLabel {
  * Strategy interface for label operations.
  * Abstracts platform-specific API calls.
  */
+export interface LabelCreateParams {
+  name: string;
+  color: string;
+  description?: string;
+}
+
+export interface LabelUpdateParams {
+  new_name?: string;
+  color?: string;
+  description?: string;
+}
+
 export interface ILabelsStrategy {
   list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubLabel[]>;
   create(
     repoInfo: RepoInfo,
-    label: { name: string; color: string; description?: string },
+    label: LabelCreateParams,
     options?: GhApiOptions
   ): Promise<void>;
   update(
     repoInfo: RepoInfo,
     currentName: string,
-    label: { new_name?: string; color?: string; description?: string },
+    label: LabelUpdateParams,
     options?: GhApiOptions
   ): Promise<void>;
   delete(
