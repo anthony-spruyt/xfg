@@ -1,4 +1,5 @@
 import pRetry, { AbortError } from "p-retry";
+import { getStderr } from "./command-executor.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 import { ValidationError } from "./errors.js";
 
@@ -96,9 +97,7 @@ const RATE_LIMIT_PATTERNS: RegExp[] = [
  */
 export function isRateLimitError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   for (const pattern of RATE_LIMIT_PATTERNS) {
     if (pattern.test(combined)) {
@@ -144,9 +143,7 @@ export function isPermanentError(
   }
 
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   // Check permanent patterns first - these always stop retries
   for (const pattern of patterns) {
@@ -166,9 +163,7 @@ export function isTransientError(
   patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS
 ): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   for (const pattern of patterns) {
     if (pattern.test(combined)) {

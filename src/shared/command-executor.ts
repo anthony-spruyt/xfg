@@ -59,7 +59,8 @@ export class ShellCommandExecutor implements ICommandExecutor {
 export function getStderr(error: unknown): string {
   if (error != null && typeof error === "object" && "stderr" in error) {
     const { stderr } = error as { stderr: unknown };
-    return typeof stderr === "string" ? stderr : "";
+    if (typeof stderr === "string") return stderr;
+    if (Buffer.isBuffer(stderr)) return stderr.toString();
   }
   return "";
 }

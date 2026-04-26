@@ -6,8 +6,8 @@
 export class ValidationError extends Error {
   override readonly name = "ValidationError";
 
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
   }
 }
 
@@ -19,23 +19,23 @@ export class ValidationError extends Error {
 export class GraphQLApiError extends Error {
   override readonly name = "GraphQLApiError";
 
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
   }
 }
 
 export class SyncError extends Error {
   override readonly name = "SyncError";
 
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
   }
 }
 
 export class LifecycleError extends Error {
   override readonly name = "LifecycleError";
 
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
   }
 }

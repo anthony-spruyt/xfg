@@ -407,7 +407,7 @@ function pushFailure(
   });
 }
 
-async function processSingleRepo(
+async function runSingleRepo(
   repoConfig: RepoConfig,
   index: number,
   ctx: RepoIterationContext
@@ -681,7 +681,7 @@ export async function runSync(
   };
 
   for (let i = 0; i < config.repos.length; i++) {
-    await processSingleRepo(config.repos[i], i, ctx);
+    await runSingleRepo(config.repos[i], i, ctx);
   }
 
   displayReports(
