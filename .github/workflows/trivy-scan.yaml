@@ -1,4 +1,3 @@
----
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
 # See https://github.com/anthony-spruyt/repo-operator/blob/main/src/templates/.github/workflows/trivy-scan.yaml for template comments
 
@@ -10,6 +9,9 @@ on:
 permissions:
   contents: "read"
   issues: "write"
+  packages: "read"
 jobs:
-  scan:
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-scan.yaml@main"
+  fs-scan:
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-fs.yaml@main"
+  image-scan:
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-img.yaml@main"
