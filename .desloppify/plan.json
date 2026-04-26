@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-26T12:01:53+00:00",
+  "updated": "2026-04-26T12:02:19+00:00",
   "queue_order": [
     "strategy::subjective-score-regression",
     "strategy::high-elegance-weight-leverage",
@@ -10429,7 +10429,12 @@
   "promoted_ids": [
     "review::.::holistic::mid_level_elegance::dual_token_resolution_paths"
   ],
-  "plan_start_scores": {},
+  "plan_start_scores": {
+    "strict": 88.1,
+    "overall": 89.3,
+    "objective": 98.2,
+    "verified": 90.2
+  },
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -42846,6 +42851,29 @@
         "sha": "66cd2ebc125e",
         "branch": "desloppify/code-health-apr24"
       }
+    },
+    {
+      "timestamp": "2026-04-26T12:02:19+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-04-26T12:02:19+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
     }
   ],
   "epic_triage_meta": {
@@ -44007,5 +44035,5 @@
     "_subjective_migration_pruned": true,
     "postflight_scan_completed_at_scan_count": 220
   },
-  "scan_count_at_plan_start": 218
+  "scan_count_at_plan_start": 221
 }

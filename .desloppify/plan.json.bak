@@ -1,7 +1,7 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-04-26T12:01:48+00:00",
+  "updated": "2026-04-26T12:01:53+00:00",
   "queue_order": [
     "strategy::subjective-score-regression",
     "strategy::high-elegance-weight-leverage",
@@ -42831,6 +42831,21 @@
       "actor": "user",
       "note": null,
       "detail": {}
+    },
+    {
+      "timestamp": "2026-04-26T12:01:53+00:00",
+      "action": "commit_record",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::key_modules_table_incomplete",
+        "review::.::holistic::cross_module_architecture::sync_imports_output_presentation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": null,
+      "detail": {
+        "sha": "66cd2ebc125e",
+        "branch": "desloppify/code-health-apr24"
+      }
     }
   ],
   "epic_triage_meta": {
@@ -43971,12 +43986,20 @@
       "recorded_at": "2026-04-26T10:43:22+00:00",
       "note": "error-consistency fixes: loader I/O wrapping, isPermanentError usage, branch deletion surfacing in ADO/GitLab",
       "cluster_name": null
+    },
+    {
+      "sha": "66cd2ebc125e",
+      "branch": "desloppify/code-health-apr24",
+      "issue_ids": [
+        "review::.::holistic::high_level_elegance::key_modules_table_incomplete",
+        "review::.::holistic::cross_module_architecture::sync_imports_output_presentation"
+      ],
+      "recorded_at": "2026-04-26T12:01:53+00:00",
+      "note": null,
+      "cluster_name": null
     }
   ],
-  "uncommitted_issues": [
-    "review::.::holistic::high_level_elegance::key_modules_table_incomplete",
-    "review::.::holistic::cross_module_architecture::sync_imports_output_presentation"
-  ],
+  "uncommitted_issues": [],
   "commit_tracking_branch": null,
   "refresh_state": {
     "subjective_review_completed_at_scan_count": 219,
