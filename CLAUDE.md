@@ -26,9 +26,9 @@ npm run dev      # Run CLI via ts-node
 **MUST pass before any PR:**
 
 1. `npm test` - Unit tests
-2. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
-3. `./lint.sh` - Linting
-4. Integration tests (for ALL behavioral changes that integration tests can cover):
+1. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
+1. `./lint.sh` - Linting
+1. Integration tests (for ALL behavioral changes that integration tests can cover):
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
@@ -56,18 +56,19 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 
 ## Key Modules
 
-| Module                              | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `src/config/normalizer.ts`          | Parses config, expands git arrays, merges content, interpolates env vars      |
-| `src/config/validator.ts`           | Validates raw config via `validateForSync` (accepts files, settings, or both) |
-| `src/sync/repository-processor.ts`  | Composition root: wires SyncWorkflow and all per-repo collaborators           |
-| `src/sync/sync-workflow.ts`         | Orchestrates per-repo: clone, write files, commit, PR/push                    |
-| `src/settings/`                     | Settings processors for rulesets, labels, repo-settings, code-scanning        |
-| `src/lifecycle/`                    | Pre/post repo lifecycle hooks, branch management, cleanup                     |
-| `src/vcs/authenticated-git-ops.ts`  | Wraps GitOps with per-command auth via `-c url.insteadOf`                     |
-| `src/shared/xfg-template.ts`        | `${xfg:repo.name}` templating for repo-specific content                       |
-| `src/sync/manifest.ts`              | Tracks managed files for orphan deletion (`deleteOrphaned`)                   |
-| `src/output/github-summary.ts`      | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                             |
+| Module                                    | Purpose                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `src/config/normalizer.ts`                | Parses config, expands git arrays, merges content, interpolates env vars |
+| `src/config/validator.ts`                 | Validates raw config via `validateForSync` (files, settings, or both)    |
+| `src/sync/repository-processor.ts`        | Composition root: wires SyncWorkflow and all per-repo collaborators      |
+| `src/sync/sync-workflow.ts`               | Orchestrates per-repo: clone, write files, commit, PR/push               |
+| `src/settings/base-processor.ts`          | Shared guards (`withGitHubGuards`), result builders, ISettingsProcessor  |
+| `src/settings/rulesets/processor.ts`      | Ruleset sync: diff remote vs config, create/update/delete via GitHub API |
+| `src/lifecycle/repo-lifecycle-manager.ts` | Repo creation, deletion, mirror push, and lifecycle orchestration        |
+| `src/vcs/authenticated-git-ops.ts`        | Wraps GitOps with per-command auth via `-c url.insteadOf`                |
+| `src/shared/xfg-template.ts`              | `${xfg:repo.name}` templating for repo-specific content                  |
+| `src/sync/manifest.ts`                    | Tracks managed files for orphan deletion (`deleteOrphaned`)              |
+| `src/output/github-summary.ts`            | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                        |
 
 ## GitHub Rulesets API
 
@@ -129,8 +130,8 @@ When running blind subjective reviews (subagent reviewers), ALWAYS instruct them
 **NEVER launch more than 3 subagents at a time.** Launching 20 parallel review agents burned the user's entire 5-hour token budget in minutes. Follow this process:
 
 1. Launch 2-3 subagents max in the first batch
-2. Wait for them to complete and verify they produced valid output
-3. Only then launch the next batch of 2-3
-4. Continue until all batches are done
+1. Wait for them to complete and verify they produced valid output
+1. Only then launch the next batch of 2-3
+1. Continue until all batches are done
 
 This applies to ALL subagent work, not just desloppify reviews.
