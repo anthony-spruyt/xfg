@@ -8,30 +8,30 @@
   "strict_score": 88.2,
   "verified_strict_score": 90.2,
   "stats": {
-    "total": 1841,
+    "total": 1845,
     "auto_resolved": 1161,
     "deferred": 3,
-    "false_positive": 181,
-    "fixed": 343,
-    "open": 151,
+    "false_positive": 190,
+    "fixed": 345,
+    "open": 144,
     "triaged_out": 0,
     "wontfix": 2,
     "by_tier": {
       "1": {
         "auto_resolved": 8,
         "deferred": 2,
-        "false_positive": 9,
-        "fixed": 145,
-        "open": 4,
+        "false_positive": 11,
+        "fixed": 147,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 0
       },
       "2": {
         "auto_resolved": 364,
         "deferred": 1,
-        "false_positive": 96,
+        "false_positive": 103,
         "fixed": 151,
-        "open": 8,
+        "open": 2,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -40,7 +40,7 @@
         "deferred": 0,
         "false_positive": 75,
         "fixed": 27,
-        "open": 139,
+        "open": 140,
         "triaged_out": 0,
         "wontfix": 0
       },
@@ -94,8 +94,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-26T11:29:36+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-26T11:29:36+00:00"
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-26T12:01:48+00:00"
     },
     "convention_outlier": {
       "score": 88.5,
@@ -110,8 +110,8 @@
       "source": "holistic",
       "assessed_at": "2026-04-26T11:29:36+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-26T11:29:46+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:08+00:00"
     },
     "abstraction_fitness": {
       "score": 91.2,
@@ -162,25 +162,34 @@
     "high_level_elegance": {
       "score": 82.0,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-04-26T12:01:47+00:00"
     },
     "mid_level_elegance": {
       "score": 89.2,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:51:08+00:00"
     },
     "low_level_elegance": {
       "score": 80.5,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:27+00:00"
     },
     "design_coherence": {
       "score": 80.5,
       "source": "holistic",
       "assessed_at": "2026-04-26T11:29:36+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "mechanical_issues_changed",
-      "stale_since": "2026-04-26T11:29:46+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:23+00:00"
     },
     "contract_coherence": {
       "score": 86.0,
@@ -211,17 +220,26 @@
     "naming_quality": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:09+00:00"
     },
     "test_strategy": {
       "score": 91.2,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:11+00:00"
     },
     "type_safety": {
       "score": 88.5,
       "source": "holistic",
-      "assessed_at": "2026-04-26T11:29:36+00:00"
+      "assessed_at": "2026-04-26T11:29:36+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-04-26T11:41:30+00:00"
     }
   },
   "lang_capabilities": {
@@ -3154,13 +3172,13 @@
       "strict": 89.0,
       "verified_strict_score": 89.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.89,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 1.1,
           "assessment_score": 89.0,
           "placeholder": false,
@@ -3196,13 +3214,13 @@
       "strict": 80.5,
       "verified_strict_score": 80.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.805,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.95,
           "assessment_score": 80.5,
           "placeholder": false,
@@ -3217,13 +3235,13 @@
       "strict": 89.5,
       "verified_strict_score": 89.5,
       "checks": 10,
-      "failing": 3,
+      "failing": 2,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.895,
-          "failing": 3,
+          "failing": 2,
           "weighted_failures": 1.05,
           "assessment_score": 89.5,
           "placeholder": false,
@@ -3238,13 +3256,13 @@
       "strict": 82.0,
       "verified_strict_score": 82.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.82,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.8,
           "assessment_score": 82.0,
           "placeholder": false,
@@ -3322,13 +3340,13 @@
       "strict": 80.5,
       "verified_strict_score": 80.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.805,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.95,
           "assessment_score": 80.5,
           "placeholder": false,
@@ -3343,13 +3361,13 @@
       "strict": 89.2,
       "verified_strict_score": 89.2,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.892,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.08,
           "assessment_score": 89.2,
           "placeholder": false,
@@ -3364,13 +3382,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3406,13 +3424,13 @@
       "strict": 91.2,
       "verified_strict_score": 91.2,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.912,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.88,
           "assessment_score": 91.2,
           "placeholder": false,
@@ -3427,13 +3445,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -77484,11 +77502,11 @@
         "reasoning": "",
         "summary_hash": "fc4ac2c8"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Moved formatDiffLine from src/output/ to src/shared/, updated all imports",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T12:01:48+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77496,7 +77514,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Moved formatDiffLine from src/output/ to src/shared/, updated all imports and I am not gaming the score.",
+        "attested_at": "2026-04-26T12:01:48+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::key_modules_table_incomplete": {
       "id": "review::.::holistic::high_level_elegance::key_modules_table_incomplete",
@@ -77518,11 +77542,11 @@
         "reasoning": "",
         "summary_hash": "cc305459"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added specific module paths for base-processor.ts, rulesets/processor.ts, repo-lifecycle-manager.ts",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T12:01:47+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77530,7 +77554,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added specific module paths for base-processor.ts, rulesets/processor.ts, repo-lifecycle-manager.ts and I am not gaming the score.",
+        "attested_at": "2026-04-26T12:01:47+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::error_consistency::error_classes_missing_cause_support": {
       "id": "review::.::holistic::error_consistency::error_classes_missing_cause_support",
@@ -77556,19 +77586,25 @@
         "reasoning": "",
         "summary_hash": "fbf9ff54"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
-      "reopen_count": 0,
+      "resolved_at": "2026-04-26T11:41:08+00:00",
+      "reopen_count": 1,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 all 4 error classes already accept ErrorOptions at src/shared/errors.ts lines 9,22,30,38",
+        "attested_at": "2026-04-26T11:41:08+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::process_single_repo_verb_inconsistency": {
       "id": "review::.::holistic::naming_quality::process_single_repo_verb_inconsistency",
@@ -77591,19 +77627,25 @@
         "reasoning": "",
         "summary_hash": "24d23c2b"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
-      "reopen_count": 0,
+      "resolved_at": "2026-04-26T11:41:09+00:00",
+      "reopen_count": 1,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 function is already named runSingleRepo at sync-command.ts line 410 matching run* convention",
+        "attested_at": "2026-04-26T11:41:09+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::settings_processor_switch_duplication": {
       "id": "review::.::holistic::low_level_elegance::settings_processor_switch_duplication",
@@ -77627,11 +77669,11 @@
         "reasoning": "",
         "summary_hash": "5a6b967d"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T11:41:27+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77639,7 +77681,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 LabelsProcessor and RulesetProcessor switch bodies handle materially different payloads and guards, abstracting would add type gymnastics worse than the duplication",
+        "attested_at": "2026-04-26T11:41:27+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::apply_file_layer_mixed_concerns": {
       "id": "review::.::holistic::low_level_elegance::apply_file_layer_mixed_concerns",
@@ -77661,11 +77709,11 @@
         "reasoning": "",
         "summary_hash": "19a4c580"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T11:41:25+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77673,7 +77721,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 applyFileLayer is 53 lines, linear, clear sequential logic; extracting a helper adds indirection without clarity benefit",
+        "attested_at": "2026-04-26T11:41:25+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::dual_token_resolution_paths": {
       "id": "review::.::holistic::mid_level_elegance::dual_token_resolution_paths",
@@ -77698,11 +77752,11 @@
         "reasoning": "",
         "summary_hash": "8fb2a98a"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T11:51:08+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77710,7 +77764,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. AuthOptionsBuilder.resolve() fallback path (lines 30-55) is actively tested in auth-options-builder.test.ts lines 61-87 and reachable via RepositoryProcessor DI - only the CLI entry point pre-resolves tokens.",
+        "attested_at": "2026-04-26T11:51:08+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::test_strategy::work_strategy_test_vestigial": {
       "id": "review::.::holistic::test_strategy::work_strategy_test_vestigial",
@@ -77732,19 +77792,25 @@
         "reasoning": "",
         "summary_hash": "09487895"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
-      "reopen_count": 0,
+      "resolved_at": "2026-04-26T11:41:11+00:00",
+      "reopen_count": 1,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 work-strategy.test.ts file no longer exists, was already deleted",
+        "attested_at": "2026-04-26T11:41:11+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::sync_command_mixed_responsibilities": {
       "id": "review::.::holistic::design_coherence::sync_command_mixed_responsibilities",
@@ -77769,11 +77835,11 @@
         "reasoning": "",
         "summary_hash": "be22aae4"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T11:41:23+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77781,7 +77847,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 sync-command.ts is already well-decomposed into focused functions (runSingleRepo, runLifecyclePhase, runFileSyncPhase etc), splitting into files adds navigation overhead for no clarity gain",
+        "attested_at": "2026-04-26T11:41:23+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::repeated_error_stderr_cast": {
       "id": "review::.::holistic::type_safety::repeated_error_stderr_cast",
@@ -77805,19 +77877,25 @@
         "reasoning": "",
         "summary_hash": "da453115"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
-      "reopen_count": 0,
+      "resolved_at": "2026-04-26T11:41:11+00:00",
+      "reopen_count": 1,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 all 3 occurrences in retry-utils.ts already use getStderr() helper, no casts remain",
+        "attested_at": "2026-04-26T11:41:11+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::parseApiJson_unchecked_cast": {
       "id": "review::.::holistic::type_safety::parseApiJson_unchecked_cast",
@@ -77840,11 +77918,11 @@
         "reasoning": "",
         "summary_hash": "d136580c"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-04-26T11:29:36+00:00",
       "last_seen": "2026-04-26T11:29:36+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-04-26T11:41:30+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -77852,7 +77930,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score \u2014 standard TypeScript JSON.parse as T pattern, runtime validation would require schema library at 10+ call sites for marginal safety on versioned API responses",
+        "attested_at": "2026-04-26T11:41:30+00:00",
+        "scan_verified": false
+      }
     },
     "boilerplate_duplication::src/vcs/ado-pr-strategy.ts::d71db4cfa82e51c2": {
       "id": "boilerplate_duplication::src/vcs/ado-pr-strategy.ts::d71db4cfa82e51c2",
@@ -77892,6 +77976,139 @@
       "origin": "scan",
       "lang": "typescript",
       "zone": "production",
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::subjective-score-regression": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 1,
+      "priority": "critical",
+      "summary": "Subjective re-review caused 7+ point drops in 4 high-weight dimensions, driving overall score decline",
+      "recommendation": "Before fixing code, verify whether the subjective re-review scores reflect real code issues or reviewer variance. Re-review Design coherence, Low elegance, and High elegance with SOLID-aware prompts that do not penalize single-impl interfaces, strategy pattern, or composition-based DI. If scores recover without code changes, the regression was reviewer error.",
+      "dimensions_affected": [
+        "Design coherence",
+        "Low elegance",
+        "High elegance",
+        "Contracts"
+      ],
+      "detail": {
+        "dimension": "Design coherence",
+        "recommendation": "Before fixing code, verify whether the subjective re-review scores reflect real code issues or reviewer variance. Re-review Design coherence, Low elegance, and High elegance with SOLID-aware prompts that do not penalize single-impl interfaces, strategy pattern, or composition-based DI. If scores recover without code changes, the regression was reviewer error.",
+        "source": "strategist"
+      },
+      "created_at": "2026-04-26T11:33:15+00:00",
+      "id": "strategy::subjective-score-regression",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::high-elegance-weight-leverage": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 1,
+      "priority": "critical",
+      "summary": "High elegance (w=22) at score 82.0 is the single highest-leverage recovery target",
+      "recommendation": "Prioritize the 1 open High elegance issue (key_modules_table_incomplete) and investigate whether additional quick wins exist. At weight 22, each point gained here contributes 0.22 to the weighted average \u2014 more than any other dimension.",
+      "dimensions_affected": [
+        "High elegance"
+      ],
+      "detail": {
+        "dimension": "High elegance",
+        "recommendation": "Prioritize the 1 open High elegance issue (key_modules_table_incomplete) and investigate whether additional quick wins exist. At weight 22, each point gained here contributes 0.22 to the weighted average \u2014 more than any other dimension.",
+        "source": "strategist"
+      },
+      "created_at": "2026-04-26T11:33:15+00:00",
+      "id": "strategy::high-elegance-weight-leverage",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::rework-loop-cooling": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 2,
+      "priority": "high",
+      "summary": "Three dimensions (mid_level_elegance, error_consistency, abstraction_fitness) have 20+ combined reopens and need cooling",
+      "recommendation": "Explicitly exclude these dimensions from the next execution cycle. Let resolved issues stabilize for 2-3 scans before re-investing. Continuing to work on them risks more reopens than net resolutions.",
+      "dimensions_affected": [
+        "Mid elegance",
+        "Error consistency",
+        "Abstraction fit"
+      ],
+      "detail": {
+        "dimension": "Mid elegance",
+        "recommendation": "Explicitly exclude these dimensions from the next execution cycle. Let resolved issues stabilize for 2-3 scans before re-investing. Continuing to work on them risks more reopens than net resolutions.",
+        "source": "strategist"
+      },
+      "created_at": "2026-04-26T11:33:15+00:00",
+      "id": "strategy::rework-loop-cooling",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::unknown-backlog-classification": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 3,
+      "priority": "medium",
+      "summary": "184 items in unknown dimension backlog cannot contribute to targeted score recovery until classified",
+      "recommendation": "Run dimension classification on the unknown backlog before the next organize stage. Items may contain easy wins for declining dimensions that are currently invisible to triage.",
+      "dimensions_affected": [
+        "Design coherence",
+        "Low elegance",
+        "High elegance",
+        "Contracts",
+        "Type safety"
+      ],
+      "detail": {
+        "dimension": "Design coherence",
+        "recommendation": "Run dimension classification on the unknown backlog before the next organize stage. Items may contain easy wins for declining dimensions that are currently invisible to triage.",
+        "source": "strategist"
+      },
+      "created_at": "2026-04-26T11:33:15+00:00",
+      "id": "strategy::unknown-backlog-classification",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
       "suppressed": false,
       "suppressed_at": null,
       "suppression_pattern": null
