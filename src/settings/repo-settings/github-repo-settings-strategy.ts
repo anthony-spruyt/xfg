@@ -112,8 +112,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     // Pass vulnerability_alerts state - automated security fixes requires it enabled
     settings.automated_security_fixes = await this.getAutomatedSecurityFixes(
       repoInfo,
-      options,
-      settings.vulnerability_alerts
+      options
     );
     settings.private_vulnerability_reporting =
       await this.getPrivateVulnerabilityReporting(repoInfo, options);
@@ -212,8 +211,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
 
   private async getAutomatedSecurityFixes(
     github: GitHubRepoInfo,
-    options?: GhApiOptions,
-    _vulnerabilityAlertsEnabled?: boolean
+    options?: GhApiOptions
   ): Promise<boolean> {
     // Note: GitHub returns JSON with {enabled: boolean} for this endpoint
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
