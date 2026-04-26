@@ -555,7 +555,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         }
       );
     } catch (error) {
-      if (!/already\s*exists/i.test(toErrorMessage(error))) {
+      if (!isPermanentError(error, [/already\s*exists/i])) {
         throw error;
       }
     }

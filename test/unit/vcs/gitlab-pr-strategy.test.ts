@@ -563,7 +563,7 @@ describe("GitLabPRStrategy closeExistingPR", () => {
     assert.ok(deleteBranchCall.command.includes("test-branch"));
   });
 
-  test("returns closed even when branch deletion fails", async () => {
+  test("returns close_failed when branch deletion fails", async () => {
     mockExecutor.responses.set(
       "glab mr list",
       '[{"iid": 123, "title": "Test MR"}]'
@@ -583,7 +583,11 @@ describe("GitLabPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.deepStrictEqual(result, { status: "closed" });
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
   });
 });
 
@@ -1227,8 +1231,12 @@ describe("GitLabPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.deepStrictEqual(result, { status: "closed" });
-    assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
+    assert.ok(warnMessages.some((m) => m.includes("deletion failed")));
   });
 });
 

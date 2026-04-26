@@ -830,7 +830,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
     );
   });
 
-  test("returns closed even when branch deletion fails", async () => {
+  test("returns close_failed when branch deletion fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set("az repos pr update", "");
     mockExecutor.responses.set("az repos ref list", "abc123def456");
@@ -848,7 +848,11 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.deepStrictEqual(result, { status: "closed" });
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
   });
 
   test("returns close_failed when abandon command fails", async () => {
@@ -1127,7 +1131,11 @@ describe("AdoPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.deepStrictEqual(result, { status: "closed" });
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
     assert.ok(
       warnMessages.some(
         (m) => m.includes("branch") && m.includes("deletion failed")

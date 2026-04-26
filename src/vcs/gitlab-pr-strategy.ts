@@ -183,8 +183,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
         log: this.log,
       });
     } catch (error) {
-      const message = toErrorMessage(error);
-      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
+      const message = `MR !${mrInfo.mrIid} closed but branch ${branchName} deletion failed: ${toErrorMessage(error)}`;
+      this.log?.warn(message);
+      return { status: "close_failed", message };
     }
 
     return { status: "closed" };

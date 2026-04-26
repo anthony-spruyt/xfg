@@ -16,7 +16,14 @@ export { normalizeConfigInternal as normalizeConfig };
  * Use this when you need to perform command-specific validation before normalizing.
  */
 export function loadRawConfig(configPath: string): RawConfig {
-  const stat = statSync(configPath);
+  let stat;
+  try {
+    stat = statSync(configPath);
+  } catch (error) {
+    throw new ValidationError(
+      `Failed to read config at ${configPath}: ${toErrorMessage(error)}`
+    );
+  }
 
   if (stat.isDirectory()) {
     return loadRawConfigFromDirectory(configPath);
@@ -34,7 +41,14 @@ export function loadConfig(
 }
 
 function loadRawConfigFromFile(filePath: string): RawConfig {
-  const content = readFileSync(filePath, "utf-8");
+  let content: string;
+  try {
+    content = readFileSync(filePath, "utf-8");
+  } catch (error) {
+    throw new ValidationError(
+      `Failed to read config file ${filePath}: ${toErrorMessage(error)}`
+    );
+  }
   const configDir = dirname(filePath);
 
   let rawConfig: RawConfig;
@@ -56,7 +70,14 @@ function loadRawConfigFromFile(filePath: string): RawConfig {
 }
 
 function loadRawConfigFromDirectory(dirPath: string): RawConfig {
-  const entries = readdirSync(dirPath, { withFileTypes: true });
+  let entries;
+  try {
+    entries = readdirSync(dirPath, { withFileTypes: true });
+  } catch (error) {
+    throw new ValidationError(
+      `Failed to read config directory ${dirPath}: ${toErrorMessage(error)}`
+    );
+  }
   const yamlFiles = entries
     .filter(
       (entry) =>
@@ -74,7 +95,14 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
 
   const fragments: ConfigFragment[] = yamlFiles.map((fileName) => {
     const filePath = join(dirPath, fileName);
-    const content = readFileSync(filePath, "utf-8");
+    let content: string;
+    try {
+      content = readFileSync(filePath, "utf-8");
+    } catch (error) {
+      throw new ValidationError(
+        `Failed to read config file ${filePath}: ${toErrorMessage(error)}`
+      );
+    }
     const configDir = dirname(filePath);
 
     let config: Partial<RawConfig>;
