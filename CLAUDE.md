@@ -62,6 +62,8 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 | `src/config/validator.ts`           | Validates raw config via `validateForSync` (accepts files, settings, or both) |
 | `src/sync/repository-processor.ts`  | Composition root: wires SyncWorkflow and all per-repo collaborators           |
 | `src/sync/sync-workflow.ts`         | Orchestrates per-repo: clone, write files, commit, PR/push                    |
+| `src/settings/`                     | Settings processors for rulesets, labels, repo-settings, code-scanning        |
+| `src/lifecycle/`                    | Pre/post repo lifecycle hooks, branch management, cleanup                     |
 | `src/vcs/authenticated-git-ops.ts`  | Wraps GitOps with per-command auth via `-c url.insteadOf`                     |
 | `src/shared/xfg-template.ts`        | `${xfg:repo.name}` templating for repo-specific content                       |
 | `src/sync/manifest.ts`              | Tracks managed files for orphan deletion (`deleteOrphaned`)                   |
