@@ -1,4 +1,9 @@
-import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
+import type {
+  ICommitStrategy,
+  CommitOptions,
+  CommitResult,
+  FileChange,
+} from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
 import { escapeShellArg } from "../shared/shell-utils.js";
@@ -133,7 +138,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     validateSafeBranchName(branchName);
 
     const contentFileChanges = fileChanges.filter((fc) => !fc.modeOnly);
-    const additions = contentFileChanges.filter((fc) => fc.content !== null);
+    const additions = contentFileChanges.filter(
+      (fc): fc is FileChange & { content: string } => fc.content !== null
+    );
     const deletions = contentFileChanges.filter((fc) => fc.content === null);
 
     if (additions.length === 0 && deletions.length === 0) {
@@ -145,7 +152,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     // Base64 encoding adds ~33% overhead to raw content size
     const totalSize = additions.reduce((sum, fc) => {
-      const base64Size = Math.ceil((fc.content!.length * 4) / 3);
+      const base64Size = Math.ceil((fc.content.length * 4) / 3);
       return sum + base64Size;
     }, 0);
 
@@ -227,7 +234,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     branchName: string,
     message: string,
     expectedHeadOid: string,
-    additions: Array<{ path: string; content: string | null }>,
+    additions: Array<{ path: string; content: string }>,
     deletions: Array<{ path: string; content: string | null }>,
     workDir: string,
     token?: string
@@ -236,7 +243,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
 
     const fileAdditions = additions.map((fc) => ({
       path: fc.path,
-      contents: Buffer.from(fc.content!).toString("base64"),
+      contents: Buffer.from(fc.content).toString("base64"),
     }));
 
     const fileDeletions = deletions.map((fc) => ({

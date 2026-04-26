@@ -1029,7 +1029,7 @@ function hasConditionalGroupFiles(config: RawConfig): boolean {
 
 function hasConditionalGroupSettings(
   config: RawConfig,
-  predicate: (settings: NonNullable<unknown>) => boolean
+  predicate: (settings: RawRepoSettings) => boolean
 ): boolean {
   return (
     Array.isArray(config.conditionalGroups) &&

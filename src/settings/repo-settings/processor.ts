@@ -66,7 +66,10 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     repoName: string
   ): Promise<RepoSettingsProcessorResult> {
     const { dryRun } = options;
-    const desiredSettings = repoConfig.settings!.repo!;
+    const desiredSettings = repoConfig.settings?.repo;
+    if (!desiredSettings || typeof desiredSettings !== "object") {
+      throw new Error("applySettings called without repo settings");
+    }
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
