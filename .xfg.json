@@ -25,6 +25,7 @@
         ".mdformat.toml",
         ".mega-linter-base.yml",
         ".mega-linter.yml",
+        ".mergify.yml",
         ".pre-commit-config.yaml",
         ".prettierignore",
         ".prettierrc.yaml",

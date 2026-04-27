@@ -1,0 +1,66 @@
+queue_rules:
+  - name: "default"
+    merge_method: "squash"
+    batch_size: 1
+    queue_conditions:
+      - "check-success = agent/triage"
+    merge_conditions:
+      - "check-success = agent/triage"
+      - "#approved-reviews-by >= 1"
+      - "-draft"
+priority_rules:
+  - name: "revert PRs"
+    conditions:
+      - "label = agent/revert"
+    priority: "high"
+  - name: "emergency merge"
+    conditions:
+      - "label = emergency/merge"
+    priority: "high"
+pull_request_rules:
+  - name: "auto-merge agent-approved PRs"
+    conditions:
+      - "label = agent/safe"
+      - "check-success = agent/triage"
+      - "#approved-reviews-by >= 1"
+      - "-label = blocked"
+      - "-draft"
+    actions:
+      queue: {}
+  - name: "auto-merge revert PRs"
+    conditions:
+      - "label = agent/revert"
+      - "author~=.*\\[bot\\]$"
+      - "check-success = agent/triage"
+      - "-label = blocked"
+    actions:
+      queue: {}
+  - name: "cleanup labels on merge"
+    conditions:
+      - "merged"
+    actions:
+      label:
+        remove:
+          - "agent/safe"
+          - "agent/triage"
+          - "agent/fixing"
+          - "agent/fixable"
+  - name: "emergency merge (break glass)"
+    conditions:
+      - "label = emergency/merge"
+      - "author = anthony-spruyt"
+      - "-label = blocked"
+      - "-draft"
+    actions:
+      queue: {}
+  - name: "cleanup labels on close"
+    conditions:
+      - "closed"
+      - "-merged"
+    actions:
+      label:
+        remove:
+          - "agent/triage"
+          - "agent/fixing"
+          - "agent/fixable"
+          - "agent/needs-review"
