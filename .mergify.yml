@@ -13,10 +13,12 @@ priority_rules:
     conditions:
       - "label = agent/revert"
     priority: "high"
+    allow_checks_interruption: true
   - name: "emergency merge"
     conditions:
       - "label = emergency/merge"
     priority: "high"
+    allow_checks_interruption: true
 pull_request_rules:
   - name: "auto-merge agent-approved PRs"
     conditions:
@@ -64,3 +66,5 @@ pull_request_rules:
           - "agent/fixing"
           - "agent/fixable"
           - "agent/needs-review"
+merge_protections_settings:
+  reporting_method: "check-runs"
