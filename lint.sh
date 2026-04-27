@@ -18,7 +18,7 @@ source "$REPO_ROOT/lint-config.sh"
 if [[ "${1:-}" == "--ci" ]]; then
   # CI mode
   # Skip bot commits if configured
-  if [[ "$SKIP_BOT_COMMITS" == "true" && ("${GITHUB_ACTOR:-}" == "renovate[bot]" || "${GITHUB_ACTOR:-}" == "dependabot[bot]") ]]; then
+  if [[ "$SKIP_BOT_COMMITS" == "true" && ("${GITHUB_ACTOR:-}" == "renovate[bot]" || "${GITHUB_ACTOR:-}" == "dependabot[bot]" || "${GITHUB_ACTOR:-}" == "mergify[bot]") ]]; then
     echo "::notice::Skipping lint for bot commit"
     exit 0
   fi
