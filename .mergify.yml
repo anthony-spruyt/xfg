@@ -65,20 +65,22 @@ merge_protections:
   - name: "agent-approved"
     if:
       - "base = main"
+      - "-label = agent/revert"
+      - "-label = emergency/merge"
     success_conditions:
       - "label = agent/safe"
       - "#approved-reviews-by >= 1"
   - name: "revert-approved"
     if:
       - "base = main"
-    success_conditions:
       - "label = agent/revert"
+    success_conditions:
       - "author~=.*\\[bot\\]$"
   - name: "emergency-merge"
     if:
       - "base = main"
-    success_conditions:
       - "label = emergency/merge"
+    success_conditions:
       - "author = anthony-spruyt"
 merge_protections_settings:
   reporting_method: "check-runs"
