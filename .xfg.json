@@ -31,6 +31,7 @@
         ".pylintrc",
         ".secretlintignore",
         ".shellcheckrc",
+        ".trivy-images.yaml",
         ".trivyignore.yaml",
         ".vscode/settings.json",
         ".yamllint.yml",
