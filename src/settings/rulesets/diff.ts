@@ -262,6 +262,11 @@ function matchByIndex(current: unknown[], desired: unknown[]): unknown[] {
   for (let i = 0; i < Math.min(current.length, desired.length); i++) {
     result.push(projectToDesiredShape(current[i], desired[i]));
   }
+  // Append extra current items so deepEqual detects length mismatch (removals).
+  // Mirrors matchByKey behavior added for #549.
+  for (let i = desired.length; i < current.length; i++) {
+    result.push(current[i]);
+  }
   return result;
 }
 
