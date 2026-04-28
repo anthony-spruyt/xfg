@@ -584,6 +584,54 @@ describe("diffRulesets", () => {
 
       assert.equal(changes[0].action, "update");
     });
+
+    test("detects removal of individual requiredStatusChecks item (#731)", () => {
+      const current: GitHubRuleset[] = [
+        {
+          id: 1,
+          name: "pr-rules",
+          target: "branch",
+          enforcement: "active",
+          rules: [
+            {
+              type: "required_status_checks",
+              parameters: {
+                do_not_enforce_on_create: false,
+                required_status_checks: [
+                  { context: "summary / Check Results" },
+                  { context: "Mergify Merge Protections" },
+                ],
+                strict_required_status_checks_policy: true,
+              },
+            },
+          ],
+        },
+      ];
+      const desired = new Map<string, Ruleset>([
+        [
+          "pr-rules",
+          {
+            target: "branch",
+            enforcement: "active",
+            rules: [
+              {
+                type: "required_status_checks",
+                parameters: {
+                  doNotEnforceOnCreate: false,
+                  requiredStatusChecks: [
+                    { context: "summary / Check Results" },
+                  ],
+                  strictRequiredStatusChecksPolicy: true,
+                },
+              },
+            ],
+          },
+        ],
+      ]);
+      const changes = diffRulesets(current, desired, false);
+
+      assert.equal(changes[0].action, "update");
+    });
   });
 });
 
@@ -1496,6 +1544,46 @@ describe("projectToDesiredShape", () => {
         { actor_id: 2740, actor_type: "Team", bypass_mode: "always" },
       ],
     });
+  });
+
+  test("preserves extra current items when matching by index (no match key)", () => {
+    // Regression: #731 — matchByIndex truncated to min(current, desired) length,
+    // hiding removals of items in arrays without type/actor_id keys
+    // (e.g. requiredStatusChecks which use context as identifier)
+    const current = {
+      rules: [
+        {
+          type: "required_status_checks",
+          parameters: {
+            required_status_checks: [
+              { context: "summary / Check Results" },
+              { context: "Mergify Merge Protections" },
+            ],
+            strict_required_status_checks_policy: true,
+          },
+        },
+      ],
+    };
+    const desired = {
+      rules: [
+        {
+          type: "required_status_checks",
+          parameters: {
+            required_status_checks: [{ context: "summary / Check Results" }],
+            strict_required_status_checks_policy: true,
+          },
+        },
+      ],
+    };
+
+    const result = projectToDesiredShape(current, desired);
+
+    const rules = (result as Record<string, unknown[]>).rules;
+    const params = (rules[0] as Record<string, Record<string, unknown[]>>)
+      .parameters;
+    // Projected current must preserve the extra item so deepEqual
+    // detects the length mismatch and flags an update
+    assert.equal(params.required_status_checks.length, 2);
   });
 
   test("preserves current-only bypass_actors for removal detection", () => {
