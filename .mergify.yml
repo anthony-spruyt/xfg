@@ -25,6 +25,14 @@ pull_request_rules:
       - "-draft"
     actions:
       queue: {}
+  - name: "auto-merge human-approved PRs"
+    conditions:
+      - "label = approved"
+      - "#approved-reviews-by >= 1"
+      - "-label = blocked"
+      - "-draft"
+    actions:
+      queue: {}
   - name: "auto-merge revert PRs"
     conditions:
       - "label = agent/revert"
@@ -43,6 +51,7 @@ pull_request_rules:
           - "agent/triage"
           - "agent/fixing"
           - "agent/fixable"
+          - "approved"
   - name: "emergency merge (break glass)"
     conditions:
       - "label = emergency/merge"
@@ -68,8 +77,18 @@ merge_protections:
       - "base = main"
       - "-label = agent/revert"
       - "-label = emergency/merge"
+      - "-label = approved"
     success_conditions:
       - "label = agent/safe"
+      - "#approved-reviews-by >= 1"
+  - name: "human-approved"
+    if:
+      - "base = main"
+      - "-label = agent/revert"
+      - "-label = emergency/merge"
+      - "label = approved"
+    success_conditions:
+      - "label = approved"
       - "#approved-reviews-by >= 1"
   - name: "revert-approved"
     if:
