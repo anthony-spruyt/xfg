@@ -23,6 +23,7 @@ pull_request_rules:
       - "#approved-reviews-by >= 1"
       - "-label = blocked"
       - "-draft"
+      - "-merged"
     actions:
       queue: {}
   - name: "auto-merge human-approved PRs"
@@ -31,6 +32,7 @@ pull_request_rules:
       - "#approved-reviews-by >= 1"
       - "-label = blocked"
       - "-draft"
+      - "-merged"
     actions:
       queue: {}
   - name: "auto-merge revert PRs"
@@ -38,11 +40,11 @@ pull_request_rules:
       - "label = agent/revert"
       - "author~=.*\\[bot\\]$"
       - "-label = blocked"
+      - "-merged"
     actions:
       queue: {}
   - name: "cleanup labels on merge"
     conditions:
-      - "closed"
       - "merged"
     actions:
       label:
@@ -58,6 +60,7 @@ pull_request_rules:
       - "author = anthony-spruyt"
       - "-label = blocked"
       - "-draft"
+      - "-merged"
     actions:
       queue: {}
   - name: "cleanup labels on close"
