@@ -13,13 +13,6 @@
       "env": {
         "CCLSP_CONFIG_PATH": "/workspaces/xfg/.claude/cclsp.json"
       }
-    },
-    "github": {
-      "type": "http",
-      "url": "https://github-mcp.lan.${EXTERNAL_DOMAIN}/mcp",
-      "headers": {
-        "X-API-KEY": "${GITHUB_MCP_API_KEY}"
-      }
     }
   }
 }
