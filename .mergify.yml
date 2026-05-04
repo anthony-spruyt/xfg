@@ -17,18 +17,8 @@ priority_rules:
     priority: "high"
     allow_checks_interruption: true
 pull_request_rules:
-  - name: "auto-merge agent-approved PRs"
+  - name: "auto-merge approved PRs"
     conditions:
-      - "label = agent/safe"
-      - "#approved-reviews-by >= 1"
-      - "-label = blocked"
-      - "-draft"
-      - "-merged"
-    actions:
-      queue: {}
-  - name: "auto-merge human-approved PRs"
-    conditions:
-      - "label = approved"
       - "#approved-reviews-by >= 1"
       - "-label = blocked"
       - "-draft"
@@ -55,7 +45,6 @@ pull_request_rules:
           - "agent/triage"
           - "agent/fixing"
           - "agent/fixable"
-          - "approved"
   - name: "emergency merge (break glass)"
     conditions:
       - "label = emergency/merge"
@@ -77,23 +66,12 @@ pull_request_rules:
           - "agent/fixable"
           - "agent/needs-review"
 merge_protections:
-  - name: "agent-approved"
+  - name: "default"
     if:
       - "base = main"
       - "-label = agent/revert"
       - "-label = emergency/merge"
-      - "-label = approved"
     success_conditions:
-      - "label = agent/safe"
-      - "#approved-reviews-by >= 1"
-  - name: "human-approved"
-    if:
-      - "base = main"
-      - "-label = agent/revert"
-      - "-label = emergency/merge"
-      - "label = approved"
-    success_conditions:
-      - "label = approved"
       - "#approved-reviews-by >= 1"
   - name: "revert-approved"
     if:

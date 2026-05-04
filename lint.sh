@@ -66,9 +66,9 @@ else
     network_arg=()
   fi
 
+  echo "Running MegaLinter (output suppressed)..."
+
   "${runner[@]}" run \
-    -a STDOUT \
-    -a STDERR \
     "${network_arg[@]}" \
     -u "$(id -u):$(id -g)" \
     -w /tmp/lint \
@@ -80,12 +80,21 @@ else
     -e REPORT_OUTPUT_FOLDER="/tmp/lint/.output" \
     -v "$REPO_ROOT:/tmp/lint:rw" \
     --rm \
-    "$MEGALINTER_IMAGE" ||
+    "$MEGALINTER_IMAGE" >/dev/null 2>&1 ||
     LINT_EXIT_CODE=$?
 
   # Copy fixed files back to workspace
   if compgen -G "$REPO_ROOT/.output/updated_sources/*" >/dev/null; then
     cp -r "$REPO_ROOT/.output/updated_sources"/* "$REPO_ROOT/"
+  fi
+
+  if [[ "$LINT_EXIT_CODE" -eq 0 ]]; then
+    echo "MegaLinter passed. Results in .output/"
+  else
+    echo "MegaLinter failed (exit code $LINT_EXIT_CODE). Check .output/ for details:"
+    echo "  .output/megalinter.log        - Full run log"
+    echo "  .output/linters_logs/          - Per-linter logs"
+    echo "  .output/updated_sources/       - Auto-fixed files (already copied back)"
   fi
 
   exit "$LINT_EXIT_CODE"
