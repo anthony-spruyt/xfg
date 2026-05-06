@@ -917,6 +917,7 @@ function validateRepoFiles(
           `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group, or provide content inline.`
         );
       }
+      validateFileName(fileName);
     }
 
     const fileOverride = repo.files[fileName];

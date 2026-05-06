@@ -455,6 +455,24 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("rejects standalone per-repo file with path traversal", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "../../../etc/passwd": { content: "malicious" },
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Invalid fileName '..\/..\/..\/etc\/passwd'/
+      );
+    });
+
     test("throws when per-repo file override has true but no content", () => {
       const config = createValidConfig({
         repos: [
