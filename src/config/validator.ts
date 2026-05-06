@@ -905,9 +905,18 @@ function validateRepoFiles(
     }
 
     if (!knownFiles.has(fileName)) {
-      throw new ValidationError(
-        `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group.`
-      );
+      const fileEntry = (repo.files as Record<string, unknown>)[fileName];
+      const isStandaloneDefinition =
+        fileEntry != null &&
+        fileEntry !== false &&
+        typeof fileEntry === "object" &&
+        "content" in (fileEntry as Record<string, unknown>) &&
+        (fileEntry as Record<string, unknown>).content !== undefined;
+      if (!isStandaloneDefinition) {
+        throw new ValidationError(
+          `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group, or provide content inline.`
+        );
+      }
     }
 
     const fileOverride = repo.files[fileName];
