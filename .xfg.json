@@ -13,7 +13,6 @@
         ".eslintrc.json",
         ".github/actionlint.yaml",
         ".github/CODEOWNERS",
-        ".github/renovate-overrides.json5",
         ".github/renovate.json5",
         ".github/workflows/ci.yaml",
         ".github/workflows/trivy-scan.yaml",
