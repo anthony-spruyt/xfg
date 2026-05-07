@@ -372,13 +372,13 @@ describe("validateRawConfig", () => {
   });
 
   describe("per-repo file override validation", () => {
-    test("throws when repo references undefined file", () => {
+    test("throws when repo references undefined file without content", () => {
       const config = createValidConfig({
         repos: [
           {
             git: "git@github.com:org/repo.git",
             files: {
-              "nonexistent.json": { content: {} },
+              "nonexistent.json": { createOnly: true },
             },
           },
         ],
@@ -403,6 +403,74 @@ describe("validateRawConfig", () => {
       });
 
       assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows standalone per-repo file with content not in root or groups", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".github/renovate-overrides.json5": {
+                content: { extends: ["config:base"] },
+              },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows standalone per-repo text file with string content", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "custom-script.sh": { content: "#!/bin/bash\necho hello" },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("rejects standalone per-repo file without content", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "unknown.json": { executable: true },
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Repo at index 0 references undefined file 'unknown.json'/
+      );
+    });
+
+    test("rejects standalone per-repo file with path traversal", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "../../../etc/passwd": { content: "malicious" },
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Invalid fileName '..\/..\/..\/etc\/passwd'/
+      );
     });
 
     test("throws when per-repo file override has true but no content", () => {
