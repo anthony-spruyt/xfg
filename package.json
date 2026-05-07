@@ -29,7 +29,7 @@
     "url": "https://github.com/anthony-spruyt/xfg/issues"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc",
