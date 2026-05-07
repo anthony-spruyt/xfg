@@ -2,6 +2,7 @@ queue_rules:
   - name: "default"
     merge_method: "squash"
     batch_size: 1
+    max_checks_retries: 3
     merge_conditions:
       - "#approved-reviews-by >= 1"
       - "-draft"
