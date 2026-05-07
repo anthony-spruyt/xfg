@@ -5935,6 +5935,30 @@ describe("conditional group configuration", () => {
       assert.ok(fileNames.includes("included.json"));
     });
 
+    test("repo-only file included even with inherit: false", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "shared.json": { content: { shared: true } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              inherit: false,
+              "repo-only.json": { content: { local: true } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      const fileNames = result.repos[0].files.map((f) => f.fileName);
+      assert.ok(!fileNames.includes("shared.json"), "inherited file excluded");
+      assert.ok(
+        fileNames.includes("repo-only.json"),
+        "standalone file included"
+      );
+    });
+
     test("repo-only file inherits deleteOrphaned from root", () => {
       const raw: RawConfig = {
         id: "test-config",

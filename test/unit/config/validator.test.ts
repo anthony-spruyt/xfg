@@ -473,6 +473,54 @@ describe("validateRawConfig", () => {
       );
     });
 
+    test("rejects standalone per-repo file with content: null", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "empty.json": { content: null as unknown as string },
+            },
+          },
+        ],
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /Repo at index 0 references undefined file 'empty.json'/
+      );
+    });
+
+    test("allows standalone per-repo file with empty string content", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "empty.sh": { content: "" },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("allows standalone per-repo file with empty object content", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "defaults.json": { content: {} },
+            },
+          },
+        ],
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
     test("throws when per-repo file override has true but no content", () => {
       const config = createValidConfig({
         repos: [

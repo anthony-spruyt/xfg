@@ -911,7 +911,8 @@ function validateRepoFiles(
         fileEntry !== false &&
         typeof fileEntry === "object" &&
         "content" in (fileEntry as Record<string, unknown>) &&
-        (fileEntry as Record<string, unknown>).content !== undefined;
+        (fileEntry as Record<string, unknown>).content !== undefined &&
+        (fileEntry as Record<string, unknown>).content !== null;
       if (!isStandaloneDefinition) {
         throw new ValidationError(
           `Repo at index ${index} references undefined file '${fileName}'. File must be defined in root 'files' object or in a referenced group, or provide content inline.`
