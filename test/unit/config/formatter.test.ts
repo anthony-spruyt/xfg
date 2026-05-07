@@ -309,15 +309,58 @@ describe("convertContentToString with JSON5 format", () => {
     assert.equal(result, "");
   });
 
-  test("header and schemaUrl are ignored for JSON5 files", () => {
+  test("null content with header returns // comments for JSON5", () => {
+    const result = convertContentToString(null, "config.json5", {
+      header: ["This is a header comment"],
+    });
+    assert.ok(result.includes("// This is a header comment"));
+  });
+
+  test("null content with schemaUrl is ignored for JSON5", () => {
+    const result = convertContentToString(null, "config.json5", {
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.equal(result, "");
+  });
+
+  test("header adds // comment lines for JSON5 files", () => {
     const content = { key: "value" };
     const result = convertContentToString(content, "config.json5", {
       header: ["This is a comment"],
+    });
+    assert.ok(
+      result.includes("// This is a comment"),
+      `Expected // comment, got: ${result}`
+    );
+    assert.ok(result.includes('"key"'));
+  });
+
+  test("multi-line header works for JSON5 files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json5", {
+      header: ["Line 1", "Line 2"],
+    });
+    assert.ok(result.includes("// Line 1"));
+    assert.ok(result.includes("// Line 2"));
+  });
+
+  test("schemaUrl is ignored for JSON5 files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json5", {
       schemaUrl: "https://example.com/schema.json",
     });
-    assert.ok(!result.includes("comment"));
     assert.ok(!result.includes("schema"));
     assert.ok(result.includes('"key"'));
+  });
+
+  test("header with schemaUrl only emits header for JSON5 files", () => {
+    const content = { key: "value" };
+    const result = convertContentToString(content, "config.json5", {
+      header: ["Custom comment"],
+      schemaUrl: "https://example.com/schema.json",
+    });
+    assert.ok(result.includes("// Custom comment"));
+    assert.ok(!result.includes("schema"));
   });
 });
 

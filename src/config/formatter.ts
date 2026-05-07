@@ -65,6 +65,11 @@ function buildCommentOnlyYaml(
   return lines.join("\n") + "\n";
 }
 
+function buildJson5HeaderComment(header?: string[]): string | undefined {
+  if (!header || header.length === 0) return undefined;
+  return header.map((h) => `// ${h}`).join("\n") + "\n";
+}
+
 /**
  * Converts content to string in the appropriate format.
  * Handles null content (empty files), text content (string/string[]), and object content (JSON/YAML).
@@ -81,6 +86,12 @@ export function convertContentToString(
         options.header,
         options.schemaUrl
       );
+      if (commentOnly) {
+        return commentOnly;
+      }
+    }
+    if (format === "json5" && options) {
+      const commentOnly = buildJson5HeaderComment(options.header);
       if (commentOnly) {
         return commentOnly;
       }
@@ -137,6 +148,12 @@ export function convertContentToString(
     });
   }
 
-  // JSON and JSON5 — both use standard JSON.stringify (valid JSON5 superset)
+  if (format === "json5" && options) {
+    const headerComment = buildJson5HeaderComment(options.header);
+    if (headerComment) {
+      return headerComment + JSON.stringify(content, null, 2) + "\n";
+    }
+  }
+
   return JSON.stringify(content, null, 2) + "\n";
 }
