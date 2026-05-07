@@ -34,18 +34,6 @@ pull_request_rules:
       - "-merged"
     actions:
       queue: {}
-  - name: "cleanup labels on merge"
-    conditions:
-      - or:
-          - "merged"
-          - "queue-dequeue-reason = PR_MERGED"
-    actions:
-      label:
-        remove:
-          - "agent/safe"
-          - "agent/triage"
-          - "agent/fixing"
-          - "agent/fixable"
   - name: "emergency merge (break glass)"
     conditions:
       - "label = emergency/merge"
