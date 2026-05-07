@@ -691,6 +691,17 @@ export function normalizeConfig(
 
     const fileNames = Object.keys(effectiveRootFiles);
 
+    // Collect repo-only file names (defined at repo level but not in root/groups)
+    const repoOnlyFileNames: string[] = [];
+    if (rawRepo.files) {
+      for (const name of Object.keys(rawRepo.files)) {
+        if (name === "inherit") continue;
+        if (!effectiveRootFiles[name]) {
+          repoOnlyFileNames.push(name);
+        }
+      }
+    }
+
     for (const gitUrl of gitUrls) {
       const files: FileContent[] = [];
 
@@ -705,6 +716,22 @@ export function normalizeConfig(
           effectiveRootFiles[fileName],
           rawRepo.files?.[fileName],
           inheritFiles,
+          raw.deleteOrphaned,
+          env
+        );
+        if (entry) files.push(entry);
+      }
+
+      // Process repo-only files (standalone definitions not in root/groups)
+      for (const fileName of repoOnlyFileNames) {
+        const repoOverride = rawRepo.files![fileName];
+        if (repoOverride === false) continue;
+
+        const entry = resolveFileEntry(
+          fileName,
+          {} as RawFileConfig,
+          repoOverride,
+          true,
           raw.deleteOrphaned,
           env
         );

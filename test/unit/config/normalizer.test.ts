@@ -5839,4 +5839,119 @@ describe("conditional group configuration", () => {
       "noneOf matched: repo with empty groups array"
     );
   });
+
+  describe("per-repo standalone file definitions", () => {
+    test("includes repo-only file not defined in root or groups", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "shared.json": { content: { shared: true } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "repo-only.json": { content: { local: true } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      const fileNames = result.repos[0].files.map((f) => f.fileName);
+      assert.ok(fileNames.includes("shared.json"));
+      assert.ok(fileNames.includes("repo-only.json"));
+    });
+
+    test("repo-only file resolves content correctly", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {},
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              ".github/renovate-overrides.json5": {
+                content: { extends: ["config:base"] },
+              },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      assert.equal(result.repos[0].files.length, 1);
+      assert.equal(
+        result.repos[0].files[0].fileName,
+        ".github/renovate-overrides.json5"
+      );
+      assert.deepEqual(result.repos[0].files[0].content, {
+        extends: ["config:base"],
+      });
+    });
+
+    test("repo-only file does not leak to other repos", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "shared.json": { content: { shared: true } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo-a.git",
+            files: {
+              "only-a.json": { content: { a: true } },
+            },
+          },
+          {
+            git: "git@github.com:org/repo-b.git",
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      const repoAFiles = result.repos[0].files.map((f) => f.fileName);
+      const repoBFiles = result.repos[1].files.map((f) => f.fileName);
+      assert.ok(repoAFiles.includes("only-a.json"));
+      assert.ok(repoAFiles.includes("shared.json"));
+      assert.ok(!repoBFiles.includes("only-a.json"));
+      assert.ok(repoBFiles.includes("shared.json"));
+    });
+
+    test("repo-only file with false is excluded", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {},
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "excluded.json": false,
+              "included.json": { content: { yes: true } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      const fileNames = result.repos[0].files.map((f) => f.fileName);
+      assert.ok(!fileNames.includes("excluded.json"));
+      assert.ok(fileNames.includes("included.json"));
+    });
+
+    test("repo-only file inherits deleteOrphaned from root", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: {},
+        deleteOrphaned: true,
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            files: {
+              "local.json": { content: { x: 1 } },
+            },
+          },
+        ],
+      };
+
+      const result = normalizeConfig(raw, {});
+      assert.equal(result.repos[0].files[0].deleteOrphaned, true);
+    });
+  });
 });
