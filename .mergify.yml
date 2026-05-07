@@ -5,6 +5,7 @@ queue_rules:
     merge_conditions:
       - "#approved-reviews-by >= 1"
       - "-draft"
+      - "check-success = summary / Check Results"
 priority_rules:
   - name: "revert PRs"
     conditions:
