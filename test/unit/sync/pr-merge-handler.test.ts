@@ -166,10 +166,15 @@ describe("PRMergeHandler", () => {
         repoName: "test/repo",
       });
 
-      const createCall = calls.find((c) => c.command.includes("gh pr create"));
+      const createCall = calls.find(
+        (c) =>
+          c.executable === "gh" &&
+          c.args.includes("create") &&
+          c.args.includes("pr")
+      );
       assert.ok(createCall, "gh pr create should have been called");
       assert.ok(
-        createCall.command.includes("--label"),
+        createCall.args.includes("--label"),
         "gh pr create should include --label flag"
       );
     });
