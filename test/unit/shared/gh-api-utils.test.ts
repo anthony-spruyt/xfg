@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  buildHostnameFlag,
+  buildHostnameArgs,
   buildTokenEnv,
   GhApiClient,
   parseResponseBody,
@@ -26,15 +26,15 @@ function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {
   };
 }
 
-describe("buildHostnameFlag", () => {
-  test("returns empty string for github.com", () => {
-    const result = buildHostnameFlag(makeRepoInfo());
-    assert.equal(result, "");
+describe("buildHostnameArgs", () => {
+  test("returns empty array for github.com", () => {
+    const result = buildHostnameArgs(makeRepoInfo());
+    assert.deepEqual(result, []);
   });
 
-  test("returns --hostname flag for GHE", () => {
-    const result = buildHostnameFlag(makeRepoInfo({ host: "ghe.example.com" }));
-    assert.equal(result, "--hostname 'ghe.example.com'");
+  test("returns --hostname args for GHE", () => {
+    const result = buildHostnameArgs(makeRepoInfo({ host: "ghe.example.com" }));
+    assert.deepEqual(result, ["--hostname", "ghe.example.com"]);
   });
 });
 
@@ -378,27 +378,28 @@ describe("attachValidationDetails", () => {
 
 describe("GhApiClient", () => {
   test("includes --include flag for non-paginated GET and strips headers", async () => {
-    const calls: { command: string; cwd: string }[] = [];
+    const calls: { executable: string; args: string[]; cwd: string }[] = [];
     const executor = {
-      exec: async (command: string, cwd: string) => {
-        calls.push({ command, cwd });
+      exec: async (executable: string, args: string[], cwd: string) => {
+        calls.push({ executable, args, cwd });
         return 'HTTP/2.0 200 OK\nContent-Type: application/json\n\n{"ok": true}';
       },
     };
     const client = new GhApiClient(executor as never, 0, "/tmp");
     const result = await client.call("GET", "/repos/owner/repo");
     assert.equal(calls.length, 1);
-    assert.match(calls[0].command, /--include/);
-    assert.match(calls[0].command, /repos\/owner\/repo/);
+    assert.strictEqual(calls[0].executable, "gh");
+    assert.ok(calls[0].args.includes("--include"));
+    assert.ok(calls[0].args.some((a) => a.includes("repos/owner/repo")));
     assert.equal(calls[0].cwd, "/tmp");
     assert.equal(result, '{"ok": true}');
   });
 
   test("skips --include flag for paginated requests", async () => {
-    const calls: string[] = [];
+    const calls: { executable: string; args: string[] }[] = [];
     const executor = {
-      exec: async (command: string) => {
-        calls.push(command);
+      exec: async (executable: string, args: string[]) => {
+        calls.push({ executable, args });
         return '[{"id": 1}, {"id": 2}]';
       },
     };
@@ -408,18 +409,18 @@ describe("GhApiClient", () => {
     });
     assert.equal(calls.length, 1);
     assert.ok(
-      !calls[0].includes("--include"),
+      !calls[0].args.includes("--include"),
       "Should NOT have --include with --paginate"
     );
-    assert.match(calls[0], /--paginate/);
+    assert.ok(calls[0].args.includes("--paginate"));
     assert.equal(result, '[{"id": 1}, {"id": 2}]');
   });
 
   test("adds -X flag for non-GET methods and strips headers", async () => {
-    const calls: string[] = [];
+    const calls: { executable: string; args: string[] }[] = [];
     const executor = {
-      exec: async (command: string) => {
-        calls.push(command);
+      exec: async (executable: string, args: string[]) => {
+        calls.push({ executable, args });
         return "HTTP/2.0 201 Created\n\n{}";
       },
     };
@@ -428,16 +429,18 @@ describe("GhApiClient", () => {
       payload: { key: "value" },
     });
     assert.equal(calls.length, 1);
-    assert.match(calls[0], /-X POST/);
-    assert.match(calls[0], /--input -/);
-    assert.match(calls[0], /--include/);
+    assert.ok(calls[0].args.includes("-X"));
+    assert.ok(calls[0].args.includes("POST"));
+    assert.ok(calls[0].args.includes("--input"));
+    assert.ok(calls[0].args.includes("--include"));
   });
 
   test("passes token via env", async () => {
     let passedEnv: Record<string, string> | undefined;
     const executor = {
       exec: async (
-        _cmd: string,
+        _exe: string,
+        _args: string[],
         _cwd: string,
         opts?: { env?: Record<string, string> }
       ) => {
