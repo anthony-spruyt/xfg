@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeShellArg, escapeRegExp } from "../shared/shell-utils.js";
+import { escapeRegExp } from "../shared/shell-utils.js";
 import { assertGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
@@ -18,7 +18,7 @@ import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv, buildHostnameFlag } from "../shared/gh-api-utils.js";
+import { buildTokenEnv, buildHostnameArgs } from "../shared/gh-api-utils.js";
 import { SyncError } from "../shared/errors.js";
 
 /**
@@ -47,11 +47,22 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const repoFlag = getRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
-    const command = `gh pr list --repo ${escapeShellArg(repoFlag)} --head ${escapeShellArg(branchName)} --json url --jq '.[0].url'`;
+    const args = [
+      "pr",
+      "list",
+      "--repo",
+      repoFlag,
+      "--head",
+      branchName,
+      "--json",
+      "url",
+      "--jq",
+      ".[0].url",
+    ];
 
     try {
       const existingPR = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", args, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
 
@@ -107,11 +118,18 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const repoFlag = getRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
-    const command = `gh pr close ${escapeShellArg(prNumber)} --repo ${escapeShellArg(repoFlag)} --delete-branch`;
+    const args = [
+      "pr",
+      "close",
+      prNumber,
+      "--repo",
+      repoFlag,
+      "--delete-branch",
+    ];
 
     try {
       await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", args, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
       return { status: "closed" };
@@ -148,18 +166,27 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     const tokenEnv = buildTokenEnv(token);
-    let command = `gh pr create --title ${escapeShellArg(title)} --body-file ${escapeShellArg(bodyFile)} --base ${escapeShellArg(baseBranch)} --head ${escapeShellArg(branchName)}`;
-
-    // Append label flags
+    const args = [
+      "pr",
+      "create",
+      "--title",
+      title,
+      "--body-file",
+      bodyFile,
+      "--base",
+      baseBranch,
+      "--head",
+      branchName,
+    ];
     if (labels && labels.length > 0) {
       for (const label of labels) {
-        command += ` --label ${escapeShellArg(label)}`;
+        args.push("--label", label);
       }
     }
 
     try {
       const result = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", args, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
 
@@ -197,14 +224,19 @@ export class GitHubPRStrategy extends BasePRStrategy {
     retries: number = 3,
     token?: string
   ): Promise<boolean> {
-    const hostnameFlag = buildHostnameFlag(repoInfo);
-    const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
+    const hostnameArgs = buildHostnameArgs(repoInfo);
     const tokenEnv = buildTokenEnv(token);
-    const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
+    const args = [
+      "api",
+      ...hostnameArgs,
+      `repos/${repoInfo.owner}/${repoInfo.repo}`,
+      "--jq",
+      ".allow_auto_merge // false",
+    ];
 
     try {
       const result = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", args, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
       return result.trim() === "true";
@@ -248,7 +280,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
 
     const strategyFlag = this.getMergeStrategyFlag(config.strategy);
-    const deleteBranchFlag = config.deleteBranch ? "--delete-branch" : "";
     const tokenEnv = buildTokenEnv(token);
 
     if (config.mode === "auto") {
@@ -276,12 +307,17 @@ export class GitHubPRStrategy extends BasePRStrategy {
         };
       }
 
-      // Enable auto-merge
-      const autoCommand =
-        `gh pr merge ${escapeShellArg(prUrl)} --auto ${strategyFlag} ${deleteBranchFlag}`.trim();
+      const autoArgs = [
+        "pr",
+        "merge",
+        prUrl,
+        "--auto",
+        strategyFlag,
+        ...(config.deleteBranch ? ["--delete-branch"] : []),
+      ];
 
       return this.executeMergeCommand(
-        () => this.executor.exec(autoCommand, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", autoArgs, workDir, { env: tokenEnv }),
         retries,
         {
           success: true,
@@ -297,11 +333,17 @@ export class GitHubPRStrategy extends BasePRStrategy {
       this.log?.warn(
         `Force-merging PR ${prUrl} using admin privileges (bypasses branch protection)`
       );
-      const forceCommand =
-        `gh pr merge ${escapeShellArg(prUrl)} --admin ${strategyFlag} ${deleteBranchFlag}`.trim();
+      const forceArgs = [
+        "pr",
+        "merge",
+        prUrl,
+        "--admin",
+        strategyFlag,
+        ...(config.deleteBranch ? ["--delete-branch"] : []),
+      ];
 
       return this.executeMergeCommand(
-        () => this.executor.exec(forceCommand, workDir, { env: tokenEnv }),
+        () => this.executor.exec("gh", forceArgs, workDir, { env: tokenEnv }),
         retries,
         {
           success: true,
