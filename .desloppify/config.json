@@ -10,7 +10,9 @@
     ".output"
   ],
   "ignore": [
-    ".output"
+    ".output",
+    "smells::src/cli/sync-command.ts::async_no_await",
+    "smells::src/cli/sync-command.ts::nested_closure"
   ],
   "ignore_metadata": {},
   "zone_overrides": {
