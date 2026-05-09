@@ -427,7 +427,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       cleanMessage = cleanMessage.substring(0, 2000) + "... (truncated)";
     }
 
-    return new GraphQLApiError(`Commit failed for ${repo}: ${cleanMessage}`);
+    return new GraphQLApiError(`Commit failed for ${repo}: ${cleanMessage}`, {
+      cause: error,
+    });
   }
 
   /**

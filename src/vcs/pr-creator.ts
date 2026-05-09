@@ -88,8 +88,13 @@ function formatFileChanges(files: FileAction[]): string {
         case "delete":
           actionText = "Deleted";
           break;
-        default:
-          actionText = "Changed";
+        case "skip":
+          actionText = "Skipped";
+          break;
+        default: {
+          const _exhaustive: never = f.action;
+          throw new Error(`Unexpected action: ${_exhaustive}`);
+        }
       }
       return `- ${actionText} \`${f.fileName}\``;
     })

@@ -65,7 +65,8 @@ export function resolveFileReference(
   } catch (error) {
     const msg = toErrorMessage(error);
     throw new ValidationError(
-      `Failed to load file reference "${reference}": ${msg}`
+      `Failed to load file reference "${reference}": ${msg}`,
+      { cause: error }
     );
   }
 
@@ -101,7 +102,9 @@ function parseWithContext(
   try {
     return fn();
   } catch (error) {
-    throw new ValidationError(`${errorPrefix}: ${toErrorMessage(error)}`);
+    throw new ValidationError(`${errorPrefix}: ${toErrorMessage(error)}`, {
+      cause: error,
+    });
   }
 }
 

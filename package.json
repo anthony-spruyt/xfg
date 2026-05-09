@@ -74,7 +74,7 @@
     "chalk": "^5.3.0",
     "commander": "^14.0.2",
     "json5": "^2.2.3",
-    "p-retry": "^8.0.0",
+    "p-retry": "^7.0.0",
     "yaml": "^2.4.5"
   },
   "devDependencies": {

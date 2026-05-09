@@ -1,12 +1,31 @@
 import type { RepoInfo } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
+export type CodeScanningState = "configured" | "not-configured";
+export type CodeScanningQuerySuite = "default" | "extended";
+export type CodeScanningLanguage =
+  | "actions"
+  | "c-cpp"
+  | "csharp"
+  | "go"
+  | "java-kotlin"
+  | "javascript-typescript"
+  | "python"
+  | "ruby"
+  | "swift";
+
 /**
  * Current code scanning default setup state from GitHub API.
  */
 export interface CurrentCodeScanningSettings {
-  state: "configured" | "not-configured";
-  query_suite?: "default" | "extended";
+  state: CodeScanningState;
+  query_suite?: CodeScanningQuerySuite;
+  languages?: string[];
+}
+
+export interface CodeScanningUpdateParams {
+  state: string;
+  query_suite?: string;
   languages?: string[];
 }
 
@@ -22,7 +41,7 @@ export interface ICodeScanningStrategy {
 
   update(
     repoInfo: RepoInfo,
-    settings: { state: string; query_suite?: string; languages?: string[] },
+    settings: CodeScanningUpdateParams,
     options?: GhApiOptions
   ): Promise<void>;
 }

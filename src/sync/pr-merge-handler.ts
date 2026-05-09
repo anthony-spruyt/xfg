@@ -18,7 +18,7 @@ export class PRMergeHandler implements IPRMergeHandler {
   async createAndMerge(input: CreateAndMergeInput): Promise<ProcessorResult> {
     const {
       repoInfo,
-      repoConfig,
+      prOptions,
       options,
       changedFiles,
       repoName,
@@ -40,12 +40,12 @@ export class PRMergeHandler implements IPRMergeHandler {
       prTemplate: options.prTemplate,
       executor: options.executor,
       token: options.token,
-      labels: repoConfig.prOptions?.labels,
+      labels: prOptions?.labels,
       log: this.log,
       strategy,
     });
 
-    const mergeMode = repoConfig.prOptions?.merge ?? "auto";
+    const mergeMode = prOptions?.merge ?? "auto";
     let mergeResult: ProcessorResult["mergeResult"];
 
     if (prResult.success && prResult.url && mergeMode !== "manual") {
@@ -53,9 +53,9 @@ export class PRMergeHandler implements IPRMergeHandler {
 
       const mergeConfig: PRMergeConfig = {
         mode: mergeMode,
-        strategy: repoConfig.prOptions?.mergeStrategy ?? "squash",
-        deleteBranch: repoConfig.prOptions?.deleteBranch ?? true,
-        bypassReason: repoConfig.prOptions?.bypassReason,
+        strategy: prOptions?.mergeStrategy ?? "squash",
+        deleteBranch: prOptions?.deleteBranch ?? true,
+        bypassReason: prOptions?.bypassReason,
       };
 
       const result = await mergePR({

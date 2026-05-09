@@ -85,8 +85,12 @@ export class GitLabPRStrategy extends BasePRStrategy {
       case "rebase":
         return "--rebase";
       case "merge":
-      default:
+      case undefined:
         return "";
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected merge strategy: ${_exhaustive}`);
+      }
     }
   }
 
@@ -211,7 +215,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
       writeFileSync(descFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
-        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
+        { cause: err }
       );
     }
 

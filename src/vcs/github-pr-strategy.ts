@@ -142,7 +142,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       writeFileSync(bodyFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
-        `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`
+        `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`,
+        { cause: err }
       );
     }
 
@@ -226,8 +227,12 @@ export class GitHubPRStrategy extends BasePRStrategy {
       case "rebase":
         return "--rebase";
       case "merge":
-      default:
+      case undefined:
         return "--merge";
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected merge strategy: ${_exhaustive}`);
+      }
     }
   }
 

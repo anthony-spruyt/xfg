@@ -84,7 +84,8 @@ function validateNoCircularExtends(
       resolveExtendsChain(name, groups);
     } catch (error) {
       throw new ValidationError(
-        error instanceof Error ? error.message : String(error)
+        error instanceof Error ? error.message : String(error),
+        { cause: error }
       );
     }
   }

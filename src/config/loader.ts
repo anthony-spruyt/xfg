@@ -21,7 +21,8 @@ export function loadRawConfig(configPath: string): RawConfig {
     stat = statSync(configPath);
   } catch (error) {
     throw new ValidationError(
-      `Failed to read config at ${configPath}: ${toErrorMessage(error)}`
+      `Failed to read config at ${configPath}: ${toErrorMessage(error)}`,
+      { cause: error }
     );
   }
 
@@ -46,7 +47,8 @@ function loadRawConfigFromFile(filePath: string): RawConfig {
     content = readFileSync(filePath, "utf-8");
   } catch (error) {
     throw new ValidationError(
-      `Failed to read config file ${filePath}: ${toErrorMessage(error)}`
+      `Failed to read config file ${filePath}: ${toErrorMessage(error)}`,
+      { cause: error }
     );
   }
   const configDir = dirname(filePath);
@@ -57,7 +59,8 @@ function loadRawConfigFromFile(filePath: string): RawConfig {
   } catch (error) {
     const message = toErrorMessage(error);
     throw new ValidationError(
-      `Failed to parse YAML config at ${filePath}: ${message}`
+      `Failed to parse YAML config at ${filePath}: ${message}`,
+      { cause: error }
     );
   }
 
@@ -75,7 +78,8 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
     entries = readdirSync(dirPath, { withFileTypes: true });
   } catch (error) {
     throw new ValidationError(
-      `Failed to read config directory ${dirPath}: ${toErrorMessage(error)}`
+      `Failed to read config directory ${dirPath}: ${toErrorMessage(error)}`,
+      { cause: error }
     );
   }
   const yamlFiles = entries
@@ -100,7 +104,8 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
       content = readFileSync(filePath, "utf-8");
     } catch (error) {
       throw new ValidationError(
-        `Failed to read config file ${filePath}: ${toErrorMessage(error)}`
+        `Failed to read config file ${filePath}: ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
     const configDir = dirname(filePath);
@@ -111,7 +116,8 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
     } catch (error) {
       const message = toErrorMessage(error);
       throw new ValidationError(
-        `Failed to parse YAML config at ${filePath}: ${message}`
+        `Failed to parse YAML config at ${filePath}: ${message}`,
+        { cause: error }
       );
     }
 

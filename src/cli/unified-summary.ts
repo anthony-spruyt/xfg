@@ -163,6 +163,10 @@ function renderLifecycleLines(
         `+ MIGRATE ${lcAction.source ?? "source"} -> ${lcAction.repoName}`
       );
       break;
+    default: {
+      const _exhaustive: never = lcAction.action;
+      throw new Error(`Unexpected lifecycle action: ${_exhaustive}`);
+    }
   }
 
   if (lcAction.settings) {

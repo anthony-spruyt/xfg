@@ -9,6 +9,17 @@ import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
+import type {
+  CodeScanningState,
+  CodeScanningQuerySuite,
+  CodeScanningLanguage,
+} from "../../settings/code-scanning/types.js";
+
+function validValues<T extends string>(
+  values: readonly T[]
+): readonly string[] {
+  return values;
+}
 
 export interface RootSettingsContext {
   rulesetNames: string[];
@@ -160,9 +171,15 @@ function validateLabel(label: unknown, name: string, context: string): void {
   }
 }
 
-const VALID_CODE_SCANNING_STATES = ["configured", "not-configured"];
-const VALID_CODE_SCANNING_QUERY_SUITES = ["default", "extended"];
-const VALID_CODE_SCANNING_LANGUAGES = [
+const VALID_CODE_SCANNING_STATES = validValues<CodeScanningState>([
+  "configured",
+  "not-configured",
+]);
+const VALID_CODE_SCANNING_QUERY_SUITES = validValues<CodeScanningQuerySuite>([
+  "default",
+  "extended",
+]);
+const VALID_CODE_SCANNING_LANGUAGES = validValues<CodeScanningLanguage>([
   "actions",
   "c-cpp",
   "csharp",
@@ -172,7 +189,7 @@ const VALID_CODE_SCANNING_LANGUAGES = [
   "python",
   "ruby",
   "swift",
-];
+]);
 
 function validateCodeScanningSettings(
   settings: unknown,

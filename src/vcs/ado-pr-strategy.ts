@@ -169,7 +169,8 @@ export class AdoPRStrategy extends BasePRStrategy {
       writeFileSync(descFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
-        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
+        { cause: err }
       );
     }
 

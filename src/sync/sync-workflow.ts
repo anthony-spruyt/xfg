@@ -135,7 +135,7 @@ export class SyncWorkflow implements ISyncWorkflow {
 
       return await this.prMergeHandler.createAndMerge({
         repoInfo,
-        repoConfig,
+        prOptions: repoConfig.prOptions,
         options: {
           ...runCtx,
           branchName,

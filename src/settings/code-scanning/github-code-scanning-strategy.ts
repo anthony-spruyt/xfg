@@ -5,6 +5,7 @@ import { parseApiJson } from "../../shared/json-utils.js";
 import type {
   ICodeScanningStrategy,
   CurrentCodeScanningSettings,
+  CodeScanningUpdateParams,
 } from "./types.js";
 
 interface GitHubCodeScanningStrategyOptions {
@@ -39,7 +40,7 @@ export class GitHubCodeScanningStrategy implements ICodeScanningStrategy {
 
   async update(
     repoInfo: RepoInfo,
-    settings: { state: string; query_suite?: string; languages?: string[] },
+    settings: CodeScanningUpdateParams,
     options?: GhApiOptions
   ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Code Scanning strategy");
