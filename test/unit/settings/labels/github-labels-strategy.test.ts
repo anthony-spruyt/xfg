@@ -12,24 +12,30 @@ import type {
   ExecOptions,
 } from "../../../../src/shared/command-executor.js";
 
-// Mock executor that records commands and returns configured responses
+interface CallRecord {
+  executable: string;
+  args: string[];
+  cwd: string;
+  options?: ExecOptions;
+}
+
+// Mock executor that records calls and returns configured responses
 class MockExecutor implements ICommandExecutor {
-  commands: string[] = [];
-  execOptions: (ExecOptions | undefined)[] = [];
+  calls: CallRecord[] = [];
   responses: Map<string, string> = new Map();
   defaultResponse = "[]";
 
   async exec(
-    command: string,
-    _cwd: string,
+    executable: string,
+    args: string[],
+    cwd: string,
     options?: ExecOptions
   ): Promise<string> {
-    this.commands.push(command);
-    this.execOptions.push(options);
+    this.calls.push({ executable, args, cwd, options });
 
-    // Find matching response by endpoint pattern
+    // Find matching response by checking if any arg includes the pattern
     for (const [pattern, response] of this.responses) {
-      if (command.includes(pattern)) {
+      if (args.some((a) => a.includes(pattern))) {
         return response;
       }
     }
@@ -41,8 +47,7 @@ class MockExecutor implements ICommandExecutor {
   }
 
   reset(): void {
-    this.commands = [];
-    this.execOptions = [];
+    this.calls = [];
     this.responses.clear();
   }
 }
@@ -110,8 +115,11 @@ describe("GitHubLabelsStrategy", () => {
       assert.equal(result.length, 2);
       assert.equal(result[0].name, "bug");
       assert.equal(result[1].name, "enhancement");
+      assert.strictEqual(mockExecutor.calls[0].executable, "gh");
       assert.ok(
-        mockExecutor.commands[0].includes("/repos/test-org/test-repo/labels")
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("/repos/test-org/test-repo/labels")
+        )
       );
     });
 
@@ -121,7 +129,7 @@ describe("GitHubLabelsStrategy", () => {
       await strategy.list(mockGitHubRepo);
 
       assert.ok(
-        mockExecutor.commands[0].includes("--paginate"),
+        mockExecutor.calls[0].args.includes("--paginate"),
         "Should include --paginate flag for list endpoint"
       );
     });
@@ -132,7 +140,7 @@ describe("GitHubLabelsStrategy", () => {
       await strategy.list(mockGitHubRepo);
 
       assert.ok(
-        !mockExecutor.commands[0].includes("-X"),
+        !mockExecutor.calls[0].args.includes("-X"),
         "GET requests should not include -X flag"
       );
     });
@@ -147,11 +155,11 @@ describe("GitHubLabelsStrategy", () => {
       await strategy.list(gheRepo, { host: "github.mycompany.com" });
 
       assert.ok(
-        mockExecutor.commands[0].includes("--hostname"),
+        mockExecutor.calls[0].args.includes("--hostname"),
         "Should include --hostname flag"
       );
       assert.ok(
-        mockExecutor.commands[0].includes("github.mycompany.com"),
+        mockExecutor.calls[0].args.includes("github.mycompany.com"),
         "Should include the custom host"
       );
     });
@@ -162,7 +170,7 @@ describe("GitHubLabelsStrategy", () => {
       await strategy.list(mockGitHubRepo, { host: "github.com" });
 
       assert.ok(
-        !mockExecutor.commands[0].includes("--hostname"),
+        !mockExecutor.calls[0].args.includes("--hostname"),
         "Should not include --hostname for github.com"
       );
     });
@@ -172,8 +180,9 @@ describe("GitHubLabelsStrategy", () => {
 
       await strategy.list(mockGitHubRepo, { token: "test-token" });
 
-      assert.ok(
-        mockExecutor.execOptions[0]?.env?.GH_TOKEN === "test-token",
+      assert.strictEqual(
+        mockExecutor.calls[0].options?.env?.GH_TOKEN,
+        "test-token",
         "Should pass GH_TOKEN via env options"
       );
     });
@@ -190,17 +199,17 @@ describe("GitHubLabelsStrategy", () => {
         host: "github.mycompany.com",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(
-        mockExecutor.execOptions[0]?.env?.GH_TOKEN === "ghe-token",
+      assert.strictEqual(
+        mockExecutor.calls[0].options?.env?.GH_TOKEN,
+        "ghe-token",
         "Should pass GH_TOKEN via env options"
       );
       assert.ok(
-        command.includes("--hostname"),
+        mockExecutor.calls[0].args.includes("--hostname"),
         "Should include --hostname flag"
       );
       assert.ok(
-        command.includes("github.mycompany.com"),
+        mockExecutor.calls[0].args.includes("github.mycompany.com"),
         "Should include the custom host"
       );
     });
@@ -222,7 +231,7 @@ describe("GitHubLabelsStrategy", () => {
 
   describe("create", () => {
     test("creates a new label with POST method", async () => {
-      mockExecutor.setResponse("POST", "{}");
+      mockExecutor.setResponse("/labels", "{}");
 
       await strategy.create(mockGitHubRepo, {
         name: "priority:high",
@@ -230,32 +239,39 @@ describe("GitHubLabelsStrategy", () => {
         description: "High priority issue",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("-X POST"), "Should use POST method");
+      assert.strictEqual(mockExecutor.calls[0].executable, "gh");
       assert.ok(
-        command.includes("/repos/test-org/test-repo/labels"),
+        mockExecutor.calls[0].args.includes("-X"),
+        "Should include -X flag"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.includes("POST"),
+        "Should use POST method"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("/repos/test-org/test-repo/labels")
+        ),
         "Should target labels endpoint"
       );
     });
 
-    test("uses echo pipe pattern for payload", async () => {
-      mockExecutor.setResponse("POST", "{}");
+    test("uses input option for payload", async () => {
+      mockExecutor.setResponse("/labels", "{}");
 
       await strategy.create(mockGitHubRepo, {
         name: "bug",
         color: "d73a4a",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("echo"), "Should use echo pipe pattern");
       assert.ok(
-        command.includes("--input -"),
-        "Should use --input - for stdin"
+        mockExecutor.calls[0].options?.input,
+        "Should pass payload via options.input"
       );
     });
 
     test("includes label data in payload", async () => {
-      mockExecutor.setResponse("POST", "{}");
+      mockExecutor.setResponse("/labels", "{}");
 
       await strategy.create(mockGitHubRepo, {
         name: "bug",
@@ -263,9 +279,9 @@ describe("GitHubLabelsStrategy", () => {
         description: "Something isn't working",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("bug"), "Should include label name");
-      assert.ok(command.includes("d73a4a"), "Should include label color");
+      const input = mockExecutor.calls[0].options?.input ?? "";
+      assert.ok(input.includes("bug"), "Should include label name");
+      assert.ok(input.includes("d73a4a"), "Should include label color");
     });
 
     test("throws error for non-GitHub repos", async () => {
@@ -282,65 +298,72 @@ describe("GitHubLabelsStrategy", () => {
 
   describe("update", () => {
     test("updates an existing label with PATCH method", async () => {
-      mockExecutor.setResponse("PATCH", "{}");
+      mockExecutor.setResponse("/labels/", "{}");
 
       await strategy.update(mockGitHubRepo, "bug", {
         color: "ff0000",
         description: "Updated description",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("-X PATCH"), "Should use PATCH method");
       assert.ok(
-        command.includes("/repos/test-org/test-repo/labels/"),
+        mockExecutor.calls[0].args.includes("-X"),
+        "Should include -X flag"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.includes("PATCH"),
+        "Should use PATCH method"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("/repos/test-org/test-repo/labels/")
+        ),
         "Should target labels endpoint with name"
       );
     });
 
     test("uses encodeURIComponent for label name in URL", async () => {
-      mockExecutor.setResponse("PATCH", "{}");
+      mockExecutor.setResponse("/labels/", "{}");
 
       await strategy.update(mockGitHubRepo, "priority:high", {
         color: "ff0000",
       });
 
-      const command = mockExecutor.commands[0];
       assert.ok(
-        command.includes("priority%3Ahigh"),
+        mockExecutor.calls[0].args.some((a) => a.includes("priority%3Ahigh")),
         "Should encode colon in label name"
       );
     });
 
     test("encodes spaces in label name", async () => {
-      mockExecutor.setResponse("PATCH", "{}");
+      mockExecutor.setResponse("/labels/", "{}");
 
       await strategy.update(mockGitHubRepo, "good first issue", {
         color: "7057ff",
       });
 
-      const command = mockExecutor.commands[0];
       assert.ok(
-        command.includes("good%20first%20issue"),
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("good%20first%20issue")
+        ),
         "Should encode spaces in label name"
       );
     });
 
-    test("includes payload with echo pipe pattern", async () => {
-      mockExecutor.setResponse("PATCH", "{}");
+    test("includes payload via input option", async () => {
+      mockExecutor.setResponse("/labels/", "{}");
 
       await strategy.update(mockGitHubRepo, "bug", {
         new_name: "bug-report",
         color: "ff0000",
       });
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("echo"), "Should use echo pipe pattern");
+      const input = mockExecutor.calls[0].options?.input ?? "";
       assert.ok(
-        command.includes("--input -"),
-        "Should use --input - for stdin"
+        mockExecutor.calls[0].options?.input,
+        "Should pass payload via options.input"
       );
       assert.ok(
-        command.includes("bug-report"),
+        input.includes("bug-report"),
         "Should include new_name in payload"
       );
     });
@@ -355,43 +378,45 @@ describe("GitHubLabelsStrategy", () => {
 
   describe("delete", () => {
     test("deletes a label with DELETE method", async () => {
-      mockExecutor.setResponse("DELETE", "");
+      mockExecutor.setResponse("/labels/", "");
 
       await strategy.delete(mockGitHubRepo, "bug");
 
-      const command = mockExecutor.commands[0];
-      assert.ok(command.includes("-X DELETE"), "Should use DELETE method");
       assert.ok(
-        command.includes("/repos/test-org/test-repo/labels/"),
+        mockExecutor.calls[0].args.includes("-X"),
+        "Should include -X flag"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.includes("DELETE"),
+        "Should use DELETE method"
+      );
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("/repos/test-org/test-repo/labels/")
+        ),
         "Should target labels endpoint with name"
       );
     });
 
     test("uses encodeURIComponent for label name in URL", async () => {
-      mockExecutor.setResponse("DELETE", "");
+      mockExecutor.setResponse("/labels/", "");
 
       await strategy.delete(mockGitHubRepo, "priority:high");
 
-      const command = mockExecutor.commands[0];
       assert.ok(
-        command.includes("priority%3Ahigh"),
+        mockExecutor.calls[0].args.some((a) => a.includes("priority%3Ahigh")),
         "Should encode colon in label name"
       );
     });
 
-    test("does not use echo pipe pattern for DELETE", async () => {
-      mockExecutor.setResponse("DELETE", "");
+    test("does not pass input for DELETE", async () => {
+      mockExecutor.setResponse("/labels/", "");
 
       await strategy.delete(mockGitHubRepo, "bug");
 
-      const command = mockExecutor.commands[0];
       assert.ok(
-        !command.includes("echo"),
-        "DELETE should not use echo pipe pattern"
-      );
-      assert.ok(
-        !command.includes("--input -"),
-        "DELETE should not use --input -"
+        !mockExecutor.calls[0].options?.input,
+        "DELETE should not pass input option"
       );
     });
 
@@ -438,11 +463,12 @@ describe("GitHubLabelsStrategy", () => {
       let callCount = 0;
       const executor: ICommandExecutor = {
         async exec(
-          command: string,
+          _executable: string,
+          args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {
-          if (command.includes("/labels")) {
+          if (args.some((a) => a.includes("/labels"))) {
             callCount++;
             if (callCount === 1) {
               throw new Error("Connection timed out");
@@ -467,11 +493,12 @@ describe("GitHubLabelsStrategy", () => {
       let callCount = 0;
       const executor: ICommandExecutor = {
         async exec(
-          command: string,
+          _executable: string,
+          args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {
-          if (command.includes("/labels")) {
+          if (args.some((a) => a.includes("/labels"))) {
             callCount++;
             throw new Error("gh: Not Found (HTTP 404)");
           }
@@ -494,7 +521,8 @@ describe("GitHubLabelsStrategy", () => {
     test("should propagate error from create on failure", async () => {
       const executor: ICommandExecutor = {
         async exec(
-          _command: string,
+          _executable: string,
+          _args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {

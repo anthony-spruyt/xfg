@@ -1,7 +1,10 @@
 import { describe, test, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubCodeScanningStrategy } from "../../../../src/settings/code-scanning/github-code-scanning-strategy.js";
-import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../../src/shared/command-executor.js";
 import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 
 const githubRepo: GitHubRepoInfo = {
@@ -12,12 +15,24 @@ const githubRepo: GitHubRepoInfo = {
   repo: "test-repo",
 };
 
+interface CallRecord {
+  executable: string;
+  args: string[];
+  cwd: string;
+  options?: ExecOptions;
+}
+
 class MockExecutor implements ICommandExecutor {
-  lastCommand = "";
+  calls: CallRecord[] = [];
   result = "";
 
-  async exec(command: string, _cwd: string): Promise<string> {
-    this.lastCommand = command;
+  async exec(
+    executable: string,
+    args: string[],
+    cwd: string,
+    options?: ExecOptions
+  ): Promise<string> {
+    this.calls.push({ executable, args, cwd, options });
     return this.result;
   }
 }
@@ -43,9 +58,10 @@ describe("GitHubCodeScanningStrategy", () => {
     assert.equal(result.state, "configured");
     assert.equal(result.query_suite, "default");
     assert.deepStrictEqual(result.languages, ["javascript-typescript"]);
+    assert.strictEqual(executor.calls[0].executable, "gh");
     assert.ok(
-      executor.lastCommand.includes(
-        "/repos/test-org/test-repo/code-scanning/default-setup"
+      executor.calls[0].args.some((a) =>
+        a.includes("/repos/test-org/test-repo/code-scanning/default-setup")
       )
     );
   });
@@ -59,10 +75,15 @@ describe("GitHubCodeScanningStrategy", () => {
       languages: ["python"],
     });
 
+    assert.strictEqual(executor.calls[0].executable, "gh");
     assert.ok(
-      executor.lastCommand.includes(
-        "/repos/test-org/test-repo/code-scanning/default-setup"
+      executor.calls[0].args.some((a) =>
+        a.includes("/repos/test-org/test-repo/code-scanning/default-setup")
       )
+    );
+    assert.ok(
+      executor.calls[0].options?.input,
+      "Should pass payload via options.input"
     );
   });
 });
