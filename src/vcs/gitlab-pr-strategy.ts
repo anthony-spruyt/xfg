@@ -13,8 +13,6 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-
-const MR_CREATED_MSG = "MR created successfully";
 import {
   type ICommandExecutor,
   getStderr,
@@ -26,6 +24,8 @@ import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
+
+const MR_CREATED_MSG = "MR created successfully";
 
 export class GitLabPRStrategy extends BasePRStrategy {
   constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {

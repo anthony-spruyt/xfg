@@ -3,6 +3,7 @@ import {
   isTextContent,
   isObjectContent,
   isStructuredFileExtension,
+  validValues,
   VALID_STRATEGIES,
 } from "./file-validator.js";
 import { validateRuleset } from "./ruleset-validator.js";
@@ -14,12 +15,6 @@ import type {
   CodeScanningQuerySuite,
   CodeScanningLanguage,
 } from "../types.js";
-
-function validValues<T extends string>(
-  values: readonly T[]
-): readonly string[] {
-  return values;
-}
 
 export interface RootSettingsContext {
   rulesetNames: string[];

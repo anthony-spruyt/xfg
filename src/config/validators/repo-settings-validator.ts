@@ -6,12 +6,7 @@ import type {
   MergeCommitTitle,
   MergeCommitMessage,
 } from "../types.js";
-
-function validValues<T extends string>(
-  values: readonly T[]
-): readonly string[] {
-  return values;
-}
+import { validValues } from "./file-validator.js";
 
 const VALID_VISIBILITY = validValues<RepoVisibility>([
   "public",

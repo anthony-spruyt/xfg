@@ -6,7 +6,7 @@ import { isPlainObject } from "../../shared/type-guards.js";
 export { isTextContent };
 export { isPlainObject as isObjectContent };
 
-function validValues<T extends string>(
+export function validValues<T extends string>(
   values: readonly T[]
 ): readonly string[] {
   return values;
