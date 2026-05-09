@@ -1,6 +1,12 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, writeFileSync, rmSync, chmodSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  writeFileSync,
+  rmSync,
+  chmodSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { loadRawConfig, loadConfig } from "../../../src/config/loader.js";
@@ -18,11 +24,7 @@ describe("loadRawConfig", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(
-      tmpdir(),
-      `loader-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    );
-    mkdirSync(tempDir, { recursive: true });
+    tempDir = mkdtempSync(join(tmpdir(), "loader-test-"));
   });
 
   afterEach(() => {
@@ -348,11 +350,7 @@ describe("loadConfig", () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = join(
-      tmpdir(),
-      `loader-config-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    );
-    mkdirSync(tempDir, { recursive: true });
+    tempDir = mkdtempSync(join(tmpdir(), "loader-config-test-"));
   });
 
   afterEach(() => {
