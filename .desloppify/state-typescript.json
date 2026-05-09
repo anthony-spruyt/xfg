@@ -8,12 +8,12 @@
   "strict_score": 86.9,
   "verified_strict_score": 89.5,
   "stats": {
-    "total": 1916,
+    "total": 1914,
     "auto_resolved": 1161,
     "deferred": 3,
     "false_positive": 206,
-    "fixed": 370,
-    "open": 172,
+    "fixed": 375,
+    "open": 165,
     "triaged_out": 0,
     "wontfix": 4,
     "by_tier": {
@@ -30,8 +30,8 @@
         "auto_resolved": 364,
         "deferred": 1,
         "false_positive": 113,
-        "fixed": 161,
-        "open": 18,
+        "fixed": 166,
+        "open": 9,
         "triaged_out": 0,
         "wontfix": 2
       },
@@ -40,7 +40,7 @@
         "deferred": 0,
         "false_positive": 76,
         "fixed": 27,
-        "open": 151,
+        "open": 153,
         "triaged_out": 0,
         "wontfix": 1
       },
@@ -126,7 +126,10 @@
         "Delegation Density": 82.0,
         "Definition Directness": 76.0,
         "Type Discipline": 88.0
-      }
+      },
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-05-09T09:28:15+00:00"
     },
     "api_surface_coherence": {
       "score": 91.0,
@@ -159,20 +162,26 @@
     "high_level_elegance": {
       "score": 82.0,
       "source": "holistic",
-      "assessed_at": "2026-05-09T08:38:31+00:00"
+      "assessed_at": "2026-05-09T08:38:31+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-05-09T09:28:12+00:00"
     },
     "mid_level_elegance": {
       "score": 83.0,
       "source": "holistic",
       "assessed_at": "2026-05-09T08:38:31+00:00",
       "needs_review_refresh": true,
-      "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-05-09T09:01:33+00:00"
+      "refresh_reason": "review_issue_false_positive",
+      "stale_since": "2026-05-09T09:28:14+00:00"
     },
     "low_level_elegance": {
       "score": 86.0,
       "source": "holistic",
-      "assessed_at": "2026-05-09T08:38:31+00:00"
+      "assessed_at": "2026-05-09T08:38:31+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-05-09T09:41:24+00:00"
     },
     "design_coherence": {
       "score": 84.0,
@@ -180,7 +189,7 @@
       "assessed_at": "2026-05-09T08:38:31+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-05-09T09:04:42+00:00"
+      "stale_since": "2026-05-09T09:35:23+00:00"
     },
     "contract_coherence": {
       "score": 88.0,
@@ -206,17 +215,23 @@
       "assessed_at": "2026-05-09T08:38:31+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-05-09T08:55:58+00:00"
+      "stale_since": "2026-05-09T09:35:24+00:00"
     },
     "naming_quality": {
       "score": 91.5,
       "source": "holistic",
-      "assessed_at": "2026-05-09T08:38:31+00:00"
+      "assessed_at": "2026-05-09T08:38:31+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-05-09T09:41:23+00:00"
     },
     "test_strategy": {
       "score": 87.0,
       "source": "holistic",
-      "assessed_at": "2026-05-09T08:38:31+00:00"
+      "assessed_at": "2026-05-09T08:38:31+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-05-09T09:48:40+00:00"
     },
     "type_safety": {
       "score": 86.0,
@@ -3017,13 +3032,13 @@
       "strict": 76.0,
       "verified_strict_score": 76.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.76,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 2.4,
           "assessment_score": 76.0,
           "placeholder": false,
@@ -3200,13 +3215,13 @@
       "strict": 84.0,
       "verified_strict_score": 84.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.84,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.6,
           "assessment_score": 84.0,
           "placeholder": false,
@@ -3242,13 +3257,13 @@
       "strict": 82.0,
       "verified_strict_score": 82.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.82,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.8,
           "assessment_score": 82.0,
           "placeholder": false,
@@ -3305,13 +3320,13 @@
       "strict": 88.5,
       "verified_strict_score": 88.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.885,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.15,
           "assessment_score": 88.5,
           "placeholder": false,
@@ -3326,13 +3341,13 @@
       "strict": 86.0,
       "verified_strict_score": 86.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.86,
-          "failing": 2,
+          "failing": 0,
           "weighted_failures": 1.4,
           "assessment_score": 86.0,
           "placeholder": false,
@@ -3347,13 +3362,13 @@
       "strict": 83.0,
       "verified_strict_score": 83.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.83,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.7,
           "assessment_score": 83.0,
           "placeholder": false,
@@ -3368,13 +3383,13 @@
       "strict": 91.5,
       "verified_strict_score": 91.5,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.915,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 0.85,
           "assessment_score": 91.5,
           "placeholder": false,
@@ -3410,13 +3425,13 @@
       "strict": 87.0,
       "verified_strict_score": 87.0,
       "checks": 10,
-      "failing": 1,
+      "failing": 0,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.87,
-          "failing": 1,
+          "failing": 0,
           "weighted_failures": 1.3,
           "assessment_score": 87.0,
           "placeholder": false,
@@ -80174,19 +80189,25 @@
         "reasoning": "",
         "summary_hash": "bba6cd26"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:12+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:57:59+00:00",
+      "suppression_pattern": "review::.::holistic::high_level_elegance::hle_context_bag_overlap",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Contexts at different abstraction levels, merging violates ISP.",
+        "attested_at": "2026-05-09T09:28:12+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::high_level_elegance::hle_xfg_template_in_shared": {
       "id": "review::.::holistic::high_level_elegance::hle_xfg_template_in_shared",
@@ -80210,19 +80231,25 @@
         "reasoning": "",
         "summary_hash": "ac6ac403"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:12+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:58:00+00:00",
+      "suppression_pattern": "review::.::holistic::high_level_elegance::hle_xfg_template_in_shared",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Consumed by sync/ and vcs/, moving creates circular deps.",
+        "attested_at": "2026-05-09T09:28:12+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::naming_quality::get_hostname_flag_misnaming": {
       "id": "review::.::holistic::naming_quality::get_hostname_flag_misnaming",
@@ -80246,11 +80273,11 @@
         "reasoning": "",
         "summary_hash": "606ad78d"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Renamed getHostnameFlag to buildHostnameFlag in gh-api-utils.ts and 3 call sites",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:41:23+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80258,7 +80285,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Renamed getHostnameFlag to buildHostnameFlag in gh-api-utils.ts and 3 call sites and I am not gaming the score.",
+        "attested_at": "2026-05-09T09:41:23+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::abstraction_fitness::file-sync-strategy-thin-adapter": {
       "id": "review::.::holistic::abstraction_fitness::file-sync-strategy-thin-adapter",
@@ -80544,19 +80577,25 @@
         "reasoning": "",
         "summary_hash": "f0274d32"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:14+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:58:01+00:00",
+      "suppression_pattern": "review::.::holistic::mid_level_elegance::duplicate_lifecycle_action_formatting_logic",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Different types, output conventions, error handling.",
+        "attested_at": "2026-05-09T09:28:14+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::test_strategy::validators_shared_no_direct_tests": {
       "id": "review::.::holistic::test_strategy::validators_shared_no_direct_tests",
@@ -80708,11 +80747,11 @@
         "reasoning": "",
         "summary_hash": "75e400c9"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Extracted validateExtendsEntries helper to deduplicate string/array branches",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:35:23+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80720,7 +80759,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Extracted validateExtendsEntries helper to deduplicate string/array branches and I am not gaming the score.",
+        "attested_at": "2026-05-09T09:35:23+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::logic_clarity::redundant_path_alias": {
       "id": "review::.::holistic::logic_clarity::redundant_path_alias",
@@ -80782,11 +80827,11 @@
         "reasoning": "",
         "summary_hash": "25098b61"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Changed noneOf/allOf/anyOf checks from truthy to !== undefined for idiom consistency",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:35:24+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80794,7 +80839,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Changed noneOf/allOf/anyOf checks from truthy to !== undefined for idiom consistency and I am not gaming the score.",
+        "attested_at": "2026-05-09T09:35:24+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::type_safety::switch_no_exhaustive_guard_formatter": {
       "id": "review::.::holistic::type_safety::switch_no_exhaustive_guard_formatter",
@@ -80905,19 +80956,25 @@
         "reasoning": "",
         "summary_hash": "44c76ef4"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:38:31+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:11+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:57:25+00:00",
+      "suppression_pattern": "review::.::holistic::abstraction_fitness::repository_processor_pure_wiring",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Intentional composition root implementing IRepositoryProcessor for DI.",
+        "attested_at": "2026-05-09T09:28:11+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::abstraction_fitness::create_merge_pr_procedural_layer": {
       "id": "review::.::holistic::abstraction_fitness::create_merge_pr_procedural_layer",
@@ -80944,19 +81001,25 @@
         "reasoning": "",
         "summary_hash": "854415dc"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:38:31+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:15+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:57:31+00:00",
+      "suppression_pattern": "review::.::holistic::abstraction_fitness::create_merge_pr_procedural_layer",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Functions provide clean vcs/ module boundary.",
+        "attested_at": "2026-05-09T09:28:15+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::graphql_commit_dead_gitops_fallback": {
       "id": "review::.::holistic::low_level_elegance::graphql_commit_dead_gitops_fallback",
@@ -80980,19 +81043,25 @@
         "reasoning": "",
         "summary_hash": "07aa0248"
       },
-      "status": "open",
-      "note": null,
+      "status": "false_positive",
+      "note": "",
       "first_seen": "2026-05-09T08:38:31+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:28:13+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:58:01+00:00",
+      "suppression_pattern": "review::.::holistic::low_level_elegance::graphql_commit_dead_gitops_fallback",
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have reviewed this triage skip against the code and I am not gaming the score by suppressing a real defect. Optional parameter with defensive fallback, not dead code.",
+        "attested_at": "2026-05-09T09:28:13+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::low_level_elegance::lifecycle_retry_log_level_mismatch": {
       "id": "review::.::holistic::low_level_elegance::lifecycle_retry_log_level_mismatch",
@@ -81016,11 +81085,11 @@
         "reasoning": "",
         "summary_hash": "65d0d978"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Widened lifecycle provider log type from DebugWarnLog to DebugInfoWarnLog, fixed retry log level from warn to info",
       "first_seen": "2026-05-09T08:38:31+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:41:24+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -81028,7 +81097,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Widened lifecycle provider log type from DebugWarnLog to DebugInfoWarnLog, fixed retry log level from warn to info and I am not gaming the score.",
+        "attested_at": "2026-05-09T09:41:24+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::test_strategy::validators_shared_no_direct_test": {
       "id": "review::.::holistic::test_strategy::validators_shared_no_direct_test",
@@ -81054,11 +81129,11 @@
         "reasoning": "",
         "summary_hash": "dd0b8ad0"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Added test/unit/config/validators-shared.test.ts with 43 direct tests covering buildRootSettingsContext, validateFileConfigFields, validateSettings, enrichSettingsContext",
       "first_seen": "2026-05-09T08:38:31+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:48:40+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -81066,7 +81141,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually Added test/unit/config/validators-shared.test.ts with 43 direct tests covering buildRootSettingsContext, validateFileConfigFields, validateSettings, enrichSettingsContext and I am not gaming the score.",
+        "attested_at": "2026-05-09T09:48:40+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::ai_generated_debt::ai_debt_gitlab_success_msg_dup": {
       "id": "review::.::holistic::ai_generated_debt::ai_debt_gitlab_success_msg_dup",
@@ -81107,6 +81188,135 @@
         "attested_at": "2026-05-09T08:56:06+00:00",
         "scan_verified": false
       }
+    },
+    "strategy::sync-command-gravity-well": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 2,
+      "priority": "high",
+      "summary": "sync-command.ts is the highest-churn file with findings across 4 detectors. Needs single comprehensive decomposition.",
+      "recommendation": "Plan a single decomposition PR for sync-command.ts that addresses all open findings simultaneously.",
+      "dimensions_affected": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "abstraction_fitness",
+        "design_coherence"
+      ],
+      "detail": {
+        "dimension": "high_level_elegance",
+        "recommendation": "Plan a single decomposition PR for sync-command.ts that addresses all open findings simultaneously.",
+        "source": "strategist"
+      },
+      "created_at": "2026-05-09T09:18:11+00:00",
+      "id": "strategy::sync-command-gravity-well",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::elegance-weight-leverage": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 2,
+      "priority": "high",
+      "summary": "High and mid elegance carry weight 44 and both are declining. Highest score-per-effort ratio.",
+      "recommendation": "Address the 5 open elegance issues in priority order by weight.",
+      "dimensions_affected": [
+        "high_level_elegance",
+        "mid_level_elegance",
+        "low_level_elegance"
+      ],
+      "detail": {
+        "dimension": "high_level_elegance",
+        "recommendation": "Address the 5 open elegance issues in priority order by weight.",
+        "source": "strategist"
+      },
+      "created_at": "2026-05-09T09:18:11+00:00",
+      "id": "strategy::elegance-weight-leverage",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::mid-elegance-reopen-suppression": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 3,
+      "priority": "medium",
+      "summary": "10 reopens in mid-level elegance indicate false positive cycling.",
+      "recommendation": "Review the 10 reopened items and suppress confirmed false positives before fixing.",
+      "dimensions_affected": [
+        "mid_level_elegance"
+      ],
+      "detail": {
+        "dimension": "mid_level_elegance",
+        "recommendation": "Review the 10 reopened items and suppress confirmed false positives before fixing.",
+        "source": "strategist"
+      },
+      "created_at": "2026-05-09T09:18:11+00:00",
+      "id": "strategy::mid-elegance-reopen-suppression",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
+    },
+    "strategy::abstraction-fitness-investigation": {
+      "status": "open",
+      "detector": "strategy",
+      "tier": 3,
+      "priority": "medium",
+      "summary": "Steepest single-dimension decline (-13.5 points) needs root cause analysis before fixes.",
+      "recommendation": "Investigate what changed between 89.5 and 76 scores.",
+      "dimensions_affected": [
+        "abstraction_fitness"
+      ],
+      "detail": {
+        "dimension": "abstraction_fitness",
+        "recommendation": "Investigate what changed between 89.5 and 76 scores.",
+        "source": "strategist"
+      },
+      "created_at": "2026-05-09T09:18:11+00:00",
+      "id": "strategy::abstraction-fitness-investigation",
+      "work_item_kind": "mechanical_defect",
+      "issue_kind": "mechanical_defect",
+      "origin": "scan",
+      "file": "",
+      "confidence": "low",
+      "note": null,
+      "first_seen": "2026-03-03T09:08:56+00:00",
+      "last_seen": "2026-03-03T09:08:56+00:00",
+      "resolved_at": null,
+      "reopen_count": 0,
+      "suppressed": false,
+      "suppressed_at": null,
+      "suppression_pattern": null
     }
   },
   "concern_dismissals": {
@@ -81751,6 +81961,48 @@
       "command": "suppress",
       "pattern": "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale",
       "attestation": "I have actually verified package.json and package-lock.json both show p-retry ^8.0.0/8.0.0 consistently. The finding is stale from a prior fix and I am not gaming the score",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::abstraction_fitness::repository_processor_pure_wiring",
+      "attestation": "I have actually verified this is a false positive \u2014 RepositoryProcessor is an intentional composition root documented in CLAUDE.md, implementing IRepositoryProcessor for DI. Factory function replacement is a lateral move. Reopened 6+ times across cycles. I am not gaming the score.",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::abstraction_fitness::create_merge_pr_procedural_layer",
+      "attestation": "I have actually verified this is a false positive \u2014 createPR/mergePR provide clean vcs/ module boundary handling dry-run, strategy resolution, template interpolation. Not a trivial wrapper. Moving into PRMergeHandler pushes VCS concerns into sync layer. I am not gaming the score.",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::high_level_elegance::hle_context_bag_overlap",
+      "attestation": "I have actually verified this is a false positive \u2014 RepoIterationContext (12 fields, loop-level) and ApplyRepoSettingsContext (9 fields, per-repo) share only 4 fields. Merging violates ISP. Different abstraction levels. I am not gaming the score.",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::high_level_elegance::hle_xfg_template_in_shared",
+      "attestation": "I have actually verified this is a false positive \u2014 xfg-template.ts consumed by both sync/ and vcs/. Moving to sync/ creates circular dep from vcs/. Moving to config/ is semantically wrong. shared/ is correct for cross-module pure utilities. I am not gaming the score.",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::low_level_elegance::graphql_commit_dead_gitops_fallback",
+      "attestation": "I have actually verified this is a false positive \u2014 gitOps is typed optional on CommitOptions interface. The else branch is defensive fallback for a legitimately optional parameter, not dead code. I am not gaming the score.",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::mid_level_elegance::duplicate_lifecycle_action_formatting_logic",
+      "attestation": "I have actually verified this is a false positive \u2014 formatLifecycleAction and renderActionDiffLines take different input types (LifecycleResult vs LifecycleAction), different output conventions (chalk vs plain), different error handling. Extraction adds type mapping complexity exceeding duplication cost. I am not gaming the score.",
       "affected": 1
     }
   ]

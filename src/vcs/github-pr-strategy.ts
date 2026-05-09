@@ -18,7 +18,7 @@ import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
+import { buildTokenEnv, buildHostnameFlag } from "../shared/gh-api-utils.js";
 import { SyncError } from "../shared/errors.js";
 
 /**
@@ -197,7 +197,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     retries: number = 3,
     token?: string
   ): Promise<boolean> {
-    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnameFlag = buildHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const tokenEnv = buildTokenEnv(token);
     const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;

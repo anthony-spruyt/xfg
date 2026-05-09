@@ -34,10 +34,10 @@ interface GhApiCallOptions {
 }
 
 /**
- * Get the hostname flag for gh commands.
+ * Build the hostname flag for gh commands.
  * Returns "--hostname HOST" for GHE, empty string for github.com.
  */
-export function getHostnameFlag(
+export function buildHostnameFlag(
   repoInfo: Pick<GitHubApiTarget, "host">
 ): string {
   if (repoInfo.host !== "github.com") {

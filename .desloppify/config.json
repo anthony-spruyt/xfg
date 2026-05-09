@@ -15,7 +15,13 @@
     "smells::src/cli/sync-command.ts::nested_closure",
     "test_coverage::src/cli/types.ts::transitive_only",
     "review::.::holistic::cross_module_architecture::config_imports_settings_codescan_types",
-    "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale"
+    "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale",
+    "review::.::holistic::abstraction_fitness::repository_processor_pure_wiring",
+    "review::.::holistic::abstraction_fitness::create_merge_pr_procedural_layer",
+    "review::.::holistic::high_level_elegance::hle_context_bag_overlap",
+    "review::.::holistic::high_level_elegance::hle_xfg_template_in_shared",
+    "review::.::holistic::low_level_elegance::graphql_commit_dead_gitops_fallback",
+    "review::.::holistic::mid_level_elegance::duplicate_lifecycle_action_formatting_logic"
   ],
   "ignore_metadata": {},
   "zone_overrides": {

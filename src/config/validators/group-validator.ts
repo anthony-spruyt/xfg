@@ -23,55 +23,54 @@ function validateGroupExtends(
         `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
       );
     }
-    if (extends_ === groupName) {
-      throw new ValidationError(
-        `groups.${groupName}: extends cannot reference itself`
-      );
-    }
-    if (!groupNames.has(extends_)) {
-      throw new ValidationError(
-        `groups.${groupName}: extends references undefined group '${extends_}'`
-      );
-    }
+    validateExtendsEntries(groupName, [extends_], groupNames);
   } else if (Array.isArray(extends_)) {
     if (extends_.length === 0) {
       throw new ValidationError(
         `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
       );
     }
-    const seen = new Set<string>();
-    for (const entry of extends_) {
-      if (typeof entry !== "string") {
-        throw new ValidationError(
-          `groups.${groupName}: 'extends' array entries must be strings`
-        );
-      }
-      if (entry.length === 0) {
-        throw new ValidationError(
-          `groups.${groupName}: 'extends' array entries must be non-empty strings`
-        );
-      }
-      if (entry === groupName) {
-        throw new ValidationError(
-          `groups.${groupName}: extends cannot reference itself`
-        );
-      }
-      if (!groupNames.has(entry)) {
-        throw new ValidationError(
-          `groups.${groupName}: extends references undefined group '${entry}'`
-        );
-      }
-      if (seen.has(entry)) {
-        throw new ValidationError(
-          `groups.${groupName}: duplicate '${entry}' in extends`
-        );
-      }
-      seen.add(entry);
-    }
+    validateExtendsEntries(groupName, extends_, groupNames);
   } else {
     throw new ValidationError(
       `groups.${groupName}: 'extends' must be a non-empty string or array of strings`
     );
+  }
+}
+
+function validateExtendsEntries(
+  groupName: string,
+  entries: (string | unknown)[],
+  groupNames: Set<string>
+): void {
+  const seen = new Set<string>();
+  for (const entry of entries) {
+    if (typeof entry !== "string") {
+      throw new ValidationError(
+        `groups.${groupName}: 'extends' array entries must be strings`
+      );
+    }
+    if (entry.length === 0) {
+      throw new ValidationError(
+        `groups.${groupName}: 'extends' array entries must be non-empty strings`
+      );
+    }
+    if (entry === groupName) {
+      throw new ValidationError(
+        `groups.${groupName}: extends cannot reference itself`
+      );
+    }
+    if (!groupNames.has(entry)) {
+      throw new ValidationError(
+        `groups.${groupName}: extends references undefined group '${entry}'`
+      );
+    }
+    if (seen.has(entry)) {
+      throw new ValidationError(
+        `groups.${groupName}: duplicate '${entry}' in extends`
+      );
+    }
+    seen.add(entry);
   }
 }
 
@@ -211,9 +210,9 @@ export function validateConditionalGroups(config: RawConfig): void {
       validateGroupRefArray(noneOf, "noneOf", ctx, groupNames);
     }
 
-    if (noneOf) {
+    if (noneOf !== undefined) {
       const noneOfSet = new Set(noneOf);
-      if (allOf) {
+      if (allOf !== undefined) {
         for (const g of allOf) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(
@@ -222,7 +221,7 @@ export function validateConditionalGroups(config: RawConfig): void {
           }
         }
       }
-      if (anyOf) {
+      if (anyOf !== undefined) {
         for (const g of anyOf) {
           if (noneOfSet.has(g)) {
             throw new ValidationError(

@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  getHostnameFlag,
+  buildHostnameFlag,
   buildTokenEnv,
   GhApiClient,
   parseResponseBody,
@@ -26,14 +26,14 @@ function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {
   };
 }
 
-describe("getHostnameFlag", () => {
+describe("buildHostnameFlag", () => {
   test("returns empty string for github.com", () => {
-    const result = getHostnameFlag(makeRepoInfo());
+    const result = buildHostnameFlag(makeRepoInfo());
     assert.equal(result, "");
   });
 
   test("returns --hostname flag for GHE", () => {
-    const result = getHostnameFlag(makeRepoInfo({ host: "ghe.example.com" }));
+    const result = buildHostnameFlag(makeRepoInfo({ host: "ghe.example.com" }));
     assert.equal(result, "--hostname 'ghe.example.com'");
   });
 });

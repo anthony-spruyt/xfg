@@ -12,8 +12,8 @@ import {
 } from "../repo/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
-import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
-import type { DebugWarnLog } from "../shared/logger.js";
+import { buildTokenEnv, buildHostnameFlag } from "../shared/gh-api-utils.js";
+import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
@@ -83,7 +83,7 @@ interface GitHubLifecycleProviderOptions {
   forkReadyTimeoutMs?: number;
   /** Poll interval in ms for fork readiness checks (default: 2000) */
   forkPollIntervalMs?: number;
-  log?: DebugWarnLog;
+  log?: DebugInfoWarnLog;
 }
 
 function buildRepoCreateFlags(
@@ -117,7 +117,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly cwd: string;
   private readonly forkReadyTimeoutMs: number;
   private readonly forkPollIntervalMs: number;
-  private readonly log?: DebugWarnLog;
+  private readonly log?: DebugInfoWarnLog;
 
   constructor(options: GitHubLifecycleProviderOptions) {
     this.executor = options.executor;
@@ -191,7 +191,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     apiPath: string;
   } {
     const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnameFlag = buildHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
     return { tokenEnv, prefix: `gh api ${hostnamePart}`, apiPath };
@@ -550,7 +550,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           retries: this.retries,
           permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
           log: this.log
-            ? { info: (m: string) => this.log!.warn(m) }
+            ? { info: (m: string) => this.log!.info(m) }
             : undefined,
         }
       );
@@ -579,7 +579,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       {
         retries: this.retries,
         permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
-        log: this.log ? { info: (m: string) => this.log!.warn(m) } : undefined,
+        log: this.log ? { info: (m: string) => this.log!.info(m) } : undefined,
       }
     );
   }
