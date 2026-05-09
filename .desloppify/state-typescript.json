@@ -8,10 +8,10 @@
   "strict_score": 86.9,
   "verified_strict_score": 89.5,
   "stats": {
-    "total": 1918,
+    "total": 1916,
     "auto_resolved": 1161,
     "deferred": 3,
-    "false_positive": 208,
+    "false_positive": 206,
     "fixed": 370,
     "open": 172,
     "triaged_out": 0,
@@ -20,7 +20,7 @@
       "1": {
         "auto_resolved": 8,
         "deferred": 2,
-        "false_positive": 18,
+        "false_positive": 16,
         "fixed": 162,
         "open": 3,
         "triaged_out": 0,
@@ -80140,9 +80140,9 @@
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null,
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:07:54+00:00",
+      "suppression_pattern": "review::.::holistic::cross_module_architecture::config_imports_settings_codescan_types",
       "resolution_attestation": {
         "kind": "manual",
         "text": "I have reviewed this triage skip against the code \u2014 the import already comes from ../types.js (config/types.ts), not from settings/. Finding is stale, not gaming the score.",
@@ -80425,9 +80425,9 @@
       "issue_kind": "review_defect",
       "origin": "review_import",
       "lang": "typescript",
-      "suppressed": false,
-      "suppressed_at": null,
-      "suppression_pattern": null,
+      "suppressed": true,
+      "suppressed_at": "2026-05-09T09:07:59+00:00",
+      "suppression_pattern": "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale",
       "resolution_attestation": {
         "kind": "manual",
         "text": "I have reviewed this triage skip against the code \u2014 package.json and lockfile both show ^8.0.0/8.0.0, finding is stale from prior fix, not gaming the score.",
@@ -81737,6 +81737,20 @@
       "command": "suppress",
       "pattern": "test_coverage::src/cli/types.ts::transitive_only",
       "attestation": "I have actually verified this file is pure TypeScript type definitions (interfaces and type aliases only, zero runtime code) and testing it directly is not meaningful, and I am not gaming the score",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::cross_module_architecture::config_imports_settings_codescan_types",
+      "attestation": "I have actually verified the import in config/validators/shared.ts already comes from ../types.js (config/types.ts), not from settings/code-scanning/types.ts. The finding is stale from a prior fix and I am not gaming the score",
+      "affected": 1
+    },
+    {
+      "timestamp": "2026-05-09T08:38:31+00:00",
+      "command": "suppress",
+      "pattern": "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale",
+      "attestation": "I have actually verified package.json and package-lock.json both show p-retry ^8.0.0/8.0.0 consistently. The finding is stale from a prior fix and I am not gaming the score",
       "affected": 1
     }
   ]

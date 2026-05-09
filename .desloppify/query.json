@@ -1,23 +1,12 @@
 {
-  "command": "resolve",
-  "patterns": [
-    "file-writer-writefiles-multi-concern"
-  ],
-  "status": "fixed",
-  "resolved": [
-    "review::.::holistic::design_coherence::file-writer-writefiles-multi-concern"
-  ],
-  "count": 1,
-  "next_command": "desloppify next",
+  "command": "suppress",
+  "pattern": "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale",
+  "removed": 1,
   "overall_score": 88.1,
   "objective_score": 97.2,
   "strict_score": 86.9,
   "verified_strict_score": 89.5,
-  "prev_overall_score": 88.1,
-  "prev_objective_score": 97.2,
-  "prev_strict_score": 86.9,
-  "prev_verified_strict_score": 89.5,
-  "attestation": "I have actually decomposed the method and verified build+tests pass, not gaming the score",
+  "attestation": "I have actually verified package.json and package-lock.json both show p-retry ^8.0.0/8.0.0 consistently. The finding is stale from a prior fix and I am not gaming the score",
   "narrative": {
     "phase": "stagnation",
     "headline": "Score plateaued at 86.9 for 5 scans. Abstraction fit (76.0%) is where the breakthrough is. 4 wontfix items may also be worth revisiting. (11 review work items \u2014 run `desloppify show review --status open`)",
@@ -384,13 +373,6 @@
     },
     "reminders": [
       {
-        "type": "rereview_needed",
-        "message": "Subjective results may be stale after resolve. Re-run `desloppify review --prepare` to refresh, or reset with `desloppify scan --reset-subjective` before a clean rerun.",
-        "command": "desloppify review --prepare",
-        "priority": 1,
-        "severity": "high"
-      },
-      {
         "type": "rescan_needed",
         "message": "Rescan to verify \u2014 cascading effects may create new issues.",
         "command": "desloppify scan",
@@ -413,7 +395,6 @@
       "fp_calibration_test_coverage_production": 3,
       "fp_calibration_smells_production": 3,
       "fp_calibration_strategy_production": 1,
-      "rereview_needed": 1,
       "rescan_needed": 1
     }
   },
@@ -432,7 +413,9 @@
       ".output",
       "smells::src/cli/sync-command.ts::async_no_await",
       "smells::src/cli/sync-command.ts::nested_closure",
-      "test_coverage::src/cli/types.ts::transitive_only"
+      "test_coverage::src/cli/types.ts::transitive_only",
+      "review::.::holistic::cross_module_architecture::config_imports_settings_codescan_types",
+      "review::.::holistic::dependency_health::dep_health_lockfile_p_retry_stale"
     ],
     "ignore_metadata": {},
     "zone_overrides": {
@@ -445,7 +428,7 @@
     "issue_noise_budget": 10,
     "issue_noise_global_budget": 0,
     "execution_log_max_entries": 10000,
-    "needs_rescan": false,
+    "needs_rescan": true,
     "languages": {},
     "commit_tracking_enabled": true,
     "commit_pr": 706,
