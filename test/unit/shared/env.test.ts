@@ -4,7 +4,7 @@ import {
   interpolateEnvVars,
   interpolateContent,
   type EnvInterpolationOptions,
-} from "../../../src/shared/env.js";
+} from "../../../src/config/env.js";
 
 describe("interpolateEnvVars", () => {
   const testEnv: Record<string, string | undefined> = {};

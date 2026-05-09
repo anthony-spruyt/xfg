@@ -8,7 +8,7 @@
  * regex patterns and resolver callbacks.
  */
 
-import { isPlainObject } from "./type-guards.js";
+import { isPlainObject } from "../shared/type-guards.js";
 
 export interface InterpolationConfig {
   /** Regex to match escaped placeholders (e.g. $${VAR}) — captured group becomes the restore content */

@@ -9,7 +9,7 @@ import {
   interpolateValue,
   type InterpolationConfig,
 } from "./interpolation-engine.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError } from "../shared/errors.js";
 
 export interface EnvInterpolationOptions {
   /**

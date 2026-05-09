@@ -6,7 +6,7 @@ import {
   mergeTextContent,
 } from "./merge.js";
 import type { ArrayMergeStrategy } from "./merge.js";
-import { interpolateContent } from "../shared/env.js";
+import { interpolateContent } from "./env.js";
 import type {
   RawConfig,
   RawGroupConfig,
