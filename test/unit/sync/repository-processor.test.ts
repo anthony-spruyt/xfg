@@ -729,10 +729,12 @@ describe("RepositoryProcessor", () => {
       const mockFactory: GitOpsFactory = () => gitOps;
 
       // Mock executor that returns a PR URL - this is a mock interface, not subprocess execution
-      const mockExecutor: {
-        exec: (cmd: string, cwd: string) => Promise<string>;
-      } = {
-        async exec(_cmd: string, _cwd: string): Promise<string> {
+      const mockExecutor: ICommandExecutor = {
+        async exec(
+          _exe: string,
+          _args: string[],
+          _cwd: string
+        ): Promise<string> {
           return "https://github.com/test/repo/pull/123";
         },
       };
