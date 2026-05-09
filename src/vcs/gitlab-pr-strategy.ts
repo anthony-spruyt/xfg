@@ -1,6 +1,3 @@
-import { existsSync, writeFileSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
-import { escapeShellArg } from "../shared/shell-utils.js";
 import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
@@ -20,8 +17,6 @@ import {
 import { parseApiJson } from "../shared/json-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { safeCleanup } from "../shared/cleanup-utils.js";
-import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
 
@@ -30,7 +25,6 @@ const MR_CREATED_MSG = "MR created successfully";
 export class GitLabPRStrategy extends BasePRStrategy {
   constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
-    this.bodyFilePath = ".mr-description.md";
   }
 
   /**
@@ -105,13 +99,23 @@ export class GitLabPRStrategy extends BasePRStrategy {
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
     const repoFlag = this.getRepoFlag(repoInfo);
-    // Use glab mr list with JSON output for reliable parsing
-    // Note: glab mr list returns open MRs by default (use -c for closed, -M for merged)
-    const command = `glab mr list --source-branch ${escapeShellArg(branchName)} -R ${escapeShellArg(repoFlag)} -F json`;
-
     try {
       const result = await withRetry(
-        () => this.executor.exec(command, workDir),
+        () =>
+          this.executor.exec(
+            "glab",
+            [
+              "mr",
+              "list",
+              "--source-branch",
+              branchName,
+              "-R",
+              repoFlag,
+              "-F",
+              "json",
+            ],
+            workDir
+          ),
         { retries, log: this.log }
       );
 
@@ -167,13 +171,16 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    const closeCommand = `glab mr close ${escapeShellArg(mrInfo.mrIid)} -R ${escapeShellArg(repoFlag)}`;
-
     try {
-      await withRetry(() => this.executor.exec(closeCommand, workDir), {
-        retries,
-        log: this.log,
-      });
+      await withRetry(
+        () =>
+          this.executor.exec(
+            "glab",
+            ["mr", "close", mrInfo.mrIid, "-R", repoFlag],
+            workDir
+          ),
+        { retries, log: this.log }
+      );
     } catch (error) {
       const message = toErrorMessage(error);
       this.log?.warn(
@@ -182,13 +189,16 @@ export class GitLabPRStrategy extends BasePRStrategy {
       return { status: "close_failed", message };
     }
 
-    const deleteBranchCommand = `git push origin --delete ${escapeShellArg(branchName)}`;
-
     try {
-      await withRetry(() => this.executor.exec(deleteBranchCommand, workDir), {
-        retries,
-        log: this.log,
-      });
+      await withRetry(
+        () =>
+          this.executor.exec(
+            "git",
+            ["push", "origin", "--delete", branchName],
+            workDir
+          ),
+        { retries, log: this.log }
+      );
     } catch (error) {
       const message = `MR !${mrInfo.mrIid} closed but branch ${branchName} deletion failed: ${toErrorMessage(error)}`;
       this.log?.warn(message);
@@ -213,56 +223,48 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    const descFile = join(workDir, this.bodyFilePath);
-    try {
-      writeFileSync(descFile, body, "utf-8");
-    } catch (err) {
-      throw new SyncError(
-        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
-        { cause: err }
-      );
+    const args = [
+      "mr",
+      "create",
+      "--source-branch",
+      branchName,
+      "--target-branch",
+      baseBranch,
+      "--title",
+      title,
+      "--description",
+      body,
+      "--yes",
+      "-R",
+      repoFlag,
+    ];
+    const result = await withRetry(
+      () => this.executor.exec("glab", args, workDir),
+      { retries, log: this.log }
+    );
+
+    // Extract MR URL from output
+    // glab typically outputs the URL directly
+    const urlMatch = result.match(/https:\/\/[^\s]+\/-\/merge_requests\/\d+/);
+    if (urlMatch) {
+      return {
+        url: urlMatch[0],
+        success: true,
+        message: MR_CREATED_MSG,
+      };
     }
 
-    // glab mr create with description from file
-    const command = `glab mr create --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description "$(cat ${escapeShellArg(descFile)})" --yes -R ${escapeShellArg(repoFlag)}`;
-
-    try {
-      const result = await withRetry(
-        () => this.executor.exec(command, workDir),
-        { retries, log: this.log }
-      );
-
-      // Extract MR URL from output
-      // glab typically outputs the URL directly
-      const urlMatch = result.match(/https:\/\/[^\s]+\/-\/merge_requests\/\d+/);
-      if (urlMatch) {
-        return {
-          url: urlMatch[0],
-          success: true,
-          message: MR_CREATED_MSG,
-        };
-      }
-
-      // Fallback: extract MR number and build URL
-      const mrMatch = result.match(/!(\d+)/);
-      if (mrMatch) {
-        return {
-          url: this.buildMRUrl(repoInfo, mrMatch[1]),
-          success: true,
-          message: MR_CREATED_MSG,
-        };
-      }
-
-      throw new SyncError(`Could not parse MR URL from output: ${result}`);
-    } finally {
-      safeCleanup(
-        () => {
-          if (existsSync(descFile)) unlinkSync(descFile);
-        },
-        `failed to remove ${descFile}`,
-        this.log ?? NO_OP_DEBUG_LOG
-      );
+    // Fallback: extract MR number and build URL
+    const mrMatch = result.match(/!(\d+)/);
+    if (mrMatch) {
+      return {
+        url: this.buildMRUrl(repoInfo, mrMatch[1]),
+        success: true,
+        message: MR_CREATED_MSG,
+      };
     }
+
+    throw new SyncError(`Could not parse MR URL from output: ${result}`);
   }
 
   async merge(options: MergeOptions): Promise<MergeResult> {
@@ -288,21 +290,21 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = `${mrInfo.namespace}/${mrInfo.repo}`;
     const strategyFlag = this.getMergeStrategyFlag(config.strategy);
-    const deleteBranchFlag = config.deleteBranch
-      ? "--remove-source-branch"
-      : "";
 
     if (config.mode === "auto") {
-      // Enable auto-merge when pipeline succeeds
-      const autoFlagParts = [
+      const args = [
+        "mr",
+        "merge",
+        mrInfo.mrIid,
         "--when-pipeline-succeeds",
-        strategyFlag,
-        deleteBranchFlag,
-      ].filter(Boolean);
-      const autoCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${autoFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
-
+        ...(strategyFlag ? [strategyFlag] : []),
+        ...(config.deleteBranch ? ["--remove-source-branch"] : []),
+        "-R",
+        repoFlag,
+        "-y",
+      ];
       return this.executeMergeCommand(
-        () => this.executor.exec(autoCommand.trim(), workDir),
+        () => this.executor.exec("glab", args, workDir),
         retries,
         {
           success: true,
@@ -318,11 +320,18 @@ export class GitLabPRStrategy extends BasePRStrategy {
       this.log?.warn(
         `Force-merging MR ${mrInfo.mrIid} immediately (bypasses pipeline requirements)`
       );
-      const forceFlagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
-      const forceCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${forceFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
-
+      const args = [
+        "mr",
+        "merge",
+        mrInfo.mrIid,
+        ...(strategyFlag ? [strategyFlag] : []),
+        ...(config.deleteBranch ? ["--remove-source-branch"] : []),
+        "-R",
+        repoFlag,
+        "-y",
+      ];
       return this.executeMergeCommand(
-        () => this.executor.exec(forceCommand.trim(), workDir),
+        () => this.executor.exec("glab", args, workDir),
         retries,
         {
           success: true,
