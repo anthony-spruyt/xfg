@@ -1,6 +1,5 @@
-import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
-import type { ICommandExecutor } from "./command-executor.js";
+import type { ExecOptions, ICommandExecutor } from "./command-executor.js";
 import type { RateLimitedError } from "./errors.js";
 
 export interface GitHubApiTarget {
@@ -34,16 +33,16 @@ interface GhApiCallOptions {
 }
 
 /**
- * Build the hostname flag for gh commands.
- * Returns "--hostname HOST" for GHE, empty string for github.com.
+ * Build the hostname args for gh commands.
+ * Returns ["--hostname", HOST] for GHE, empty array for github.com.
  */
-export function buildHostnameFlag(
+export function buildHostnameArgs(
   repoInfo: Pick<GitHubApiTarget, "host">
-): string {
+): string[] {
   if (repoInfo.host !== "github.com") {
-    return `--hostname ${escapeShellArg(repoInfo.host)}`;
+    return ["--hostname", repoInfo.host];
   }
-  return "";
+  return [];
 }
 
 export function buildTokenEnv(
@@ -153,7 +152,7 @@ async function ghApiCall(
   opts: GhApiCallOptions
 ): Promise<string> {
   const { executor, retries, cwd, apiOpts, payload, paginate } = opts;
-  const args: string[] = ["gh", "api"];
+  const args: string[] = ["api"];
 
   if (method !== "GET") {
     args.push("-X", method);
@@ -166,17 +165,16 @@ async function ghApiCall(
   }
 
   if (apiOpts?.host && apiOpts.host !== "github.com") {
-    args.push("--hostname", escapeShellArg(apiOpts.host));
+    args.push("--hostname", apiOpts.host);
   }
 
-  args.push(escapeShellArg(endpoint));
+  args.push(endpoint);
 
-  const baseCommand = args.join(" ");
   const env = buildTokenEnv(apiOpts?.token);
 
-  const execAndParse = async (command: string): Promise<string> => {
+  const execAndParse = async (execArgs: string[], execOptions?: ExecOptions): Promise<string> => {
     try {
-      const raw = await executor.exec(command, cwd, { env });
+      const raw = await executor.exec("gh", execArgs, cwd, execOptions);
       return paginate ? raw : parseResponseBody(raw);
     } catch (error) {
       if (!paginate) {
@@ -197,11 +195,10 @@ async function ghApiCall(
     (method === "POST" || method === "PUT" || method === "PATCH")
   ) {
     const payloadJson = JSON.stringify(payload);
-    const command = `echo ${escapeShellArg(payloadJson)} | ${baseCommand} --input -`;
-    return withRetry(() => execAndParse(command), retryOpts);
+    return withRetry(() => execAndParse([...args, "--input", "-"], { env, input: payloadJson }), retryOpts);
   }
 
-  return withRetry(() => execAndParse(baseCommand), retryOpts);
+  return withRetry(() => execAndParse(args, { env }), retryOpts);
 }
 
 /**
