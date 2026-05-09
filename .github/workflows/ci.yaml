@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   check-changes:
+    if: github.event.action != 'labeled' || github.event.label.name == 'run-integration'
     runs-on: ubuntu-latest
     outputs:
       build-needed: ${{ steps.filter.outputs.build-needed }}
@@ -81,7 +82,7 @@ jobs:
           echo "$CHANGED"
 
   lint:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
     secrets: "inherit"
 
