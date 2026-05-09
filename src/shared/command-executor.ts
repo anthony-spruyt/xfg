@@ -2,12 +2,17 @@ import { execFileSync } from "node:child_process";
 import { sanitizeCredentials } from "./sanitize-utils.js";
 
 export interface ExecOptions {
-  /** Additional environment variables to set for the command */
   env?: Record<string, string>;
+  input?: string;
 }
 
 export interface ICommandExecutor {
-  exec(command: string, cwd: string, options?: ExecOptions): Promise<string>;
+  exec(
+    executable: string,
+    args: string[],
+    cwd: string,
+    options?: ExecOptions
+  ): Promise<string>;
 }
 
 export class ShellCommandExecutor implements ICommandExecutor {
@@ -18,22 +23,22 @@ export class ShellCommandExecutor implements ICommandExecutor {
   }
 
   async exec(
-    command: string,
+    executable: string,
+    args: string[],
     cwd: string,
     options?: ExecOptions
   ): Promise<string> {
     try {
-      return execFileSync("sh", ["-c", command], {
+      return execFileSync(executable, args, {
         cwd,
         encoding: "utf-8",
         stdio: ["pipe", "pipe", "pipe"],
+        input: options?.input,
         env: options?.env
           ? { ...this.baseEnv, ...options.env }
           : (this.baseEnv as NodeJS.ProcessEnv),
       }).trim();
     } catch (error) {
-      // Normalise and sanitise the exec error so downstream retry logic
-      // sees a string stderr with no raw credentials.
       const execError = error as {
         stderr?: Buffer | string;
         message?: string;
