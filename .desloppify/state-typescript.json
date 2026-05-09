@@ -12,8 +12,8 @@
     "auto_resolved": 1161,
     "deferred": 3,
     "false_positive": 208,
-    "fixed": 369,
-    "open": 173,
+    "fixed": 370,
+    "open": 172,
     "triaged_out": 0,
     "wontfix": 4,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 2,
         "false_positive": 18,
-        "fixed": 161,
-        "open": 4,
+        "fixed": 162,
+        "open": 3,
         "triaged_out": 0,
         "wontfix": 1
       },
@@ -180,7 +180,7 @@
       "assessed_at": "2026-05-09T08:38:31+00:00",
       "needs_review_refresh": true,
       "refresh_reason": "review_issue_fixed",
-      "stale_since": "2026-05-09T08:56:22+00:00"
+      "stale_since": "2026-05-09T09:04:42+00:00"
     },
     "contract_coherence": {
       "score": 88.0,
@@ -3200,13 +3200,13 @@
       "strict": 84.0,
       "verified_strict_score": 84.0,
       "checks": 10,
-      "failing": 2,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.84,
-          "failing": 2,
+          "failing": 1,
           "weighted_failures": 1.6,
           "assessment_score": 84.0,
           "placeholder": false,
@@ -80624,11 +80624,11 @@
         "reasoning": "",
         "summary_hash": "6cc645cb"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Decomposed FileWriter.writeFiles into processOneFile (per-file content+diff), resolveContent (template+serialize), and applyExecutablePermissions (chmod pass). writeFiles is now pure orchestration.",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:04:42+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80636,7 +80636,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually decomposed the method and verified build+tests pass, not gaming the score",
+        "attested_at": "2026-05-09T09:04:42+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::design_coherence::settings-runner-pass-through-wrapper": {
       "id": "review::.::holistic::design_coherence::settings-runner-pass-through-wrapper",
