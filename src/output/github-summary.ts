@@ -11,10 +11,9 @@ export function writeGitHubStepSummary(
   summaryPath: string | undefined,
   log?: DebugLog
 ): void {
-  const path = summaryPath;
-  if (!path) return;
+  if (!summaryPath) return;
   try {
-    appendFileSync(path, "\n" + markdown + "\n");
+    appendFileSync(summaryPath, "\n" + markdown + "\n");
   } catch (error) {
     log?.debug(`Failed to write GitHub step summary: ${toErrorMessage(error)}`);
   }

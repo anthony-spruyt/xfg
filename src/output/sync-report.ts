@@ -1,10 +1,30 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
-import { formatDiffLine } from "../sync/index.js";
-import type { SyncReport, RepoFileChanges, ReportFileChange } from "./types.js";
+import { formatDiffLine } from "../shared/diff-format.js";
+import type { MergeMode } from "../config/index.js";
+import type { ActiveAction } from "../settings/index.js";
 
-export type { SyncReport, RepoFileChanges, ReportFileChange };
+export interface ReportFileChange {
+  path: string;
+  action: ActiveAction;
+  diffLines?: string[];
+}
+
+export interface SyncReport {
+  repos: RepoFileChanges[];
+  totals: {
+    files: { create: number; update: number; delete: number };
+  };
+}
+
+export interface RepoFileChanges {
+  repoName: string;
+  files: ReportFileChange[];
+  prUrl?: string;
+  mergeOutcome?: MergeMode;
+  error?: string;
+}
 
 function formatSyncSummary(totals: SyncReport["totals"]): string {
   const entry = formatCountEntry("file", "files", [
@@ -85,8 +105,7 @@ export function formatSyncReportMarkdown(
     lines.push(`### ${repo.repoName}`);
     lines.push("");
 
-    const diffLines: string[] = [];
-    renderSyncLines(repo, diffLines);
+    const diffLines = renderSyncLines(repo);
 
     if (diffLines.length > 0) {
       lines.push("```diff");
@@ -102,32 +121,32 @@ export function formatSyncReportMarkdown(
   return lines.join("\n");
 }
 
-export function renderSyncLines(
-  syncRepo: RepoFileChanges,
-  diffLines: string[]
-): void {
+export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
+  const lines: string[] = [];
+
   for (let i = 0; i < syncRepo.files.length; i++) {
     const file = syncRepo.files[i];
 
-    // Blank line between files for readability
-    if (i > 0) diffLines.push("");
+    if (i > 0) lines.push("");
 
     if (file.action === "create") {
-      diffLines.push(`+ ${file.path}`);
+      lines.push(`+ ${file.path}`);
     } else if (file.action === "update") {
-      diffLines.push(`! ${file.path}`);
+      lines.push(`! ${file.path}`);
     } else if (file.action === "delete") {
-      diffLines.push(`- ${file.path}`);
+      lines.push(`- ${file.path}`);
     }
 
     if (file.diffLines) {
-      diffLines.push(...file.diffLines);
+      lines.push(...file.diffLines);
     }
   }
 
   if (syncRepo.error) {
-    diffLines.push(`- Error: ${syncRepo.error}`);
+    lines.push(`- Error: ${syncRepo.error}`);
   }
+
+  return lines;
 }
 
 export function writeSyncReportSummary(

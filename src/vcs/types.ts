@@ -1,6 +1,11 @@
 import type { RepoInfo } from "../repo/index.js";
 import type { MergeMode, MergeStrategy } from "../config/index.js";
 
+export type ClosePRResult =
+  | { status: "no_pr" }
+  | { status: "closed" }
+  | { status: "close_failed"; message: string };
+
 export interface GitAuthOptions {
   token: string;
   /** e.g., "github.com", "github.mycompany.com" */
@@ -125,11 +130,7 @@ export interface IPRStrategy {
    */
   findExistingPRUrl(options: CloseExistingPROptions): Promise<string | null>;
 
-  /**
-   * Close an existing PR and delete its branch.
-   * @returns true if PR was closed, false if no PR existed
-   */
-  closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
+  closeExistingPR(options: CloseExistingPROptions): Promise<ClosePRResult>;
 
   /**
    * Create a new PR. Throws on infrastructure failures; PRWorkflowExecutor

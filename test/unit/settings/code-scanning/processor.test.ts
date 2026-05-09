@@ -40,14 +40,14 @@ class MockStrategy implements ICodeScanningStrategy {
     settings: { state: string; query_suite?: string; languages?: string[] };
   }> = [];
 
-  async getDefaultSetup(
+  async get(
     _repoInfo: RepoInfo,
     _options?: GhApiOptions
   ): Promise<CurrentCodeScanningSettings> {
     return this.getResult;
   }
 
-  async updateDefaultSetup(
+  async update(
     _repoInfo: RepoInfo,
     settings: { state: string; query_suite?: string; languages?: string[] },
     _options?: GhApiOptions

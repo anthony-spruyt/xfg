@@ -4,11 +4,8 @@ import {
   type GitHubRepoInfo,
   type RepoInfo,
 } from "../../repo/index.js";
-import {
-  GhApiClient,
-  isHttp404Error,
-  type GhApiOptions,
-} from "../../shared/gh-api-utils.js";
+import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
+import { isHttp404Error } from "../../shared/gh-token-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";
 import type { GitHubRepoSettings } from "../../config/index.js";
 import type { IRepoSettingsStrategy, CurrentRepoSettings } from "./types.js";
@@ -115,8 +112,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     // Pass vulnerability_alerts state - automated security fixes requires it enabled
     settings.automated_security_fixes = await this.getAutomatedSecurityFixes(
       repoInfo,
-      options,
-      settings.vulnerability_alerts
+      options
     );
     settings.private_vulnerability_reporting =
       await this.getPrivateVulnerabilityReporting(repoInfo, options);
@@ -154,7 +150,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call(method, endpoint, { options });
   }
 
-  async setAutomatedSecurityFixes(
+  async updateAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -166,7 +162,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
     await this.api.call(method, endpoint, { options });
   }
 
-  async setPrivateVulnerabilityReporting(
+  async updatePrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -209,14 +205,13 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       if (isHttp404Error(error)) {
         return false; // 404 = disabled
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   }
 
   private async getAutomatedSecurityFixes(
     github: GitHubRepoInfo,
-    options?: GhApiOptions,
-    _vulnerabilityAlertsEnabled?: boolean
+    options?: GhApiOptions
   ): Promise<boolean> {
     // Note: GitHub returns JSON with {enabled: boolean} for this endpoint
     const endpoint = `/repos/${github.owner}/${github.repo}/automated-security-fixes`;
@@ -256,7 +251,7 @@ export class GitHubRepoSettingsStrategy implements IRepoSettingsStrategy {
       if (isHttp404Error(error)) {
         return false; // 404 = not available (e.g. private repos)
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   }
 }

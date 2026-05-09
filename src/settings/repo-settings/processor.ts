@@ -66,7 +66,10 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     repoName: string
   ): Promise<RepoSettingsProcessorResult> {
     const { dryRun } = options;
-    const desiredSettings = repoConfig.settings!.repo!;
+    const desiredSettings = repoConfig.settings?.repo;
+    if (!desiredSettings || typeof desiredSettings !== "object") {
+      throw new Error("applySettings called without repo settings");
+    }
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
@@ -93,20 +96,17 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
     if (!hasRepoSettingsChanges(changes)) {
-      const unchangedCount = changes.filter(
-        (c) => c.action === "unchanged"
-      ).length;
       return {
         success: true,
         repoName,
         message: "No changes needed",
-        changes: { create: 0, update: 0, delete: 0, unchanged: unchangedCount },
+        changes: { create: 0, update: 0, delete: 0, unchanged: 0 },
       };
     }
 
     // Validate defaultBranch target exists before attempting to apply
     const defaultBranchChange = changes.find(
-      (c) => c.property === "defaultBranch" && c.action !== "unchanged"
+      (c) => c.property === "defaultBranch"
     );
     if (defaultBranchChange) {
       const targetBranch = String(defaultBranchChange.newValue);
@@ -134,7 +134,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       create: planOutput.creates,
       update: planOutput.updates,
       delete: 0,
-      unchanged: changes.filter((c) => c.action === "unchanged").length,
+      unchanged: 0,
     };
 
     if (dryRun) {
@@ -147,10 +147,8 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     // Apply changes - only send settings that actually changed
     const changedSettings: Partial<GitHubRepoSettings> = {};
     for (const change of changes) {
-      if (change.action !== "unchanged") {
-        (changedSettings as Record<string, unknown>)[change.property] =
-          change.newValue;
-      }
+      (changedSettings as Record<string, unknown>)[change.property] =
+        change.newValue;
     }
 
     await this.applyChanges(githubRepo, changedSettings, strategyOptions);
@@ -192,7 +190,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     // Handle private vulnerability reporting (separate endpoint)
     if (privateVulnerabilityReporting !== undefined) {
-      await this.strategy.setPrivateVulnerabilityReporting(
+      await this.strategy.updatePrivateVulnerabilityReporting(
         repoInfo,
         privateVulnerabilityReporting,
         options
@@ -202,7 +200,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     // Handle automated security fixes (separate endpoint)
     // Done last to ensure vulnerability alerts have been fully processed
     if (automatedSecurityFixes !== undefined) {
-      await this.strategy.setAutomatedSecurityFixes(
+      await this.strategy.updateAutomatedSecurityFixes(
         repoInfo,
         automatedSecurityFixes,
         options

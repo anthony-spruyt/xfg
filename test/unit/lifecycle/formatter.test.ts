@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { formatLifecycleAction } from "../../../src/lifecycle/lifecycle-formatter.js";
+import { formatLifecycleAction } from "../../../src/lifecycle/formatter.js";
 import type { LifecycleResult } from "../../../src/lifecycle/types.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 

@@ -9,15 +9,15 @@ describe("IRepoSettingsStrategy interface", () => {
       get: async () => ({}),
       update: async () => {},
       updateVulnerabilityAlerts: async () => {},
-      setAutomatedSecurityFixes: async () => {},
-      setPrivateVulnerabilityReporting: async () => {},
+      updateAutomatedSecurityFixes: async () => {},
+      updatePrivateVulnerabilityReporting: async () => {},
       branchExists: async () => true,
     };
     assert.ok(mockStrategy.get);
     assert.ok(mockStrategy.update);
     assert.ok(mockStrategy.updateVulnerabilityAlerts);
-    assert.ok(mockStrategy.setAutomatedSecurityFixes);
-    assert.ok(mockStrategy.setPrivateVulnerabilityReporting);
+    assert.ok(mockStrategy.updateAutomatedSecurityFixes);
+    assert.ok(mockStrategy.updatePrivateVulnerabilityReporting);
     assert.ok(mockStrategy.branchExists);
   });
 });

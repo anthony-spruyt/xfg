@@ -8,7 +8,7 @@ import { toErrorMessage } from "../shared/type-guards.js";
 export class ResultsCollector {
   private readonly results: ProcessorResults[] = [];
 
-  getOrCreate(repoName: string): ProcessorResults {
+  findOrCreate(repoName: string): ProcessorResults {
     let result = this.results.find((r) => r.repoName === repoName);
     if (!result) {
       result = { repoName };
@@ -18,7 +18,7 @@ export class ResultsCollector {
   }
 
   appendError(repoName: string, error: unknown): void {
-    const existing = this.getOrCreate(repoName);
+    const existing = this.findOrCreate(repoName);
     const errorMsg = toErrorMessage(error);
     if (existing.error) {
       existing.error += `; ${errorMsg}`;

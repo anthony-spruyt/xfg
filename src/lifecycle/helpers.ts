@@ -1,6 +1,6 @@
 import { resolve, join } from "node:path";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
-import { formatLifecycleAction } from "./lifecycle-formatter.js";
+import { formatLifecycleAction } from "./formatter.js";
 import type { RepoConfig, GitHubRepoSettings } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type {
@@ -44,10 +44,15 @@ export function toCreateRepoSettings(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+export interface LifecycleReportSettings {
+  visibility?: CreateRepoSettings["visibility"];
+  description?: CreateRepoSettings["description"];
+}
+
 export interface LifecycleCheckResult {
   lifecycleResult: LifecycleResult;
   outputLines: string[];
-  createSettings: CreateRepoSettings | undefined;
+  reportSettings: LifecycleReportSettings | undefined;
 }
 
 /**
@@ -79,16 +84,18 @@ export async function runLifecycleCheck(
     createSettings
   );
 
+  const reportSettings: LifecycleReportSettings | undefined = createSettings
+    ? {
+        visibility: createSettings.visibility,
+        description: createSettings.description,
+      }
+    : undefined;
+
   const outputLines = formatLifecycleAction(lifecycleResult, {
     upstream: repoConfig.upstream,
     source: repoConfig.source,
-    settings: createSettings
-      ? {
-          visibility: createSettings.visibility,
-          description: createSettings.description,
-        }
-      : undefined,
+    settings: reportSettings,
   });
 
-  return { lifecycleResult, outputLines, createSettings };
+  return { lifecycleResult, outputLines, reportSettings };
 }

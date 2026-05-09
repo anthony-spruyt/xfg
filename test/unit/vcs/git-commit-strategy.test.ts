@@ -68,12 +68,42 @@ describe("GitCommitStrategy", () => {
       // (staging is handled by CommitPushManager before calling commit())
       const commands = mockExecutor.calls.map((c) => c.command);
 
-      // Should have git commit with the message
+      // Should have git commit with the message and --no-verify
       const commitCall = commands.find((c) => c.includes("git commit"));
       assert.ok(commitCall, "Should have called git commit");
       assert.ok(
         commitCall.includes("Test commit message"),
         "Commit should include the message"
+      );
+      assert.ok(
+        commitCall.includes("--no-verify"),
+        "Commit should use --no-verify to skip pre-commit hooks"
+      );
+
+      // Verify commands ran in the correct working directory
+      const commitEntry = mockExecutor.calls.find((c) =>
+        c.command.includes("git commit")
+      );
+      assert.equal(
+        commitEntry!.cwd,
+        testDir,
+        "git commit should run in the work directory"
+      );
+      const pushEntry = mockExecutor.calls.find((c) =>
+        c.command.includes("git push")
+      );
+      assert.equal(
+        pushEntry!.cwd,
+        testDir,
+        "git push should run in the work directory"
+      );
+      const revParseEntry = mockExecutor.calls.find((c) =>
+        c.command.includes("git rev-parse")
+      );
+      assert.equal(
+        revParseEntry!.cwd,
+        testDir,
+        "git rev-parse should run in the work directory"
       );
 
       // Should have git push with force-with-lease
@@ -203,7 +233,26 @@ describe("GitCommitStrategy", () => {
         force: true,
       });
 
-      // Verify gitOps.push was called
+      // Verify git commit was still called with correct message and flags
+      const commitCall = mockExecutor.calls.find((c) =>
+        c.command.includes("git commit")
+      );
+      assert.ok(commitCall, "git commit should still be called before push");
+      assert.ok(
+        commitCall.command.includes("test commit"),
+        "Commit should include the provided message"
+      );
+      assert.ok(
+        commitCall.command.includes("--no-verify"),
+        "Commit should use --no-verify"
+      );
+      assert.equal(
+        commitCall.cwd,
+        testDir,
+        "Commit should run in the work directory"
+      );
+
+      // Verify gitOps.push was called with correct branch and force flag
       assert.strictEqual(
         mockNetworkOps.push.mock.calls.length,
         1,

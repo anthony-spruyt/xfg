@@ -1,6 +1,6 @@
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { LifecycleError } from "../shared/errors.js";
-import type { DebugWarnLog } from "../shared/logger.js";
+import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleFactory,
   IRepoLifecycleProvider,
@@ -19,13 +19,13 @@ export class RepoLifecycleFactory implements IRepoLifecycleFactory {
   private readonly executor: ICommandExecutor;
   private readonly retries: number;
   private readonly cwd: string;
-  private readonly log?: DebugWarnLog;
+  private readonly log?: DebugInfoWarnLog;
 
   constructor(
     executor: ICommandExecutor,
     retries: number | undefined,
     cwd: string,
-    log?: DebugWarnLog
+    log?: DebugInfoWarnLog
   ) {
     this.executor = executor;
     this.retries = retries ?? 3;

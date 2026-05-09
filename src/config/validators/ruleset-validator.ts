@@ -10,13 +10,7 @@ import type {
   SecurityAlertsThreshold,
   RulesetRule,
 } from "../types.js";
-
-/** Compile-time validates an array matches a type union, while keeping string[] runtime type for .includes() */
-function validValues<T extends string>(
-  values: readonly T[]
-): readonly string[] {
-  return values;
-}
+import { validValues } from "./file-validator.js";
 
 const VALID_RULESET_TARGETS = validValues<RulesetTarget>(["branch", "tag"]);
 const VALID_ENFORCEMENT_LEVELS = validValues<RulesetEnforcement>([

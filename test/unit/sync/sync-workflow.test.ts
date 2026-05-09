@@ -51,7 +51,7 @@ describe("SyncWorkflow", () => {
     const { gitOps } = createMockAuthenticatedGitOps({
       hasChanges: true,
     });
-    let cleanupCalled = false;
+    const callOrder: string[] = [];
 
     const authOptionsBuilder: IAuthOptionsBuilder = {
       async resolve() {
@@ -70,11 +70,12 @@ describe("SyncWorkflow", () => {
 
     const repositorySession: IRepositorySession = {
       async setup() {
+        callOrder.push("session.setup");
         return {
           gitOps,
           baseBranch: "main",
           cleanup: () => {
-            cleanupCalled = true;
+            callOrder.push("session.cleanup");
           },
         };
       },
@@ -107,7 +108,7 @@ describe("SyncWorkflow", () => {
       branchManager,
       commitPushManager,
       prMergeHandler,
-      wasCleanupCalled: () => cleanupCalled,
+      callOrder,
     };
   }
 
@@ -292,7 +293,7 @@ describe("SyncWorkflow", () => {
 
   // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
 
-  test("calls cleanup in finally block", async () => {
+  test("cleanup runs after strategy execution even when strategy throws", async () => {
     const components = createMockComponents();
     const { mock: mockLogger } = createMockLogger();
 
@@ -307,6 +308,7 @@ describe("SyncWorkflow", () => {
 
     const mockStrategy: IWorkStrategy = {
       async execute() {
+        components.callOrder.push("strategy.execute");
         throw new Error("Intentional test error");
       },
     };
@@ -327,7 +329,75 @@ describe("SyncWorkflow", () => {
       // Expected error
     }
 
-    assert.equal(components.wasCleanupCalled(), true);
+    assert.ok(
+      components.callOrder.includes("session.cleanup"),
+      "cleanup must be called even when strategy throws"
+    );
+    const setupIdx = components.callOrder.indexOf("session.setup");
+    const executeIdx = components.callOrder.indexOf("strategy.execute");
+    const cleanupIdx = components.callOrder.indexOf("session.cleanup");
+    assert.ok(setupIdx < executeIdx, "setup must precede strategy execution");
+    assert.ok(
+      executeIdx < cleanupIdx,
+      "cleanup must run after strategy execution"
+    );
+  });
+
+  test("cleanup runs after successful execution", async () => {
+    const components = createMockComponents();
+    const { mock: mockLogger } = createMockLogger();
+
+    const workflow = new SyncWorkflow(
+      components.authOptionsBuilder,
+      components.repositorySession,
+      components.branchManager,
+      components.commitPushManager,
+      components.prMergeHandler,
+      mockLogger
+    );
+
+    const workResult: WorkResult = {
+      fileChanges: new Map([
+        [
+          "test.txt",
+          { fileName: "test.txt", content: "test", action: "create" },
+        ],
+      ]),
+      changedFiles: [{ fileName: "test.txt", action: "create" }],
+      commitMessage: "test commit",
+      fileChangeDetails: [{ path: "test.txt", action: "create" }],
+    };
+
+    const mockStrategy: IWorkStrategy = {
+      async execute() {
+        components.callOrder.push("strategy.execute");
+        return workResult;
+      },
+    };
+
+    await workflow.execute(
+      mockRepoConfig,
+      mockRepoInfo,
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+      },
+      mockStrategy
+    );
+
+    const setupIdx = components.callOrder.indexOf("session.setup");
+    const executeIdx = components.callOrder.indexOf("strategy.execute");
+    const cleanupIdx = components.callOrder.indexOf("session.cleanup");
+    assert.ok(setupIdx >= 0, "setup must be called");
+    assert.ok(executeIdx >= 0, "strategy must be called");
+    assert.ok(cleanupIdx >= 0, "cleanup must be called on success path");
+    assert.ok(setupIdx < executeIdx, "setup must precede strategy execution");
+    assert.ok(
+      executeIdx < cleanupIdx,
+      "cleanup must run after strategy execution"
+    );
   });
 
   test("returns skip when commit skipped (no changes after staging)", async () => {

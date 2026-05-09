@@ -513,7 +513,7 @@ describe("GitHubRepoSettingsStrategy", () => {
     });
   });
 
-  describe("setAutomatedSecurityFixes", () => {
+  describe("updateAutomatedSecurityFixes", () => {
     test("should enable automated security fixes via PUT", async () => {
       mockExecutor.setResponse("automated-security-fixes", "");
 
@@ -521,7 +521,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setAutomatedSecurityFixes(githubRepo, true);
+      await strategy.updateAutomatedSecurityFixes(githubRepo, true);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X PUT"));
@@ -535,7 +535,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setAutomatedSecurityFixes(githubRepo, false);
+      await strategy.updateAutomatedSecurityFixes(githubRepo, false);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
@@ -543,7 +543,7 @@ describe("GitHubRepoSettingsStrategy", () => {
     });
   });
 
-  describe("setPrivateVulnerabilityReporting", () => {
+  describe("updatePrivateVulnerabilityReporting", () => {
     test("should enable private vulnerability reporting via PUT", async () => {
       mockExecutor.setResponse("private-vulnerability-reporting", "");
 
@@ -551,7 +551,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setPrivateVulnerabilityReporting(githubRepo, true);
+      await strategy.updatePrivateVulnerabilityReporting(githubRepo, true);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X PUT"));
@@ -567,7 +567,7 @@ describe("GitHubRepoSettingsStrategy", () => {
         retries: 0,
         cwd: "/test",
       });
-      await strategy.setPrivateVulnerabilityReporting(githubRepo, false);
+      await strategy.updatePrivateVulnerabilityReporting(githubRepo, false);
 
       assert.equal(mockExecutor.commands.length, 1);
       assert.ok(mockExecutor.commands[0].includes("-X DELETE"));

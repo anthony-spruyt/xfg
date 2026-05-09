@@ -31,14 +31,14 @@ describe("GitHubCodeScanningStrategy", () => {
     strategy = new GitHubCodeScanningStrategy(executor, { cwd: "/tmp" });
   });
 
-  test("getDefaultSetup calls correct endpoint", async () => {
+  test("get calls correct endpoint", async () => {
     executor.result = JSON.stringify({
       state: "configured",
       query_suite: "default",
       languages: ["javascript-typescript"],
     });
 
-    const result = await strategy.getDefaultSetup(githubRepo);
+    const result = await strategy.get(githubRepo);
 
     assert.equal(result.state, "configured");
     assert.equal(result.query_suite, "default");
@@ -50,10 +50,10 @@ describe("GitHubCodeScanningStrategy", () => {
     );
   });
 
-  test("updateDefaultSetup calls correct endpoint with payload", async () => {
+  test("update calls correct endpoint with payload", async () => {
     executor.result = "";
 
-    await strategy.updateDefaultSetup(githubRepo, {
+    await strategy.update(githubRepo, {
       state: "configured",
       query_suite: "extended",
       languages: ["python"],

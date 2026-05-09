@@ -1,6 +1,6 @@
 import type { MergeMode, MergeStrategy, RepoConfig } from "../config/index.js";
 import type { IRepoLifecycleManager } from "../lifecycle/index.js";
-import type { IRepositoryProcessor } from "../sync/index.js";
+import type { IRepositoryProcessor, FileChangeDetail } from "../sync/index.js";
 import type {
   ISettingsProcessor,
   IRulesetProcessor,
@@ -8,10 +8,10 @@ import type {
   ILabelsProcessor,
   ICodeScanningProcessor,
   BaseProcessorResult,
-  ActiveAction,
 } from "../settings/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type { ResultsCollector } from "./results-collector.js";
+import type { Logger } from "../shared/logger.js";
 
 export type ProcessorFactory = () => IRepositoryProcessor;
 
@@ -61,11 +61,7 @@ export interface SyncOptions extends SharedOptions {
 export interface SyncResultEntry {
   repoName: string;
   success: boolean;
-  fileChanges: Array<{
-    path: string;
-    action: ActiveAction;
-    diffLines?: string[];
-  }>;
+  fileChanges: FileChangeDetail[];
   prUrl?: string;
   mergeOutcome?: MergeMode;
   error?: string;
@@ -89,4 +85,5 @@ export interface ApplyRepoSettingsContext {
   token: string | undefined;
   settingsCollector: ResultsCollector;
   factories: SettingsProcessorFactories;
+  logger: Logger;
 }

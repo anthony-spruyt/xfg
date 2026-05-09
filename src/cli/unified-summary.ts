@@ -1,16 +1,14 @@
-import type {
-  LifecycleReport,
-  LifecycleAction,
-} from "../output/lifecycle-report.js";
-import { hasLifecycleChanges } from "../output/lifecycle-report.js";
-import { writeGitHubStepSummary } from "../output/github-summary.js";
-import type { SyncReport } from "../output/types.js";
-import { renderSyncLines } from "../output/sync-report.js";
-import type { SettingsReport } from "../output/settings-report.js";
 import {
+  hasLifecycleChanges,
+  writeGitHubStepSummary,
+  renderSyncLines,
   renderRepoSettingsDiffLines,
   formatCountEntry,
-} from "../output/settings-report.js";
+  type LifecycleReport,
+  type LifecycleAction,
+  type SyncReport,
+  type SettingsReport,
+} from "../output/index.js";
 
 // =============================================================================
 // Types
@@ -165,6 +163,11 @@ function renderLifecycleLines(
         `+ MIGRATE ${lcAction.source ?? "source"} -> ${lcAction.repoName}`
       );
       break;
+    /* c8 ignore next 4 */
+    default: {
+      const _exhaustive: never = lcAction.action;
+      throw new Error(`Unexpected lifecycle action: ${_exhaustive}`);
+    }
   }
 
   if (lcAction.settings) {
@@ -250,7 +253,7 @@ export function formatUnifiedSummaryMarkdown(
     // Blank line between lifecycle and sync sections
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
-    if (syncRepo) renderSyncLines(syncRepo, diffLines);
+    if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
 
     // Blank line between files and settings sections
     if (hasSyncChanges && hasSettingsChanges) diffLines.push("");

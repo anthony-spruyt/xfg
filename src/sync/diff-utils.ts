@@ -1,19 +1,11 @@
-import chalk from "chalk";
-
 export type { FileStatus } from "../shared/file-status.js";
 export { formatStatusBadge } from "../shared/file-status.js";
+import { formatDiffLine } from "../shared/diff-format.js";
 import type { FileStatus } from "../shared/file-status.js";
 
 export function getFileStatus(exists: boolean, changed: boolean): FileStatus {
   if (!exists) return "NEW";
   return changed ? "MODIFIED" : "UNCHANGED";
-}
-
-export function formatDiffLine(line: string): string {
-  if (line.startsWith("+")) return chalk.green(line);
-  if (line.startsWith("-")) return chalk.red(line);
-  if (line.startsWith("@@")) return chalk.cyan(line);
-  return line;
 }
 
 interface DiffHunk {
@@ -337,5 +329,9 @@ export function incrementDiffStats(stats: DiffStats, status: FileStatus): void {
     case "DELETED":
       stats.deletedCount++;
       break;
+    default: {
+      const _: never = status;
+      throw new Error(`Unknown FileStatus: ${String(_)}`);
+    }
   }
 }

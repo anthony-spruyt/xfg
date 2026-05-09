@@ -794,11 +794,11 @@ describe("AuthenticatedGitOps", () => {
     });
 
     test("setExecutable delegates to localOps", async () => {
-      let called = false;
+      let capturedFileName = "";
       const localOps = {
         ...createMockLocalOps(),
-        async setExecutable(_fileName: string) {
-          called = true;
+        async setExecutable(fileName: string) {
+          capturedFileName = fileName;
         },
       };
       const authOps = createAuthOps(
@@ -809,13 +809,15 @@ describe("AuthenticatedGitOps", () => {
       );
 
       await authOps.setExecutable("script.sh");
-      assert.ok(called);
+      assert.strictEqual(capturedFileName, "script.sh");
     });
 
     test("getFileContent delegates to localOps", () => {
+      let capturedFileName = "";
       const localOps = {
         ...createMockLocalOps(),
-        getFileContent(_fileName: string) {
+        getFileContent(fileName: string) {
+          capturedFileName = fileName;
           return "file-content";
         },
       };
@@ -827,12 +829,17 @@ describe("AuthenticatedGitOps", () => {
       );
 
       assert.strictEqual(authOps.getFileContent("test.json"), "file-content");
+      assert.strictEqual(capturedFileName, "test.json");
     });
 
     test("wouldChange delegates to localOps", () => {
+      let capturedFileName = "";
+      let capturedContent = "";
       const localOps = {
         ...createMockLocalOps(),
-        wouldChange(_fileName: string, _content: string) {
+        wouldChange(fileName: string, content: string) {
+          capturedFileName = fileName;
+          capturedContent = content;
           return false;
         },
       };
@@ -844,6 +851,8 @@ describe("AuthenticatedGitOps", () => {
       );
 
       assert.strictEqual(authOps.wouldChange("test.json", "content"), false);
+      assert.strictEqual(capturedFileName, "test.json");
+      assert.strictEqual(capturedContent, "content");
     });
 
     test("hasChanges delegates to localOps", async () => {
@@ -901,9 +910,13 @@ describe("AuthenticatedGitOps", () => {
     });
 
     test("fileExistsOnBranch delegates to localOps", async () => {
+      let capturedFileName = "";
+      let capturedBranch = "";
       const localOps = {
         ...createMockLocalOps(),
-        async fileExistsOnBranch(_fileName: string, _branch: string) {
+        async fileExistsOnBranch(fileName: string, branch: string) {
+          capturedFileName = fileName;
+          capturedBranch = branch;
           return true;
         },
       };
@@ -918,12 +931,16 @@ describe("AuthenticatedGitOps", () => {
         await authOps.fileExistsOnBranch("test.json", "main"),
         true
       );
+      assert.strictEqual(capturedFileName, "test.json");
+      assert.strictEqual(capturedBranch, "main");
     });
 
     test("fileExists delegates to localOps", () => {
+      let capturedFileName = "";
       const localOps = {
         ...createMockLocalOps(),
-        fileExists(_fileName: string) {
+        fileExists(fileName: string) {
+          capturedFileName = fileName;
           return true;
         },
       };
@@ -935,14 +952,15 @@ describe("AuthenticatedGitOps", () => {
       );
 
       assert.strictEqual(authOps.fileExists("test.json"), true);
+      assert.strictEqual(capturedFileName, "test.json");
     });
 
     test("deleteFile delegates to localOps", () => {
-      let deleted = false;
+      let capturedFileName = "";
       const localOps = {
         ...createMockLocalOps(),
-        deleteFile(_fileName: string) {
-          deleted = true;
+        deleteFile(fileName: string) {
+          capturedFileName = fileName;
         },
       };
       const authOps = createAuthOps(
@@ -953,13 +971,15 @@ describe("AuthenticatedGitOps", () => {
       );
 
       authOps.deleteFile("test.json");
-      assert.ok(deleted);
+      assert.strictEqual(capturedFileName, "test.json");
     });
 
     test("commit delegates to localOps", async () => {
+      let capturedMessage = "";
       const localOps = {
         ...createMockLocalOps(),
-        async commit(_message: string) {
+        async commit(message: string) {
+          capturedMessage = message;
           return true;
         },
       };
@@ -971,6 +991,7 @@ describe("AuthenticatedGitOps", () => {
       );
 
       assert.strictEqual(await authOps.commit("test commit"), true);
+      assert.strictEqual(capturedMessage, "test commit");
     });
 
     test("getDefaultBranchLocal delegates to localOps", async () => {
@@ -1010,9 +1031,11 @@ describe("AuthenticatedGitOps", () => {
     });
 
     test("getFileMode delegates to localOps", async () => {
+      let capturedFileName = "";
       const localOps = {
         ...createMockLocalOps(),
-        async getFileMode() {
+        async getFileMode(fileName: string) {
+          capturedFileName = fileName;
           return "100755" as const;
         },
       };
@@ -1024,6 +1047,7 @@ describe("AuthenticatedGitOps", () => {
       );
       const mode = await authOps.getFileMode("script.sh");
       assert.equal(mode, "100755");
+      assert.strictEqual(capturedFileName, "script.sh");
     });
   });
 });

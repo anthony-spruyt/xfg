@@ -287,15 +287,20 @@ describe("CommitPushManager", () => {
       assert.equal(entry?.mode, "100755");
     });
 
-    test("calls gitOps.stageAll when not in dry-run mode", async () => {
-      let stageAllCalled = false;
+    test("calls stageAll before hasStagedChanges in non-dry-run mode", async () => {
+      const callOrder: string[] = [];
       const { gitOps } = createMockAuthenticatedGitOps({
         hasStagedChanges: false, // Return false so we skip commit
       });
       const originalStageAll = gitOps.stageAll.bind(gitOps);
       gitOps.stageAll = async () => {
-        stageAllCalled = true;
+        callOrder.push("stageAll");
         return originalStageAll();
+      };
+      const originalHasStagedChanges = gitOps.hasStagedChanges.bind(gitOps);
+      gitOps.hasStagedChanges = async () => {
+        callOrder.push("hasStagedChanges");
+        return originalHasStagedChanges();
       };
       const { mock: mockLogger } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
@@ -322,7 +327,49 @@ describe("CommitPushManager", () => {
         executor: mockExecutor,
       });
 
-      assert.ok(stageAllCalled, "gitOps.stageAll() should have been called");
+      assert.deepStrictEqual(
+        callOrder,
+        ["stageAll", "hasStagedChanges"],
+        "stageAll must be called before hasStagedChanges"
+      );
+    });
+
+    test("does not call stageAll in dry-run mode", async () => {
+      let stageAllCalled = false;
+      const { gitOps } = createMockAuthenticatedGitOps({});
+      gitOps.stageAll = async () => {
+        stageAllCalled = true;
+      };
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor } = createMockExecutor({});
+
+      const manager = new CommitPushManager(mockLogger);
+      const fileChanges = new Map<string, FileWriteResult>([
+        [
+          "config.json",
+          { fileName: "config.json", content: "{}", action: "create" },
+        ],
+      ]);
+
+      await manager.commitAndPush({
+        repoInfo: mockRepoInfo,
+        gitOps,
+        workDir,
+        fileChanges,
+        commitMessage: "chore: sync config",
+        pushBranch: "chore/sync-config",
+        baseBranch: "main",
+        isDirectMode: false,
+        dryRun: true,
+        retries: 3,
+        executor: mockExecutor,
+      });
+
+      assert.equal(
+        stageAllCalled,
+        false,
+        "stageAll should not be called in dry-run mode"
+      );
     });
   });
 });

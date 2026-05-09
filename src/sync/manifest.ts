@@ -209,7 +209,8 @@ export function saveManifest(workDir: string, manifest: XfgManifest): void {
     writeFileSync(manifestPath, content, "utf-8");
   } catch (error) {
     throw new SyncError(
-      `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`
+      `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`,
+      { cause: error }
     );
   }
 }

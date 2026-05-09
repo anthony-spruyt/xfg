@@ -2,7 +2,12 @@ import type { ICommandExecutor } from "../../shared/command-executor.js";
 import { assertGitHubRepo, type RepoInfo } from "../../repo/index.js";
 import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";
-import type { ILabelsStrategy, GitHubLabel } from "./types.js";
+import type {
+  ILabelsStrategy,
+  GitHubLabel,
+  LabelCreateParams,
+  LabelUpdateParams,
+} from "./types.js";
 
 interface GitHubLabelsStrategyOptions {
   retries?: number;
@@ -36,7 +41,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
 
   async create(
     repoInfo: RepoInfo,
-    label: { name: string; color: string; description?: string },
+    label: LabelCreateParams,
     options?: GhApiOptions
   ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");
@@ -48,7 +53,7 @@ export class GitHubLabelsStrategy implements ILabelsStrategy {
   async update(
     repoInfo: RepoInfo,
     currentName: string,
-    label: { new_name?: string; color?: string; description?: string },
+    label: LabelUpdateParams,
     options?: GhApiOptions
   ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Labels strategy");

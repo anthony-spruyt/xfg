@@ -63,7 +63,35 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result?.includes("dev.azure.com"));
       assert.ok(result?.includes("pullrequest/456"));
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("az repos pr list"));
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("az repos pr list"));
+      // Verify command includes correct org, project, repo, and branch args
+      assert.ok(
+        command.includes("--repository") && command.includes("myrepo"),
+        `Command should include --repository myrepo. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--source-branch") && command.includes("test-branch"),
+        `Command should include --source-branch test-branch. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--target-branch") && command.includes("main"),
+        `Command should include --target-branch main. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--org") &&
+          command.includes("https://dev.azure.com/myorg"),
+        `Command should include --org with org URL. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--project") && command.includes("myproject"),
+        `Command should include --project myproject. Got: ${command}`
+      );
+      // Verify URL uses org/project/repo from config, not just the mock PR ID
+      assert.equal(
+        result,
+        "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/456"
+      );
     });
 
     test("returns null when no PR exists", async () => {
@@ -168,7 +196,39 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result.url?.includes("dev.azure.com"));
       assert.ok(result.url?.includes("pullrequest/789"));
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("az repos pr create"));
+      const command = mockExecutor.calls[0].command;
+      assert.ok(command.includes("az repos pr create"));
+      // Verify command includes correct org, project, repo, and branch args
+      assert.ok(
+        command.includes("--repository") && command.includes("myrepo"),
+        `Command should include --repository myrepo. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--source-branch") && command.includes("test-branch"),
+        `Command should include --source-branch test-branch. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--target-branch") && command.includes("main"),
+        `Command should include --target-branch main. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--title") && command.includes("Test PR"),
+        `Command should include --title. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--org") &&
+          command.includes("https://dev.azure.com/myorg"),
+        `Command should include --org with org URL. Got: ${command}`
+      );
+      assert.ok(
+        command.includes("--project") && command.includes("myproject"),
+        `Command should include --project myproject. Got: ${command}`
+      );
+      // Verify URL uses org/project/repo from config
+      assert.equal(
+        result.url,
+        "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/789"
+      );
     });
 
     test("cleans up description file after success", async () => {
@@ -706,7 +766,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
     }
   });
 
-  test("returns false when no PR exists", async () => {
+  test("returns no_pr when no PR exists", async () => {
     mockExecutor.responses.set("az repos pr list", "");
 
     const strategy = new AdoPRStrategy(mockExecutor.mock);
@@ -718,7 +778,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.deepStrictEqual(result, { status: "no_pr" });
   });
 
   test("closes PR (abandons) and deletes branch when PR exists", async () => {
@@ -735,7 +795,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, true);
+    assert.deepStrictEqual(result, { status: "closed" });
     const abandonCall = mockExecutor.calls.find((c) =>
       c.command.includes("az repos pr update")
     );
@@ -770,10 +830,10 @@ describe("AdoPRStrategy closeExistingPR", () => {
     );
   });
 
-  test("returns true even when branch deletion fails", async () => {
+  test("returns close_failed when branch deletion fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set("az repos pr update", "");
-    mockExecutor.responses.set("az repos ref list", "abc123def456"); // object_id for branch
+    mockExecutor.responses.set("az repos ref list", "abc123def456");
     mockExecutor.responses.set(
       "az repos ref delete",
       new Error("Branch deletion failed")
@@ -788,11 +848,14 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    // Should still return true because PR was abandoned successfully
-    assert.equal(result, true);
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
   });
 
-  test("returns false when abandon command fails", async () => {
+  test("returns close_failed when abandon command fails", async () => {
     mockExecutor.responses.set("az repos pr list", "123");
     mockExecutor.responses.set(
       "az repos pr update",
@@ -808,7 +871,7 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
   });
 });
 
@@ -1037,7 +1100,7 @@ describe("AdoPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    assert.equal(result, false);
+    assert.equal(result.status, "close_failed");
     assert.ok(warnMessages.some((m) => m.includes("Failed to abandon PR")));
   });
 
@@ -1068,9 +1131,16 @@ describe("AdoPRStrategy logger coverage", () => {
       retries: 0,
     });
 
-    // PR was abandoned successfully, branch deletion failed but is non-critical
-    assert.equal(result, true);
-    assert.ok(warnMessages.some((m) => m.includes("Failed to delete branch")));
+    assert.strictEqual(result.status, "close_failed");
+    assert.ok(
+      "message" in result &&
+        result.message.includes("branch test-branch deletion failed")
+    );
+    assert.ok(
+      warnMessages.some(
+        (m) => m.includes("branch") && m.includes("deletion failed")
+      )
+    );
   });
 });
 

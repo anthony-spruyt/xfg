@@ -1,3 +1,4 @@
+import chalk from "chalk";
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo, GitHubRepoInfo } from "../repo/index.js";
 import { isGitHubRepo, getRepoDisplayName } from "../repo/index.js";
@@ -114,13 +115,10 @@ export async function withGitHubGuards<
   }
 }
 
-/** Common action literals shared by all settings processors. */
 export type SettingsAction = "create" | "update" | "delete" | "unchanged";
 
-/** Actions that represent an actual change (excludes "unchanged"). */
 export type ActiveAction = Exclude<SettingsAction, "unchanged">;
 
-/** Type predicate that narrows entries with an active (non-"unchanged") action. */
 export function isActiveAction<T extends { action: SettingsAction }>(
   entry: T
 ): entry is T & { action: ActiveAction } {
@@ -134,10 +132,6 @@ export interface ChangeCounts {
   unchanged: number;
 }
 
-/**
- * Count actions from a diff result array.
- * Works with any change type that has an `action` field.
- */
 export function countActions(
   changes: ReadonlyArray<{ action: SettingsAction }>
 ): ChangeCounts {
@@ -160,6 +154,61 @@ export function formatChangeSummary(counts: ChangeCounts): string {
   if (counts.delete > 0) parts.push(`${counts.delete} deleted`);
   if (counts.unchanged > 0) parts.push(`${counts.unchanged} unchanged`);
   return parts.length > 0 ? parts.join(", ") : "no changes";
+}
+
+export interface PlanEntry {
+  property: string;
+  action: "create" | "update";
+  oldValue?: unknown;
+  newValue?: unknown;
+}
+
+export interface FormatChangeResult {
+  lines: string[];
+  entries: PlanEntry[];
+  creates: number;
+  updates: number;
+}
+
+export function formatChangeLines(
+  changes: ReadonlyArray<{
+    property: string;
+    action: SettingsAction;
+    oldValue?: unknown;
+    newValue?: unknown;
+  }>,
+  formatValue: (val: unknown) => string
+): FormatChangeResult {
+  const lines: string[] = [];
+  const entries: PlanEntry[] = [];
+  const { create: creates, update: updates } = countActions(changes);
+
+  for (const change of changes) {
+    if (change.action === "create") {
+      lines.push(
+        chalk.green(`    + ${change.property}: ${formatValue(change.newValue)}`)
+      );
+      entries.push({
+        property: change.property,
+        action: "create",
+        newValue: change.newValue,
+      });
+    } else if (change.action === "update") {
+      lines.push(
+        chalk.yellow(
+          `    ~ ${change.property}: ${formatValue(change.oldValue)} → ${formatValue(change.newValue)}`
+        )
+      );
+      entries.push({
+        property: change.property,
+        action: "update",
+        oldValue: change.oldValue,
+        newValue: change.newValue,
+      });
+    }
+  }
+
+  return { lines, entries, creates, updates };
 }
 
 /**

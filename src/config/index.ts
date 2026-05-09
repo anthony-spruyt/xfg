@@ -1,6 +1,7 @@
 // Re-export all types
 export type {
   // PR Merge Options
+  PRMergeOptions,
   MergeMode,
   MergeStrategy,
   // Rulesets

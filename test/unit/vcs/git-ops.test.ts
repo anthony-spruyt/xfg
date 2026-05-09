@@ -515,14 +515,14 @@ describe("GitOps", () => {
     });
 
     test("creates new branch with checkout -b", async () => {
-      let checkoutBCalled = false;
+      let capturedCommand = "";
 
       const gitOps = new GitOps({
         workDir,
         executor: {
           async exec(command: string, _cwd: string): Promise<string> {
             if (command.includes("git checkout -b")) {
-              checkoutBCalled = true;
+              capturedCommand = command;
               return "";
             }
             return "";
@@ -531,7 +531,11 @@ describe("GitOps", () => {
       });
       await gitOps.createBranch("feature-branch");
 
-      assert.ok(checkoutBCalled, "Should have called checkout -b");
+      assert.ok(capturedCommand, "Should have called checkout -b");
+      assert.ok(
+        capturedCommand.includes("feature-branch"),
+        "Should include the branch name in the command"
+      );
     });
 
     test("throws on checkout -b failure", async () => {

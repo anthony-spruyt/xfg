@@ -1,15 +1,17 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  getHostnameFlag,
+  buildHostnameFlag,
   buildTokenEnv,
-  isHttp404Error,
-  resolveGitHubToken,
   GhApiClient,
   parseResponseBody,
   attachRetryAfter,
   attachValidationDetails,
 } from "../../../src/shared/gh-api-utils.js";
+import {
+  isHttp404Error,
+  resolveGitHubToken,
+} from "../../../src/shared/gh-token-utils.js";
 import { parseApiJson } from "../../../src/shared/json-utils.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
@@ -24,14 +26,14 @@ function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {
   };
 }
 
-describe("getHostnameFlag", () => {
+describe("buildHostnameFlag", () => {
   test("returns empty string for github.com", () => {
-    const result = getHostnameFlag(makeRepoInfo());
+    const result = buildHostnameFlag(makeRepoInfo());
     assert.equal(result, "");
   });
 
   test("returns --hostname flag for GHE", () => {
-    const result = getHostnameFlag(makeRepoInfo({ host: "ghe.example.com" }));
+    const result = buildHostnameFlag(makeRepoInfo({ host: "ghe.example.com" }));
     assert.equal(result, "--hostname 'ghe.example.com'");
   });
 });

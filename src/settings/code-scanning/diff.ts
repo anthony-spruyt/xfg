@@ -59,8 +59,12 @@ export function diffCodeScanning(
 
   // languages: only diff if specified in desired (sorted comparison)
   if (desired.languages !== undefined) {
-    const currentLangs = [...(current.languages ?? [])].sort();
-    const desiredLangs = [...desired.languages].sort();
+    const currentLangs = [...(current.languages ?? [])].sort((a, b) =>
+      a.localeCompare(b)
+    );
+    const desiredLangs = [...desired.languages].sort((a, b) =>
+      a.localeCompare(b)
+    );
     const langsMatch =
       currentLangs.length === desiredLangs.length &&
       currentLangs.every((lang, i) => lang === desiredLangs[i]);

@@ -75,6 +75,11 @@ describe("GitHubAppTokenManager", () => {
         TEST_PRIVATE_KEY
       );
       const jwt = manager.generateJWT();
+
+      // Structural: JWT must have exactly 3 dot-separated parts
+      const parts = jwt.split(".");
+      assert.equal(parts.length, 3, "JWT must have exactly 3 parts");
+
       const { header } = parseJwt(jwt);
 
       assert.deepEqual(header, {
@@ -83,18 +88,32 @@ describe("GitHubAppTokenManager", () => {
       });
     });
 
-    test("JWT payload has correct issuer (clientId)", () => {
+    test("JWT payload has correct issuer and reasonable timestamps", () => {
       const manager = new GitHubAppTokenManager(
         TEST_CLIENT_ID,
         TEST_PRIVATE_KEY
       );
       const jwt = manager.generateJWT();
-      const { payload } = parseJwt(jwt);
 
-      assert.equal(
-        (payload as { iss: string }).iss,
-        TEST_CLIENT_ID,
-        "iss should be the client ID"
+      // Structural: verify 3-part format before decoding
+      const parts = jwt.split(".");
+      assert.equal(parts.length, 3, "JWT must have header.payload.signature");
+
+      const { payload } = parseJwt(jwt);
+      const typed = payload as { iss: string; iat: number; exp: number };
+
+      assert.equal(typed.iss, TEST_CLIENT_ID, "iss should be the client ID");
+
+      // Structural timestamp checks that can't be faked by a broken implementation
+      assert.equal(typeof typed.iat, "number", "iat must be a number");
+      assert.equal(typeof typed.exp, "number", "exp must be a number");
+      assert.ok(typed.exp > typed.iat, "exp must be after iat");
+
+      // exp - iat should be ~660s (600s validity + 60s clock skew adjustment)
+      const duration = typed.exp - typed.iat;
+      assert.ok(
+        duration >= 600 && duration <= 720,
+        `Token lifetime should be ~660s, got ${duration}s`
       );
     });
 
@@ -579,7 +598,7 @@ describe("GitHubAppTokenManager", () => {
         TEST_PRIVATE_KEY
       );
 
-      let discoveryCalled = false;
+      let discoveryUrl: string | undefined;
 
       globalThis.fetch = mock.fn(async (url: string | URL) => {
         const urlStr = url.toString();
@@ -587,7 +606,7 @@ describe("GitHubAppTokenManager", () => {
           urlStr.includes("/app/installations") &&
           !urlStr.includes("access_tokens")
         ) {
-          discoveryCalled = true;
+          discoveryUrl = urlStr;
           return new Response(
             JSON.stringify([{ id: 999, account: { login: "auto-org" } }]),
             { status: 200, headers: { "Content-Type": "application/json" } }
@@ -613,7 +632,11 @@ describe("GitHubAppTokenManager", () => {
       // Don't call discoverInstallations first
       const token = await manager.getTokenForRepo(repoInfo);
 
-      assert.ok(discoveryCalled, "Should auto-discover installations");
+      assert.equal(
+        discoveryUrl,
+        "https://api.github.com/app/installations",
+        "Should auto-discover via the installations endpoint"
+      );
       assert.equal(token, "ghs_auto_token");
     });
 

@@ -39,7 +39,7 @@ export class BranchManager implements IBranchManager {
     if (!dryRun) {
       this.log.debug("Checking for existing PR...");
       const strategy = this.prStrategyFactory(repoInfo, executor, this.log);
-      const closed = await strategy.closeExistingPR({
+      const closeResult = await strategy.closeExistingPR({
         repoInfo,
         branchName,
         baseBranch,
@@ -48,10 +48,11 @@ export class BranchManager implements IBranchManager {
         token,
       });
 
-      if (closed) {
+      if (closeResult.status === "closed") {
         this.log.info("Closed existing PR and deleted branch for fresh sync");
-        // Prune stale remote tracking refs so --force-with-lease works correctly
         await gitOps.fetch({ prune: true });
+      } else if (closeResult.status === "close_failed") {
+        this.log.warn(`Failed to close existing PR: ${closeResult.message}`);
       }
     }
 
