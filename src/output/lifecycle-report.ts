@@ -67,6 +67,7 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
         );
         break;
 
+      /* c8 ignore next 4 */
       default: {
         const _exhaustive: never = action.action;
         throw new Error(`Unexpected lifecycle action: ${_exhaustive}`);

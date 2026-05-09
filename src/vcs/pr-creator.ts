@@ -88,9 +88,11 @@ function formatFileChanges(files: FileAction[]): string {
         case "delete":
           actionText = "Deleted";
           break;
+        /* c8 ignore next 3 -- filtered out by line 77 */
         case "skip":
           actionText = "Skipped";
           break;
+        /* c8 ignore next 4 */
         default: {
           const _exhaustive: never = f.action;
           throw new Error(`Unexpected action: ${_exhaustive}`);

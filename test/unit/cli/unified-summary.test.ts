@@ -86,6 +86,27 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("**Applied: 1 repo (1 created)**"));
   });
 
+  test("renders lifecycle settings with description in diff", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/new-repo",
+          action: "created",
+          settings: { visibility: "public", description: "My cool repo" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync: emptySync(),
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes("+   visibility: public"));
+    assert.ok(markdown.includes('+   description: "My cool repo"'));
+  });
+
   test("renders sync-only changes (no lifecycle)", () => {
     const sync: SyncReport = {
       repos: [

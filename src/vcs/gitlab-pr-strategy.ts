@@ -89,6 +89,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       case "merge":
       case undefined:
         return "";
+      /* c8 ignore next 4 */
       default: {
         const _exhaustive: never = strategy;
         throw new Error(`Unexpected merge strategy: ${_exhaustive}`);
