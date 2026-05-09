@@ -13,6 +13,8 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
+
+const MR_CREATED_MSG = "MR created successfully";
 import {
   type ICommandExecutor,
   getStderr,
@@ -236,7 +238,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return {
           url: urlMatch[0],
           success: true,
-          message: "MR created successfully",
+          message: MR_CREATED_MSG,
         };
       }
 
@@ -246,7 +248,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return {
           url: this.buildMRUrl(repoInfo, mrMatch[1]),
           success: true,
-          message: "MR created successfully",
+          message: MR_CREATED_MSG,
         };
       }
 

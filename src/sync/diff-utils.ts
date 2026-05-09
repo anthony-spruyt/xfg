@@ -329,5 +329,9 @@ export function incrementDiffStats(stats: DiffStats, status: FileStatus): void {
     case "DELETED":
       stats.deletedCount++;
       break;
+    default: {
+      const _: never = status;
+      throw new Error(`Unknown FileStatus: ${String(_)}`);
+    }
   }
 }

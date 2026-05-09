@@ -1,62 +1,66 @@
 {
   "command": "resolve",
   "patterns": [
-    "normalizer_main_loop_phase_density"
+    "settings-runner-pass-through-wrapper"
   ],
   "status": "fixed",
   "resolved": [
-    "review::.::holistic::low_level_elegance::normalizer_main_loop_phase_density"
+    "review::.::holistic::design_coherence::settings-runner-pass-through-wrapper"
   ],
   "count": 1,
   "next_command": "desloppify next",
-  "overall_score": 91.8,
+  "overall_score": 88.1,
   "objective_score": 97.2,
-  "strict_score": 90.6,
-  "verified_strict_score": 89.4,
-  "prev_overall_score": 91.8,
+  "strict_score": 86.9,
+  "verified_strict_score": 89.5,
+  "prev_overall_score": 88.1,
   "prev_objective_score": 97.2,
-  "prev_strict_score": 90.6,
-  "prev_verified_strict_score": 89.4,
-  "attestation": "I have actually extracted the function with a context object parameter and I am not gaming the score",
+  "prev_strict_score": 86.9,
+  "prev_verified_strict_score": 89.5,
+  "attestation": "I have actually inlined the call and deleted the wrapper, verified build+tests pass, not gaming the score",
   "narrative": {
     "phase": "stagnation",
-    "headline": "Score plateaued at 90.6 for 5 scans. Duplication (85.9%) is where the breakthrough is. 4 wontfix items may also be worth revisiting.",
+    "headline": "Score plateaued at 86.9 for 5 scans. Abstraction fit (76.0%) is where the breakthrough is. 4 wontfix items may also be worth revisiting. (16 review work items \u2014 run `desloppify show review --status open`)",
     "dimensions": {
       "lowest_dimensions": [
         {
-          "name": "Duplication",
-          "strict": 85.9,
-          "failing": 6,
-          "impact": 0.0
-        },
-        {
-          "name": "Error consistency",
-          "strict": 86.0,
+          "name": "Abstraction fit",
+          "strict": 76.0,
           "failing": 2,
           "impact": 0.0,
           "subjective": true,
           "impact_description": "re-review to improve"
         },
         {
-          "name": "Test health",
-          "strict": 87.2,
-          "failing": 7,
-          "impact": 0.0
+          "name": "High elegance",
+          "strict": 82.0,
+          "failing": 2,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
+        },
+        {
+          "name": "Mid elegance",
+          "strict": 83.0,
+          "failing": 3,
+          "impact": 0.0,
+          "subjective": true,
+          "impact_description": "re-review to improve"
         }
       ],
       "biggest_gap_dimensions": [
         {
           "name": "Duplication",
           "lenient": 98.6,
-          "strict": 85.9,
-          "gap": 12.7,
+          "strict": 86.0,
+          "gap": 12.6,
           "wontfix_count": 0
         },
         {
           "name": "Test health",
           "lenient": 92.4,
-          "strict": 87.2,
-          "gap": 5.2,
+          "strict": 87.1,
+          "gap": 5.3,
           "wontfix_count": 0
         },
         {
@@ -69,28 +73,33 @@
       ],
       "stagnant_dimensions": [
         {
+          "name": "Security",
+          "strict": 95.9,
+          "stuck_scans": 5
+        },
+        {
           "name": "File health",
           "strict": 96.7,
           "stuck_scans": 5
         },
         {
           "name": "Duplication",
-          "strict": 85.9,
+          "strict": 86.0,
           "stuck_scans": 5
         },
         {
-          "name": "AI generated debt",
-          "strict": 92.5,
+          "name": "Test health",
+          "strict": 87.1,
           "stuck_scans": 5
         },
         {
-          "name": "High elegance",
+          "name": "Naming quality",
           "strict": 91.5,
           "stuck_scans": 5
         },
         {
-          "name": "Low elegance",
-          "strict": 87.5,
+          "name": "Structure nav",
+          "strict": 93.0,
           "stuck_scans": 5
         }
       ]
@@ -207,6 +216,17 @@
         "lane": "refactor_3"
       },
       {
+        "type": "refactor",
+        "detector": "review",
+        "count": 16,
+        "description": "16 review work items need investigation \u2014 run `desloppify show review --status open` to see them",
+        "command": "desloppify show review --status open",
+        "impact": 0.0,
+        "dimension": "Unknown",
+        "priority": 11,
+        "lane": "refactor_4"
+      },
+      {
         "type": "manual_fix",
         "detector": "smells",
         "count": 82,
@@ -214,14 +234,14 @@
         "command": "desloppify show smells --status open",
         "impact": 0.0,
         "dimension": "Code quality",
-        "priority": 11,
+        "priority": 12,
         "lane": "refactor_0"
       }
     ],
     "strategy": {
       "fixer_leverage": {
         "auto_fixable_count": 0,
-        "total_count": 161,
+        "total_count": 209,
         "coverage": 0.0,
         "impact_ratio": 0.0,
         "recommendation": "none"
@@ -243,7 +263,7 @@
           "actions": [
             5,
             6,
-            11
+            12
           ],
           "file_count": 86,
           "total_impact": 0.0,
@@ -277,6 +297,15 @@
           "automation": "manual",
           "run_first": false
         },
+        "refactor_4": {
+          "actions": [
+            11
+          ],
+          "file_count": 1,
+          "total_impact": 0.0,
+          "automation": "manual",
+          "run_first": false
+        },
         "test_coverage": {
           "actions": [
             7
@@ -288,7 +317,7 @@
         }
       },
       "can_parallelize": true,
-      "hint": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify."
+      "hint": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 16 issue(s) \u2014 `desloppify show review --status open`."
     },
     "tools": {
       "fixers": [
@@ -323,10 +352,10 @@
       }
     },
     "debt": {
-      "overall_gap": 0.9,
+      "overall_gap": 0.8,
       "wontfix_count": 4,
       "worst_dimension": "Duplication",
-      "worst_gap": 12.7,
+      "worst_gap": 12.6,
       "trend": "stable"
     },
     "milestone": null,
@@ -334,7 +363,7 @@
       "command": "desloppify show flat_dirs --status open",
       "description": "1 flat_dirs issues \u2014 create subdirectories and use `desloppify move`"
     },
-    "why_now": "6 independent workstreams, safe to parallelize. Rescan after each phase to verify.",
+    "why_now": "7 independent workstreams, safe to parallelize. Rescan after each phase to verify. Review: 16 issue(s) \u2014 `desloppify show review --status open`.",
     "verification_step": {
       "command": "desloppify scan",
       "reason": "revalidate after changes"
@@ -343,13 +372,13 @@
       {
         "type": "wontfix_gap",
         "severity": "medium",
-        "message": "Strict/lenient gap is 0.9 pts with 4 wontfix issues"
+        "message": "Strict/lenient gap is 0.8 pts with 4 wontfix issues"
       }
     ],
     "strict_target": {
       "target": 85.0,
-      "current": 90.6,
-      "gap": -5.6,
+      "current": 86.9,
+      "gap": -1.9,
       "state": "above",
       "warning": null
     },
@@ -373,7 +402,7 @@
       "auto_fixers_available": 3,
       "zone_classification": 3,
       "dry_run_first": 3,
-      "report_scores": 165,
+      "report_scores": 166,
       "feedback_nudge": 3,
       "review_findings_pending": 3,
       "stagnant_nudge": 3,

@@ -42,15 +42,6 @@ function logSettingsResult(
   }
 }
 
-function runSettingsProcessor<TResult extends SettingsResult>(
-  factory: () => ISettingsProcessor<BaseProcessorOptions, TResult>,
-  repoConfig: RepoConfig,
-  repoInfo: RepoInfo,
-  processOptions: { dryRun?: boolean; noDelete?: boolean; token?: string }
-): Promise<TResult> {
-  return factory().process(repoConfig, repoInfo, processOptions);
-}
-
 async function runAndStoreResult<TResult extends SettingsResult>(
   factory: () => ISettingsProcessor<BaseProcessorOptions, TResult>,
   repoConfig: RepoConfig,
@@ -60,12 +51,7 @@ async function runAndStoreResult<TResult extends SettingsResult>(
   settingsCollector: ResultsCollector,
   assign: (entry: ProcessorResults, result: TResult) => void
 ): Promise<TResult> {
-  const result = await runSettingsProcessor(
-    factory,
-    repoConfig,
-    repoInfo,
-    opts
-  );
+  const result = await factory().process(repoConfig, repoInfo, opts);
   if (!result.skipped) {
     assign(settingsCollector.findOrCreate(repoName), result);
   }
