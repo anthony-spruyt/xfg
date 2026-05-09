@@ -18,7 +18,11 @@ describe("error sanitization integration", () => {
 
     try {
       await executor.exec(
-        `node -e "console.error('${errorMessage.replace(/'/g, "\\'")}'); process.exit(128)"`,
+        "node",
+        [
+          "-e",
+          `console.error(${JSON.stringify(errorMessage)}); process.exit(128)`,
+        ],
         "."
       );
       assert.fail("Should have thrown");
