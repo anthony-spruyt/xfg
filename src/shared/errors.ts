@@ -32,6 +32,10 @@ export class SyncError extends Error {
   }
 }
 
+export interface RateLimitedError {
+  retryAfter?: number;
+}
+
 export class LifecycleError extends Error {
   override readonly name = "LifecycleError";
 

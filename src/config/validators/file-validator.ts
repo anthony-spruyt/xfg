@@ -1,12 +1,22 @@
 import { extname, isAbsolute } from "node:path";
-import { isTextContent } from "../merge.js";
+import { isTextContent, type ArrayMergeStrategy } from "../merge.js";
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 
 export { isTextContent };
 export { isPlainObject as isObjectContent };
 
-const VALID_STRATEGIES = ["replace", "append", "prepend"];
+function validValues<T extends string>(
+  values: readonly T[]
+): readonly string[] {
+  return values;
+}
+
+const VALID_STRATEGIES = validValues<ArrayMergeStrategy>([
+  "replace",
+  "append",
+  "prepend",
+]);
 
 /**
  * Check if file extension is for structured output (JSON/YAML).

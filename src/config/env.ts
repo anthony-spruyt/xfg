@@ -8,7 +8,7 @@ import {
   interpolateString,
   interpolateValue,
   type InterpolationConfig,
-} from "./interpolation-engine.js";
+} from "../shared/interpolation-engine.js";
 import { ValidationError } from "../shared/errors.js";
 
 export interface EnvInterpolationOptions {

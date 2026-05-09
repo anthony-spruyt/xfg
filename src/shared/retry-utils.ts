@@ -1,7 +1,7 @@
 import pRetry, { AbortError } from "p-retry";
 import { getStderr } from "./command-executor.js";
 import { sanitizeCredentials } from "./sanitize-utils.js";
-import { ValidationError } from "./errors.js";
+import { ValidationError, type RateLimitedError } from "./errors.js";
 
 /**
  * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).
@@ -212,7 +212,7 @@ export async function withRetry<T>(
         // Apply rate-limit-specific delay before the next retry
         if (context.retriesLeft > 0 && isRateLimitError(context.error)) {
           const retryAfterSeconds =
-            (context.error as { retryAfter?: number }).retryAfter ??
+            (context.error as RateLimitedError).retryAfter ??
             RATE_LIMIT_FALLBACK_DELAY_SECONDS;
           options?.log?.info(
             `Rate limited. Waiting ${retryAfterSeconds}s before retry...`

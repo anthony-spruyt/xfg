@@ -20,12 +20,6 @@ class MockRulesetStrategy {
     target: "branch",
     enforcement: "active",
   };
-  updateResponse: GitHubRuleset = {
-    id: 1,
-    name: "test",
-    target: "branch",
-    enforcement: "active",
-  };
 
   async list(
     _repo: GitHubRepoInfo,
@@ -51,9 +45,8 @@ class MockRulesetStrategy {
   async create(
     _repo: GitHubRepoInfo,
     params: { name: string; ruleset: Ruleset }
-  ): Promise<GitHubRuleset> {
+  ): Promise<void> {
     this.calls.push({ method: "create", args: [params.name, params.ruleset] });
-    return { ...this.createResponse, name: params.name };
   }
 
   async update(
@@ -64,12 +57,11 @@ class MockRulesetStrategy {
       ruleset: Ruleset;
       options?: unknown;
     }
-  ): Promise<GitHubRuleset> {
+  ): Promise<void> {
     this.calls.push({
       method: "update",
       args: [params.rulesetId, params.name, params.ruleset],
     });
-    return { ...this.updateResponse, id: params.rulesetId, name: params.name };
   }
 
   async delete(_repo: GitHubRepoInfo, id: number): Promise<void> {

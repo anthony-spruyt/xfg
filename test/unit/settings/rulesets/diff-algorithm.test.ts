@@ -5,7 +5,7 @@ import {
   computePropertyDiffs,
   deepEqual,
   isArrayOfObjects,
-} from "../../../../src/settings/rulesets/index.js";
+} from "../../../../src/settings/rulesets/diff-algorithm.js";
 import { isPlainObject } from "../../../../src/shared/type-guards.js";
 
 describe("diff-algorithm", () => {

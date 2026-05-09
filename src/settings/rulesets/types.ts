@@ -57,12 +57,12 @@ export interface IRulesetStrategy {
     repoInfo: RepoInfo,
     params: RulesetCreateParams,
     options?: GhApiOptions
-  ): Promise<GitHubRuleset>;
+  ): Promise<void>;
   update(
     repoInfo: RepoInfo,
     params: RulesetUpdateParams,
     options?: GhApiOptions
-  ): Promise<GitHubRuleset>;
+  ): Promise<void>;
   delete(
     repoInfo: RepoInfo,
     rulesetId: number,

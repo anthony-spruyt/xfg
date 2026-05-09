@@ -4,7 +4,7 @@ import {
   interpolateString,
   interpolateValue,
   type InterpolationConfig,
-} from "../../../src/config/interpolation-engine.js";
+} from "../../../src/shared/interpolation-engine.js";
 
 function createTestConfig(vars: Record<string, string>): InterpolationConfig {
   return {

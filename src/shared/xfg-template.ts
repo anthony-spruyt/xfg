@@ -8,7 +8,7 @@ import {
   interpolateString,
   interpolateValue,
   type InterpolationConfig,
-} from "../config/interpolation-engine.js";
+} from "./interpolation-engine.js";
 
 import { ValidationError } from "./errors.js";
 

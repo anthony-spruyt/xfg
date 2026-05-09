@@ -1,6 +1,7 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
+import type { RateLimitedError } from "./errors.js";
 
 export interface GitHubApiTarget {
   host: string;
@@ -93,7 +94,7 @@ export function attachRetryAfter(error: unknown): void {
   const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
   const match = stdoutStr.match(/^retry-after:\s*(\d+)\s*$/im);
   if (match) {
-    (error as { retryAfter?: number }).retryAfter = parseInt(match[1], 10);
+    (error as RateLimitedError).retryAfter = parseInt(match[1], 10);
   }
 }
 

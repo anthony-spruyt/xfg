@@ -191,13 +191,11 @@ describe("GitHubRulesetStrategy", () => {
         rules: [{ type: "pull_request" }],
       };
 
-      const result = await strategy.create(mockGitHubRepo, {
+      await strategy.create(mockGitHubRepo, {
         name: "new-rules",
         ruleset,
       });
 
-      assert.equal(result.id, 456);
-      assert.equal(result.name, "new-rules");
       assert.ok(mockExecutor.commands[0].includes("-X POST"));
       assert.ok(
         mockExecutor.commands[0].includes("/repos/test-org/test-repo/rulesets")
@@ -254,14 +252,12 @@ describe("GitHubRulesetStrategy", () => {
         enforcement: "disabled",
       };
 
-      const result = await strategy.update(mockGitHubRepo, {
+      await strategy.update(mockGitHubRepo, {
         rulesetId: 123,
         name: "updated-rules",
         ruleset,
       });
 
-      assert.equal(result.id, 123);
-      assert.equal(result.enforcement, "disabled");
       assert.ok(mockExecutor.commands[0].includes("-X PUT"));
       assert.ok(
         mockExecutor.commands[0].includes(

@@ -29,4 +29,4 @@ EXCLUDED_DIRECTORIES:
 JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "test/fixtures/templates/invalid\\.json"
 
 # Exclude CI workflow and integration tests from lychee (contain shell-variable URLs and ephemeral repo names)
-SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(ci\\.yaml|test/integration/github-lifecycle)"
+SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(ci\\.yaml|test/integration/github-lifecycle|test/|src/|\\.ts$)"

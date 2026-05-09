@@ -7,12 +7,12 @@ import {
 } from "../config/index.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import {
-  getFileStatus,
   generateDiff,
   createDiffStats,
   incrementDiffStats,
   computeUnifiedDiff,
   isBinaryFile,
+  type FileStatus,
 } from "./diff-utils.js";
 import type {
   IFileWriter,
@@ -151,7 +151,8 @@ export class FileWriter implements IFileWriter {
 
       if (dryRun) {
         if (changed) {
-          const status = getFileStatus(existingContent !== null, changed);
+          const status: FileStatus =
+            existingContent !== null ? "MODIFIED" : "NEW";
           incrementDiffStats(diffStats, status);
           const diffLines = generateDiff(existingContent, fileContent);
           log.fileDiff(file.fileName, status, diffLines);

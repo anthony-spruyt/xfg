@@ -191,31 +191,27 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
     repoInfo: RepoInfo,
     params: RulesetCreateParams,
     options?: GhApiOptions
-  ): Promise<GitHubRuleset> {
+  ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
     const payload = configToGitHub(params.name, params.ruleset);
-    const result = await this.api.call("POST", endpoint, { payload, options });
-
-    return parseApiJson<GitHubRuleset>(result, "ruleset response");
+    await this.api.call("POST", endpoint, { payload, options });
   }
 
   async update(
     repoInfo: RepoInfo,
     params: RulesetUpdateParams,
     options?: GhApiOptions
-  ): Promise<GitHubRuleset> {
+  ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets/${params.rulesetId}`;
     const payload = configToGitHub(params.name, params.ruleset);
-    const result = await this.api.call("PUT", endpoint, {
+    await this.api.call("PUT", endpoint, {
       payload,
       options,
     });
-
-    return parseApiJson<GitHubRuleset>(result, "ruleset response");
   }
 
   async delete(
