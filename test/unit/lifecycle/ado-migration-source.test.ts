@@ -24,7 +24,9 @@ describe("AdoMigrationSource", () => {
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.includes("git clone --mirror"));
+      assert.equal(calls[0].executable, "git");
+      assert.ok(calls[0].args.includes("clone"));
+      assert.ok(calls[0].args.includes("--mirror"));
     });
 
     test("clones to specified directory", async () => {
@@ -35,7 +37,7 @@ describe("AdoMigrationSource", () => {
       const source = new AdoMigrationSource(executor, 0, "/test");
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
-      assert.ok(calls[0].command.includes("/tmp/migration"));
+      assert.ok(calls[0].args.includes("/tmp/migration"));
     });
 
     test("uses repo gitUrl", async () => {
@@ -46,7 +48,7 @@ describe("AdoMigrationSource", () => {
       const source = new AdoMigrationSource(executor, 0, "/test");
       await source.cloneForMigration(mockRepoInfo, "/tmp/migration");
 
-      assert.ok(calls[0].command.includes(mockRepoInfo.gitUrl));
+      assert.ok(calls[0].args.includes(mockRepoInfo.gitUrl));
     });
 
     test("throws on clone failure", async () => {

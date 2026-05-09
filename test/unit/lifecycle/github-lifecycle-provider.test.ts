@@ -75,8 +75,9 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.includes("gh api"));
-      assert.ok(calls[0].command.includes("repos/'test-org'/'test-repo'"));
+      assert.equal(calls[0].executable, "gh");
+      assert.ok(calls[0].args.includes("api"));
+      assert.ok(calls[0].args.includes("repos/test-org/test-repo"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -147,7 +148,7 @@ describe("GitHubLifecycleProvider", () => {
       const provider = new GitHubLifecycleProvider({ executor, cwd: "/test" });
       await provider.exists({ repo: mockRepoInfo });
 
-      assert.ok(!calls[0].command.includes("--hostname"));
+      assert.ok(!calls[0].args.includes("--hostname"));
     });
 
     test("handles GHE hostname", async () => {
@@ -167,8 +168,8 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists({ repo: gheRepoInfo });
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.includes("--hostname"));
-      assert.ok(calls[0].command.includes("'github.mycompany.com'"));
+      assert.ok(calls[0].args.includes("--hostname"));
+      assert.ok(calls[0].args.includes("github.mycompany.com"));
     });
   });
 
@@ -188,13 +189,14 @@ describe("GitHubLifecycleProvider", () => {
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
       assert.equal(calls.length, 3);
-      assert.ok(calls[0].command.includes("gh repo create"));
-      assert.ok(calls[0].command.includes("'test-org/test-repo'"));
-      assert.ok(calls[0].command.includes("--add-readme"));
-      assert.ok(calls[1].command.includes("contents/README.md"));
-      assert.ok(calls[1].command.includes("--jq"));
-      assert.ok(calls[2].command.includes("contents/README.md"));
-      assert.ok(calls[2].command.includes("--method DELETE"));
+      assert.equal(calls[0].executable, "gh");
+      assert.ok(calls[0].args.includes("create"));
+      assert.ok(calls[0].args.includes("test-org/test-repo"));
+      assert.ok(calls[0].args.includes("--add-readme"));
+      assert.ok(calls[1].args.some((a) => a.includes("contents/README.md")));
+      assert.ok(calls[1].args.includes("--jq"));
+      assert.ok(calls[2].args.some((a) => a.includes("contents/README.md")));
+      assert.ok(calls[2].args.includes("DELETE"));
     });
 
     test("applies visibility setting - private", async () => {
@@ -212,7 +214,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { visibility: "private" },
       });
 
-      assert.ok(calls[0].command.includes("--private"));
+      assert.ok(calls[0].args.includes("--private"));
     });
 
     test("applies visibility setting - internal", async () => {
@@ -230,7 +232,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { visibility: "internal" },
       });
 
-      assert.ok(calls[0].command.includes("--internal"));
+      assert.ok(calls[0].args.includes("--internal"));
     });
 
     test("defaults to private visibility", async () => {
@@ -245,7 +247,7 @@ describe("GitHubLifecycleProvider", () => {
       });
       await provider.create({ repo: mockRepoInfo });
 
-      assert.ok(calls[0].command.includes("--private"));
+      assert.ok(calls[0].args.includes("--private"));
     });
 
     test("applies visibility setting - public", async () => {
@@ -263,7 +265,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { visibility: "public" },
       });
 
-      assert.ok(calls[0].command.includes("--public"));
+      assert.ok(calls[0].args.includes("--public"));
     });
 
     test("applies description setting", async () => {
@@ -281,8 +283,8 @@ describe("GitHubLifecycleProvider", () => {
         settings: { description: "Test repo" },
       });
 
-      assert.ok(calls[0].command.includes("--description"));
-      assert.ok(calls[0].command.includes("Test repo"));
+      assert.ok(calls[0].args.includes("--description"));
+      assert.ok(calls[0].args.includes("Test repo"));
     });
 
     test("adds --disable-issues when hasIssues is false", async () => {
@@ -300,7 +302,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { hasIssues: false },
       });
 
-      assert.ok(calls[0].command.includes("--disable-issues"));
+      assert.ok(calls[0].args.includes("--disable-issues"));
     });
 
     test("adds --disable-wiki when hasWiki is false", async () => {
@@ -318,7 +320,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { hasWiki: false },
       });
 
-      assert.ok(calls[0].command.includes("--disable-wiki"));
+      assert.ok(calls[0].args.includes("--disable-wiki"));
     });
 
     test("does not add --disable-issues when hasIssues is true", async () => {
@@ -336,7 +338,7 @@ describe("GitHubLifecycleProvider", () => {
         settings: { hasIssues: true },
       });
 
-      assert.ok(!calls[0].command.includes("--disable-issues"));
+      assert.ok(!calls[0].args.includes("--disable-issues"));
     });
 
     test("initializes default branch with --add-readme then deletes README", async () => {
@@ -357,17 +359,17 @@ describe("GitHubLifecycleProvider", () => {
       // calls[2] = gh api .../contents/README.md --method DELETE
       assert.equal(calls.length, 3);
       assert.ok(
-        calls[0].command.includes("--add-readme"),
+        calls[0].args.includes("--add-readme"),
         "Should include --add-readme flag"
       );
       assert.ok(
-        calls[1].command.includes("contents/README.md") &&
-          calls[1].command.includes("--jq"),
+        calls[1].args.some((a) => a.includes("contents/README.md")) &&
+          calls[1].args.includes("--jq"),
         "Should GET README.md sha via Contents API"
       );
       assert.ok(
-        calls[2].command.includes("contents/README.md") &&
-          calls[2].command.includes("--method DELETE"),
+        calls[2].args.some((a) => a.includes("contents/README.md")) &&
+          calls[2].args.includes("DELETE"),
         "Should DELETE README.md via Contents API"
       );
     });
@@ -425,21 +427,32 @@ describe("GitHubLifecycleProvider", () => {
         // Note: This mock executor follows the same ICommandExecutor interface
         // used throughout the test suite. No shell commands are executed.
         let defaultBranchCallCount = 0;
-        const calls: Array<{ command: string; cwd: string }> = [];
-        const executor = {
-          async exec(command: string, cwd: string): Promise<string> {
-            calls.push({ command, cwd });
-            if (command.includes("--jq '.default_branch'")) {
-              defaultBranchCallCount++;
-              return defaultBranchCallCount === 1 ? "master" : "main";
-            }
-            if (command.includes("gh repo create")) return "";
-            if (command.includes("branches/'master'/rename")) return "";
-            if (command.includes("contents/README.md --jq")) return "abc123def";
-            if (command.includes("--method DELETE")) return "";
-            return "";
-          },
+        const calls: Array<{
+          executable: string;
+          args: string[];
+          cwd: string;
+        }> = [];
+        const execFn = async (
+          executable: string,
+          args: string[],
+          cwd: string
+        ): Promise<string> => {
+          calls.push({ executable, args, cwd });
+          if (args.includes("--jq") && args.includes(".default_branch")) {
+            defaultBranchCallCount++;
+            return defaultBranchCallCount === 1 ? "master" : "main";
+          }
+          if (executable === "gh" && args.includes("create")) return "";
+          if (args.some((a) => a.includes("branches/master/rename"))) return "";
+          if (
+            args.some((a) => a.includes("contents/README.md")) &&
+            args.includes("--jq")
+          )
+            return "abc123def";
+          if (args.includes("DELETE")) return "";
+          return "";
         };
+        const executor: ICommandExecutor = { exec: execFn };
 
         const provider = new GitHubLifecycleProvider({
           executor,
@@ -453,21 +466,29 @@ describe("GitHubLifecycleProvider", () => {
 
         // Should have: create, get default_branch, rename, poll default_branch, get README sha, delete README
         assert.ok(calls.length >= 5);
-        assert.ok(calls[1].command.includes("--jq '.default_branch'"));
-        assert.ok(calls[2].command.includes("branches/'master'/rename"));
-        assert.ok(calls[2].command.includes("--method POST"));
-        assert.ok(calls[2].command.includes("'main'"));
+        assert.ok(
+          calls[1].args.includes("--jq") &&
+            calls[1].args.includes(".default_branch")
+        );
+        assert.ok(
+          calls[2].args.some((a) => a.includes("branches/master/rename"))
+        );
+        assert.ok(calls[2].args.includes("POST"));
+        assert.ok(calls[2].args.includes("new_name=main"));
         // Verify polling happened (call after rename should also query default_branch)
-        assert.ok(calls[3].command.includes("--jq '.default_branch'"));
+        assert.ok(
+          calls[3].args.includes("--jq") &&
+            calls[3].args.includes(".default_branch")
+        );
       });
 
       test("skips rename when GitHub created branch matches desired name", async () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([
             ["gh repo create", ""],
-            ["--jq '.default_branch'", "main"],
+            [".default_branch", "main"],
             ["contents/README.md --jq", "abc123def"],
-            ["--method DELETE", ""],
+            ["DELETE", ""],
           ]),
           defaultResponse: "",
         });
@@ -484,7 +505,9 @@ describe("GitHubLifecycleProvider", () => {
 
         // Should have: create, get default_branch, get README sha, delete README (no rename)
         assert.equal(calls.length, 4);
-        assert.ok(!calls.some((c) => c.command.includes("branches/")));
+        assert.ok(
+          !calls.some((c) => c.args.some((a) => a.includes("branches/")))
+        );
       });
 
       test("no extra API calls when defaultBranch is not set", async () => {
@@ -502,30 +525,41 @@ describe("GitHubLifecycleProvider", () => {
 
         // Should have: create, get README sha, delete README (no default_branch check)
         assert.equal(calls.length, 3);
-        assert.ok(!calls.some((c) => c.command.includes("default_branch")));
+        assert.ok(!calls.some((c) => c.args.includes(".default_branch")));
       });
 
       test("waitForDefaultBranch handles API errors during polling", async () => {
         // Poll throws errors intermittently, then succeeds
         let defaultBranchCallCount = 0;
-        const calls: Array<{ command: string; cwd: string }> = [];
-        const executor = {
-          async exec(command: string, cwd: string): Promise<string> {
-            calls.push({ command, cwd });
-            if (command.includes("--jq '.default_branch'")) {
-              defaultBranchCallCount++;
-              if (defaultBranchCallCount === 1) return "master";
-              if (defaultBranchCallCount === 2)
-                throw new Error("HTTP 500: Internal Server Error");
-              return "main"; // Third call succeeds
-            }
-            if (command.includes("gh repo create")) return "";
-            if (command.includes("branches/'master'/rename")) return "";
-            if (command.includes("contents/README.md --jq")) return "abc123def";
-            if (command.includes("--method DELETE")) return "";
-            return "";
-          },
+        const calls: Array<{
+          executable: string;
+          args: string[];
+          cwd: string;
+        }> = [];
+        const execFn2 = async (
+          executable: string,
+          args: string[],
+          cwd: string
+        ): Promise<string> => {
+          calls.push({ executable, args, cwd });
+          if (args.includes("--jq") && args.includes(".default_branch")) {
+            defaultBranchCallCount++;
+            if (defaultBranchCallCount === 1) return "master";
+            if (defaultBranchCallCount === 2)
+              throw new Error("HTTP 500: Internal Server Error");
+            return "main"; // Third call succeeds
+          }
+          if (executable === "gh" && args.includes("create")) return "";
+          if (args.some((a) => a.includes("branches/master/rename"))) return "";
+          if (
+            args.some((a) => a.includes("contents/README.md")) &&
+            args.includes("--jq")
+          )
+            return "abc123def";
+          if (args.includes("DELETE")) return "";
+          return "";
         };
+        const executor: ICommandExecutor = { exec: execFn2 };
 
         const provider = new GitHubLifecycleProvider({
           executor,
@@ -538,8 +572,8 @@ describe("GitHubLifecycleProvider", () => {
         });
 
         // Should have recovered from the error and continued polling
-        const pollCalls = calls.filter((c) =>
-          c.command.includes("--jq '.default_branch'")
+        const pollCalls = calls.filter(
+          (c) => c.args.includes("--jq") && c.args.includes(".default_branch")
         );
         assert.ok(
           pollCalls.length >= 3,
@@ -551,9 +585,9 @@ describe("GitHubLifecycleProvider", () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map<string, string | Error>([
             ["gh repo create", ""],
-            ["--jq '.default_branch'", "master"],
+            [".default_branch", "master"],
             [
-              "branches/'master'/rename",
+              "new_name=main",
               new Error("Rename failed: 422 Unprocessable Entity"),
             ],
           ]),
@@ -577,7 +611,11 @@ describe("GitHubLifecycleProvider", () => {
 
         // Should have: create, get default_branch, rename (failed) - no README calls
         assert.equal(calls.length, 3);
-        assert.ok(!calls.some((c) => c.command.includes("contents/README.md")));
+        assert.ok(
+          !calls.some((c) =>
+            c.args.some((a) => a.includes("contents/README.md"))
+          )
+        );
       });
     });
   });
@@ -595,7 +633,7 @@ describe("GitHubLifecycleProvider", () => {
       const { mock: executor, calls } = createMockExecutor({
         // Use 'users/' pattern to match the owner type check API call
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -612,13 +650,15 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Find the fork command (not the API check)
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
-      assert.ok(forkCall.command.includes("'opensource/cool-tool'"));
-      assert.ok(forkCall.command.includes("--org"));
-      assert.ok(forkCall.command.includes("'test-org'"));
-      assert.ok(forkCall.command.includes("--fork-name"));
-      assert.ok(forkCall.command.includes("'test-repo'"));
+      assert.ok(forkCall.args.includes("opensource/cool-tool"));
+      assert.ok(forkCall.args.includes("--org"));
+      assert.ok(forkCall.args.includes("test-org"));
+      assert.ok(forkCall.args.includes("--fork-name"));
+      assert.ok(forkCall.args.includes("test-repo"));
     });
 
     test("forks repo to personal account without --org flag", async () => {
@@ -631,9 +671,9 @@ describe("GitHubLifecycleProvider", () => {
       };
 
       const { mock: executor, calls } = createMockExecutor({
-        // Use 'users/' pattern to match the owner type check API call
+        // Use 'users/myusername' pattern to match the owner type check API call
         responses: new Map([
-          ["users/", '{"type": "User"}'],
+          ["users/myusername", '{"type": "User"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -650,18 +690,20 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Find the fork command (not the API check)
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
-      assert.ok(forkCall.command.includes("'opensource/cool-tool'"));
-      assert.ok(!forkCall.command.includes("--org")); // Should NOT have --org
-      assert.ok(forkCall.command.includes("--fork-name"));
-      assert.ok(forkCall.command.includes("'my-fork'"));
+      assert.ok(forkCall.args.includes("opensource/cool-tool"));
+      assert.ok(!forkCall.args.includes("--org")); // Should NOT have --org
+      assert.ok(forkCall.args.includes("--fork-name"));
+      assert.ok(forkCall.args.includes("my-fork"));
     });
 
     test("includes --clone=false flag", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -677,15 +719,17 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
-      assert.ok(forkCall.command.includes("--clone=false"));
+      assert.ok(forkCall.args.includes("--clone=false"));
     });
 
     test("defaults to org behavior when API check fails", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/", new Error("API error")],
+          ["users/test-org", new Error("API error")],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -702,15 +746,17 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should default to --org when we can't determine owner type
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
-      assert.ok(forkCall.command.includes("--org"));
+      assert.ok(forkCall.args.includes("--org"));
     });
 
     test("applies visibility settings after fork", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
           ["gh repo edit", ""],
         ]),
@@ -731,19 +777,21 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should call gh repo edit after fork
-      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      const editCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("edit")
+      );
       assert.ok(editCall);
-      assert.ok(editCall.command.includes("--visibility"));
-      assert.ok(editCall.command.includes("private"));
+      assert.ok(editCall.args.includes("--visibility"));
+      assert.ok(editCall.args.includes("private"));
       assert.ok(
-        editCall.command.includes("--accept-visibility-change-consequences")
+        editCall.args.includes("--accept-visibility-change-consequences")
       );
     });
 
     test("applies description settings after fork", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
           ["gh repo edit", ""],
         ]),
@@ -764,16 +812,18 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should call gh repo edit after fork
-      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      const editCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("edit")
+      );
       assert.ok(editCall);
-      assert.ok(editCall.command.includes("--description"));
-      assert.ok(editCall.command.includes("My custom fork"));
+      assert.ok(editCall.args.includes("--description"));
+      assert.ok(editCall.args.includes("My custom fork"));
     });
 
     test("does not call gh repo edit when no settings provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -790,7 +840,9 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should NOT call gh repo edit
-      const editCall = calls.find((c) => c.command.includes("gh repo edit"));
+      const editCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("edit")
+      );
       assert.equal(editCall, undefined);
     });
 
@@ -849,7 +901,7 @@ describe("GitHubLifecycleProvider", () => {
     test("throws on fork failure", async () => {
       const { mock: executor } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", new Error("Cannot fork private repo")],
         ]),
       });
@@ -924,7 +976,7 @@ describe("GitHubLifecycleProvider", () => {
     test("fork with defaultBranch set completes without rename", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -944,8 +996,10 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should not call any branch rename API
-      assert.ok(!calls.some((c) => c.command.includes("branches/")));
-      assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+      assert.ok(
+        !calls.some((c) => c.args.some((a) => a.includes("branches/")))
+      );
+      assert.ok(!calls.some((c) => c.args.includes("-m")));
     });
   });
 
@@ -961,14 +1015,14 @@ describe("GitHubLifecycleProvider", () => {
     test("polls exists() until fork is ready", async () => {
       let apiCallCount = 0;
       const executor: ICommandExecutor = {
-        async exec(command: string) {
-          if (command.includes("users/")) {
+        async exec(executable: string, args: string[]) {
+          if (args.some((a) => a.startsWith("users/"))) {
             return '{"type": "Organization"}';
           }
-          if (command.includes("gh repo fork")) {
+          if (executable === "gh" && args.includes("fork")) {
             return "";
           }
-          if (command.includes("repos/")) {
+          if (args.some((a) => a.startsWith("repos/"))) {
             apiCallCount++;
             if (apiCallCount <= 2) {
               const err = new Error("Not Found");
@@ -1003,14 +1057,14 @@ describe("GitHubLifecycleProvider", () => {
       (notFoundError as Error & { stderr?: string }).stderr = "";
 
       const executor: ICommandExecutor = {
-        async exec(command: string) {
-          if (command.includes("users/")) {
+        async exec(executable: string, args: string[]) {
+          if (args.some((a) => a.startsWith("users/"))) {
             return '{"type": "Organization"}';
           }
-          if (command.includes("gh repo fork")) {
+          if (executable === "gh" && args.includes("fork")) {
             return "";
           }
-          if (command.includes("repos/")) {
+          if (args.some((a) => a.startsWith("repos/"))) {
             throw notFoundError;
           }
           return "";
@@ -1063,19 +1117,21 @@ describe("GitHubLifecycleProvider", () => {
       // calls[5] = git remote add origin (authenticated URL)
       // calls[6] = git push --mirror origin
       assert.equal(calls.length, 7);
-      assert.ok(calls[0].command.includes("remote remove origin"));
-      assert.ok(
-        calls[1].command.includes("for-each-ref --format='%(refname)'")
-      );
-      assert.ok(calls[2].command.includes("update-ref -d"));
-      assert.ok(calls[2].command.includes("refs/pull/1/head"));
-      assert.ok(calls[3].command.includes("update-ref -d"));
-      assert.ok(calls[3].command.includes("refs/merge-requests/1/head"));
-      assert.ok(calls[4].command.includes("gh repo create"));
-      assert.ok(!calls[4].command.includes("--source"));
-      assert.ok(!calls[4].command.includes("--push"));
-      assert.ok(calls[5].command.includes("remote add origin"));
-      assert.ok(calls[6].command.includes("push --mirror origin"));
+      assert.ok(calls[0].args.includes("remove"));
+      assert.ok(calls[0].args.includes("origin"));
+      assert.ok(calls[1].args.includes("for-each-ref"));
+      assert.ok(calls[1].args.includes("--format=%(refname)"));
+      assert.ok(calls[2].args.includes("update-ref"));
+      assert.ok(calls[2].args.includes("refs/pull/1/head"));
+      assert.ok(calls[3].args.includes("update-ref"));
+      assert.ok(calls[3].args.includes("refs/merge-requests/1/head"));
+      assert.equal(calls[4].executable, "gh");
+      assert.ok(calls[4].args.includes("create"));
+      assert.ok(!calls[4].args.includes("--source"));
+      assert.ok(!calls[4].args.includes("--push"));
+      assert.ok(calls[5].args.includes("add"));
+      assert.ok(calls[5].args.includes("origin"));
+      assert.ok(calls[6].args.includes("--mirror"));
     });
 
     test("rejects non-GitHub repo", async () => {
@@ -1131,11 +1187,11 @@ describe("GitHubLifecycleProvider", () => {
 
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
       // calls[2] = update-ref -d refs/pull/1/head, calls[3] = gh repo create
-      const createCall = calls.find((c) =>
-        c.command.includes("gh repo create")
+      const createCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("create")
       );
       assert.ok(createCall);
-      assert.ok(createCall.command.includes("--private"));
+      assert.ok(createCall.args.includes("--private"));
     });
 
     test("continues when remote remove origin fails", async () => {
@@ -1161,8 +1217,8 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should still reach gh repo create despite remote remove failure
-      const createCall = calls.find((c) =>
-        c.command.includes("gh repo create")
+      const createCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("create")
       );
       assert.ok(
         createCall,
@@ -1189,8 +1245,8 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should still reach gh repo create despite ref cleanup failure
-      const createCall = calls.find((c) =>
-        c.command.includes("gh repo create")
+      const createCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("create")
       );
       assert.ok(
         createCall,
@@ -1221,18 +1277,21 @@ describe("GitHubLifecycleProvider", () => {
           },
         });
 
-        const branchRenameCall = calls.find((c) =>
-          c.command.includes("branch -m")
+        const branchRenameCall = calls.find(
+          (c) => c.executable === "git" && c.args.includes("-m")
         );
         assert.ok(branchRenameCall, "should call git branch -m");
-        assert.ok(branchRenameCall.command.includes("'master'"));
-        assert.ok(branchRenameCall.command.includes("'main'"));
+        assert.ok(branchRenameCall.args.includes("master"));
+        assert.ok(branchRenameCall.args.includes("main"));
 
-        const symrefSetCall = calls.find((c) =>
-          c.command.includes("symbolic-ref HEAD refs/heads/")
+        const symrefSetCall = calls.find(
+          (c) =>
+            c.executable === "git" &&
+            c.args.includes("symbolic-ref") &&
+            c.args.some((a) => a.startsWith("refs/heads/"))
         );
         assert.ok(symrefSetCall, "should update symbolic-ref HEAD");
-        assert.ok(symrefSetCall.command.includes("refs/heads/'main'"));
+        assert.ok(symrefSetCall.args.includes("refs/heads/main"));
       });
 
       test("skips rename when source HEAD matches desired branch", async () => {
@@ -1257,7 +1316,7 @@ describe("GitHubLifecycleProvider", () => {
           },
         });
 
-        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+        assert.ok(!calls.some((c) => c.args.includes("-m")));
       });
 
       test("no git rename ops when defaultBranch is not set", async () => {
@@ -1281,8 +1340,12 @@ describe("GitHubLifecycleProvider", () => {
           sourceDir: "/tmp/source-mirror",
         });
 
-        assert.ok(!calls.some((c) => c.command.includes("symbolic-ref HEAD")));
-        assert.ok(!calls.some((c) => c.command.includes("branch -m")));
+        assert.ok(
+          !calls.some(
+            (c) => c.args.includes("symbolic-ref") && c.args.includes("HEAD")
+          )
+        );
+        assert.ok(!calls.some((c) => c.args.includes("-m")));
       });
 
       test("throws descriptive error when symbolic-ref output is not refs/heads/", async () => {
@@ -1325,7 +1388,7 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists({ repo: mockRepoInfo, token: "ghs_test_token" });
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.startsWith("gh api"));
+      assert.ok(calls[0].executable === "gh" && calls[0].args.includes("api"));
       assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
@@ -1338,7 +1401,7 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].command.startsWith("gh api"));
+      assert.ok(calls[0].executable === "gh" && calls[0].args.includes("api"));
     });
 
     test("create() passes GH_TOKEN via env when token provided", async () => {
@@ -1356,7 +1419,9 @@ describe("GitHubLifecycleProvider", () => {
 
       // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
       assert.equal(calls.length, 3);
-      assert.ok(calls[0].command.startsWith("gh repo create"));
+      assert.ok(
+        calls[0].executable === "gh" && calls[0].args.includes("create")
+      );
       assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
       // Token should also be used for the deleteReadme API calls
       assert.equal(calls[1].options?.env?.GH_TOKEN, "ghs_test_token");
@@ -1382,10 +1447,16 @@ describe("GitHubLifecycleProvider", () => {
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
       // calls[2] = gh repo create, calls[3] = git remote add origin, calls[4] = git push --mirror
       assert.equal(calls.length, 5);
-      assert.ok(calls[2].command.startsWith("gh repo create"));
+      assert.ok(
+        calls[2].executable === "gh" && calls[2].args.includes("create")
+      );
       assert.equal(calls[2].options?.env?.GH_TOKEN, "ghs_test_token");
-      assert.ok(calls[3].command.includes("remote add origin"));
-      assert.ok(calls[3].command.includes("x-access-token:ghs_test_token@"));
+      assert.ok(
+        calls[3].args.includes("add") && calls[3].args.includes("origin")
+      );
+      assert.ok(
+        calls[3].args.some((a) => a.includes("x-access-token:ghs_test_token@"))
+      );
       assert.equal(calls[4].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
@@ -1400,7 +1471,7 @@ describe("GitHubLifecycleProvider", () => {
 
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/", '{"type": "Organization"}'],
+          ["users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -1418,15 +1489,19 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // isOrganization API call should have token via env
-      const apiCall = calls.find((c) => c.command.includes("users/"));
+      const apiCall = calls.find((c) =>
+        c.args.some((a) => a.startsWith("users/"))
+      );
       assert.ok(apiCall);
-      assert.ok(apiCall.command.startsWith("gh api"));
+      assert.ok(apiCall.executable === "gh" && apiCall.args.includes("api"));
       assert.equal(apiCall.options?.env?.GH_TOKEN, "ghs_test_token");
 
       // fork command should have token via env
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
-      assert.ok(forkCall.command.startsWith("gh repo fork"));
+      assert.ok(forkCall.executable === "gh" && forkCall.args.includes("fork"));
       assert.equal(forkCall.options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
@@ -1441,7 +1516,7 @@ describe("GitHubLifecycleProvider", () => {
 
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/", new Error("API rate limit exceeded")],
+          ["users/test-org", new Error("API rate limit exceeded")],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -1458,10 +1533,12 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       // Should still fork with --org flag (defaults to org when check fails)
-      const forkCall = calls.find((c) => c.command.includes("gh repo fork"));
+      const forkCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("fork")
+      );
       assert.ok(forkCall);
       assert.ok(
-        forkCall.command.includes("--org"),
+        forkCall.args.includes("--org"),
         "Should use --org flag when isOrganization check fails"
       );
     });
