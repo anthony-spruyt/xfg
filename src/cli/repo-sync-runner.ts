@@ -72,7 +72,7 @@ async function runLifecyclePhase(
   const repoNumber = repo.index + 1;
 
   try {
-    const { outputLines, lifecycleResult, createSettings } =
+    const { outputLines, lifecycleResult, reportSettings } =
       await runLifecycleCheck(repo.repoConfig, repo.repoInfo, {
         dryRun: ctx.options.dryRun ?? false,
         resolvedWorkDir: repo.workDir,
@@ -91,12 +91,7 @@ async function runLifecyclePhase(
       action: lifecycleResult.action,
       upstream: repo.repoConfig.upstream,
       source: repo.repoConfig.source,
-      settings: createSettings
-        ? {
-            visibility: createSettings.visibility,
-            description: createSettings.description,
-          }
-        : undefined,
+      settings: reportSettings,
     });
 
     if (ctx.options.dryRun && lifecycleResult.action !== "existed") {
@@ -174,20 +169,24 @@ export async function runSingleRepo(
   const { config, options, logger } = ctx;
   const repoNumber = index + 1;
 
-  if (options.merge || options.mergeStrategy || options.deleteBranch) {
-    repoConfig.prOptions = {
-      ...repoConfig.prOptions,
-      merge: options.merge ?? repoConfig.prOptions?.merge,
-      mergeStrategy:
-        options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
-      deleteBranch: options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
-    };
-  }
+  const effectivePrOptions =
+    options.merge || options.mergeStrategy || options.deleteBranch
+      ? {
+          ...repoConfig.prOptions,
+          merge: options.merge ?? repoConfig.prOptions?.merge,
+          mergeStrategy:
+            options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
+          deleteBranch:
+            options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
+        }
+      : repoConfig.prOptions;
 
-  const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-  if (mergeMode === "direct" && repoConfig.prOptions?.mergeStrategy) {
+  const effectiveRepoConfig = { ...repoConfig, prOptions: effectivePrOptions };
+
+  const mergeMode = effectivePrOptions?.merge ?? "auto";
+  if (mergeMode === "direct" && effectivePrOptions?.mergeStrategy) {
     logger.warn(
-      `mergeStrategy '${repoConfig.prOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
+      `mergeStrategy '${effectivePrOptions.mergeStrategy}' is ignored in direct mode for ${repoConfig.git}`
     );
   }
 
@@ -220,7 +219,7 @@ export async function runSingleRepo(
     : undefined;
 
   const repo: RepoPhaseParams = {
-    repoConfig,
+    repoConfig: effectiveRepoConfig,
     repoInfo,
     repoName,
     index,
@@ -234,7 +233,7 @@ export async function runSingleRepo(
   await runFileSyncPhase(repo, ctx);
 
   await applyRepoSettings({
-    repoConfig,
+    repoConfig: effectiveRepoConfig,
     repoInfo,
     repoName,
     repoNumber,

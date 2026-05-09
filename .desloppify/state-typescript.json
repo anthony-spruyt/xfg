@@ -12,8 +12,8 @@
     "auto_resolved": 1161,
     "deferred": 3,
     "false_positive": 208,
-    "fixed": 367,
-    "open": 175,
+    "fixed": 369,
+    "open": 173,
     "triaged_out": 0,
     "wontfix": 4,
     "by_tier": {
@@ -21,8 +21,8 @@
         "auto_resolved": 8,
         "deferred": 2,
         "false_positive": 18,
-        "fixed": 159,
-        "open": 6,
+        "fixed": 161,
+        "open": 4,
         "triaged_out": 0,
         "wontfix": 1
       },
@@ -164,7 +164,10 @@
     "mid_level_elegance": {
       "score": 83.0,
       "source": "holistic",
-      "assessed_at": "2026-05-09T08:38:31+00:00"
+      "assessed_at": "2026-05-09T08:38:31+00:00",
+      "needs_review_refresh": true,
+      "refresh_reason": "review_issue_fixed",
+      "stale_since": "2026-05-09T09:01:33+00:00"
     },
     "low_level_elegance": {
       "score": 86.0,
@@ -3344,13 +3347,13 @@
       "strict": 83.0,
       "verified_strict_score": 83.0,
       "checks": 10,
-      "failing": 3,
+      "failing": 1,
       "tier": 4,
       "detectors": {
         "subjective_assessment": {
           "potential": 10,
           "pass_rate": 0.83,
-          "failing": 3,
+          "failing": 1,
           "weighted_failures": 1.7,
           "assessment_score": 83.0,
           "placeholder": false,
@@ -80455,11 +80458,11 @@
         "reasoning": "",
         "summary_hash": "2d27cdb9"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Narrowed LifecycleCheckResult to return LifecycleReportSettings {visibility,description} instead of full CreateRepoSettings, eliminating duplicate extraction at both call sites",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:01:33+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80467,7 +80470,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually narrowed the return type and updated both callers, verified build+tests pass, not gaming the score",
+        "attested_at": "2026-05-09T09:01:33+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::repo_config_mutation_at_orchestration_boundary": {
       "id": "review::.::holistic::mid_level_elegance::repo_config_mutation_at_orchestration_boundary",
@@ -80491,11 +80500,11 @@
         "reasoning": "",
         "summary_hash": "51b499f3"
       },
-      "status": "open",
-      "note": null,
+      "status": "fixed",
+      "note": "Replaced in-place repoConfig.prOptions mutation with effectiveRepoConfig derived object, passed downstream instead of mutated original",
       "first_seen": "2026-05-09T08:29:06+00:00",
       "last_seen": "2026-05-09T08:38:31+00:00",
-      "resolved_at": null,
+      "resolved_at": "2026-05-09T09:01:26+00:00",
       "reopen_count": 0,
       "work_item_kind": "review_defect",
       "issue_kind": "review_defect",
@@ -80503,7 +80512,13 @@
       "lang": "typescript",
       "suppressed": false,
       "suppressed_at": null,
-      "suppression_pattern": null
+      "suppression_pattern": null,
+      "resolution_attestation": {
+        "kind": "manual",
+        "text": "I have actually replaced the mutation with immutable derivation and verified build+tests pass, not gaming the score",
+        "attested_at": "2026-05-09T09:01:26+00:00",
+        "scan_verified": false
+      }
     },
     "review::.::holistic::mid_level_elegance::duplicate_lifecycle_action_formatting_logic": {
       "id": "review::.::holistic::mid_level_elegance::duplicate_lifecycle_action_formatting_logic",
