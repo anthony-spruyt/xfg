@@ -1,16 +1,22 @@
 {
   "version": 8,
   "created": "2026-03-06T08:53:09+00:00",
-  "updated": "2026-05-09T03:32:09+00:00",
+  "updated": "2026-05-09T05:19:24+00:00",
   "queue_order": [
-    "strategy::cross-module-reverse-deps-already-reverted",
-    "strategy::mid-elegance-highest-weighted-gap",
-    "strategy::subjective-review-score-volatility",
-    "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types",
-    "review::.::holistic::convention_outlier::rulesets_index_over_exports",
-    "review::.::holistic::logic_clarity::redundant_changed_param_file_writer",
-    "review::.::holistic::type_safety::adhoc_retryafter_augmentation",
-    "review::.::holistic::type_safety::parallel_validation_arrays_unlinked"
+    "workflow::create-plan",
+    "review::.::holistic::abstraction_fitness::repo_iteration_context_mixed_concerns",
+    "review::.::holistic::api_surface_coherence::code_scanning_inline_params_type",
+    "review::.::holistic::convention_outlier::github_pr_strategy_module_level_helpers",
+    "review::.::holistic::cross_module_architecture::dead_re_export_formatDiffLine",
+    "review::.::holistic::cross_module_architecture::self_referencing_import_path",
+    "review::.::holistic::dependency_health::pretry_version_mismatch",
+    "review::.::holistic::error_consistency::no_error_cause_chaining",
+    "review::.::holistic::logic_clarity::inconsistent_switch_exhaustiveness",
+    "review::.::holistic::logic_clarity::pr_creator_catch_all_default",
+    "review::.::holistic::low_level_elegance::lifecycle_create_inline_orchestration",
+    "review::.::holistic::low_level_elegance::normalizer_main_loop_phase_density",
+    "review::.::holistic::mid_level_elegance::pr_merge_handler_wide_boundary",
+    "review::.::holistic::type_safety::code_scanning_validation_unlinked_types"
   ],
   "deferred": [],
   "skipped": {
@@ -1614,16 +1620,6 @@
       "review_after": null,
       "skipped_at_scan": 226
     },
-    "review::.::holistic::convention_outlier::mixed_test_file_organization": {
-      "issue_id": "review::.::holistic::convention_outlier::mixed_test_file_organization",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding against the code and I am not gaming the score \u2014 fix adds complexity or churn for negligible quality gain",
-      "created_at": "2026-05-09T03:07:44+00:00",
-      "review_after": null,
-      "skipped_at_scan": 226
-    },
     "review::.::holistic::error_consistency::inline_error_patterns_fixup_strategy": {
       "issue_id": "review::.::holistic::error_consistency::inline_error_patterns_fixup_strategy",
       "kind": "false_positive",
@@ -1661,16 +1657,6 @@
       "note": null,
       "attestation": "I have reviewed this finding against the code and I am not gaming the score \u2014 fix adds complexity or churn for negligible quality gain",
       "created_at": "2026-05-09T03:07:48+00:00",
-      "review_after": null,
-      "skipped_at_scan": 226
-    },
-    "review::.::holistic::type_safety::normalizer_merge_boundary_casts": {
-      "issue_id": "review::.::holistic::type_safety::normalizer_merge_boundary_casts",
-      "kind": "false_positive",
-      "reason": null,
-      "note": null,
-      "attestation": "I have reviewed this finding against the code and I am not gaming the score \u2014 boundary casts at merge points are necessary for type narrowing",
-      "created_at": "2026-05-09T03:08:03+00:00",
       "review_after": null,
       "skipped_at_scan": 226
     },
@@ -4426,14 +4412,14 @@
     "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types": {
       "issue_id": "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types",
       "created_at": "2026-05-09T03:05:04+00:00",
-      "cluster": "rulesets-api-cleanup",
-      "updated_at": "2026-05-09T03:05:04+00:00"
+      "cluster": null,
+      "updated_at": "2026-05-09T03:40:01+00:00"
     },
     "review::.::holistic::convention_outlier::rulesets_index_over_exports": {
       "issue_id": "review::.::holistic::convention_outlier::rulesets_index_over_exports",
       "created_at": "2026-05-09T03:05:04+00:00",
-      "cluster": "rulesets-api-cleanup",
-      "updated_at": "2026-05-09T03:05:04+00:00"
+      "cluster": null,
+      "updated_at": "2026-05-09T03:40:02+00:00"
     },
     "review::.::holistic::contract_coherence::get_token_for_repo_side_effects": {
       "issue_id": "review::.::holistic::contract_coherence::get_token_for_repo_side_effects",
@@ -4444,20 +4430,20 @@
     "review::.::holistic::logic_clarity::redundant_changed_param_file_writer": {
       "issue_id": "review::.::holistic::logic_clarity::redundant_changed_param_file_writer",
       "created_at": "2026-05-09T03:05:06+00:00",
-      "cluster": "logic-clarity-file-writer",
-      "updated_at": "2026-05-09T03:05:06+00:00"
+      "cluster": null,
+      "updated_at": "2026-05-09T03:40:03+00:00"
     },
     "review::.::holistic::type_safety::adhoc_retryafter_augmentation": {
       "issue_id": "review::.::holistic::type_safety::adhoc_retryafter_augmentation",
       "created_at": "2026-05-09T03:05:07+00:00",
-      "cluster": "type-safety-shared-contracts",
-      "updated_at": "2026-05-09T03:05:07+00:00"
+      "cluster": null,
+      "updated_at": "2026-05-09T03:40:04+00:00"
     },
     "review::.::holistic::type_safety::parallel_validation_arrays_unlinked": {
       "issue_id": "review::.::holistic::type_safety::parallel_validation_arrays_unlinked",
       "created_at": "2026-05-09T03:05:07+00:00",
-      "cluster": "type-safety-shared-contracts",
-      "updated_at": "2026-05-09T03:05:07+00:00"
+      "cluster": null,
+      "updated_at": "2026-05-09T03:40:05+00:00"
     }
   },
   "clusters": {
@@ -7197,7 +7183,7 @@
       "action": null,
       "action_type": "manual_fix",
       "execution_policy": "planned_only",
-      "execution_status": "active",
+      "execution_status": "done",
       "user_modified": true,
       "action_steps": [
         {
@@ -7206,7 +7192,8 @@
           "issue_refs": [
             "rulesets_index_over_exports"
           ],
-          "detail": "Remove re-exports of computePropertyDiffs, deepEqual, isArrayOfObjects from src/settings/rulesets/index.ts. These are only used within the rulesets/ module internally. Keep the PropertyDiff type export and RulesetPlanEntry, RulesetProcessor, IRulesetProcessor, GitHubRulesetStrategy exports."
+          "detail": "Remove re-exports of computePropertyDiffs, deepEqual, isArrayOfObjects from src/settings/rulesets/index.ts. These are only used within the rulesets/ module internally. Keep the PropertyDiff type export and RulesetPlanEntry, RulesetProcessor, IRulesetProcessor, GitHubRulesetStrategy exports.",
+          "done": true
         },
         {
           "title": "Change IRulesetStrategy.create/update return types from Promise<GitHubRuleset> to Promise<void> in types.ts, processor.ts, and github-ruleset-strategy.ts",
@@ -7214,7 +7201,8 @@
           "issue_refs": [
             "ruleset_strategy_unused_return_types"
           ],
-          "detail": "In src/settings/rulesets/types.ts, change IRulesetStrategy.create return type from Promise<GitHubRuleset> to Promise<void> (line 60) and update return type (line 65). In src/settings/rulesets/github-ruleset-strategy.ts, change create method return type (line 194) and update method return type (line 208) to Promise<void>. The processor.ts already uses await without capturing the return."
+          "detail": "In src/settings/rulesets/types.ts, change IRulesetStrategy.create return type from Promise<GitHubRuleset> to Promise<void> (line 60) and update return type (line 65). In src/settings/rulesets/github-ruleset-strategy.ts, change create method return type (line 194) and update method return type (line 208) to Promise<void>. The processor.ts already uses await without capturing the return.",
+          "done": true
         }
       ]
     },
@@ -7240,7 +7228,8 @@
           "issue_refs": [
             "get_token_for_repo_side_effects"
           ],
-          "detail": "Rename getTokenForRepo to resolveTokenForRepo in src/vcs/github-app-token-manager.ts (line 179 method declaration) and update the ITokenManager interface in src/shared/gh-token-utils.ts (line 7) and the caller at line 28. Run npm run build to verify no type errors."
+          "detail": "Rename getTokenForRepo to resolveTokenForRepo in src/vcs/github-app-token-manager.ts (line 179 method declaration) and update the ITokenManager interface in src/shared/gh-token-utils.ts (line 7) and the caller at line 28. Run npm run build to verify no type errors.",
+          "done": true
         }
       ]
     },
@@ -7257,7 +7246,7 @@
       "action": null,
       "action_type": "manual_fix",
       "execution_policy": "planned_only",
-      "execution_status": "active",
+      "execution_status": "done",
       "user_modified": true,
       "action_steps": [
         {
@@ -7266,7 +7255,8 @@
           "issue_refs": [
             "redundant_changed_param_file_writer"
           ],
-          "detail": "At line 154 inside the if(changed) block, getFileStatus(existingContent !== null, changed) always receives changed=true. Replace with inline expression: existingContent !== null ? 'MODIFIED' : 'NEW' \u2014 eliminates the redundant parameter and the function call indirection in the dry-run path."
+          "detail": "At line 154 inside the if(changed) block, getFileStatus(existingContent !== null, changed) always receives changed=true. Replace with inline expression: existingContent !== null ? 'MODIFIED' : 'NEW' \u2014 eliminates the redundant parameter and the function call indirection in the dry-run path.",
+          "done": true
         }
       ]
     },
@@ -7284,7 +7274,7 @@
       "action": null,
       "action_type": "manual_fix",
       "execution_policy": "planned_only",
-      "execution_status": "active",
+      "execution_status": "done",
       "user_modified": true,
       "action_steps": [
         {
@@ -7293,7 +7283,8 @@
           "issue_refs": [
             "adhoc_retryafter_augmentation"
           ],
-          "detail": "Define 'interface RateLimitInfo { retryAfter?: number }' in src/shared/gh-api-utils.ts (co-located with attachRetryAfter). Replace the ad-hoc cast at line 96 with '(error as RateLimitInfo).retryAfter = ...' and in src/shared/retry-utils.ts line 215 replace '(context.error as { retryAfter?: number }).retryAfter' with '(context.error as RateLimitInfo).retryAfter'. Export the interface for retry-utils to import."
+          "detail": "Define 'interface RateLimitInfo { retryAfter?: number }' in src/shared/gh-api-utils.ts (co-located with attachRetryAfter). Replace the ad-hoc cast at line 96 with '(error as RateLimitInfo).retryAfter = ...' and in src/shared/retry-utils.ts line 215 replace '(context.error as { retryAfter?: number }).retryAfter' with '(context.error as RateLimitInfo).retryAfter'. Export the interface for retry-utils to import.",
+          "done": true
         },
         {
           "title": "Apply validValues<T>() helper from ruleset-validator.ts to repo-settings-validator.ts and file-validator.ts",
@@ -7301,7 +7292,8 @@
           "issue_refs": [
             "parallel_validation_arrays_unlinked"
           ],
-          "detail": "Copy the validValues<T>() helper from src/config/validators/ruleset-validator.ts to a shared location or import it. In src/config/validators/repo-settings-validator.ts, replace the 5 untyped arrays (VALID_VISIBILITY, VALID_SQUASH_MERGE_COMMIT_TITLE, VALID_SQUASH_MERGE_COMMIT_MESSAGE, VALID_MERGE_COMMIT_TITLE, VALID_MERGE_COMMIT_MESSAGE) with validValues<RepoVisibility>(...) etc. In src/config/validators/file-validator.ts, replace VALID_STRATEGIES with validValues<Strategy>(...). This links the validation arrays to their TypeScript union types at compile time."
+          "detail": "Copy the validValues<T>() helper from src/config/validators/ruleset-validator.ts to a shared location or import it. In src/config/validators/repo-settings-validator.ts, replace the 5 untyped arrays (VALID_VISIBILITY, VALID_SQUASH_MERGE_COMMIT_TITLE, VALID_SQUASH_MERGE_COMMIT_MESSAGE, VALID_MERGE_COMMIT_TITLE, VALID_MERGE_COMMIT_MESSAGE) with validValues<RepoVisibility>(...) etc. In src/config/validators/file-validator.ts, replace VALID_STRATEGIES with validValues<Strategy>(...). This links the validation arrays to their TypeScript union types at compile time.",
+          "done": true
         }
       ]
     }
@@ -10718,12 +10710,7 @@
     }
   },
   "promoted_ids": [],
-  "plan_start_scores": {
-    "strict": 88.8,
-    "overall": 90.0,
-    "objective": 98.2,
-    "verified": 90.3
-  },
+  "plan_start_scores": {},
   "execution_log": [
     {
       "timestamp": "2026-03-06T08:53:09+00:00",
@@ -44231,6 +44218,366 @@
       "actor": "user",
       "note": "All 20 dimensions were blind-reviewed this session via parallel subagents. Scores imported and confirmed.",
       "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:32:33+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:32:33+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:32:33+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:01+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed IRulesetStrategy.create/update return types to Promise<void> in types.ts, github-ruleset-strategy.ts, and updated tests",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:01+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Changed IRulesetStrategy.create/update return types to Promise<void> in types.ts, github-ruleset-strategy.ts, and updated tests",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Changed IRulesetStrategy.create/update return types to Promise<void> in types.ts, github-ruleset-strategy.ts, and updated tests and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:40:02+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::rulesets_index_over_exports"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed dead re-exports (computePropertyDiffs, deepEqual, isArrayOfObjects) from rulesets/index.ts, updated test to import directly from diff-algorithm.ts",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:02+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::convention_outlier::rulesets_index_over_exports"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Removed dead re-exports (computePropertyDiffs, deepEqual, isArrayOfObjects) from rulesets/index.ts, updated test to import directly from diff-algorithm.ts",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Removed dead re-exports (computePropertyDiffs, deepEqual, isArrayOfObjects) from rulesets/index.ts, updated test to import directly from diff-algorithm.ts and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:40:03+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::redundant_changed_param_file_writer"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Inlined getFileStatus call as existingContent !== null ? MODIFIED : NEW inside if(changed) block, removed unused import",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:03+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::redundant_changed_param_file_writer"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Inlined getFileStatus call as existingContent !== null ? MODIFIED : NEW inside if(changed) block, removed unused import",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Inlined getFileStatus call as existingContent !== null ? MODIFIED : NEW inside if(changed) block, removed unused import and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:40:03+00:00",
+      "action": "cluster_done",
+      "issue_ids": [
+        "review::.::holistic::logic_clarity::redundant_changed_param_file_writer"
+      ],
+      "cluster_name": "logic-clarity-file-writer",
+      "actor": "user",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:04+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::adhoc_retryafter_augmentation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added RateLimitedError interface to errors.ts, replaced ad-hoc casts in gh-api-utils.ts and retry-utils.ts with typed interface",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:04+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::adhoc_retryafter_augmentation"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Added RateLimitedError interface to errors.ts, replaced ad-hoc casts in gh-api-utils.ts and retry-utils.ts with typed interface",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Added RateLimitedError interface to errors.ts, replaced ad-hoc casts in gh-api-utils.ts and retry-utils.ts with typed interface and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:40:04+00:00",
+      "action": "done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::parallel_validation_arrays_unlinked"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Applied validValues<T>() pattern to repo-settings-validator.ts (5 arrays) and file-validator.ts (1 array), linking to type aliases",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T03:40:05+00:00",
+      "action": "resolve",
+      "issue_ids": [
+        "review::.::holistic::type_safety::parallel_validation_arrays_unlinked"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Applied validValues<T>() pattern to repo-settings-validator.ts (5 arrays) and file-validator.ts (1 array), linking to type aliases",
+      "detail": {
+        "status": "fixed",
+        "attestation": "I have actually Applied validValues<T>() pattern to repo-settings-validator.ts (5 arrays) and file-validator.ts (1 array), linking to type aliases and I am not gaming the score."
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [
+        "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types",
+        "review::.::holistic::convention_outlier::rulesets_index_over_exports"
+      ],
+      "cluster_name": "rulesets-api-cleanup",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "all items resolved in state"
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "cluster_done",
+      "issue_ids": [
+        "review::.::holistic::type_safety::adhoc_retryafter_augmentation",
+        "review::.::holistic::type_safety::parallel_validation_arrays_unlinked"
+      ],
+      "cluster_name": "type-safety-shared-contracts",
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "reason": "all items resolved in state"
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 2
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "sync_create_plan",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "injected": true
+      }
+    },
+    {
+      "timestamp": "2026-05-09T03:51:06+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T04:35:20+00:00",
+      "action": "reconcile",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "superseded_count": 0,
+        "pruned_count": 0,
+        "resurfaced_count": 0,
+        "clusters_completed_count": 0
+      }
+    },
+    {
+      "timestamp": "2026-05-09T04:35:20+00:00",
+      "action": "clear_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T04:35:46+00:00",
+      "action": "done",
+      "issue_ids": [
+        "1"
+      ],
+      "cluster_name": null,
+      "actor": "user",
+      "note": "Decomposed sync-command.ts from 701 to 183 LOC into settings-factories, settings-runner, repo-sync-runner, sync-utils",
+      "detail": {}
+    },
+    {
+      "timestamp": "2026-05-09T05:19:24+00:00",
+      "action": "review_import_sync",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "trigger": "review_import",
+        "new_ids": [
+          "review::.::holistic::abstraction_fitness::repo_iteration_context_mixed_concerns",
+          "review::.::holistic::api_surface_coherence::code_scanning_inline_params_type",
+          "review::.::holistic::convention_outlier::github_pr_strategy_module_level_helpers",
+          "review::.::holistic::cross_module_architecture::dead_re_export_formatDiffLine",
+          "review::.::holistic::cross_module_architecture::self_referencing_import_path",
+          "review::.::holistic::dependency_health::pretry_version_mismatch",
+          "review::.::holistic::error_consistency::no_error_cause_chaining",
+          "review::.::holistic::logic_clarity::inconsistent_switch_exhaustiveness",
+          "review::.::holistic::logic_clarity::pr_creator_catch_all_default",
+          "review::.::holistic::low_level_elegance::lifecycle_create_inline_orchestration",
+          "review::.::holistic::low_level_elegance::normalizer_main_loop_phase_density",
+          "review::.::holistic::mid_level_elegance::pr_merge_handler_wide_boundary",
+          "review::.::holistic::type_safety::code_scanning_validation_unlinked_types"
+        ],
+        "added_to_queue": [
+          "review::.::holistic::abstraction_fitness::repo_iteration_context_mixed_concerns",
+          "review::.::holistic::api_surface_coherence::code_scanning_inline_params_type",
+          "review::.::holistic::convention_outlier::github_pr_strategy_module_level_helpers",
+          "review::.::holistic::cross_module_architecture::dead_re_export_formatDiffLine",
+          "review::.::holistic::cross_module_architecture::self_referencing_import_path",
+          "review::.::holistic::dependency_health::pretry_version_mismatch",
+          "review::.::holistic::error_consistency::no_error_cause_chaining",
+          "review::.::holistic::logic_clarity::inconsistent_switch_exhaustiveness",
+          "review::.::holistic::logic_clarity::pr_creator_catch_all_default",
+          "review::.::holistic::low_level_elegance::lifecycle_create_inline_orchestration",
+          "review::.::holistic::low_level_elegance::normalizer_main_loop_phase_density",
+          "review::.::holistic::mid_level_elegance::pr_merge_handler_wide_boundary",
+          "review::.::holistic::type_safety::code_scanning_validation_unlinked_types"
+        ],
+        "workflow_injected_ids": [],
+        "triage_injected": false,
+        "triage_injected_ids": [],
+        "triage_deferred": false,
+        "diff_new": 13,
+        "diff_reopened": 0,
+        "diff_auto_resolved": 37,
+        "stale_pruned_from_queue": [],
+        "covered_subjective_pruned_from_queue": [
+          "subjective::api_surface_coherence",
+          "subjective::error_consistency",
+          "subjective::mid_level_elegance"
+        ],
+        "covered_subjective": [
+          "subjective::abstraction_fitness",
+          "subjective::ai_generated_debt",
+          "subjective::api_surface_coherence",
+          "subjective::authorization_consistency",
+          "subjective::contract_coherence",
+          "subjective::convention_outlier",
+          "subjective::cross_module_architecture",
+          "subjective::dependency_health",
+          "subjective::design_coherence",
+          "subjective::error_consistency",
+          "subjective::high_level_elegance",
+          "subjective::incomplete_migration",
+          "subjective::initialization_coupling",
+          "subjective::logic_clarity",
+          "subjective::low_level_elegance",
+          "subjective::mid_level_elegance",
+          "subjective::naming_quality",
+          "subjective::package_organization",
+          "subjective::test_strategy",
+          "subjective::type_safety"
+        ],
+        "stale_sync_injected": [],
+        "stale_sync_pruned": [],
+        "auto_cluster_changes": 0,
+        "import_scores_injected": [],
+        "import_scores_pruned": [],
+        "sync_status": "synced",
+        "sync_message": null
+      }
     }
   ],
   "epic_triage_meta": {
@@ -45509,13 +45856,19 @@
       "cluster_name": null
     }
   ],
-  "uncommitted_issues": [],
+  "uncommitted_issues": [
+    "review::.::holistic::api_surface_coherence::ruleset_strategy_unused_return_types",
+    "review::.::holistic::convention_outlier::rulesets_index_over_exports",
+    "review::.::holistic::logic_clarity::redundant_changed_param_file_writer",
+    "review::.::holistic::type_safety::adhoc_retryafter_augmentation",
+    "review::.::holistic::type_safety::parallel_validation_arrays_unlinked"
+  ],
   "commit_tracking_branch": null,
   "refresh_state": {
-    "subjective_review_completed_at_scan_count": 224,
+    "subjective_review_completed_at_scan_count": 230,
     "lifecycle_phase": "plan",
     "_subjective_migration_pruned": true,
     "postflight_scan_completed_at_scan_count": 226
   },
-  "scan_count_at_plan_start": 226
+  "scan_count_at_plan_start": 228
 }

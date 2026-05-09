@@ -1,4 +1,3 @@
-export { formatDiffLine } from "../shared/diff-format.js";
 export { writeGitHubStepSummary } from "./github-summary.js";
 export {
   hasLifecycleChanges,

@@ -6,7 +6,6 @@ import type {
 import { resolveExtendsChain } from "../extends-resolver.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
-import type { RootSettingsContext } from "./shared.js";
 import {
   validateFileConfigFields,
   validateSettings,

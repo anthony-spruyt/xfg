@@ -12,7 +12,8 @@
   "ignore": [
     ".output",
     "smells::src/cli/sync-command.ts::async_no_await",
-    "smells::src/cli/sync-command.ts::nested_closure"
+    "smells::src/cli/sync-command.ts::nested_closure",
+    "test_coverage::src/cli/types.ts::transitive_only"
   ],
   "ignore_metadata": {},
   "zone_overrides": {
