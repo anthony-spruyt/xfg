@@ -6,7 +6,6 @@ import type {
 } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
-import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   withRetry,
   CORE_PERMANENT_ERROR_PATTERNS,
@@ -180,19 +179,23 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const safeBranch = escapeShellArg(branchName);
         if (gitOps) {
           await gitOps.fetchBranch(branchName);
         } else {
           await this.executor.exec(
-            `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`,
+            "git",
+            [
+              "fetch",
+              "origin",
+              `+${branchName}:refs/remotes/origin/${branchName}`,
+            ],
             workDir
           );
         }
 
-        // Get the remote HEAD SHA for this branch (not local HEAD)
         const headSha = await this.executor.exec(
-          `git rev-parse origin/${safeBranch}`,
+          "git",
+          ["rev-parse", `origin/${branchName}`],
           workDir
         );
 
@@ -283,19 +286,20 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       variables,
     });
 
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
-
+    const hostnameArgs =
+      repoInfo.host !== "github.com" ? ["--hostname", repoInfo.host] : [];
     const tokenEnv = buildTokenEnv(token);
-
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
     try {
       response = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () =>
+          this.executor.exec(
+            "gh",
+            ["api", "graphql", ...hostnameArgs, "--input", "-"],
+            workDir,
+            { env: tokenEnv, input: requestBody }
+          ),
         {
           permanentErrorPatterns: [
             ...DEFAULT_PERMANENT_ERROR_PATTERNS,
@@ -362,7 +366,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       // Branch exists + force: delete then recreate from local HEAD
       await this.deleteRemoteRef(refId, workDir, repoInfo, token);
       const sha = (
-        await this.executor.exec("git rev-parse HEAD", workDir)
+        await this.executor.exec("git", ["rev-parse", "HEAD"], workDir)
       ).trim();
       await this.createRemoteRef(
         repositoryId,
@@ -378,7 +382,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       // due to eventual consistency, but the branch may exist by the time we
       // try to create it. Treat "already exists" as success.
       const sha = (
-        await this.executor.exec("git rev-parse HEAD", workDir)
+        await this.executor.exec("git", ["rev-parse", "HEAD"], workDir)
       ).trim();
       try {
         await this.createRemoteRef(
@@ -459,17 +463,20 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<T> {
     const requestBody = JSON.stringify({ query: queryOrMutation });
 
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
+    const hostnameArgs =
+      repoInfo.host !== "github.com" ? ["--hostname", repoInfo.host] : [];
     const tokenEnv = buildTokenEnv(token);
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
 
     let response: string;
     try {
       response = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
+        () =>
+          this.executor.exec(
+            "gh",
+            ["api", "graphql", ...hostnameArgs, "--input", "-"],
+            workDir,
+            { env: tokenEnv, input: requestBody }
+          ),
         {
           permanentErrorPatterns:
             GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
