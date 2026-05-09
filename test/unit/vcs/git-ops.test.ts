@@ -18,7 +18,9 @@ import {
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import { SyncError } from "../../../src/shared/errors.js";
 
-const stubExecutor: ICommandExecutor = { exec: async () => "" };
+const stubExecutor: ICommandExecutor = {
+  exec: async (_exe: string, _args: string[], _cwd: string) => "",
+};
 
 const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
 
@@ -211,7 +213,7 @@ describe("validateBranchName", () => {
 
   describe("security injection attempts", () => {
     // Note: Git allows $, (, ), and backticks in branch names.
-    // Security is ensured by escapeShellArg() wrapping all shell arguments.
+    // Security is ensured by passing args as arrays (no shell interpolation).
     // These tests verify that common injection patterns with spaces are rejected.
 
     test("rejects shell injection with spaces", () => {
@@ -235,8 +237,8 @@ describe("validateBranchName", () => {
       );
     });
 
-    test("allows shell-like patterns without spaces (security via escapeShellArg)", () => {
-      // These are valid git branch names - security is handled by escapeShellArg()
+    test("allows shell-like patterns without spaces (security via args array)", () => {
+      // These are valid git branch names - security is handled by passing args as arrays
       assert.doesNotThrow(() => validateBranchName("$(whoami)"));
       assert.doesNotThrow(() => validateBranchName("`id`"));
     });
@@ -486,10 +488,10 @@ describe("GitOps", () => {
     });
 
     test("accepts custom executor", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        exec: async (command: string, _cwd: string) => {
-          commands.push(command);
+        exec: async (executable: string, args: string[], _cwd: string) => {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -497,8 +499,9 @@ describe("GitOps", () => {
       const gitOps = new GitOps({ workDir, executor: mockExecutor });
       await gitOps.hasChanges();
 
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git status"));
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0].executable, "git");
+      assert.ok(calls[0].args.includes("status"));
     });
 
     test("uses default executor when not provided", () => {
@@ -515,15 +518,14 @@ describe("GitOps", () => {
     });
 
     test("creates new branch with checkout -b", async () => {
-      let capturedCommand = "";
+      let capturedArgs: string[] = [];
 
       const gitOps = new GitOps({
         workDir,
         executor: {
-          async exec(command: string, _cwd: string): Promise<string> {
-            if (command.includes("git checkout -b")) {
-              capturedCommand = command;
-              return "";
+          async exec(_exe: string, args: string[], _cwd: string) {
+            if (args[0] === "checkout" && args[1] === "-b") {
+              capturedArgs = args;
             }
             return "";
           },
@@ -531,10 +533,10 @@ describe("GitOps", () => {
       });
       await gitOps.createBranch("feature-branch");
 
-      assert.ok(capturedCommand, "Should have called checkout -b");
+      assert.ok(capturedArgs.length > 0, "Should have called checkout -b");
       assert.ok(
-        capturedCommand.includes("feature-branch"),
-        "Should include the branch name in the command"
+        capturedArgs.includes("feature-branch"),
+        "Should include the branch name in the args"
       );
     });
 
@@ -542,8 +544,8 @@ describe("GitOps", () => {
       const gitOps = new GitOps({
         workDir,
         executor: {
-          async exec(command: string, _cwd: string): Promise<string> {
-            if (command.includes("git checkout -b")) {
+          async exec(_exe: string, args: string[], _cwd: string) {
+            if (args[0] === "checkout" && args[1] === "-b") {
               throw new Error(
                 "fatal: A branch named 'feature-branch' already exists"
               );
@@ -566,10 +568,10 @@ describe("GitOps", () => {
     });
 
     test("calls git update-index with chmod flag", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -579,16 +581,18 @@ describe("GitOps", () => {
       writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n");
       await gitOps.setExecutable("script.sh");
 
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("git update-index --add --chmod=+x"));
-      assert.ok(commands[0].includes("script.sh"));
+      assert.equal(calls.length, 1);
+      assert.equal(calls[0].executable, "git");
+      assert.ok(calls[0].args.includes("update-index"));
+      assert.ok(calls[0].args.includes("--chmod=+x"));
+      assert.ok(calls[0].args.some((a) => a.includes("script.sh")));
     });
 
     test("does not execute in dry-run mode", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -601,7 +605,7 @@ describe("GitOps", () => {
       writeFileSync(join(workDir, "script.sh"), "#!/bin/bash\n");
       await gitOps.setExecutable("script.sh");
 
-      assert.equal(commands.length, 0);
+      assert.equal(calls.length, 0);
     });
 
     test("throws on path traversal attempt", async () => {
@@ -613,10 +617,10 @@ describe("GitOps", () => {
     });
 
     test("handles subdirectory paths", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -626,13 +630,13 @@ describe("GitOps", () => {
       writeFileSync(join(workDir, "scripts", "deploy.sh"), "#!/bin/bash\n");
       await gitOps.setExecutable("scripts/deploy.sh");
 
-      assert.equal(commands.length, 1);
-      assert.ok(commands[0].includes("scripts/deploy.sh"));
+      assert.equal(calls.length, 1);
+      assert.ok(calls[0].args.some((a) => a.includes("scripts/deploy.sh")));
     });
 
     test("sets filesystem executable permission (chmod 755)", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(_command: string, _cwd: string): Promise<string> {
+        async exec(_exe: string, _args: string[], _cwd: string) {
           return "";
         },
       };
@@ -664,7 +668,7 @@ describe("GitOps", () => {
 
     test("does not set filesystem permissions in dry-run mode", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(_command: string, _cwd: string): Promise<string> {
+        async exec(_exe: string, _args: string[], _cwd: string) {
           return "";
         },
       };
@@ -707,10 +711,10 @@ describe("GitOps", () => {
     });
 
     test("returns true in dry-run mode without running commands", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -723,16 +727,15 @@ describe("GitOps", () => {
       const result = await gitOps.commit("test commit");
 
       assert.equal(result, true);
-      assert.equal(commands.length, 0);
+      assert.equal(calls.length, 0);
     });
 
     test("stages and commits changes when there are staged changes", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          // git diff --cached --name-only returns file names when there are changes
-          if (command.includes("git diff --cached --name-only")) {
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
+          if (args.includes("diff") && args.includes("--cached")) {
             return "file.txt\n";
           }
           return "";
@@ -743,18 +746,20 @@ describe("GitOps", () => {
       const result = await gitOps.commit("test commit");
 
       assert.equal(result, true);
-      assert.ok(commands.some((c) => c.includes("git add -A")));
-      assert.ok(commands.some((c) => c.includes("git commit")));
-      assert.ok(commands.some((c) => c.includes("--no-verify")));
+      assert.ok(
+        calls.some((c) => c.args.includes("add") && c.args.includes("-A"))
+      );
+      assert.ok(calls.some((c) => c.args.includes("commit")));
+      assert.ok(calls.some((c) => c.args.includes("--no-verify")));
     });
 
     test("returns false when no staged changes after git add", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          commands.push(command);
-          // git diff --cached --name-only returns empty when no changes
-          if (command.includes("git diff --cached --name-only")) {
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
+          // diff --cached returns empty when no changes
+          if (args.includes("diff") && args.includes("--cached")) {
             return "";
           }
           return "";
@@ -765,9 +770,11 @@ describe("GitOps", () => {
       const result = await gitOps.commit("test commit");
 
       assert.equal(result, false);
-      assert.ok(commands.some((c) => c.includes("git add -A")));
+      assert.ok(
+        calls.some((c) => c.args.includes("add") && c.args.includes("-A"))
+      );
       // Should not have called git commit since there were no changes
-      assert.ok(!commands.some((c) => c.includes("git commit")));
+      assert.ok(!calls.some((c) => c.args.includes("commit")));
     });
   });
 
@@ -817,10 +824,7 @@ describe("GitOps", () => {
 
     test("returns empty array when no changes", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git status --porcelain")) {
-            return "";
-          }
+        async exec(_exe: string, _args: string[], _cwd: string) {
           return "";
         },
       };
@@ -833,8 +837,8 @@ describe("GitOps", () => {
 
     test("returns list of changed files", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git status --porcelain")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args.includes("status") && args.includes("--porcelain")) {
             return " M config.json\n?? new-file.txt\nA  added.json";
           }
           return "";
@@ -855,8 +859,8 @@ describe("GitOps", () => {
 
     test("returns true when file exists on branch", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git show")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args[0] === "show") {
             return "file content";
           }
           return "";
@@ -871,8 +875,8 @@ describe("GitOps", () => {
 
     test("returns false when file does not exist on branch", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string, _cwd: string): Promise<string> {
-          if (command.includes("git show")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args[0] === "show") {
             throw new Error("file not found");
           }
           return "";
@@ -997,8 +1001,8 @@ describe("GitOps", () => {
 
     test("returns main when origin/main exists", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string): Promise<string> {
-          if (command.includes("git rev-parse --verify origin/main")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args.includes("origin/main")) {
             return "abc123";
           }
           return "";
@@ -1014,11 +1018,11 @@ describe("GitOps", () => {
 
     test("falls back to master when main does not exist", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string): Promise<string> {
-          if (command.includes("git rev-parse --verify origin/main")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args.includes("origin/main")) {
             throw new Error("main does not exist");
           }
-          if (command.includes("git rev-parse --verify origin/master")) {
+          if (args.includes("origin/master")) {
             return "abc123";
           }
           return "";
@@ -1034,11 +1038,11 @@ describe("GitOps", () => {
 
     test("falls back to main when neither main nor master exist", async () => {
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string): Promise<string> {
-          if (command.includes("git rev-parse --verify origin/main")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args.includes("origin/main")) {
             throw new Error("main does not exist");
           }
-          if (command.includes("git rev-parse --verify origin/master")) {
+          if (args.includes("origin/master")) {
             throw new Error("master does not exist");
           }
           return "";
@@ -1055,11 +1059,11 @@ describe("GitOps", () => {
     test("logs debug messages when branches are not found", async () => {
       const debugMessages: string[] = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string): Promise<string> {
-          if (command.includes("git rev-parse --verify origin/main")) {
+        async exec(_exe: string, args: string[], _cwd: string) {
+          if (args.includes("origin/main")) {
             throw new Error("main does not exist");
           }
-          if (command.includes("git rev-parse --verify origin/master")) {
+          if (args.includes("origin/master")) {
             throw new Error("master does not exist");
           }
           return "";
@@ -1086,8 +1090,10 @@ describe("GitOps", () => {
 
   test("getFileMode returns '100755' for executable tracked file", async () => {
     const runner: ICommandExecutor = {
-      async exec(command: string) {
-        assert.match(command, /^git ls-files -s -- /);
+      async exec(_exe: string, args: string[], _cwd: string) {
+        assert.equal(args[0], "ls-files");
+        assert.ok(args.includes("-s"));
+        assert.ok(args.includes("--"));
         return "100755 abcdef0123 0\tpath/to/file.sh\n";
       },
     };
@@ -1098,7 +1104,7 @@ describe("GitOps", () => {
 
   test("getFileMode returns '100644' for non-executable tracked file", async () => {
     const runner: ICommandExecutor = {
-      async exec() {
+      async exec(_exe: string, _args: string[], _cwd: string) {
         return "100644 abcdef0123 0\tREADME.md\n";
       },
     };
@@ -1108,7 +1114,7 @@ describe("GitOps", () => {
 
   test("getFileMode returns null when file is not tracked", async () => {
     const runner: ICommandExecutor = {
-      async exec() {
+      async exec(_exe: string, _args: string[], _cwd: string) {
         return "";
       },
     };
@@ -1118,7 +1124,7 @@ describe("GitOps", () => {
 
   test("getFileMode rejects path traversal", async () => {
     const runner: ICommandExecutor = {
-      async exec() {
+      async exec(_exe: string, _args: string[], _cwd: string) {
         return "";
       },
     };
@@ -1130,10 +1136,10 @@ describe("GitOps", () => {
   });
 
   test("clearExecutable chmods 0644 and runs git update-index --chmod=-x", async () => {
-    const commands: string[] = [];
+    const calls: Array<{ executable: string; args: string[] }> = [];
     const runner: ICommandExecutor = {
-      async exec(command: string) {
-        commands.push(command);
+      async exec(executable: string, args: string[], _cwd: string) {
+        calls.push({ executable, args });
         return "";
       },
     };
@@ -1146,12 +1152,16 @@ describe("GitOps", () => {
     writeFileSync(join(tmpDir, "foo.sh"), "#!/bin/sh\n", { mode: 0o755 });
     const gitOps = new GitOps({ workDir: tmpDir, executor: runner });
     await gitOps.clearExecutable("foo.sh");
-    assert.ok(commands.some((c) => /git update-index --chmod=-x/.test(c)));
+    assert.ok(
+      calls.some(
+        (c) => c.args.includes("update-index") && c.args.includes("--chmod=-x")
+      )
+    );
   });
 
   test("clearExecutable rejects path traversal", async () => {
     const runner: ICommandExecutor = {
-      async exec() {
+      async exec(_exe: string, _args: string[], _cwd: string) {
         return "";
       },
     };
@@ -1168,10 +1178,10 @@ describe("GitOps", () => {
     });
 
     test("does not execute in dry-run mode", async () => {
-      const commands: string[] = [];
+      const calls: Array<{ executable: string; args: string[] }> = [];
       const mockExecutor: ICommandExecutor = {
-        async exec(command: string) {
-          commands.push(command);
+        async exec(executable: string, args: string[], _cwd: string) {
+          calls.push({ executable, args });
           return "";
         },
       };
@@ -1185,7 +1195,7 @@ describe("GitOps", () => {
       });
       await gitOps.clearExecutable("script.sh");
       assert.equal(
-        commands.length,
+        calls.length,
         0,
         "Should not execute commands in dry-run mode"
       );
@@ -1204,7 +1214,7 @@ describe("GitOps", () => {
 
   test("getFileMode returns null for unrecognized mode", async () => {
     const runner: ICommandExecutor = {
-      async exec() {
+      async exec(_exe: string, _args: string[], _cwd: string) {
         return "120000 abcdef0123 0\tsymlink\n";
       },
     };
