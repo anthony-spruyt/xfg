@@ -1,18 +1,9 @@
 import type { RepoInfo } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
-
-export type CodeScanningState = "configured" | "not-configured";
-export type CodeScanningQuerySuite = "default" | "extended";
-export type CodeScanningLanguage =
-  | "actions"
-  | "c-cpp"
-  | "csharp"
-  | "go"
-  | "java-kotlin"
-  | "javascript-typescript"
-  | "python"
-  | "ruby"
-  | "swift";
+import type {
+  CodeScanningState,
+  CodeScanningQuerySuite,
+} from "../../config/types.js";
 
 /**
  * Current code scanning default setup state from GitHub API.

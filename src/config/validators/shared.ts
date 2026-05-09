@@ -13,7 +13,7 @@ import type {
   CodeScanningState,
   CodeScanningQuerySuite,
   CodeScanningLanguage,
-} from "../../settings/code-scanning/types.js";
+} from "../types.js";
 
 function validValues<T extends string>(
   values: readonly T[]
