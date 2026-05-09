@@ -1,4 +1,3 @@
-import { escapeShellArg } from "../shared/shell-utils.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
@@ -39,8 +38,8 @@ export class AuthenticatedGitOps implements IGitOps {
     this.log = options.log;
   }
 
-  private execWithRetry(command: string): Promise<string> {
-    return withRetry(() => this.executor.exec(command, this.workDir), {
+  private execWithRetry(executable: string, args: string[]): Promise<string> {
+    return withRetry(() => this.executor.exec(executable, args, this.workDir), {
       retries: this.retries,
     });
   }
@@ -127,32 +126,41 @@ export class AuthenticatedGitOps implements IGitOps {
   }
 
   // --- INetworkGitOps with auth wrapping ---
-  // Note: exec() usage here is safe — all user inputs are escaped via escapeShellArg()
 
   async clone(gitUrl: string): Promise<void> {
     if (!this.auth) {
-      const command = `git clone ${escapeShellArg(gitUrl)} .`;
-      await this.execWithRetry(command);
+      await this.execWithRetry("git", ["clone", gitUrl, "."]);
       return;
     }
-    const authUrl = escapeShellArg(this.getAuthenticatedUrl());
-    await this.execWithRetry(`git clone ${authUrl} .`);
+    await this.execWithRetry("git", ["clone", this.getAuthenticatedUrl(), "."]);
   }
 
   async fetch(options?: { prune?: boolean }): Promise<void> {
-    const pruneFlag = options?.prune ? " --prune" : "";
-    await this.execWithRetry(`git fetch origin${pruneFlag}`);
+    await this.execWithRetry("git", [
+      "fetch",
+      "origin",
+      ...(options?.prune ? ["--prune"] : []),
+    ]);
   }
 
   async push(branchName: string, options?: { force?: boolean }): Promise<void> {
-    const forceFlag = options?.force ? "--force-with-lease " : "";
-    const safeBranch = escapeShellArg(branchName);
-    await this.execWithRetry(`git push ${forceFlag}-u origin ${safeBranch}`);
+    const args = [
+      "push",
+      ...(options?.force ? ["--force-with-lease"] : []),
+      "-u",
+      "origin",
+      branchName,
+    ];
+    await this.execWithRetry("git", args);
   }
 
   async getDefaultBranch(): Promise<{ branch: string; method: string }> {
     try {
-      const remoteInfo = await this.execWithRetry(`git remote show origin`);
+      const remoteInfo = await this.execWithRetry("git", [
+        "remote",
+        "show",
+        "origin",
+      ]);
       const match = remoteInfo.match(/HEAD branch: (\S+)/);
       if (match && match[1] !== "(unknown)") {
         return { branch: match[1], method: "remote HEAD" };
@@ -177,13 +185,12 @@ export class AuthenticatedGitOps implements IGitOps {
     branchName: string,
     options?: { skipRetry?: boolean }
   ): Promise<string> {
-    const safeBranch = escapeShellArg(branchName);
-    const command = `git ls-remote --exit-code --heads origin ${safeBranch}`;
+    const args = ["ls-remote", "--exit-code", "--heads", "origin", branchName];
 
     if (options?.skipRetry) {
-      return this.executor.exec(command, this.workDir);
+      return this.executor.exec("git", args, this.workDir);
     }
-    return this.execWithRetry(command);
+    return this.execWithRetry("git", args);
   }
 
   /**
@@ -194,9 +201,14 @@ export class AuthenticatedGitOps implements IGitOps {
     refspec: string,
     options?: { delete?: boolean }
   ): Promise<void> {
-    const deleteFlag = options?.delete ? "--delete " : "";
-    const safeRefspec = escapeShellArg(refspec);
-    await this.execWithRetry(`git push ${deleteFlag}-u origin ${safeRefspec}`);
+    const args = [
+      "push",
+      ...(options?.delete ? ["--delete"] : []),
+      "-u",
+      "origin",
+      refspec,
+    ];
+    await this.execWithRetry("git", args);
   }
 
   /**
@@ -204,9 +216,10 @@ export class AuthenticatedGitOps implements IGitOps {
    * Used by GraphQLCommitStrategy to update local refs.
    */
   async fetchBranch(branchName: string): Promise<void> {
-    const safeBranch = escapeShellArg(branchName);
-    await this.execWithRetry(
-      `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`
-    );
+    await this.execWithRetry("git", [
+      "fetch",
+      "origin",
+      "+" + branchName + ":refs/remotes/origin/" + branchName,
+    ]);
   }
 }
