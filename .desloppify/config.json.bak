@@ -13,7 +13,8 @@
     ".output",
     "smells::src/cli/sync-command.ts::async_no_await",
     "smells::src/cli/sync-command.ts::nested_closure",
-    "test_coverage::src/cli/types.ts::transitive_only"
+    "test_coverage::src/cli/types.ts::transitive_only",
+    "review::.::holistic::cross_module_architecture::config_imports_settings_codescan_types"
   ],
   "ignore_metadata": {},
   "zone_overrides": {
