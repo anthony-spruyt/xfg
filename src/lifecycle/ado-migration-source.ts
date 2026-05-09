@@ -47,7 +47,8 @@ export class AdoMigrationSource implements IMigrationSource {
       throw new LifecycleError(
         `Failed to clone migration source ${repoInfo.gitUrl}: ${msg}. ` +
           `Ensure you have authentication configured for Azure DevOps ` +
-          `(e.g., AZURE_DEVOPS_EXT_PAT or git credential helper).`
+          `(e.g., AZURE_DEVOPS_EXT_PAT or git credential helper).`,
+        { cause: error }
       );
     }
   }

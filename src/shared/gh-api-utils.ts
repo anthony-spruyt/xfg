@@ -1,17 +1,11 @@
 import { escapeShellArg } from "./shell-utils.js";
 import { withRetry } from "./retry-utils.js";
 import type { ICommandExecutor } from "./command-executor.js";
-import { toErrorMessage } from "./type-guards.js";
-
-import type { DebugWarnLog } from "./logger.js";
+import type { RateLimitedError } from "./errors.js";
 
 export interface GitHubApiTarget {
   host: string;
   owner: string;
-}
-
-interface ITokenManager {
-  getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -40,10 +34,10 @@ interface GhApiCallOptions {
 }
 
 /**
- * Get the hostname flag for gh commands.
+ * Build the hostname flag for gh commands.
  * Returns "--hostname HOST" for GHE, empty string for github.com.
  */
-export function getHostnameFlag(
+export function buildHostnameFlag(
   repoInfo: Pick<GitHubApiTarget, "host">
 ): string {
   if (repoInfo.host !== "github.com") {
@@ -83,14 +77,24 @@ export function parseResponseBody(raw: string): string {
  *
  * No-op if stdout is absent or does not contain a numeric Retry-After header.
  */
+function hasStdout(error: unknown): error is { stdout: string | Buffer } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "stdout" in error &&
+    (typeof (error as Record<string, unknown>).stdout === "string" ||
+      Buffer.isBuffer((error as Record<string, unknown>).stdout))
+  );
+}
+
 export function attachRetryAfter(error: unknown): void {
-  const stdout = (error as { stdout?: string | Buffer }).stdout;
-  if (!stdout) return;
+  if (!hasStdout(error)) return;
+  const stdout = error.stdout;
 
   const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
   const match = stdoutStr.match(/^retry-after:\s*(\d+)\s*$/im);
   if (match) {
-    (error as { retryAfter?: number }).retryAfter = parseInt(match[1], 10);
+    (error as RateLimitedError).retryAfter = parseInt(match[1], 10);
   }
 }
 
@@ -103,8 +107,8 @@ export function attachRetryAfter(error: unknown): void {
  * No-op if stdout is absent or does not contain parseable error JSON.
  */
 export function attachValidationDetails(error: unknown): void {
-  const stdout = (error as { stdout?: string | Buffer }).stdout;
-  if (!stdout) return;
+  if (!hasStdout(error)) return;
+  const stdout = error.stdout;
 
   const stdoutStr = typeof stdout === "string" ? stdout : stdout.toString();
   const body = parseResponseBody(stdoutStr);
@@ -226,47 +230,4 @@ export class GhApiClient {
       _retryDelay: params?._retryDelay,
     });
   }
-}
-
-interface ResolveGitHubTokenOptions {
-  repoInfo: GitHubApiTarget;
-  tokenManager: ITokenManager | null;
-  context: string;
-  log?: DebugWarnLog;
-  envToken?: string;
-}
-
-/**
- * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
- * Returns { token, skipped } where skipped=true means no App installation found
- * for this owner (token will be undefined). Both sync and settings paths use this.
- */
-export async function resolveGitHubToken(
-  options: ResolveGitHubTokenOptions
-): Promise<{ token: string | undefined; skipped: boolean }> {
-  const { repoInfo, tokenManager, context, log, envToken } = options;
-  try {
-    const appToken = await tokenManager?.getTokenForRepo(repoInfo);
-    if (appToken === null) {
-      // null = no installation found for this owner
-      return { token: undefined, skipped: true };
-    }
-    // string = app token; undefined = no manager configured
-    return { token: appToken ?? envToken, skipped: false };
-  } catch (error) {
-    const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
-    if (envToken) {
-      log?.debug(`${errorMsg}; falling back to GH_TOKEN`);
-    } else {
-      log?.warn(`${errorMsg}; no fallback token available`);
-    }
-    return { token: envToken, skipped: false };
-  }
-}
-
-/**
- * Check if an error message indicates an HTTP 404 response from the GitHub API.
- */
-export function isHttp404Error(error: unknown): boolean {
-  return toErrorMessage(error).includes("HTTP 404");
 }

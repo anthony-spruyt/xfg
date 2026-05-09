@@ -191,6 +191,10 @@ function getActionStyle(action: DiffAction): {
       return { symbol: "-", color: chalk.red };
     case "change":
       return { symbol: "~", color: chalk.yellow };
+    default: {
+      const _: never = action;
+      throw new Error(`Unknown DiffAction: ${String(_)}`);
+    }
   }
 }
 

@@ -8,6 +8,7 @@ import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   MergeOptions,
   MergeResult,
 } from "./types.js";
@@ -17,12 +18,14 @@ import {
   getStderr,
 } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/json-utils.js";
-import { sanitizeCredentials } from "./sanitize-utils.js";
+import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
+
+const MR_CREATED_MSG = "MR created successfully";
 
 export class GitLabPRStrategy extends BasePRStrategy {
   constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
@@ -84,8 +87,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
       case "rebase":
         return "--rebase";
       case "merge":
-      default:
+      case undefined:
         return "";
+      /* c8 ignore next 4 */
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected merge strategy: ${_exhaustive}`);
+      }
     }
   }
 
@@ -130,12 +138,13 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
   }
 
-  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+  async closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult> {
     const { repoInfo, branchName, baseBranch, workDir, retries = 3 } = options;
 
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
-    // First check if there's an existing MR
     const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
@@ -145,19 +154,19 @@ export class GitLabPRStrategy extends BasePRStrategy {
     });
 
     if (!existingUrl) {
-      return false;
+      return { status: "no_pr" };
     }
 
-    // Extract MR IID from URL
     const mrInfo = this.parseMRUrl(existingUrl);
     if (!mrInfo) {
-      this.log?.warn(`Could not extract MR IID from URL: ${existingUrl}`);
-      return false;
+      return {
+        status: "close_failed",
+        message: `Could not extract MR IID from URL: ${existingUrl}`,
+      };
     }
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    // Close the MR
     const closeCommand = `glab mr close ${escapeShellArg(mrInfo.mrIid)} -R ${escapeShellArg(repoFlag)}`;
 
     try {
@@ -170,7 +179,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       this.log?.warn(
         `Failed to close existing MR !${mrInfo.mrIid}: ${message}`
       );
-      return false;
+      return { status: "close_failed", message };
     }
 
     const deleteBranchCommand = `git push origin --delete ${escapeShellArg(branchName)}`;
@@ -181,12 +190,12 @@ export class GitLabPRStrategy extends BasePRStrategy {
         log: this.log,
       });
     } catch (error) {
-      // Branch deletion failure is not critical
-      const message = toErrorMessage(error);
-      this.log?.warn(`Failed to delete branch ${branchName}: ${message}`);
+      const message = `MR !${mrInfo.mrIid} closed but branch ${branchName} deletion failed: ${toErrorMessage(error)}`;
+      this.log?.warn(message);
+      return { status: "close_failed", message };
     }
 
-    return true;
+    return { status: "closed" };
   }
 
   async create(options: PRStrategyOptions): Promise<PRResult> {
@@ -209,7 +218,8 @@ export class GitLabPRStrategy extends BasePRStrategy {
       writeFileSync(descFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
-        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`
+        `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
+        { cause: err }
       );
     }
 
@@ -229,7 +239,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return {
           url: urlMatch[0],
           success: true,
-          message: "MR created successfully",
+          message: MR_CREATED_MSG,
         };
       }
 
@@ -239,7 +249,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
         return {
           url: this.buildMRUrl(repoInfo, mrMatch[1]),
           success: true,
-          message: "MR created successfully",
+          message: MR_CREATED_MSG,
         };
       }
 
@@ -305,7 +315,9 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
 
     if (config.mode === "force") {
-      // Force merge immediately
+      this.log?.warn(
+        `Force-merging MR ${mrInfo.mrIid} immediately (bypasses pipeline requirements)`
+      );
       const forceFlagParts = [strategyFlag, deleteBranchFlag].filter(Boolean);
       const forceCommand = `glab mr merge ${escapeShellArg(mrInfo.mrIid)} ${forceFlagParts.join(" ")} -R ${escapeShellArg(repoFlag)} -y`;
 

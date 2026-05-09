@@ -8,6 +8,7 @@ import type {
   PRStrategyOptions,
   MergeOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   IPRStrategy,
 } from "./types.js";
 
@@ -30,7 +31,9 @@ export abstract class BasePRStrategy implements IPRStrategy {
   abstract findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null>;
-  abstract closeExistingPR(options: CloseExistingPROptions): Promise<boolean>;
+  abstract closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult>;
   abstract create(options: PRStrategyOptions): Promise<PRResult>;
   abstract merge(options: MergeOptions): Promise<MergeResult>;
 

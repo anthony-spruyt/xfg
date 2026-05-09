@@ -12,7 +12,8 @@ export function parseApiJson<T>(response: string, context: string): T {
   } catch (error) {
     const preview = response.slice(0, 200);
     throw new SyncError(
-      `Failed to parse ${context}: ${toErrorMessage(error)} — ${preview}`
+      `Failed to parse ${context}: ${toErrorMessage(error)} — ${preview}`,
+      { cause: error }
     );
   }
 }

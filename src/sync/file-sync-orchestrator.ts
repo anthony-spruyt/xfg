@@ -87,7 +87,6 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
         incrementDiffStats(diffStats, "DELETED");
     }
 
-    // Show diff summary in dry-run
     if (dryRun) {
       this.log.diffSummary(
         diffStats.newCount,
@@ -97,7 +96,6 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       );
     }
 
-    // Build changed files list
     const changedFiles: FileAction[] = Array.from(fileChanges.entries()).map(
       ([fileName, info]) => ({ fileName, action: info.action })
     );

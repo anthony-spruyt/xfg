@@ -111,8 +111,7 @@ export class RulesetProcessor implements IRulesetProcessor {
           if (change.desired) {
             await this.strategy.create(
               githubRepo,
-              change.name,
-              change.desired,
+              { name: change.name, ruleset: change.desired },
               strategyOptions
             );
             appliedCount++;

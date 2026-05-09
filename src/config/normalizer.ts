@@ -6,7 +6,7 @@ import {
   mergeTextContent,
 } from "./merge.js";
 import type { ArrayMergeStrategy } from "./merge.js";
-import { interpolateContent } from "../shared/env.js";
+import { interpolateContent } from "./env.js";
 import type {
   RawConfig,
   RawGroupConfig,
@@ -18,6 +18,7 @@ import type {
   PRMergeOptions,
   RepoSettings,
   RawRootSettings,
+  RawRepoConfig,
   RawRepoSettings,
   RawRepoFileOverride,
   RawConditionalGroupWhen,
@@ -127,18 +128,10 @@ function mergePROptions(
   if (!global) return perRepo;
   if (!perRepo) return global;
 
-  const result: PRMergeOptions = {};
-  const merge = perRepo.merge ?? global.merge;
-  const mergeStrategy = perRepo.mergeStrategy ?? global.mergeStrategy;
-  const deleteBranch = perRepo.deleteBranch ?? global.deleteBranch;
-  const bypassReason = perRepo.bypassReason ?? global.bypassReason;
-  const labels = perRepo.labels ?? global.labels;
-
-  if (merge !== undefined) result.merge = merge;
-  if (mergeStrategy !== undefined) result.mergeStrategy = mergeStrategy;
-  if (deleteBranch !== undefined) result.deleteBranch = deleteBranch;
-  if (bypassReason !== undefined) result.bypassReason = bypassReason;
-  if (labels !== undefined) result.labels = labels;
+  const merged = { ...global, ...perRepo };
+  const result = Object.fromEntries(
+    Object.entries(merged).filter(([, v]) => v !== undefined)
+  ) as PRMergeOptions;
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
@@ -643,6 +636,67 @@ function resolveFileEntry(
   };
 }
 
+interface NormalizeRepoEntryContext {
+  gitUrl: string;
+  rawRepo: RawRepoConfig;
+  effectiveRootFiles: Record<string, RawFileConfig>;
+  fileNames: string[];
+  repoOnlyFileNames: string[];
+  effectivePROptions: PRMergeOptions | undefined;
+  effectiveSettings: RawRootSettings | undefined;
+  globalDeleteOrphaned: boolean | undefined;
+  env: Record<string, string | undefined>;
+}
+
+function normalizeRepoEntry(ctx: NormalizeRepoEntryContext): RepoConfig {
+  const files: FileContent[] = [];
+  const inheritFiles = shouldInherit(ctx.rawRepo.files);
+
+  for (const fileName of ctx.fileNames) {
+    if (fileName === "inherit") continue;
+
+    const entry = resolveFileEntry(
+      fileName,
+      ctx.effectiveRootFiles[fileName],
+      ctx.rawRepo.files?.[fileName],
+      inheritFiles,
+      ctx.globalDeleteOrphaned,
+      ctx.env
+    );
+    if (entry) files.push(entry);
+  }
+
+  for (const fileName of ctx.repoOnlyFileNames) {
+    const repoOverride = ctx.rawRepo.files![fileName];
+    if (repoOverride === false) continue;
+
+    const entry = resolveFileEntry(
+      fileName,
+      {} as RawFileConfig,
+      repoOverride,
+      true,
+      ctx.globalDeleteOrphaned,
+      ctx.env
+    );
+    if (entry) files.push(entry);
+  }
+
+  const prOptions = mergePROptions(
+    ctx.effectivePROptions,
+    ctx.rawRepo.prOptions
+  );
+  const settings = mergeSettings(ctx.effectiveSettings, ctx.rawRepo.settings);
+
+  return {
+    git: ctx.gitUrl,
+    files,
+    prOptions,
+    settings,
+    upstream: ctx.rawRepo.upstream,
+    source: ctx.rawRepo.source,
+  };
+}
+
 /**
  * Normalizes raw config into expanded, merged config.
  * Pipeline: expand git arrays -> merge content -> interpolate env vars
@@ -703,55 +757,19 @@ export function normalizeConfig(
     }
 
     for (const gitUrl of gitUrls) {
-      const files: FileContent[] = [];
-
-      const inheritFiles = shouldInherit(rawRepo.files);
-
-      for (const fileName of fileNames) {
-        // Skip reserved key
-        if (fileName === "inherit") continue;
-
-        const entry = resolveFileEntry(
-          fileName,
-          effectiveRootFiles[fileName],
-          rawRepo.files?.[fileName],
-          inheritFiles,
-          raw.deleteOrphaned,
-          env
-        );
-        if (entry) files.push(entry);
-      }
-
-      // Process repo-only files (standalone definitions not in root/groups)
-      for (const fileName of repoOnlyFileNames) {
-        const repoOverride = rawRepo.files![fileName];
-        if (repoOverride === false) continue;
-
-        const entry = resolveFileEntry(
-          fileName,
-          {} as RawFileConfig,
-          repoOverride,
-          true,
-          raw.deleteOrphaned,
-          env
-        );
-        if (entry) files.push(entry);
-      }
-
-      // Merge PR options: per-repo overrides effective (root + groups)
-      const prOptions = mergePROptions(effectivePROptions, rawRepo.prOptions);
-
-      // Merge settings: per-repo deep merges with effective (root + groups)
-      const settings = mergeSettings(effectiveSettings, rawRepo.settings);
-
-      expandedRepos.push({
-        git: gitUrl,
-        files,
-        prOptions,
-        settings,
-        upstream: rawRepo.upstream,
-        source: rawRepo.source,
-      });
+      expandedRepos.push(
+        normalizeRepoEntry({
+          gitUrl,
+          rawRepo,
+          effectiveRootFiles,
+          fileNames,
+          repoOnlyFileNames,
+          effectivePROptions,
+          effectiveSettings,
+          globalDeleteOrphaned: raw.deleteOrphaned,
+          env,
+        })
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import type {
   ICommitPushManager,
 } from "./types.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { BRANCH_PROTECTION_ERROR_PATTERNS } from "../shared/retry-utils.js";
 import type { DebugInfoLog } from "../shared/logger.js";
 
 type CommitStrategyFactory = (
@@ -105,9 +106,7 @@ export class CommitPushManager implements ICommitPushManager {
 
     if (
       isDirectMode &&
-      (message.includes("rejected") ||
-        message.includes("protected") ||
-        message.includes("denied"))
+      BRANCH_PROTECTION_ERROR_PATTERNS.some((p) => p.test(message))
     ) {
       return {
         success: false,

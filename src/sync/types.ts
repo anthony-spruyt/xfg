@@ -1,4 +1,8 @@
-import type { FileContent, RepoConfig } from "../config/index.js";
+import type {
+  FileContent,
+  RepoConfig,
+  PRMergeOptions,
+} from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type { ActiveAction } from "../settings/index.js";
 import type {
@@ -238,7 +242,7 @@ export interface PRHandlerOptions extends RunContext {
 
 export interface CreateAndMergeInput {
   repoInfo: RepoInfo;
-  repoConfig: RepoConfig;
+  prOptions?: PRMergeOptions;
   options: PRHandlerOptions;
   changedFiles: FileAction[];
   repoName: string;

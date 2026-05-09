@@ -64,7 +64,8 @@ export class GitOps implements ILocalGitOps {
       mkdirSync(this.workDir, { recursive: true });
     } catch (error) {
       throw new SyncError(
-        `Failed to clean workspace '${this.workDir}': ${toErrorMessage(error)}`
+        `Failed to clean workspace '${this.workDir}': ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
   }
@@ -83,7 +84,8 @@ export class GitOps implements ILocalGitOps {
     } catch (error) {
       const message = toErrorMessage(error);
       throw new SyncError(
-        `Failed to create branch '${branchName}': ${message}`
+        `Failed to create branch '${branchName}': ${message}`,
+        { cause: error }
       );
     }
   }
@@ -101,7 +103,8 @@ export class GitOps implements ILocalGitOps {
       writeFileSync(filePath, normalized, "utf-8");
     } catch (error) {
       throw new SyncError(
-        `Failed to write file '${fileName}': ${toErrorMessage(error)}`
+        `Failed to write file '${fileName}': ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
   }
@@ -122,7 +125,8 @@ export class GitOps implements ILocalGitOps {
       chmodSync(filePath, 0o755);
     } catch (error) {
       throw new SyncError(
-        `Failed to set executable permissions on '${fileName}': ${toErrorMessage(error)}`
+        `Failed to set executable permissions on '${fileName}': ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
 
@@ -146,7 +150,8 @@ export class GitOps implements ILocalGitOps {
       chmodSync(filePath, 0o644);
     } catch (error) {
       throw new SyncError(
-        `Failed to clear executable permissions on '${fileName}': ${toErrorMessage(error)}`
+        `Failed to clear executable permissions on '${fileName}': ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
     await this.exec(
@@ -305,7 +310,8 @@ export class GitOps implements ILocalGitOps {
       rmSync(filePath);
     } catch (error) {
       throw new SyncError(
-        `Failed to delete file '${fileName}': ${toErrorMessage(error)}`
+        `Failed to delete file '${fileName}': ${toErrorMessage(error)}`,
+        { cause: error }
       );
     }
   }

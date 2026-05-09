@@ -6,7 +6,6 @@ import { tmpdir } from "node:os";
 import { PRMergeHandler } from "../../../src/sync/pr-merge-handler.js";
 import { createMockLogger, createMockExecutor } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
-import type { RepoConfig } from "../../../src/config/types.js";
 import type { FileAction } from "../../../src/vcs/pr-creator.js";
 
 const testDir = join(tmpdir(), "pr-merge-handler-test-" + Date.now());
@@ -47,14 +46,9 @@ describe("PRMergeHandler", () => {
       const changedFiles: FileAction[] = [
         { fileName: "config.json", action: "create" },
       ];
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [],
-      };
 
       const result = await handler.createAndMerge({
         repoInfo: mockRepoInfo,
-        repoConfig,
         options: {
           branchName: "chore/sync",
           baseBranch: "main",
@@ -83,15 +77,10 @@ describe("PRMergeHandler", () => {
       const changedFiles: FileAction[] = [
         { fileName: "config.json", action: "create" },
       ];
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [],
-        prOptions: { merge: "manual" },
-      };
 
       const result = await handler.createAndMerge({
         repoInfo: mockRepoInfo,
-        repoConfig,
+        prOptions: { merge: "manual" },
         options: {
           branchName: "chore/sync",
           baseBranch: "main",
@@ -119,11 +108,6 @@ describe("PRMergeHandler", () => {
 
       const handler = new PRMergeHandler(mockLogger);
       const changedFiles: FileAction[] = [];
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [],
-        prOptions: { merge: "manual" },
-      };
       const diffStats = {
         newCount: 1,
         modifiedCount: 2,
@@ -133,7 +117,7 @@ describe("PRMergeHandler", () => {
 
       const result = await handler.createAndMerge({
         repoInfo: mockRepoInfo,
-        repoConfig,
+        prOptions: { merge: "manual" },
         options: {
           branchName: "chore/sync",
           baseBranch: "main",
@@ -164,17 +148,12 @@ describe("PRMergeHandler", () => {
       const changedFiles: FileAction[] = [
         { fileName: "config.json", action: "create" },
       ];
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [],
-        prOptions: {
-          labels: ["config-sync", "automated"],
-        },
-      };
 
       await handler.createAndMerge({
         repoInfo: mockRepoInfo,
-        repoConfig,
+        prOptions: {
+          labels: ["config-sync", "automated"],
+        },
         options: {
           branchName: "chore/sync",
           baseBranch: "main",
@@ -210,14 +189,9 @@ describe("PRMergeHandler", () => {
       const changedFiles: FileAction[] = [
         { fileName: "config.json", action: "create" },
       ];
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [],
-      };
 
       const result = await handler.createAndMerge({
         repoInfo: mockRepoInfo,
-        repoConfig,
         options: {
           branchName: "chore/sync",
           baseBranch: "main",

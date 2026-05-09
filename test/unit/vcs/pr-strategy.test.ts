@@ -215,8 +215,10 @@ class MockPRStrategy implements IPRStrategy {
     return this.createResult;
   }
 
-  async closeExistingPR(_options: CloseExistingPROptions): Promise<boolean> {
-    return true;
+  async closeExistingPR(
+    _options: CloseExistingPROptions
+  ): Promise<import("../../../src/vcs/types.js").ClosePRResult> {
+    return { status: "closed" };
   }
 
   async merge(
@@ -249,12 +251,15 @@ describe("PRWorkflowExecutor", () => {
     workDir: "/tmp/test",
   };
 
-  test("delegates to strategy.findExistingPRUrl", async () => {
+  test("delegates to strategy.findExistingPRUrl and creates when none found", async () => {
     const mockStrategy = new MockPRStrategy();
     const executor = new PRWorkflowExecutor(mockStrategy);
 
-    await executor.execute(defaultOptions);
+    const result = await executor.execute(defaultOptions);
 
+    assert.equal(result.success, true);
+    assert.equal(result.url, "https://example.com/pr/1");
+    assert.equal(result.message, "PR created");
     assert.equal(mockStrategy.findExistingPRUrlCalled, true);
   });
 

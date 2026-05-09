@@ -87,7 +87,7 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.vulnerabilityAlertsCalls.push({ repoInfo, enable, options });
   }
 
-  async setAutomatedSecurityFixes(
+  async updateAutomatedSecurityFixes(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -95,7 +95,7 @@ class MockStrategy implements IRepoSettingsStrategy {
     this.automatedSecurityFixesCalls.push({ repoInfo, enable, options });
   }
 
-  async setPrivateVulnerabilityReporting(
+  async updatePrivateVulnerabilityReporting(
     repoInfo: RepoInfo,
     enable: boolean,
     options?: GhApiOptions
@@ -326,7 +326,7 @@ describe("RepoSettingsProcessor", () => {
     assert.equal(mockStrategy.vulnerabilityAlertsCalls[0].enable, true);
   });
 
-  test("should call setAutomatedSecurityFixes for automatedSecurityFixes setting", async () => {
+  test("should call updateAutomatedSecurityFixes for automatedSecurityFixes setting", async () => {
     mockStrategy.getSettingsResult = {};
 
     const processor = new RepoSettingsProcessor(
@@ -347,7 +347,7 @@ describe("RepoSettingsProcessor", () => {
     assert.equal(mockStrategy.automatedSecurityFixesCalls[0].enable, false);
   });
 
-  test("should call setPrivateVulnerabilityReporting for privateVulnerabilityReporting setting", async () => {
+  test("should call updatePrivateVulnerabilityReporting for privateVulnerabilityReporting setting", async () => {
     mockStrategy.getSettingsResult = {
       visibility: "public",
       owner_type: "User",
@@ -427,8 +427,8 @@ describe("RepoSettingsProcessor", () => {
       },
       update: async () => {},
       updateVulnerabilityAlerts: async () => {},
-      setAutomatedSecurityFixes: async () => {},
-      setPrivateVulnerabilityReporting: async () => {},
+      updateAutomatedSecurityFixes: async () => {},
+      updatePrivateVulnerabilityReporting: async () => {},
       branchExists: async () => true,
     };
 

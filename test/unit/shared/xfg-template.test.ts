@@ -97,12 +97,14 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createGitHubContext({ repo: "awesome-service" });
       const result = interpolateXfgContent("Name: ${xfg:repo.name}", ctx);
       assert.equal(result, "Name: awesome-service");
+      assert.equal(typeof result, "string");
     });
 
     test("${xfg:repo.owner} returns owner", () => {
       const ctx = createGitHubContext({ owner: "acme-corp" });
       const result = interpolateXfgContent("Owner: ${xfg:repo.owner}", ctx);
       assert.equal(result, "Owner: acme-corp");
+      assert.ok(!result.includes("${xfg:"));
     });
 
     test("${xfg:repo.fullName} returns owner/repo", () => {
@@ -112,12 +114,14 @@ describe("interpolateXfgContent - built-in variables", () => {
       });
       const result = interpolateXfgContent("Full: ${xfg:repo.fullName}", ctx);
       assert.equal(result, "Full: acme-corp/my-service");
+      assert.ok((result as string).includes("/"));
     });
 
     test("${xfg:repo.url} returns git URL", () => {
       const ctx = createGitHubContext({ owner: "acme", repo: "test" });
       const result = interpolateXfgContent("URL: ${xfg:repo.url}", ctx);
       assert.equal(result, "URL: git@github.com:acme/test.git");
+      assert.ok((result as string).endsWith(".git"));
     });
 
     test("${xfg:repo.platform} returns github", () => {
@@ -127,12 +131,14 @@ describe("interpolateXfgContent - built-in variables", () => {
         ctx
       );
       assert.equal(result, "Platform: github");
+      assert.ok(!result.includes("azure"));
     });
 
     test("${xfg:repo.host} returns host domain", () => {
       const ctx = createGitHubContext({ host: "github.acme.com" });
       const result = interpolateXfgContent("Host: ${xfg:repo.host}", ctx);
       assert.equal(result, "Host: github.acme.com");
+      assert.ok((result as string).includes("."));
     });
   });
 
@@ -141,12 +147,14 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createAzureDevOpsContext({ repo: "backend-api" });
       const result = interpolateXfgContent("Name: ${xfg:repo.name}", ctx);
       assert.equal(result, "Name: backend-api");
+      assert.equal(typeof result, "string");
     });
 
     test("${xfg:repo.owner} returns organization", () => {
       const ctx = createAzureDevOpsContext({ organization: "contoso" });
       const result = interpolateXfgContent("Owner: ${xfg:repo.owner}", ctx);
       assert.equal(result, "Owner: contoso");
+      assert.ok(!result.includes("${xfg:"));
     });
 
     test("${xfg:repo.fullName} returns org/project/repo", () => {
@@ -157,6 +165,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       });
       const result = interpolateXfgContent("Full: ${xfg:repo.fullName}", ctx);
       assert.equal(result, "Full: contoso/platform/api");
+      assert.equal((result as string).split("/").length - 1, 2);
     });
 
     test("${xfg:repo.platform} returns azure-devops", () => {
@@ -166,12 +175,14 @@ describe("interpolateXfgContent - built-in variables", () => {
         ctx
       );
       assert.equal(result, "Platform: azure-devops");
+      assert.ok((result as string).includes("azure"));
     });
 
     test("${xfg:repo.host} returns dev.azure.com", () => {
       const ctx = createAzureDevOpsContext();
       const result = interpolateXfgContent("Host: ${xfg:repo.host}", ctx);
       assert.equal(result, "Host: dev.azure.com");
+      assert.ok((result as string).includes("azure"));
     });
   });
 
@@ -180,6 +191,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createGitLabContext({ repo: "frontend-app" });
       const result = interpolateXfgContent("Name: ${xfg:repo.name}", ctx);
       assert.equal(result, "Name: frontend-app");
+      assert.equal(typeof result, "string");
     });
 
     test("${xfg:repo.owner} returns first namespace segment", () => {
@@ -189,6 +201,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       });
       const result = interpolateXfgContent("Owner: ${xfg:repo.owner}", ctx);
       assert.equal(result, "Owner: acme");
+      assert.ok(!result.includes("/"));
     });
 
     test("${xfg:repo.fullName} returns namespace/repo", () => {
@@ -198,6 +211,7 @@ describe("interpolateXfgContent - built-in variables", () => {
       });
       const result = interpolateXfgContent("Full: ${xfg:repo.fullName}", ctx);
       assert.equal(result, "Full: acme/infra/terraform");
+      assert.ok((result as string).includes("acme/infra"));
     });
 
     test("${xfg:repo.platform} returns gitlab", () => {
@@ -207,12 +221,14 @@ describe("interpolateXfgContent - built-in variables", () => {
         ctx
       );
       assert.equal(result, "Platform: gitlab");
+      assert.ok(!result.includes("github"));
     });
 
     test("${xfg:repo.host} returns host domain", () => {
       const ctx = createGitLabContext({ host: "gitlab.acme.io" });
       const result = interpolateXfgContent("Host: ${xfg:repo.host}", ctx);
       assert.equal(result, "Host: gitlab.acme.io");
+      assert.ok((result as string).includes("gitlab"));
     });
   });
 
@@ -221,13 +237,15 @@ describe("interpolateXfgContent - built-in variables", () => {
       const ctx = createGitHubContext({ fileName: "README.md" });
       const result = interpolateXfgContent("File: ${xfg:file.name}", ctx);
       assert.equal(result, "File: README.md");
+      assert.ok(!result.includes("${xfg:"));
     });
 
     test("${xfg:date} returns current date in YYYY-MM-DD format", () => {
       const ctx = createGitHubContext();
       const result = interpolateXfgContent("Date: ${xfg:date}", ctx) as string;
-      // Check format matches YYYY-MM-DD
       assert.match(result, /^Date: \d{4}-\d{2}-\d{2}$/);
+      const datePart = result.replace("Date: ", "");
+      assert.ok(!isNaN(Date.parse(datePart)));
     });
   });
 });
@@ -236,14 +254,15 @@ describe("interpolateXfgContent - custom variables", () => {
   test("custom var takes precedence over built-in", () => {
     const ctx = createGitHubContext({ vars: { "repo.name": "custom-name" } });
     const result = interpolateXfgContent("Name: ${xfg:repo.name}", ctx);
-    // Custom vars override built-ins
     assert.equal(result, "Name: custom-name");
+    assert.notEqual(result, "Name: my-repo");
   });
 
   test("custom var is resolved", () => {
     const ctx = createGitHubContext({ vars: { myVar: "custom-value" } });
     const result = interpolateXfgContent("Value: ${xfg:myVar}", ctx);
     assert.equal(result, "Value: custom-value");
+    assert.ok(!result.includes("${xfg:"));
   });
 
   test("multiple custom vars", () => {
@@ -252,6 +271,8 @@ describe("interpolateXfgContent - custom variables", () => {
     });
     const result = interpolateXfgContent("${xfg:env}-${xfg:region}", ctx);
     assert.equal(result, "production-us-east-1");
+    assert.ok((result as string).includes("production"));
+    assert.ok((result as string).includes("us-east-1"));
   });
 
   test("mix of custom and built-in vars", () => {
@@ -261,6 +282,7 @@ describe("interpolateXfgContent - custom variables", () => {
     });
     const result = interpolateXfgContent("${xfg:repo.name}-${xfg:env}", ctx);
     assert.equal(result, "my-service-prod");
+    assert.ok((result as string).includes("-"));
   });
 });
 
@@ -269,6 +291,7 @@ describe("interpolateXfgContent - escape mechanism", () => {
     const ctx = createGitHubContext();
     const result = interpolateXfgContent("Escaped: $${xfg:repo.name}", ctx);
     assert.equal(result, "Escaped: ${xfg:repo.name}");
+    assert.ok((result as string).includes("${xfg:"));
   });
 
   test("mixed escaped and interpolated", () => {
@@ -278,18 +301,22 @@ describe("interpolateXfgContent - escape mechanism", () => {
       ctx
     );
     assert.equal(result, "my-repo and ${xfg:not.interpolated}");
+    assert.ok((result as string).startsWith("my-repo"));
+    assert.ok((result as string).includes("${xfg:not.interpolated}"));
   });
 
   test("multiple escaped vars", () => {
     const ctx = createGitHubContext();
     const result = interpolateXfgContent("$${xfg:a} and $${xfg:b}", ctx);
     assert.equal(result, "${xfg:a} and ${xfg:b}");
+    assert.ok(!(result as string).includes("$$"));
   });
 
   test("consecutive escaped vars", () => {
     const ctx = createGitHubContext();
     const result = interpolateXfgContent("$${xfg:a}$${xfg:b}", ctx);
     assert.equal(result, "${xfg:a}${xfg:b}");
+    assert.ok(!(result as string).includes("$$"));
   });
 });
 
@@ -300,6 +327,9 @@ describe("interpolateXfgContent - strict mode", () => {
       () => interpolateXfgContent("${xfg:unknown.var}", ctx, { strict: true }),
       /Unknown xfg template variable: unknown.var/
     );
+    assert.doesNotThrow(() =>
+      interpolateXfgContent("${xfg:repo.name}", ctx, { strict: true })
+    );
   });
 
   test("leaves placeholder in non-strict mode", () => {
@@ -308,6 +338,7 @@ describe("interpolateXfgContent - strict mode", () => {
       strict: false,
     });
     assert.equal(result, "${xfg:unknown.var}");
+    assert.ok((result as string).includes("${xfg:"));
   });
 
   test("default is strict mode", () => {
@@ -316,6 +347,7 @@ describe("interpolateXfgContent - strict mode", () => {
       () => interpolateXfgContent("${xfg:missing}", ctx),
       /Unknown xfg template variable: missing/
     );
+    assert.doesNotThrow(() => interpolateXfgContent("${xfg:repo.name}", ctx));
   });
 });
 
@@ -325,6 +357,7 @@ describe("interpolateXfgContent - content types", () => {
       const ctx = createGitHubContext({ repo: "test" });
       const result = interpolateXfgContent("repo: ${xfg:repo.name}", ctx);
       assert.equal(result, "repo: test");
+      assert.equal(typeof result, "string");
     });
 
     test("multiple vars in string", () => {
@@ -334,6 +367,7 @@ describe("interpolateXfgContent - content types", () => {
         ctx
       );
       assert.equal(result, "org/repo");
+      assert.ok(!result.includes("${xfg:"));
     });
 
     test("multiline string", () => {
@@ -343,6 +377,7 @@ describe("interpolateXfgContent - content types", () => {
         ctx
       );
       assert.equal(result, "line1\nmy-repo\nline3");
+      assert.equal((result as string).split("\n").length, 3);
     });
   });
 
@@ -354,12 +389,15 @@ describe("interpolateXfgContent - content types", () => {
         ctx
       );
       assert.deepEqual(result, ["my-repo", "static", "github"]);
+      assert.ok(Array.isArray(result));
+      assert.equal((result as string[]).length, 3);
     });
 
     test("handles empty array", () => {
       const ctx = createGitHubContext();
       const result = interpolateXfgContent([], ctx);
       assert.deepEqual(result, []);
+      assert.ok(Array.isArray(result));
     });
   });
 
@@ -368,23 +406,24 @@ describe("interpolateXfgContent - content types", () => {
       const ctx = createGitHubContext({ repo: "my-repo" });
       const result = interpolateXfgContent({ name: "${xfg:repo.name}" }, ctx);
       assert.deepEqual(result, { name: "my-repo" });
+      assert.equal(typeof result, "object");
+      assert.ok(!Array.isArray(result));
     });
 
     test("processes nested objects", () => {
       const ctx = createGitHubContext({ repo: "my-repo" });
-      const result = interpolateXfgContent(
-        {
-          outer: {
-            inner: {
-              name: "${xfg:repo.name}",
-            },
+      const input = {
+        outer: {
+          inner: {
+            name: "${xfg:repo.name}",
           },
         },
-        ctx
-      );
+      };
+      const result = interpolateXfgContent(input, ctx);
       assert.deepEqual(result, {
         outer: { inner: { name: "my-repo" } },
       });
+      assert.deepEqual(input.outer.inner.name, "${xfg:repo.name}");
     });
 
     test("processes arrays within objects", () => {
@@ -398,6 +437,7 @@ describe("interpolateXfgContent - content types", () => {
       assert.deepEqual(result, {
         items: ["my-repo", "static"],
       });
+      assert.ok(Array.isArray((result as Record<string, unknown>).items));
     });
 
     test("leaves non-string values unchanged", () => {
@@ -415,6 +455,9 @@ describe("interpolateXfgContent - content types", () => {
         boolean: true,
         nullValue: null,
       });
+      const obj = result as Record<string, unknown>;
+      assert.equal(typeof obj.number, "number");
+      assert.equal(typeof obj.boolean, "boolean");
     });
 
     test("handles arrays of objects", () => {
@@ -428,6 +471,10 @@ describe("interpolateXfgContent - content types", () => {
       assert.deepEqual(result, {
         repos: [{ name: "my-repo" }, { name: "static" }],
       });
+      const repos = (result as Record<string, unknown>).repos as Array<
+        Record<string, string>
+      >;
+      assert.equal(repos.length, 2);
     });
   });
 });

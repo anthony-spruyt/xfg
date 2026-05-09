@@ -6,10 +6,10 @@ import {
   createDiffStats,
   incrementDiffStats,
   formatStatusBadge,
-  formatDiffLine,
   computeUnifiedDiff,
   isBinaryFile,
 } from "../../../src/sync/diff-utils.js";
+import { formatDiffLine } from "../../../src/shared/diff-format.js";
 
 describe("getFileStatus", () => {
   test("returns NEW when file does not exist", () => {

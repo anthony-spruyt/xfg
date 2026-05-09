@@ -2,6 +2,7 @@ import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import { countActions, type SettingsAction } from "../base-processor.js";
+import { deepEqual } from "./diff-algorithm.js";
 import type { GitHubRuleset } from "./types.js";
 
 export type RulesetAction = SettingsAction;
@@ -75,46 +76,6 @@ function normalizeConfigRuleset(ruleset: Ruleset): Record<string, unknown> {
   };
 
   return normalizeRuleset(withDefaults);
-}
-
-/**
- * Performs deep equality comparison of two normalized values.
- */
-function deepEqual(a: unknown, b: unknown): boolean {
-  if (a === b) {
-    return true;
-  }
-
-  if (a === null || b === null || a === undefined || b === undefined) {
-    return a === b;
-  }
-
-  if (typeof a !== typeof b) {
-    return false;
-  }
-
-  if (Array.isArray(a) && Array.isArray(b)) {
-    if (a.length !== b.length) {
-      return false;
-    }
-    return a.every((val, i) => deepEqual(val, b[i]));
-  }
-
-  if (typeof a === "object" && typeof b === "object") {
-    const objA = a as Record<string, unknown>;
-    const objB = b as Record<string, unknown>;
-
-    const keysA = Object.keys(objA);
-    const keysB = Object.keys(objB);
-
-    if (keysA.length !== keysB.length) {
-      return false;
-    }
-
-    return keysA.every((key) => deepEqual(objA[key], objB[key]));
-  }
-
-  return false;
 }
 
 /**

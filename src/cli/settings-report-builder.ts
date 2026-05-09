@@ -1,4 +1,4 @@
-import type { SettingsReport, RepoChanges } from "../output/settings-report.js";
+import type { SettingsReport, RepoChanges } from "../output/index.js";
 import {
   type RepoSettingsPlanEntry,
   type RulesetPlanEntry,
@@ -55,10 +55,8 @@ export function buildSettingsReport(
       labels: [],
     };
 
-    // Convert settings processor output
     if (result.settingsResult?.planOutput?.entries) {
       for (const entry of result.settingsResult.planOutput.entries) {
-        // Skip settings where both values are undefined (no actual change)
         if (entry.oldValue === undefined && entry.newValue === undefined) {
           continue;
         }
@@ -69,12 +67,25 @@ export function buildSettingsReport(
           newValue: entry.newValue,
         });
       }
+    }
+
+    if (result.codeScanningResult?.planOutput?.entries) {
+      for (const entry of result.codeScanningResult.planOutput.entries) {
+        repoChanges.settings.push({
+          name: `codeScanning.${entry.property}`,
+          action: entry.action,
+          oldValue: entry.oldValue,
+          newValue: entry.newValue ?? null,
+        });
+      }
+    }
+
+    if (repoChanges.settings.length > 0) {
       const counts = countActions(repoChanges.settings);
       totals.settings.create += counts.create;
       totals.settings.update += counts.update;
     }
 
-    // Convert ruleset processor output
     if (result.rulesetResult?.planOutput?.entries) {
       for (const entry of result.rulesetResult.planOutput.entries) {
         if (!isActiveAction(entry)) continue;
@@ -91,7 +102,6 @@ export function buildSettingsReport(
       totals.rulesets.delete += counts.delete;
     }
 
-    // Convert labels processor output
     if (result.labelsResult?.planOutput?.entries) {
       for (const entry of result.labelsResult.planOutput.entries) {
         if (!isActiveAction(entry)) continue;
@@ -107,24 +117,6 @@ export function buildSettingsReport(
       totals.labels.create += counts.create;
       totals.labels.update += counts.update;
       totals.labels.delete += counts.delete;
-    }
-
-    // Convert code scanning processor output
-    if (result.codeScanningResult?.planOutput?.entries) {
-      let csCreates = 0;
-      let csUpdates = 0;
-      for (const entry of result.codeScanningResult.planOutput.entries) {
-        repoChanges.settings.push({
-          name: `codeScanning.${entry.property}`,
-          action: entry.action,
-          oldValue: entry.oldValue,
-          newValue: entry.newValue ?? null,
-        });
-        if (entry.action === "create") csCreates++;
-        if (entry.action === "update") csUpdates++;
-      }
-      totals.settings.create += csCreates;
-      totals.settings.update += csUpdates;
     }
 
     if (result.error) {

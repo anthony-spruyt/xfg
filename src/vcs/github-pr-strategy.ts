@@ -7,17 +7,18 @@ import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
+  ClosePRResult,
   MergeOptions,
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { sanitizeCredentials } from "./sanitize-utils.js";
+import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { getStderr } from "../shared/command-executor.js";
 import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
+import { buildTokenEnv, buildHostnameFlag } from "../shared/gh-api-utils.js";
 import { SyncError } from "../shared/errors.js";
 
 /**
@@ -69,7 +70,9 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
   }
 
-  async closeExistingPR(options: CloseExistingPROptions): Promise<boolean> {
+  async closeExistingPR(
+    options: CloseExistingPROptions
+  ): Promise<ClosePRResult> {
     const {
       repoInfo,
       branchName,
@@ -81,7 +84,6 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
-    // First check if there's an existing PR (pass token through)
     const existingUrl = await this.findExistingPRUrl({
       repoInfo,
       branchName,
@@ -92,14 +94,15 @@ export class GitHubPRStrategy extends BasePRStrategy {
     });
 
     if (!existingUrl) {
-      return false;
+      return { status: "no_pr" };
     }
 
-    // Extract PR number from URL
     const prNumber = existingUrl.match(/\/pull\/(\d+)/)?.[1];
     if (!prNumber) {
-      this.log?.warn(`Could not extract PR number from URL: ${existingUrl}`);
-      return false;
+      return {
+        status: "close_failed",
+        message: `Could not extract PR number from URL: ${existingUrl}`,
+      };
     }
 
     const repoFlag = getRepoFlag(repoInfo);
@@ -111,11 +114,11 @@ export class GitHubPRStrategy extends BasePRStrategy {
         () => this.executor.exec(command, workDir, { env: tokenEnv }),
         { retries, log: this.log }
       );
-      return true;
+      return { status: "closed" };
     } catch (error) {
       const message = toErrorMessage(error);
       this.log?.warn(`Failed to close existing PR #${prNumber}: ${message}`);
-      return false;
+      return { status: "close_failed", message };
     }
   }
 
@@ -139,7 +142,8 @@ export class GitHubPRStrategy extends BasePRStrategy {
       writeFileSync(bodyFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
-        `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`
+        `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`,
+        { cause: err }
       );
     }
 
@@ -193,7 +197,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     retries: number = 3,
     token?: string
   ): Promise<boolean> {
-    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnameFlag = buildHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const tokenEnv = buildTokenEnv(token);
     const command = `gh api ${hostnamePart}repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)} --jq '.allow_auto_merge // false'`;
@@ -223,8 +227,12 @@ export class GitHubPRStrategy extends BasePRStrategy {
       case "rebase":
         return "--rebase";
       case "merge":
-      default:
+      case undefined:
         return "--merge";
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected merge strategy: ${_exhaustive}`);
+      }
     }
   }
 

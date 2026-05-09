@@ -29,3 +29,9 @@ https://raw.githubusercontent.com/aquasecurity/trivy/main/schema/trivy-config.js
 # Codecov badge and dashboard (intermittent 502s)
 https://codecov.io/gh/anthony-spruyt/xfg
 https://codecov.io/gh/anthony-spruyt/xfg/graph/badge.svg
+
+# Azure DevOps (intermittent 503s)
+https://dev.azure.com/
+
+# VS Code Marketplace (intermittent 503s)
+https://marketplace.visualstudio.com/

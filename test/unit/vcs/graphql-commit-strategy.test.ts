@@ -209,6 +209,29 @@ describe("GraphQLCommitStrategy", () => {
         commitCall.command.includes("abc123def456789"),
         "Should include expectedHeadOid"
       );
+
+      // Verify commit message is passed in the mutation variables
+      assert.ok(
+        commitCall.command.includes("Test commit message"),
+        "Should include commit message headline in mutation variables"
+      );
+
+      // Verify file additions are base64-encoded in the payload
+      const expectedBase64 = Buffer.from("content1").toString("base64");
+      assert.ok(
+        commitCall.command.includes(expectedBase64),
+        "Should include base64-encoded file content"
+      );
+      assert.ok(
+        commitCall.command.includes("file1.txt"),
+        "Should include file path in additions"
+      );
+
+      // Verify the mutation uses the correct GraphQL mutation signature
+      assert.ok(
+        commitCall.command.includes("CreateCommitOnBranchInput"),
+        "Should use CreateCommitOnBranchInput type in mutation"
+      );
     });
 
     test("does not include empty deletions array in payload", async () => {

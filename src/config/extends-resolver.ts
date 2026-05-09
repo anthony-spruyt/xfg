@@ -1,4 +1,5 @@
 import type { RawGroupConfig } from "./types.js";
+import { ValidationError } from "../shared/errors.js";
 
 const MAX_EXTENDS_DEPTH = 100;
 
@@ -13,20 +14,20 @@ export function resolveExtendsChain(
 ): string[] {
   function walk(name: string, visited: Set<string>, depth: number): string[] {
     if (depth > MAX_EXTENDS_DEPTH) {
-      throw new Error(
+      throw new ValidationError(
         `Extends chain exceeds maximum depth of ${MAX_EXTENDS_DEPTH} — likely misconfigured`
       );
     }
 
     if (visited.has(name)) {
       const cycle = [...visited, name].join(" -> ");
-      throw new Error(`Circular extends detected: ${cycle}`);
+      throw new ValidationError(`Circular extends detected: ${cycle}`);
     }
     visited.add(name);
 
     const group = groupDefs[name];
     if (!group) {
-      throw new Error(
+      throw new ValidationError(
         `Group '${name}' referenced in extends chain does not exist`
       );
     }

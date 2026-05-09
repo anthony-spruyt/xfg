@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "./settings-report.js";
-import type { LifecycleActionKind } from "../lifecycle/types.js";
+import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
 
 export interface LifecycleReport {
@@ -66,6 +66,12 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
           `+ MIGRATE ${action.source ?? "source"} -> ${action.repoName}`
         );
         break;
+
+      /* c8 ignore next 4 */
+      default: {
+        const _exhaustive: never = action.action;
+        throw new Error(`Unexpected lifecycle action: ${_exhaustive}`);
+      }
     }
 
     if (action.settings) {

@@ -1,14 +1,34 @@
 import { ValidationError } from "../../shared/errors.js";
+import type {
+  RepoVisibility,
+  SquashMergeCommitTitle,
+  SquashMergeCommitMessage,
+  MergeCommitTitle,
+  MergeCommitMessage,
+} from "../types.js";
+import { validValues } from "./file-validator.js";
 
-const VALID_VISIBILITY = ["public", "private", "internal"];
-const VALID_SQUASH_MERGE_COMMIT_TITLE = ["PR_TITLE", "COMMIT_OR_PR_TITLE"];
-const VALID_SQUASH_MERGE_COMMIT_MESSAGE = [
+const VALID_VISIBILITY = validValues<RepoVisibility>([
+  "public",
+  "private",
+  "internal",
+]);
+const VALID_SQUASH_MERGE_COMMIT_TITLE = validValues<SquashMergeCommitTitle>([
+  "PR_TITLE",
+  "COMMIT_OR_PR_TITLE",
+]);
+const VALID_SQUASH_MERGE_COMMIT_MESSAGE = validValues<SquashMergeCommitMessage>(
+  ["PR_BODY", "COMMIT_MESSAGES", "BLANK"]
+);
+const VALID_MERGE_COMMIT_TITLE = validValues<MergeCommitTitle>([
+  "PR_TITLE",
+  "MERGE_MESSAGE",
+]);
+const VALID_MERGE_COMMIT_MESSAGE = validValues<MergeCommitMessage>([
   "PR_BODY",
-  "COMMIT_MESSAGES",
+  "PR_TITLE",
   "BLANK",
-];
-const VALID_MERGE_COMMIT_TITLE = ["PR_TITLE", "MERGE_MESSAGE"];
-const VALID_MERGE_COMMIT_MESSAGE = ["PR_BODY", "PR_TITLE", "BLANK"];
+]);
 
 /**
  * Validates GitHub repository settings.

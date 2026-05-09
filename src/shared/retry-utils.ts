@@ -1,6 +1,7 @@
 import pRetry, { AbortError } from "p-retry";
-import { sanitizeCredentials } from "../vcs/sanitize-utils.js";
-import { ValidationError } from "./errors.js";
+import { getStderr } from "./command-executor.js";
+import { sanitizeCredentials } from "./sanitize-utils.js";
+import { ValidationError, type RateLimitedError } from "./errors.js";
 
 /**
  * Core permanent error patterns shared across all strategies (API, GraphQL, CLI).
@@ -24,6 +25,15 @@ export const CORE_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /GITHUB_TOKEN\s+environment\s+variable/i,
   /set\s+the\s+AZURE_DEVOPS_EXT_PAT\s+environment\s+variable/i,
   /GITLAB_TOKEN\s+environment\s+variable/i,
+];
+
+export const BRANCH_PROTECTION_ERROR_PATTERNS: RegExp[] = [
+  /rejected/i,
+  /protected\s*branch/i,
+  /protected/i,
+  /denied/i,
+  /required\s*status\s*check/i,
+  /push\s*rules?\s*prevent/i,
 ];
 
 /**
@@ -87,9 +97,7 @@ const RATE_LIMIT_PATTERNS: RegExp[] = [
  */
 export function isRateLimitError(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   for (const pattern of RATE_LIMIT_PATTERNS) {
     if (pattern.test(combined)) {
@@ -135,9 +143,7 @@ export function isPermanentError(
   }
 
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   // Check permanent patterns first - these always stop retries
   for (const pattern of patterns) {
@@ -157,9 +163,7 @@ export function isTransientError(
   patterns: RegExp[] = DEFAULT_TRANSIENT_ERROR_PATTERNS
 ): boolean {
   const message = error instanceof Error ? error.message : String(error ?? "");
-  const stderr =
-    (error as { stderr?: string | Buffer }).stderr?.toString() ?? "";
-  const combined = `${message} ${stderr}`;
+  const combined = `${message} ${getStderr(error)}`;
 
   for (const pattern of patterns) {
     if (pattern.test(combined)) {
@@ -208,7 +212,7 @@ export async function withRetry<T>(
         // Apply rate-limit-specific delay before the next retry
         if (context.retriesLeft > 0 && isRateLimitError(context.error)) {
           const retryAfterSeconds =
-            (context.error as { retryAfter?: number }).retryAfter ??
+            (context.error as RateLimitedError).retryAfter ??
             RATE_LIMIT_FALLBACK_DELAY_SECONDS;
           options?.log?.info(
             `Rate limited. Waiting ${retryAfterSeconds}s before retry...`

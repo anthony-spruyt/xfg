@@ -86,6 +86,27 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("**Applied: 1 repo (1 created)**"));
   });
 
+  test("renders lifecycle settings with description in diff", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/new-repo",
+          action: "created",
+          settings: { visibility: "public", description: "My cool repo" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync: emptySync(),
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes("+   visibility: public"));
+    assert.ok(markdown.includes('+   description: "My cool repo"'));
+  });
+
   test("renders sync-only changes (no lifecycle)", () => {
     const sync: SyncReport = {
       repos: [
@@ -1085,22 +1106,18 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
 describe("renderSyncLines with diffLines", () => {
   test("appends diff lines after file path for updates", () => {
-    const diffLines: string[] = [];
-    renderSyncLines(
-      {
-        repoName: "org/repo",
-        files: [
-          {
-            path: "config.json",
-            action: "update",
-            diffLines: ["@@ -1,1 +1,1 @@", "-old", "+new"],
-          },
-        ],
-      },
-      diffLines
-    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [
+        {
+          path: "config.json",
+          action: "update",
+          diffLines: ["@@ -1,1 +1,1 @@", "-old", "+new"],
+        },
+      ],
+    });
 
-    assert.deepEqual(diffLines, [
+    assert.deepEqual(result, [
       "! config.json",
       "@@ -1,1 +1,1 @@",
       "-old",
@@ -1109,22 +1126,18 @@ describe("renderSyncLines with diffLines", () => {
   });
 
   test("appends diff lines after file path for creates", () => {
-    const diffLines: string[] = [];
-    renderSyncLines(
-      {
-        repoName: "org/repo",
-        files: [
-          {
-            path: "config.json",
-            action: "create",
-            diffLines: ["@@ -0,0 +1,1 @@", '+{"key": "value"}'],
-          },
-        ],
-      },
-      diffLines
-    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [
+        {
+          path: "config.json",
+          action: "create",
+          diffLines: ["@@ -0,0 +1,1 @@", '+{"key": "value"}'],
+        },
+      ],
+    });
 
-    assert.deepEqual(diffLines, [
+    assert.deepEqual(result, [
       "+ config.json",
       "@@ -0,0 +1,1 @@",
       '+{"key": "value"}',
@@ -1132,35 +1145,27 @@ describe("renderSyncLines with diffLines", () => {
   });
 
   test("does not append diff lines when absent", () => {
-    const diffLines: string[] = [];
-    renderSyncLines(
-      {
-        repoName: "org/repo",
-        files: [{ path: "script.sh", action: "create" }],
-      },
-      diffLines
-    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [{ path: "script.sh", action: "create" }],
+    });
 
-    assert.deepEqual(diffLines, ["+ script.sh"]);
+    assert.deepEqual(result, ["+ script.sh"]);
   });
 
   test("appends diff lines for deleted files", () => {
-    const diffLines: string[] = [];
-    renderSyncLines(
-      {
-        repoName: "org/repo",
-        files: [
-          {
-            path: "old.yaml",
-            action: "delete",
-            diffLines: ["@@ -1,2 +0,0 @@", "-key: value", "-other: thing"],
-          },
-        ],
-      },
-      diffLines
-    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [
+        {
+          path: "old.yaml",
+          action: "delete",
+          diffLines: ["@@ -1,2 +0,0 @@", "-key: value", "-other: thing"],
+        },
+      ],
+    });
 
-    assert.deepEqual(diffLines, [
+    assert.deepEqual(result, [
       "- old.yaml",
       "@@ -1,2 +0,0 @@",
       "-key: value",

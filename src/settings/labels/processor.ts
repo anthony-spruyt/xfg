@@ -3,7 +3,7 @@ import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
 import { diffLabels } from "./diff.js";
 import { formatLabelsPlan, type LabelsPlanResult } from "./formatter.js";
 import { labelConfigToPayload } from "./converter.js";
-import type { ILabelsStrategy } from "./types.js";
+import type { ILabelsStrategy, LabelUpdateParams } from "./types.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,
@@ -110,11 +110,7 @@ export class LabelsProcessor implements ILabelsProcessor {
 
         case "update":
           if (change.desired) {
-            const updatePayload: {
-              new_name?: string;
-              color?: string;
-              description?: string;
-            } = {};
+            const updatePayload: LabelUpdateParams = {};
             for (const prop of change.propertyChanges ?? []) {
               if (prop.property === "color") {
                 updatePayload.color = prop.newValue;

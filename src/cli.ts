@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
-import { program } from "./cli/program.js";
+import { program, getVersion } from "./cli/program.js";
 
+program.version(getVersion());
 program.parse();

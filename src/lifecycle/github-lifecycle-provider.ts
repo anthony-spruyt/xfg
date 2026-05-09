@@ -12,8 +12,8 @@ import {
 } from "../repo/index.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { LifecycleError } from "../shared/errors.js";
-import { buildTokenEnv, getHostnameFlag } from "../shared/gh-api-utils.js";
-import type { DebugWarnLog } from "../shared/logger.js";
+import { buildTokenEnv, buildHostnameFlag } from "../shared/gh-api-utils.js";
+import type { DebugInfoWarnLog } from "../shared/logger.js";
 import type {
   IRepoLifecycleProvider,
   LifecyclePlatform,
@@ -83,7 +83,7 @@ interface GitHubLifecycleProviderOptions {
   forkReadyTimeoutMs?: number;
   /** Poll interval in ms for fork readiness checks (default: 2000) */
   forkPollIntervalMs?: number;
-  log?: DebugWarnLog;
+  log?: DebugInfoWarnLog;
 }
 
 function buildRepoCreateFlags(
@@ -117,7 +117,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   private readonly cwd: string;
   private readonly forkReadyTimeoutMs: number;
   private readonly forkPollIntervalMs: number;
-  private readonly log?: DebugWarnLog;
+  private readonly log?: DebugInfoWarnLog;
 
   constructor(options: GitHubLifecycleProviderOptions) {
     this.executor = options.executor;
@@ -191,7 +191,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     apiPath: string;
   } {
     const tokenEnv = buildTokenEnv(token);
-    const hostnameFlag = getHostnameFlag(repoInfo);
+    const hostnameFlag = buildHostnameFlag(repoInfo);
     const hostnamePart = hostnameFlag ? `${hostnameFlag} ` : "";
     const apiPath = `repos/${escapeShellArg(repoInfo.owner)}/${escapeShellArg(repoInfo.repo)}`;
     return { tokenEnv, prefix: `gh api ${hostnamePart}`, apiPath };
@@ -350,6 +350,26 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
   }
 
+  private async pollWithDeadline(
+    check: () => Promise<boolean>,
+    opts: { timeoutMs: number; pollMs: number; debugLabel: string }
+  ): Promise<boolean> {
+    const deadline = Date.now() + opts.timeoutMs;
+    while (Date.now() < deadline) {
+      try {
+        if (await check()) return true;
+      } catch (error) {
+        this.log?.debug(`Polling ${opts.debugLabel}: ${toErrorMessage(error)}`);
+      }
+      const remaining = deadline - Date.now();
+      if (remaining <= 0) break;
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.min(opts.pollMs, remaining))
+      );
+    }
+    return false;
+  }
+
   /**
    * Wait for a forked repo to become available via the GitHub API.
    * GitHub forks are created asynchronously; polls exists() with a timeout.
@@ -359,30 +379,20 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     options?: { timeoutMs?: number; pollMs?: number; token?: string }
   ): Promise<void> {
     const timeoutMs = options?.timeoutMs ?? FORK_READY_TIMEOUT_MS;
-    const intervalMs = options?.pollMs ?? FORK_POLL_INTERVAL_MS;
+    const pollMs = options?.pollMs ?? FORK_POLL_INTERVAL_MS;
     const token = options?.token;
-    const deadline = Date.now() + timeoutMs;
 
-    while (Date.now() < deadline) {
-      try {
-        const ready = await this.exists({ repo: repoInfo, token });
-        if (ready) {
-          return;
-        }
-      } catch (error) {
-        this.log?.debug(`Polling fork readiness: ${toErrorMessage(error)}`);
-      }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) break;
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.min(intervalMs, remaining))
+    const ready = await this.pollWithDeadline(
+      () => this.exists({ repo: repoInfo, token }),
+      { timeoutMs, pollMs, debugLabel: "fork readiness" }
+    );
+
+    if (!ready) {
+      throw new LifecycleError(
+        `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
+          `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
       );
     }
-
-    throw new LifecycleError(
-      `Timed out waiting for fork ${repoInfo.owner}/${repoInfo.repo} to become available ` +
-        `after ${timeoutMs / 1000}s. The fork may still be processing on GitHub.`
-    );
   }
 
   /**
@@ -429,8 +439,19 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const tokenEnv = buildTokenEnv(token);
 
-    // Remove existing "origin" remote if present (e.g., from git clone --mirror).
-    // gh repo create --source --push needs to set its own origin remote.
+    await this.removeOriginRemote(sourceDir);
+    await this.cleanNonStandardRefs(sourceDir);
+    await this.renameMirrorDefaultBranch(sourceDir, settings?.defaultBranch);
+    await this.createRepoAndPushMirror(
+      repoInfo,
+      sourceDir,
+      settings,
+      token,
+      tokenEnv
+    );
+  }
+
+  private async removeOriginRemote(sourceDir: string): Promise<void> {
     try {
       await this.executor.exec(
         `git -C ${escapeShellArg(sourceDir)} remote remove origin`,
@@ -441,12 +462,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         `Cleanup: remote remove origin skipped - ${toErrorMessage(error)}`
       );
     }
+  }
 
-    // Remove all non-standard refs that GitHub rejects on push.
-    // Mirror clones include ALL refs from the source, but GitHub only
-    // accepts branches (refs/heads/*) and tags (refs/tags/*).
-    // Other refs like refs/pull/* (GitHub), refs/merge-requests/* (GitLab),
-    // refs/keep-around/* etc. must be removed.
+  // Mirror clones include ALL refs from the source, but GitHub only
+  // accepts branches (refs/heads/*) and tags (refs/tags/*).
+  private async cleanNonStandardRefs(sourceDir: string): Promise<void> {
     try {
       const allRefs = await this.executor.exec(
         `git -C ${escapeShellArg(sourceDir)} for-each-ref --format='%(refname)'`,
@@ -469,42 +489,53 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         `Cleanup: ref cleanup skipped - ${toErrorMessage(error)}`
       );
     }
+  }
 
-    // Rename default branch in mirror clone if requested.
-    if (settings?.defaultBranch) {
-      const headRef = (
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
-          this.cwd
-        )
-      ).trim();
+  private async renameMirrorDefaultBranch(
+    sourceDir: string,
+    targetBranch?: string
+  ): Promise<void> {
+    if (!targetBranch) return;
 
-      const prefix = "refs/heads/";
-      if (!headRef.startsWith(prefix)) {
-        throw new LifecycleError(
-          `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
-            `Cannot rename default branch.`
-        );
-      }
+    const headRef = (
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD`,
+        this.cwd
+      )
+    ).trim();
 
-      const sourceBranch = headRef.slice(prefix.length);
-
-      if (sourceBranch !== settings.defaultBranch) {
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(settings.defaultBranch)}`,
-          this.cwd
-        );
-        await this.executor.exec(
-          `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(settings.defaultBranch)}`,
-          this.cwd
-        );
-      }
+    const prefix = "refs/heads/";
+    if (!headRef.startsWith(prefix)) {
+      throw new LifecycleError(
+        `Mirror clone HEAD symbolic-ref is '${headRef}', expected to start with '${prefix}'. ` +
+          `Cannot rename default branch.`
+      );
     }
 
-    // Split create and push into two steps. gh repo create --source --push
-    // does both atomically, but if the git backend hasn't propagated after
-    // the GraphQL create, the push fails with "Repository not found". A
-    // retry then hits "Name already exists" on the create step.
+    const sourceBranch = headRef.slice(prefix.length);
+
+    if (sourceBranch !== targetBranch) {
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} branch -m ${escapeShellArg(sourceBranch)} ${escapeShellArg(targetBranch)}`,
+        this.cwd
+      );
+      await this.executor.exec(
+        `git -C ${escapeShellArg(sourceDir)} symbolic-ref HEAD refs/heads/${escapeShellArg(targetBranch)}`,
+        this.cwd
+      );
+    }
+  }
+
+  private async createRepoAndPushMirror(
+    repoInfo: GitHubRepoInfo,
+    sourceDir: string,
+    settings: LifecycleReceiveMigrationParams["settings"],
+    token: string | undefined,
+    tokenEnv: Record<string, string> | undefined
+  ): Promise<void> {
+    // Split create and push: gh repo create --source --push does both
+    // atomically, but if the git backend hasn't propagated after the
+    // GraphQL create, the push fails with "Repository not found".
     const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
     const createParts: string[] = ["gh repo create", escapeShellArg(repoSlug)];
     buildRepoCreateFlags(createParts, settings);
@@ -519,19 +550,16 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           retries: this.retries,
           permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
           log: this.log
-            ? { info: (m: string) => this.log!.warn(m) }
+            ? { info: (m: string) => this.log!.info(m) }
             : undefined,
         }
       );
     } catch (error) {
-      if (!/already\s*exists/i.test(toErrorMessage(error))) {
+      if (!isPermanentError(error, [/already\s*exists/i])) {
         throw error;
       }
     }
 
-    // Push mirror content via authenticated URL. Retries handle the git
-    // backend propagation delay (POST_CREATE_PERMANENT_PATTERNS allows
-    // retry on 404/not-found).
     const remoteUrl = token
       ? `https://x-access-token:${token}@${repoInfo.host}/${repoSlug}.git`
       : `https://${repoInfo.host}/${repoSlug}.git`;
@@ -551,7 +579,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       {
         retries: this.retries,
         permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
-        log: this.log ? { info: (m: string) => this.log!.warn(m) } : undefined,
+        log: this.log ? { info: (m: string) => this.log!.info(m) } : undefined,
       }
     );
   }
@@ -604,10 +632,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       repoInfo,
       options?.token
     );
-    const deadline = Date.now() + timeoutMs;
 
-    while (Date.now() < deadline) {
-      try {
+    // Best-effort wait — don't throw on timeout since rename already succeeded
+    await this.pollWithDeadline(
+      async () => {
         const branch = (
           await this.executor.exec(
             `${prefix}${apiPath} --jq '.default_branch'`,
@@ -615,20 +643,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
             { env: tokenEnv }
           )
         ).trim();
-        if (branch === expectedBranch) {
-          return;
-        }
-      } catch (error) {
-        this.log?.debug(`Polling default branch: ${toErrorMessage(error)}`);
-      }
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) break;
-      await new Promise((resolve) =>
-        setTimeout(resolve, Math.min(pollMs, remaining))
-      );
-    }
-
-    // Don't throw — rename succeeded, this is just a best-effort wait
+        return branch === expectedBranch;
+      },
+      { timeoutMs, pollMs, debugLabel: "default branch" }
+    );
   }
 
   /**
