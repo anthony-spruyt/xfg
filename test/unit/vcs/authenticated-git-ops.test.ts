@@ -71,10 +71,10 @@ function createMockLocalOps(): ILocalGitOps {
 describe("AuthenticatedGitOps", () => {
   describe("without auth", () => {
     test("clone runs plain git clone", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -87,22 +87,22 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.clone("https://github.com/owner/repo.git");
 
-      assert.strictEqual(commands.length, 1);
+      assert.strictEqual(calls.length, 1);
       assert.ok(
-        commands[0].includes("clone"),
-        `Expected clone in command: ${commands[0]}`
+        calls[0].args.includes("clone"),
+        `Expected clone in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        !commands[0].includes("x-access-token"),
-        `Should not have auth token: ${commands[0]}`
+        !calls[0].args.some((a) => a.includes("x-access-token")),
+        `Should not have auth token: ${calls[0].args.join(" ")}`
       );
     });
 
     test("push runs plain git push", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -115,26 +115,31 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.push("feature-branch", { force: true });
 
-      assert.strictEqual(commands.length, 1);
-      assert.ok(
-        commands[0].startsWith("git push"),
-        `Expected git push command: ${commands[0]}`
+      assert.strictEqual(calls.length, 1);
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
+        `Expected git executable: ${calls[0].executable}`
       );
       assert.ok(
-        commands[0].includes("feature-branch"),
-        `Expected branch name: ${commands[0]}`
+        calls[0].args.includes("push"),
+        `Expected push in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("--force-with-lease"),
-        `Expected force flag: ${commands[0]}`
+        calls[0].args.includes("feature-branch"),
+        `Expected branch name: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.includes("--force-with-lease"),
+        `Expected force flag: ${calls[0].args.join(" ")}`
       );
     });
 
     test("fetch runs plain git fetch", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -147,20 +152,25 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.fetch({ prune: true });
 
-      assert.strictEqual(commands.length, 1);
-      assert.ok(
-        commands[0].startsWith("git fetch"),
-        `Expected git fetch command: ${commands[0]}`
+      assert.strictEqual(calls.length, 1);
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
+        `Expected git executable: ${calls[0].executable}`
       );
       assert.ok(
-        commands[0].includes("--prune"),
-        `Expected --prune flag: ${commands[0]}`
+        calls[0].args.includes("fetch"),
+        `Expected fetch in args: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.includes("--prune"),
+        `Expected --prune flag: ${calls[0].args.join(" ")}`
       );
     });
 
     test("getDefaultBranch delegates to localOps fallback when remote show fails", async () => {
-      const mockExecutor = {
-        exec: async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec() {
           throw new Error("remote not available");
         },
       };
@@ -190,10 +200,10 @@ describe("AuthenticatedGitOps", () => {
     };
 
     test("clone uses authenticated URL directly", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -208,32 +218,34 @@ describe("AuthenticatedGitOps", () => {
       await authOps.clone("https://github.com/test-owner/test-repo.git");
 
       // Verify clone command uses authenticated URL directly
-      assert.strictEqual(commands.length, 1);
+      assert.strictEqual(calls.length, 1);
 
       // Clone with authenticated URL (token embedded)
       assert.ok(
-        commands[0].includes("clone"),
-        `Expected clone in command: ${commands[0]}`
+        calls[0].args.includes("clone"),
+        `Expected clone in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("test-token-123"),
-        `Expected token in command: ${commands[0]}`
+        calls[0].args.some((a) => a.includes("test-token-123")),
+        `Expected token in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("x-access-token"),
-        `Expected x-access-token in command: ${commands[0]}`
+        calls[0].args.some((a) => a.includes("x-access-token")),
+        `Expected x-access-token in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("github.com/test-owner/test-repo"),
-        `Expected repo path in command: ${commands[0]}`
+        calls[0].args.some((a) =>
+          a.includes("github.com/test-owner/test-repo")
+        ),
+        `Expected repo path in args: ${calls[0].args.join(" ")}`
       );
     });
 
     test("push uses plain git command (remote already has auth)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -248,26 +260,31 @@ describe("AuthenticatedGitOps", () => {
       await authOps.push("feature-branch");
 
       // Verify plain git push (no -c flag needed, remote URL has auth)
-      assert.strictEqual(commands.length, 1);
-      assert.ok(
-        commands[0].startsWith("git push"),
-        `Expected git push command: ${commands[0]}`
+      assert.strictEqual(calls.length, 1);
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
+        `Expected git executable: ${calls[0].executable}`
       );
       assert.ok(
-        !commands[0].includes("insteadOf"),
-        `Should not have -c flag: ${commands[0]}`
+        calls[0].args.includes("push"),
+        `Expected push in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("feature-branch"),
-        `Expected branch name in command: ${commands[0]}`
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        `Should not have -c flag: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.includes("feature-branch"),
+        `Expected branch name in args: ${calls[0].args.join(" ")}`
       );
     });
 
     test("fetch uses plain git command (remote already has auth)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -282,28 +299,33 @@ describe("AuthenticatedGitOps", () => {
       await authOps.fetch({ prune: true });
 
       // Verify plain git fetch (no -c flag needed, remote URL has auth)
-      assert.strictEqual(commands.length, 1);
-      assert.ok(
-        commands[0].startsWith("git fetch"),
-        `Expected git fetch command: ${commands[0]}`
+      assert.strictEqual(calls.length, 1);
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
+        `Expected git executable: ${calls[0].executable}`
       );
       assert.ok(
-        !commands[0].includes("insteadOf"),
-        `Should not have -c flag: ${commands[0]}`
+        calls[0].args.includes("fetch"),
+        `Expected fetch in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        commands[0].includes("--prune"),
-        `Expected --prune flag in command: ${commands[0]}`
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        `Should not have -c flag: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.includes("--prune"),
+        `Expected --prune flag in args: ${calls[0].args.join(" ")}`
       );
     });
   });
 
   describe("authenticated URL embedding", () => {
     test("clone embeds auth token directly in URL", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -324,20 +346,22 @@ describe("AuthenticatedGitOps", () => {
 
       // Clone uses authenticated URL directly (no insteadOf)
       assert.ok(
-        commands[0].includes("x-access-token:my-token@github.com/myorg/myrepo"),
-        `Expected authenticated URL: ${commands[0]}`
+        calls[0].args.some((a) =>
+          a.includes("x-access-token:my-token@github.com/myorg/myrepo")
+        ),
+        `Expected authenticated URL: ${calls[0].args.join(" ")}`
       );
       assert.ok(
-        !commands[0].includes("insteadOf"),
-        `Should not use insteadOf: ${commands[0]}`
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        `Should not use insteadOf: ${calls[0].args.join(" ")}`
       );
     });
 
     test("handles GitHub Enterprise hosts", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -360,18 +384,18 @@ describe("AuthenticatedGitOps", () => {
       const hostPattern =
         /https:\/\/x-access-token:[^@]+@github\.mycompany\.com\/org\/repo/;
       assert.ok(
-        hostPattern.test(commands[0]),
-        `Expected custom host in authenticated URL: ${commands[0]}`
+        calls[0].args.some((a) => hostPattern.test(a)),
+        `Expected custom host in authenticated URL: ${calls[0].args.join(" ")}`
       );
     });
   });
 
   describe("specialized network operations", () => {
     test("lsRemote uses plain git command (remote already has auth)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "abc123\trefs/heads/main\n";
         },
       };
@@ -390,21 +414,29 @@ describe("AuthenticatedGitOps", () => {
 
       const result = await authOps.lsRemote("main");
 
-      assert.ok(commands[0].includes("ls-remote --exit-code --heads origin"));
+      assert.ok(calls[0].args.includes("ls-remote"));
+      assert.ok(calls[0].args.includes("--exit-code"));
+      assert.ok(calls[0].args.includes("--heads"));
+      assert.ok(calls[0].args.includes("origin"));
+      assert.ok(calls[0].args.includes("main"));
       // Check that we're not using -c url.insteadOf pattern
-      assert.ok(!commands[0].includes("insteadOf"), "Should not use insteadOf");
       assert.ok(
-        commands[0].startsWith("git ls-remote"),
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        "Should not use insteadOf"
+      );
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
         "Should be plain git command"
       );
       assert.equal(result, "abc123\trefs/heads/main\n");
     });
 
     test("pushRefspec uses plain git command (remote already has auth)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -423,16 +455,19 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.pushRefspec("HEAD:feature-branch");
 
-      assert.ok(commands[0].includes("push"));
-      assert.ok(commands[0].includes("HEAD:feature-branch"));
-      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
+      assert.ok(calls[0].args.includes("push"));
+      assert.ok(calls[0].args.includes("HEAD:feature-branch"));
+      assert.ok(
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        "Should not have -c flag"
+      );
     });
 
     test("pushRefspec with delete flag uses --delete", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -451,15 +486,15 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.pushRefspec("feature-branch", { delete: true });
 
-      assert.ok(commands[0].includes("--delete"));
-      assert.ok(commands[0].includes("feature-branch"));
+      assert.ok(calls[0].args.includes("--delete"));
+      assert.ok(calls[0].args.includes("feature-branch"));
     });
 
     test("fetchBranch uses plain git command (remote already has auth)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -478,21 +513,31 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.fetchBranch("feature-branch");
 
-      assert.ok(commands[0].includes("fetch origin"));
-      assert.ok(commands[0].includes("feature-branch"));
-      assert.ok(commands[0].includes("refs/remotes/origin/"));
-      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
+      assert.ok(calls[0].args.includes("fetch"));
+      assert.ok(calls[0].args.includes("origin"));
       assert.ok(
-        commands[0].includes("+"),
+        calls[0].args.some((a) => a.includes("feature-branch")),
+        `Expected feature-branch in args: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.some((a) => a.includes("refs/remotes/origin/")),
+        `Expected refs/remotes/origin/ in args: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        "Should not have -c flag"
+      );
+      assert.ok(
+        calls[0].args.some((a) => a.startsWith("+")),
         "Should use + prefix in refspec to allow non-fast-forward updates"
       );
     });
 
     test("fetchBranch uses + refspec prefix to allow non-fast-forward updates", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -513,18 +558,21 @@ describe("AuthenticatedGitOps", () => {
 
       // Regression: without +, git fetch rejects non-fast-forward updates
       // when a PR branch (e.g. chore/sync-config) has been rebased or force-pushed
-      assert.match(
-        commands[0],
-        /\+.*chore\/sync-config.*:refs\/remotes\/origin/,
+      const refspecArg = calls[0].args.find(
+        (a) =>
+          a.includes("chore/sync-config") && a.includes("refs/remotes/origin")
+      );
+      assert.ok(
+        refspecArg?.startsWith("+"),
         "Refspec must have + prefix to allow non-fast-forward updates"
       );
     });
 
     test("lsRemote without auth uses plain git command", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "abc123\trefs/heads/main\n";
         },
       };
@@ -537,21 +585,26 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.lsRemote("main");
 
-      assert.ok(commands.length > 0, `No commands captured`);
-      assert.ok(
-        commands[0].startsWith("git ls-remote"),
-        `Expected command to start with 'git ls-remote', got: ${commands[0]}`
+      assert.ok(calls.length > 0, `No commands captured`);
+      assert.strictEqual(
+        calls[0].executable,
+        "git",
+        `Expected executable to be 'git', got: ${calls[0].executable}`
       );
       assert.ok(
-        !commands[0].includes("insteadOf"),
-        `Expected no insteadOf in command, got: ${commands[0]}`
+        calls[0].args.includes("ls-remote"),
+        `Expected ls-remote in args, got: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        `Expected no insteadOf in args, got: ${calls[0].args.join(" ")}`
       );
     });
 
     test("lsRemote with skipRetry does not retry on failure", async () => {
       let callCount = 0;
-      const mockExecutor = {
-        exec: async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec() {
           callCount++;
           throw new Error("Command failed: git ls-remote");
         },
@@ -583,10 +636,10 @@ describe("AuthenticatedGitOps", () => {
     });
 
     test("pushRefspec without auth uses plain git command", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -599,15 +652,16 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.pushRefspec("HEAD:feature-branch");
 
-      assert.ok(commands[0].startsWith("git push"));
-      assert.ok(!commands[0].includes("insteadOf"));
+      assert.strictEqual(calls[0].executable, "git");
+      assert.ok(calls[0].args.includes("push"));
+      assert.ok(!calls[0].args.some((a) => a.includes("insteadOf")));
     });
 
     test("fetchBranch without auth uses plain git command", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
           return "";
         },
       };
@@ -620,16 +674,17 @@ describe("AuthenticatedGitOps", () => {
 
       await authOps.fetchBranch("feature-branch");
 
-      assert.ok(commands[0].startsWith("git fetch"));
-      assert.ok(!commands[0].includes("insteadOf"));
+      assert.strictEqual(calls[0].executable, "git");
+      assert.ok(calls[0].args.includes("fetch"));
+      assert.ok(!calls[0].args.some((a) => a.includes("insteadOf")));
     });
 
     test("getDefaultBranch with auth uses remote show origin (plain git command)", async () => {
-      const commands: string[] = [];
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          commands.push(cmd);
-          if (cmd.includes("remote show origin")) {
+      const calls: Array<{ executable: string; args: string[] }> = [];
+      const mockExecutor: ICommandExecutor = {
+        async exec(exe: string, args: string[]) {
+          calls.push({ executable: exe, args });
+          if (args.includes("remote") && args.includes("show")) {
             return "* remote origin\n  HEAD branch: develop\n";
           }
           return "";
@@ -652,20 +707,31 @@ describe("AuthenticatedGitOps", () => {
 
       assert.equal(result.branch, "develop");
       assert.equal(result.method, "remote HEAD");
-      assert.ok(commands[0].includes("remote show origin"));
-      assert.ok(!commands[0].includes("insteadOf"), "Should not have -c flag");
+      assert.ok(calls[0].args.includes("remote"));
+      assert.ok(calls[0].args.includes("show"));
+      assert.ok(calls[0].args.includes("origin"));
+      assert.ok(
+        !calls[0].args.some((a) => a.includes("insteadOf")),
+        "Should not have -c flag"
+      );
     });
 
     test("getDefaultBranch falls back to main when remote HEAD is (unknown) for empty repo", async () => {
-      const mockExecutor = {
-        exec: async (cmd: string) => {
-          if (cmd.includes("remote show origin")) {
+      const mockExecutor: ICommandExecutor = {
+        async exec(_exe: string, args: string[]) {
+          if (args.includes("remote") && args.includes("show")) {
             return "* remote origin\n  HEAD branch: (unknown)\n";
           }
-          if (cmd.includes("rev-parse --verify origin/main")) {
+          if (
+            args.includes("rev-parse") &&
+            args.some((a) => a.includes("origin/main"))
+          ) {
             throw new Error("not found");
           }
-          if (cmd.includes("rev-parse --verify origin/master")) {
+          if (
+            args.includes("rev-parse") &&
+            args.some((a) => a.includes("origin/master"))
+          ) {
             throw new Error("not found");
           }
           return "";
@@ -692,8 +758,8 @@ describe("AuthenticatedGitOps", () => {
     });
 
     test("getDefaultBranch delegates to localOps.getDefaultBranchLocal when remote show fails", async () => {
-      const mockExecutor = {
-        exec: async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec() {
           throw new Error("remote not available");
         },
       };
@@ -724,8 +790,8 @@ describe("AuthenticatedGitOps", () => {
           debugMessages.push(msg);
         },
       };
-      const mockExecutor = {
-        exec: async () => {
+      const mockExecutor: ICommandExecutor = {
+        async exec() {
           throw new Error("remote not available");
         },
       };
