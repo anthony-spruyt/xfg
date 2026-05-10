@@ -63,29 +63,31 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result?.includes("dev.azure.com"));
       assert.ok(result?.includes("pullrequest/456"));
       assert.equal(mockExecutor.calls.length, 1);
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("az repos pr list"));
+      const call0 = mockExecutor.calls[0];
+      assert.strictEqual(call0.executable, "az");
+      assert.ok(call0.args.includes("pr") && call0.args.includes("list"));
       // Verify command includes correct org, project, repo, and branch args
       assert.ok(
-        command.includes("--repository") && command.includes("myrepo"),
-        `Command should include --repository myrepo. Got: ${command}`
+        call0.args.includes("--repository") && call0.args.includes("myrepo"),
+        `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--source-branch") && command.includes("test-branch"),
-        `Command should include --source-branch test-branch. Got: ${command}`
+        call0.args.includes("--source-branch") &&
+          call0.args.includes("test-branch"),
+        `Args should include --source-branch test-branch. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--target-branch") && command.includes("main"),
-        `Command should include --target-branch main. Got: ${command}`
+        call0.args.includes("--target-branch") && call0.args.includes("main"),
+        `Args should include --target-branch main. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--org") &&
-          command.includes("https://dev.azure.com/myorg"),
-        `Command should include --org with org URL. Got: ${command}`
+        call0.args.includes("--org") &&
+          call0.args.includes("https://dev.azure.com/myorg"),
+        `Args should include --org with org URL. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--project") && command.includes("myproject"),
-        `Command should include --project myproject. Got: ${command}`
+        call0.args.includes("--project") && call0.args.includes("myproject"),
+        `Args should include --project myproject. Got: ${call0.args.join(" ")}`
       );
       // Verify URL uses org/project/repo from config, not just the mock PR ID
       assert.equal(
@@ -196,33 +198,35 @@ describe("AdoPRStrategy with mock executor", () => {
       assert.ok(result.url?.includes("dev.azure.com"));
       assert.ok(result.url?.includes("pullrequest/789"));
       assert.equal(mockExecutor.calls.length, 1);
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("az repos pr create"));
+      const call0 = mockExecutor.calls[0];
+      assert.strictEqual(call0.executable, "az");
+      assert.ok(call0.args.includes("pr") && call0.args.includes("create"));
       // Verify command includes correct org, project, repo, and branch args
       assert.ok(
-        command.includes("--repository") && command.includes("myrepo"),
-        `Command should include --repository myrepo. Got: ${command}`
+        call0.args.includes("--repository") && call0.args.includes("myrepo"),
+        `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--source-branch") && command.includes("test-branch"),
-        `Command should include --source-branch test-branch. Got: ${command}`
+        call0.args.includes("--source-branch") &&
+          call0.args.includes("test-branch"),
+        `Args should include --source-branch test-branch. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--target-branch") && command.includes("main"),
-        `Command should include --target-branch main. Got: ${command}`
+        call0.args.includes("--target-branch") && call0.args.includes("main"),
+        `Args should include --target-branch main. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--title") && command.includes("Test PR"),
-        `Command should include --title. Got: ${command}`
+        call0.args.includes("--title") && call0.args.includes("Test PR"),
+        `Args should include --title. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--org") &&
-          command.includes("https://dev.azure.com/myorg"),
-        `Command should include --org with org URL. Got: ${command}`
+        call0.args.includes("--org") &&
+          call0.args.includes("https://dev.azure.com/myorg"),
+        `Args should include --org with org URL. Got: ${call0.args.join(" ")}`
       );
       assert.ok(
-        command.includes("--project") && command.includes("myproject"),
-        `Command should include --project myproject. Got: ${command}`
+        call0.args.includes("--project") && call0.args.includes("myproject"),
+        `Args should include --project myproject. Got: ${call0.args.join(" ")}`
       );
       // Verify URL uses org/project/repo from config
       assert.equal(
@@ -464,15 +468,15 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 
     await strategy.create(options);
 
-    // Verify the command escapes the @/path/file format for security
-    const command = mockExecutor.calls[0].command;
+    // Verify the args include @/path format for description
+    const call0 = mockExecutor.calls[0];
     const descFile = join(testDir, ".pr-description.md");
 
-    // Should contain escaped @/path format: '@/path/to/file'
-    // The @ is included inside the quotes to prevent shell interpretation issues
+    const descIdx = call0.args.indexOf("--description");
+    assert.ok(descIdx !== -1, "Args should include --description");
     assert.ok(
-      command.includes(`--description '@${descFile}'`),
-      `Command should escape @<path> format with single quotes. Got: ${command}`
+      call0.args[descIdx + 1].includes(`@${descFile}`),
+      `--description value should use @<path> format. Got: ${call0.args[descIdx + 1]}`
     );
   });
 });
@@ -567,8 +571,15 @@ describe("AdoPRStrategy merge", () => {
       assert.ok(result.message.includes("Auto-complete enabled"));
 
       assert.equal(mockExecutor.calls.length, 1);
-      assert.ok(mockExecutor.calls[0].command.includes("az repos pr update"));
-      assert.ok(mockExecutor.calls[0].command.includes("--auto-complete true"));
+      const autoCall = mockExecutor.calls[0];
+      assert.strictEqual(autoCall.executable, "az");
+      assert.ok(
+        autoCall.args.includes("pr") && autoCall.args.includes("update")
+      );
+      assert.ok(
+        autoCall.args.includes("--auto-complete") &&
+          autoCall.args.includes("true")
+      );
     });
 
     test("uses squash flag when configured", async () => {
@@ -583,8 +594,8 @@ describe("AdoPRStrategy merge", () => {
         retries: 0,
       });
 
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--squash true"));
+      const args = mockExecutor.calls[0].args;
+      assert.ok(args.includes("--squash") && args.includes("true"));
     });
 
     test("uses delete-source-branch flag when configured", async () => {
@@ -599,8 +610,10 @@ describe("AdoPRStrategy merge", () => {
         retries: 0,
       });
 
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--delete-source-branch true"));
+      const args = mockExecutor.calls[0].args;
+      assert.ok(
+        args.includes("--delete-source-branch") && args.includes("true")
+      );
     });
 
     test("returns failure when command fails", async () => {
@@ -642,9 +655,13 @@ describe("AdoPRStrategy merge", () => {
       assert.ok(result.message.includes("bypassing policies"));
 
       assert.equal(mockExecutor.calls.length, 1);
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--bypass-policy true"));
-      assert.ok(command.includes("--status completed"));
+      const forceArgs = mockExecutor.calls[0].args;
+      assert.ok(
+        forceArgs.includes("--bypass-policy") && forceArgs.includes("true")
+      );
+      assert.ok(
+        forceArgs.includes("--status") && forceArgs.includes("completed")
+      );
     });
 
     test("uses custom bypass reason when provided", async () => {
@@ -659,9 +676,9 @@ describe("AdoPRStrategy merge", () => {
         retries: 0,
       });
 
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--bypass-policy-reason"));
-      assert.ok(command.includes("Urgent hotfix"));
+      const args = mockExecutor.calls[0].args;
+      assert.ok(args.includes("--bypass-policy-reason"));
+      assert.ok(args.includes("Urgent hotfix"));
     });
 
     test("uses default bypass reason when not provided", async () => {
@@ -676,9 +693,10 @@ describe("AdoPRStrategy merge", () => {
         retries: 0,
       });
 
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--bypass-policy-reason"));
-      assert.ok(command.includes("xfg"));
+      const args = mockExecutor.calls[0].args;
+      assert.ok(args.includes("--bypass-policy-reason"));
+      const reasonIdx = args.indexOf("--bypass-policy-reason");
+      assert.ok(args[reasonIdx + 1].includes("xfg"));
     });
 
     test("uses squash and delete-branch with force mode", async () => {
@@ -693,10 +711,12 @@ describe("AdoPRStrategy merge", () => {
         retries: 0,
       });
 
-      const command = mockExecutor.calls[0].command;
-      assert.ok(command.includes("--bypass-policy true"));
-      assert.ok(command.includes("--squash true"));
-      assert.ok(command.includes("--delete-source-branch true"));
+      const args = mockExecutor.calls[0].args;
+      assert.ok(args.includes("--bypass-policy") && args.includes("true"));
+      assert.ok(args.includes("--squash") && args.includes("true"));
+      assert.ok(
+        args.includes("--delete-source-branch") && args.includes("true")
+      );
     });
 
     test("returns failure when command fails", async () => {
@@ -796,12 +816,18 @@ describe("AdoPRStrategy closeExistingPR", () => {
     });
 
     assert.deepStrictEqual(result, { status: "closed" });
-    const abandonCall = mockExecutor.calls.find((c) =>
-      c.command.includes("az repos pr update")
+    const abandonCall = mockExecutor.calls.find(
+      (c) =>
+        c.executable === "az" &&
+        c.args.includes("pr") &&
+        c.args.includes("update")
     );
     assert.ok(abandonCall, "Should call az repos pr update");
-    assert.ok(abandonCall.command.includes("--status abandoned"));
-    assert.ok(abandonCall.command.includes("--id"));
+    assert.ok(
+      abandonCall.args.includes("--status") &&
+        abandonCall.args.includes("abandoned")
+    );
+    assert.ok(abandonCall.args.includes("--id"));
   });
 
   test("deletes branch after closing PR", async () => {
@@ -819,13 +845,16 @@ describe("AdoPRStrategy closeExistingPR", () => {
       retries: 0,
     });
 
-    const deleteBranchCall = mockExecutor.calls.find((c) =>
-      c.command.includes("az repos ref delete")
+    const deleteBranchCall = mockExecutor.calls.find(
+      (c) =>
+        c.executable === "az" &&
+        c.args.includes("ref") &&
+        c.args.includes("delete")
     );
     assert.ok(deleteBranchCall, "Should call az repos ref delete");
-    assert.ok(deleteBranchCall.command.includes("test-branch"));
+    assert.ok(deleteBranchCall.args.some((a) => a.includes("test-branch")));
     assert.ok(
-      deleteBranchCall.command.includes("abc123def456"),
+      deleteBranchCall.args.includes("abc123def456"),
       "Should include object_id"
     );
   });

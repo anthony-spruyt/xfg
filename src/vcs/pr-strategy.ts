@@ -19,7 +19,6 @@ export interface IPRStrategyLogger {
 }
 
 export abstract class BasePRStrategy implements IPRStrategy {
-  protected bodyFilePath: string = ".pr-body.md";
   protected executor: ICommandExecutor;
   protected log?: IPRStrategyLogger;
 

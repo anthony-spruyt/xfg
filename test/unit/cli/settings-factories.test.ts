@@ -7,12 +7,12 @@ import {
   createDefaultCodeScanningProcessorFactory,
   createDefaultFactories,
 } from "../../../src/cli/settings-factories.js";
-import type { ShellCommandExecutor } from "../../../src/shared/command-executor.js";
+import type { ProcessExecutor } from "../../../src/shared/command-executor.js";
 import type { SettingsProcessorFactories } from "../../../src/cli/types.js";
 
 const stubExecutor = {
   exec: async () => "",
-} as unknown as ShellCommandExecutor;
+} as unknown as ProcessExecutor;
 
 describe("createDefaultRulesetProcessorFactory", () => {
   test("returns a function", () => {

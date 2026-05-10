@@ -9,7 +9,7 @@ import { ValidationError, SyncError } from "../shared/errors.js";
 import { validateBranchName } from "./branch-utils.js";
 import { createTokenManager } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
-import { ShellCommandExecutor } from "../shared/command-executor.js";
+import { ProcessExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
 import type { SyncDependencies, SyncOptions } from "./types.js";
 import { ResultsCollector } from "./results-collector.js";
@@ -86,7 +86,7 @@ export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
 ): Promise<void> {
-  const executor = new ShellCommandExecutor(process.env);
+  const executor = new ProcessExecutor(process.env);
   const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
 
   const { lifecycleManager, settingsProcessorFactories } = deps;

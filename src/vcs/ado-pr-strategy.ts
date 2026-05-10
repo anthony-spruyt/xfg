@@ -1,6 +1,5 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   type AzureDevOpsRepoInfo,
   assertAzureDevOpsRepo,
@@ -8,7 +7,6 @@ import {
 import type { PRResult } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
-import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
@@ -17,7 +15,6 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
@@ -25,10 +22,7 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AdoPRStrategy extends BasePRStrategy {
-  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
-    super(executor, log);
-    this.bodyFilePath = ".pr-description.md";
-  }
+  private readonly bodyFilePath = ".pr-description.md";
 
   private getOrgUrl(repoInfo: AzureDevOpsRepoInfo): string {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}`;
@@ -50,11 +44,29 @@ export class AdoPRStrategy extends BasePRStrategy {
     retries: number
   ): Promise<string | null> {
     const orgUrl = this.getOrgUrl(azureRepoInfo);
-    const command = `az repos pr list --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "[0].pullRequestId" -o tsv`;
+    const args = [
+      "repos",
+      "pr",
+      "list",
+      "--repository",
+      azureRepoInfo.repo,
+      "--source-branch",
+      branchName,
+      "--target-branch",
+      baseBranch,
+      "--org",
+      orgUrl,
+      "--project",
+      azureRepoInfo.project,
+      "--query",
+      "[0].pullRequestId",
+      "-o",
+      "tsv",
+    ];
 
     try {
       const existingPRId = await withRetry(
-        () => this.executor.exec(command, workDir),
+        () => this.executor.exec("az", args, workDir),
         { retries, log: this.log }
       );
 
@@ -113,10 +125,20 @@ export class AdoPRStrategy extends BasePRStrategy {
       return { status: "no_pr" };
     }
 
-    const abandonCommand = `az repos pr update --id ${escapeShellArg(prId)} --status abandoned --org ${escapeShellArg(orgUrl)}`;
+    const abandonArgs = [
+      "repos",
+      "pr",
+      "update",
+      "--id",
+      prId,
+      "--status",
+      "abandoned",
+      "--org",
+      orgUrl,
+    ];
 
     try {
-      await withRetry(() => this.executor.exec(abandonCommand, workDir), {
+      await withRetry(() => this.executor.exec("az", abandonArgs, workDir), {
         retries,
         log: this.log,
       });
@@ -127,16 +149,46 @@ export class AdoPRStrategy extends BasePRStrategy {
     }
 
     try {
-      const getRefCommand = `az repos ref list --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --filter heads/${escapeShellArg(branchName)} --query "[0].objectId" -o tsv`;
+      const getRefArgs = [
+        "repos",
+        "ref",
+        "list",
+        "--repository",
+        azureRepoInfo.repo,
+        "--org",
+        orgUrl,
+        "--project",
+        azureRepoInfo.project,
+        "--filter",
+        `heads/${branchName}`,
+        "--query",
+        "[0].objectId",
+        "-o",
+        "tsv",
+      ];
       const objectId = await withRetry(
-        () => this.executor.exec(getRefCommand, workDir),
+        () => this.executor.exec("az", getRefArgs, workDir),
         { retries, log: this.log }
       );
 
       if (objectId) {
-        const deleteBranchCommand = `az repos ref delete --name refs/heads/${escapeShellArg(branchName)} --repository ${escapeShellArg(azureRepoInfo.repo)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --object-id ${escapeShellArg(objectId)}`;
+        const deleteBranchArgs = [
+          "repos",
+          "ref",
+          "delete",
+          "--name",
+          `refs/heads/${branchName}`,
+          "--repository",
+          azureRepoInfo.repo,
+          "--org",
+          orgUrl,
+          "--project",
+          azureRepoInfo.project,
+          "--object-id",
+          objectId,
+        ];
         await withRetry(
-          () => this.executor.exec(deleteBranchCommand, workDir),
+          () => this.executor.exec("az", deleteBranchArgs, workDir),
           { retries, log: this.log }
         );
       }
@@ -174,14 +226,38 @@ export class AdoPRStrategy extends BasePRStrategy {
       );
     }
 
-    // Azure CLI @file syntax: escape the full @path to handle special chars in workDir
-    const command = `az repos pr create --repository ${escapeShellArg(azureRepoInfo.repo)} --source-branch ${escapeShellArg(branchName)} --target-branch ${escapeShellArg(baseBranch)} --title ${escapeShellArg(title)} --description ${escapeShellArg("@" + descFile)} --org ${escapeShellArg(orgUrl)} --project ${escapeShellArg(azureRepoInfo.project)} --query "pullRequestId" -o tsv`;
+    const args = [
+      "repos",
+      "pr",
+      "create",
+      "--repository",
+      azureRepoInfo.repo,
+      "--source-branch",
+      branchName,
+      "--target-branch",
+      baseBranch,
+      "--title",
+      title,
+      "--description",
+      `@${descFile}`,
+      "--org",
+      orgUrl,
+      "--project",
+      azureRepoInfo.project,
+      "--query",
+      "pullRequestId",
+      "-o",
+      "tsv",
+    ];
 
     try {
-      const prId = await withRetry(() => this.executor.exec(command, workDir), {
-        retries,
-        log: this.log,
-      });
+      const prId = await withRetry(
+        () => this.executor.exec("az", args, workDir),
+        {
+          retries,
+          log: this.log,
+        }
+      );
 
       return {
         url: this.buildPRUrl(azureRepoInfo, prId),
@@ -243,17 +319,24 @@ export class AdoPRStrategy extends BasePRStrategy {
     }
 
     const orgUrl = `https://dev.azure.com/${encodeURIComponent(prInfo.organization)}`;
-    const squashFlag = config.strategy === "squash" ? "--squash true" : "";
-    const deleteBranchFlag = config.deleteBranch
-      ? "--delete-source-branch true"
-      : "";
 
     if (config.mode === "auto") {
-      const autoCommand =
-        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --auto-complete true ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
+      const autoArgs = [
+        "repos",
+        "pr",
+        "update",
+        "--id",
+        prInfo.prId,
+        "--auto-complete",
+        "true",
+        ...(config.strategy === "squash" ? ["--squash", "true"] : []),
+        ...(config.deleteBranch ? ["--delete-source-branch", "true"] : []),
+        "--org",
+        orgUrl,
+      ];
 
       return this.executeMergeCommand(
-        () => this.executor.exec(autoCommand, workDir),
+        () => this.executor.exec("az", autoArgs, workDir),
         retries,
         {
           success: true,
@@ -272,11 +355,26 @@ export class AdoPRStrategy extends BasePRStrategy {
       this.log?.warn(
         `Bypassing policies for PR ${prInfo.prId} (reason: ${bypassReason})`
       );
-      const forceCommand =
-        `az repos pr update --id ${escapeShellArg(prInfo.prId)} --bypass-policy true --bypass-policy-reason ${escapeShellArg(bypassReason)} --status completed ${squashFlag} ${deleteBranchFlag} --org ${escapeShellArg(orgUrl)}`.trim();
+      const forceArgs = [
+        "repos",
+        "pr",
+        "update",
+        "--id",
+        prInfo.prId,
+        "--bypass-policy",
+        "true",
+        "--bypass-policy-reason",
+        bypassReason,
+        "--status",
+        "completed",
+        ...(config.strategy === "squash" ? ["--squash", "true"] : []),
+        ...(config.deleteBranch ? ["--delete-source-branch", "true"] : []),
+        "--org",
+        orgUrl,
+      ];
 
       return this.executeMergeCommand(
-        () => this.executor.exec(forceCommand, workDir),
+        () => this.executor.exec("az", forceArgs, workDir),
         retries,
         {
           success: true,

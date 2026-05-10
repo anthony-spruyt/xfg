@@ -1,4 +1,3 @@
-import { escapeShellArg } from "../shared/shell-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -36,12 +35,18 @@ export class AdoMigrationSource implements IMigrationSource {
   async cloneForMigration(repoInfo: RepoInfo, workDir: string): Promise<void> {
     this.assertAdo(repoInfo);
 
-    const command = `git clone --mirror ${escapeShellArg(repoInfo.gitUrl)} ${escapeShellArg(workDir)}`;
-
     try {
-      await withRetry(() => this.executor.exec(command, this.cwd), {
-        retries: this.retries,
-      });
+      await withRetry(
+        () =>
+          this.executor.exec(
+            "git",
+            ["clone", "--mirror", "--", repoInfo.gitUrl, workDir],
+            this.cwd
+          ),
+        {
+          retries: this.retries,
+        }
+      );
     } catch (error) {
       const msg = toErrorMessage(error);
       throw new LifecycleError(

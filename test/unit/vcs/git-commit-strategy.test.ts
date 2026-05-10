@@ -66,61 +66,66 @@ describe("GitCommitStrategy", () => {
 
       // Verify git commands were called in order: commit, push, rev-parse
       // (staging is handled by CommitPushManager before calling commit())
-      const commands = mockExecutor.calls.map((c) => c.command);
-
-      // Should have git commit with the message and --no-verify
-      const commitCall = commands.find((c) => c.includes("git commit"));
+      const commitCall = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("commit")
+      );
       assert.ok(commitCall, "Should have called git commit");
-      assert.ok(
-        commitCall.includes("Test commit message"),
+
+      // Commit message is passed as the arg after -m
+      const mIndex = commitCall.args.indexOf("-m");
+      assert.ok(mIndex !== -1, "Commit should have -m flag");
+      assert.equal(
+        commitCall.args[mIndex + 1],
+        "Test commit message",
         "Commit should include the message"
       );
       assert.ok(
-        commitCall.includes("--no-verify"),
+        commitCall.args.includes("--no-verify"),
         "Commit should use --no-verify to skip pre-commit hooks"
       );
 
       // Verify commands ran in the correct working directory
-      const commitEntry = mockExecutor.calls.find((c) =>
-        c.command.includes("git commit")
-      );
       assert.equal(
-        commitEntry!.cwd,
+        commitCall.cwd,
         testDir,
         "git commit should run in the work directory"
       );
-      const pushEntry = mockExecutor.calls.find((c) =>
-        c.command.includes("git push")
+
+      const pushEntry = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
+      assert.ok(pushEntry, "Should have called git push");
       assert.equal(
-        pushEntry!.cwd,
+        pushEntry.cwd,
         testDir,
         "git push should run in the work directory"
       );
-      const revParseEntry = mockExecutor.calls.find((c) =>
-        c.command.includes("git rev-parse")
+
+      const revParseEntry = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("rev-parse")
       );
+      assert.ok(revParseEntry, "Should have called git rev-parse");
       assert.equal(
-        revParseEntry!.cwd,
+        revParseEntry.cwd,
         testDir,
         "git rev-parse should run in the work directory"
       );
 
-      // Should have git push with force-with-lease
-      const pushCall = commands.find((c) => c.includes("git push"));
-      assert.ok(pushCall, "Should have called git push");
+      // Should have git push with force-with-lease as a separate arg
       assert.ok(
-        pushCall.includes("--force-with-lease"),
+        pushEntry.args.includes("--force-with-lease"),
         "Push should use --force-with-lease"
       );
       assert.ok(
-        pushCall.includes("test-branch"),
+        pushEntry.args.includes("test-branch"),
         "Push should include branch name"
       );
 
       // Should have git rev-parse to get the SHA
-      const revParseCall = commands.find((c) => c.includes("git rev-parse"));
-      assert.ok(revParseCall, "Should have called git rev-parse HEAD");
+      assert.ok(
+        revParseEntry.args.includes("HEAD"),
+        "Should have called git rev-parse HEAD"
+      );
     });
 
     test("uses retry for push failures", async () => {
@@ -128,18 +133,26 @@ describe("GitCommitStrategy", () => {
       let pushAttempts = 0;
       const originalExec = mockExecutor.mock.exec.bind(mockExecutor.mock);
 
-      mockExecutor.mock.exec = async (command: string, cwd: string) => {
-        if (command.includes("git push")) {
+      mockExecutor.mock.exec = async (
+        executable: string,
+        args: string[],
+        cwd: string
+      ) => {
+        if (executable === "git" && args.includes("push")) {
           pushAttempts++;
           if (pushAttempts === 1) {
             throw new Error("Connection timed out");
           }
           return "";
         }
-        if (command.includes("git rev-parse HEAD")) {
+        if (
+          executable === "git" &&
+          args.includes("rev-parse") &&
+          args.includes("HEAD")
+        ) {
           return "abc123";
         }
-        return originalExec(command, cwd);
+        return originalExec(executable, args, cwd);
       };
 
       const strategy = new GitCommitStrategy(mockExecutor.mock);
@@ -162,7 +175,7 @@ describe("GitCommitStrategy", () => {
       );
     });
 
-    test("escapes branch name in push command", async () => {
+    test("branch name is passed as a plain arg in push command", async () => {
       mockExecutor.responses.set("git rev-parse HEAD", "abc123");
 
       const strategy = new GitCommitStrategy(mockExecutor.mock);
@@ -177,17 +190,16 @@ describe("GitCommitStrategy", () => {
 
       await strategy.commit(options);
 
-      // Find the push command
-      const pushCall = mockExecutor.calls.find((c) =>
-        c.command.includes("git push")
+      // Find the push call
+      const pushCall = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
       assert.ok(pushCall, "Should have called git push");
 
-      // The branch name should be properly escaped with single quotes
-      // escapeShellArg wraps in single quotes and escapes internal single quotes
+      // The branch name is passed as a plain arg (no shell escaping needed)
       assert.ok(
-        pushCall.command.includes("'feature/branch-with-special'"),
-        `Push command should escape branch name. Got: ${pushCall.command}`
+        pushCall.args.includes("feature/branch-with-special'chars"),
+        `Push args should contain branch name. Got: ${JSON.stringify(pushCall.args)}`
       );
     });
 
@@ -234,16 +246,20 @@ describe("GitCommitStrategy", () => {
       });
 
       // Verify git commit was still called with correct message and flags
-      const commitCall = mockExecutor.calls.find((c) =>
-        c.command.includes("git commit")
+      const commitCall = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("commit")
       );
       assert.ok(commitCall, "git commit should still be called before push");
-      assert.ok(
-        commitCall.command.includes("test commit"),
+
+      const mIndex = commitCall.args.indexOf("-m");
+      assert.ok(mIndex !== -1, "Commit should have -m flag");
+      assert.equal(
+        commitCall.args[mIndex + 1],
+        "test commit",
         "Commit should include the provided message"
       );
       assert.ok(
-        commitCall.command.includes("--no-verify"),
+        commitCall.args.includes("--no-verify"),
         "Commit should use --no-verify"
       );
       assert.equal(
@@ -264,8 +280,8 @@ describe("GitCommitStrategy", () => {
       ]);
 
       // Verify raw git push was NOT called
-      const pushCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("git push")
+      const pushCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
       assert.strictEqual(
         pushCalls.length,
@@ -290,8 +306,8 @@ describe("GitCommitStrategy", () => {
       });
 
       // Verify raw git push WAS called
-      const pushCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("git push")
+      const pushCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
       assert.strictEqual(
         pushCalls.length,
@@ -299,7 +315,7 @@ describe("GitCommitStrategy", () => {
         "Should call raw git push when no gitOps"
       );
       assert.ok(
-        pushCalls[0].command.includes("--force-with-lease"),
+        pushCalls[0].args.includes("--force-with-lease"),
         "Should use force flag"
       );
     });

@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { ShellCommandExecutor } from "../../src/shared/command-executor.js";
+import { ProcessExecutor } from "../../src/shared/command-executor.js";
 import { withRetry } from "../../src/shared/retry-utils.js";
 
 /**
@@ -10,7 +10,7 @@ import { withRetry } from "../../src/shared/retry-utils.js";
  */
 describe("error sanitization integration", () => {
   test("command executor sanitizes embedded credentials in stderr", async () => {
-    const executor = new ShellCommandExecutor(process.env);
+    const executor = new ProcessExecutor(process.env);
 
     // Simulate a git-like error that contains embedded credentials
     const errorMessage =
@@ -18,7 +18,11 @@ describe("error sanitization integration", () => {
 
     try {
       await executor.exec(
-        `node -e "console.error('${errorMessage.replace(/'/g, "\\'")}'); process.exit(128)"`,
+        "node",
+        [
+          "-e",
+          `console.error(${JSON.stringify(errorMessage)}); process.exit(128)`,
+        ],
         "."
       );
       assert.fail("Should have thrown");

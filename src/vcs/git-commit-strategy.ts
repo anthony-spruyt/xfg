@@ -1,7 +1,6 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
-import { escapeShellArg } from "../shared/shell-utils.js";
 
 /**
  * Git-based commit strategy using standard git commands (add, commit, push).
@@ -34,7 +33,8 @@ export class GitCommitStrategy implements ICommitStrategy {
     // Commit with the message (--no-verify to skip pre-commit hooks)
     // Staging is handled by CommitPushManager before calling commit()
     await this.executor.exec(
-      `git commit --no-verify -m ${escapeShellArg(message)}`,
+      "git",
+      ["commit", "--no-verify", "-m", message],
       workDir
     );
 
@@ -43,14 +43,19 @@ export class GitCommitStrategy implements ICommitStrategy {
       await gitOps.push(branchName, { force });
     } else {
       // Fallback for non-authenticated scenarios (shouldn't happen in practice)
-      const forceFlag = force ? "--force-with-lease " : "";
-      const pushCommand = `git push ${forceFlag}-u origin ${escapeShellArg(branchName)}`;
-      await withRetry(() => this.executor.exec(pushCommand, workDir), {
+      const args = [
+        "push",
+        ...(force ? ["--force-with-lease"] : []),
+        "-u",
+        "origin",
+        branchName,
+      ];
+      await withRetry(() => this.executor.exec("git", args, workDir), {
         retries,
       });
     }
 
-    const sha = await this.executor.exec("git rev-parse HEAD", workDir);
+    const sha = await this.executor.exec("git", ["rev-parse", "HEAD"], workDir);
 
     return {
       sha: sha.trim(),

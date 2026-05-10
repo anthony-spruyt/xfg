@@ -8,7 +8,6 @@ import {
   chmodSync,
 } from "node:fs";
 import { join, resolve, relative, isAbsolute, dirname } from "node:path";
-import { escapeShellArg } from "../shared/shell-utils.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -36,8 +35,12 @@ export class GitOps implements ILocalGitOps {
     this.log = options.log;
   }
 
-  private exec(command: string, cwd?: string): Promise<string> {
-    return this.executor.exec(command, cwd ?? this.workDir);
+  private exec(
+    executable: string,
+    args: string[],
+    cwd?: string
+  ): Promise<string> {
+    return this.executor.exec(executable, args, cwd ?? this.workDir);
   }
 
   /**
@@ -77,10 +80,7 @@ export class GitOps implements ILocalGitOps {
    */
   async createBranch(branchName: string): Promise<void> {
     try {
-      await this.exec(
-        `git checkout -b ${escapeShellArg(branchName)}`,
-        this.workDir
-      );
+      await this.exec("git", ["checkout", "-b", branchName]);
     } catch (error) {
       const message = toErrorMessage(error);
       throw new SyncError(
@@ -130,12 +130,14 @@ export class GitOps implements ILocalGitOps {
       );
     }
 
-    // Also update git's index so the executable bit is committed
     const relativePath = relative(this.workDir, filePath);
-    await this.exec(
-      `git update-index --add --chmod=+x ${escapeShellArg(relativePath)}`,
-      this.workDir
-    );
+    await this.exec("git", [
+      "update-index",
+      "--add",
+      "--chmod=+x",
+      "--",
+      relativePath,
+    ]);
   }
 
   /**
@@ -154,10 +156,7 @@ export class GitOps implements ILocalGitOps {
         { cause: error }
       );
     }
-    await this.exec(
-      `git update-index --chmod=-x -- ${escapeShellArg(fileName)}`,
-      this.workDir
-    );
+    await this.exec("git", ["update-index", "--chmod=-x", "--", fileName]);
   }
 
   /**
@@ -167,10 +166,7 @@ export class GitOps implements ILocalGitOps {
    */
   async getFileMode(fileName: string): Promise<"100755" | "100644" | null> {
     this.validatePath(fileName);
-    const output = await this.exec(
-      `git ls-files -s -- ${escapeShellArg(fileName)}`,
-      this.workDir
-    );
+    const output = await this.exec("git", ["ls-files", "-s", "--", fileName]);
     const line = output.trim();
     if (!line) return null;
     const mode = line.split(/\s+/, 1)[0];
@@ -231,7 +227,7 @@ export class GitOps implements ILocalGitOps {
   }
 
   async hasChanges(): Promise<boolean> {
-    const status = await this.exec("git status --porcelain", this.workDir);
+    const status = await this.exec("git", ["status", "--porcelain"]);
     return status.length > 0;
   }
 
@@ -240,7 +236,7 @@ export class GitOps implements ILocalGitOps {
    * Returns relative file paths for files that are modified, added, or untracked.
    */
   async getChangedFiles(): Promise<string[]> {
-    const status = await this.exec("git status --porcelain", this.workDir);
+    const status = await this.exec("git", ["status", "--porcelain"]);
     if (!status) return [];
 
     return status
@@ -250,11 +246,11 @@ export class GitOps implements ILocalGitOps {
   }
 
   async stageAll(): Promise<void> {
-    await this.exec("git add -A", this.workDir);
+    await this.exec("git", ["add", "-A"]);
   }
 
   async hasStagedChanges(): Promise<boolean> {
-    const diff = await this.exec("git diff --cached --name-only", this.workDir);
+    const diff = await this.exec("git", ["diff", "--cached", "--name-only"]);
     return diff.length > 0;
   }
 
@@ -263,11 +259,13 @@ export class GitOps implements ILocalGitOps {
    * Used for createOnly checks against the base branch (not the working directory).
    */
   async fileExistsOnBranch(fileName: string, branch: string): Promise<boolean> {
-    try {
-      await this.exec(
-        `git show ${escapeShellArg(branch)}:${escapeShellArg(fileName)}`,
-        this.workDir
+    if (branch.startsWith("-")) {
+      throw new ValidationError(
+        `Branch name '${branch}' is not supported: branch names starting with '-' can be misinterpreted as git flags`
       );
+    }
+    try {
+      await this.exec("git", ["show", `${branch}:${fileName}`]);
       return true;
     } catch (error) {
       const message = toErrorMessage(error);
@@ -325,18 +323,14 @@ export class GitOps implements ILocalGitOps {
     if (this.dryRun) {
       return true;
     }
-    await this.exec("git add -A", this.workDir);
+    await this.exec("git", ["add", "-A"]);
 
     // Check if there are actually staged changes after git add
     if (!(await this.hasStagedChanges())) {
       return false; // No changes to commit
     }
 
-    // Use --no-verify to skip pre-commit hooks
-    await this.exec(
-      `git commit --no-verify -m ${escapeShellArg(message)}`,
-      this.workDir
-    );
+    await this.exec("git", ["commit", "--no-verify", "-m", message]);
     return true;
   }
 
@@ -349,7 +343,7 @@ export class GitOps implements ILocalGitOps {
     method: string;
   }> {
     try {
-      await this.exec("git rev-parse --verify origin/main", this.workDir);
+      await this.exec("git", ["rev-parse", "--verify", "origin/main"]);
       return { branch: "main", method: "origin/main exists" };
     } catch (error) {
       const msg = toErrorMessage(error);
@@ -357,7 +351,7 @@ export class GitOps implements ILocalGitOps {
     }
 
     try {
-      await this.exec("git rev-parse --verify origin/master", this.workDir);
+      await this.exec("git", ["rev-parse", "--verify", "origin/master"]);
       return { branch: "master", method: "origin/master exists" };
     } catch (error) {
       const msg = toErrorMessage(error);

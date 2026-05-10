@@ -6,7 +6,6 @@ import type {
 } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
-import { escapeShellArg } from "../shared/shell-utils.js";
 import {
   withRetry,
   CORE_PERMANENT_ERROR_PATTERNS,
@@ -14,7 +13,7 @@ import {
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson } from "../shared/json-utils.js";
-import { buildTokenEnv } from "../shared/gh-api-utils.js";
+import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
 /**
@@ -180,19 +179,16 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        const safeBranch = escapeShellArg(branchName);
-        if (gitOps) {
-          await gitOps.fetchBranch(branchName);
-        } else {
-          await this.executor.exec(
-            `git fetch origin +${safeBranch}:refs/remotes/origin/${safeBranch}`,
-            workDir
+        if (!gitOps) {
+          throw new ValidationError(
+            "gitOps is required for GraphQL commit strategy"
           );
         }
+        await gitOps.fetchBranch(branchName);
 
-        // Get the remote HEAD SHA for this branch (not local HEAD)
         const headSha = await this.executor.exec(
-          `git rev-parse origin/${safeBranch}`,
+          "git",
+          ["rev-parse", `origin/${branchName}`],
           workDir
         );
 
@@ -283,26 +279,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       variables,
     });
 
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
-
-    const tokenEnv = buildTokenEnv(token);
-
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
-
     let response: string;
     try {
-      response = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        {
-          permanentErrorPatterns: [
-            ...DEFAULT_PERMANENT_ERROR_PATTERNS,
-            ...OID_MISMATCH_PATTERNS,
-          ],
-        }
-      );
+      response = await this.execGraphQL(requestBody, repoInfo, workDir, token, [
+        ...DEFAULT_PERMANENT_ERROR_PATTERNS,
+        ...OID_MISMATCH_PATTERNS,
+      ]);
     } catch (error) {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
@@ -362,7 +344,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       // Branch exists + force: delete then recreate from local HEAD
       await this.deleteRemoteRef(refId, workDir, repoInfo, token);
       const sha = (
-        await this.executor.exec("git rev-parse HEAD", workDir)
+        await this.executor.exec("git", ["rev-parse", "HEAD"], workDir)
       ).trim();
       await this.createRemoteRef(
         repositoryId,
@@ -378,7 +360,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       // due to eventual consistency, but the branch may exist by the time we
       // try to create it. Treat "already exists" as success.
       const sha = (
-        await this.executor.exec("git rev-parse HEAD", workDir)
+        await this.executor.exec("git", ["rev-parse", "HEAD"], workDir)
       ).trim();
       try {
         await this.createRemoteRef(
@@ -441,11 +423,28 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     return OID_MISMATCH_PATTERNS.some((pattern) => pattern.test(message));
   }
 
-  /**
-   * Execute a GraphQL query or mutation for ref operations.
-   * Handles command construction, retry, error sanitization, and response parsing.
-   * Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation).
-   */
+  private async execGraphQL(
+    requestBody: string,
+    repoInfo: GitHubRepoInfo,
+    workDir: string,
+    token?: string,
+    permanentErrorPatterns?: RegExp[]
+  ): Promise<string> {
+    const hostnameArgs = buildHostnameArgs(repoInfo);
+    const tokenEnv = buildTokenEnv(token);
+
+    return withRetry(
+      () =>
+        this.executor.exec(
+          "gh",
+          ["api", "graphql", ...hostnameArgs, "--input", "-"],
+          workDir,
+          { env: tokenEnv, input: requestBody }
+        ),
+      { permanentErrorPatterns }
+    );
+  }
+
   private async executeGraphQLRefOp<
     T extends {
       data?: Record<string, unknown>;
@@ -459,21 +458,14 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<T> {
     const requestBody = JSON.stringify({ query: queryOrMutation });
 
-    const hostnameArg =
-      repoInfo.host !== "github.com"
-        ? `--hostname ${escapeShellArg(repoInfo.host)}`
-        : "";
-    const tokenEnv = buildTokenEnv(token);
-    const command = `echo ${escapeShellArg(requestBody)} | gh api graphql ${hostnameArg} --input -`;
-
     let response: string;
     try {
-      response = await withRetry(
-        () => this.executor.exec(command, workDir, { env: tokenEnv }),
-        {
-          permanentErrorPatterns:
-            GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
-        }
+      response = await this.execGraphQL(
+        requestBody,
+        repoInfo,
+        workDir,
+        token,
+        GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS
       );
     } catch (error) {
       throw this.sanitizeCommandError(
