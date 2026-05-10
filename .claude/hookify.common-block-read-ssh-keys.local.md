@@ -19,3 +19,5 @@ conditions:
 
 - Ask the user to share the public key or certificate details
 - Request non-sensitive metadata only
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-read-ssh-keys" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

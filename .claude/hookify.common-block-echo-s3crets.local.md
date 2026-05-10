@@ -43,3 +43,5 @@ echo "${VAR:+set (hidden)}${VAR:-NOT SET}"
 - `echo "${TOKEN}"`
 - `echo "${VAR:-default}"` (leaks when set)
 - `printf "%s" "$PASSWORD"`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-echo-secrets" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

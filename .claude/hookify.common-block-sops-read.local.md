@@ -19,3 +19,5 @@ conditions:
 
 - Share specific non-sensitive portions
 - Decrypt manually if absolutely necessary
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-sops-read" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

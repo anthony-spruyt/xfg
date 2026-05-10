@@ -23,3 +23,5 @@ action: block
 - Check certificate dates: `openssl x509 -in cert.pem -dates -noout`
 - Generate keys (not extract): `openssl genrsa -out key.pem 2048`
 - Create CSR: `openssl req -new -key key.pem -out cert.csr`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-openssl-decrypt" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

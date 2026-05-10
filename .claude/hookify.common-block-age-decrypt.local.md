@@ -23,3 +23,5 @@ action: block
 - Generate keys: `age-keygen -o key.txt`
 - Encrypt (not decrypt): `age -r recipient -o file.age file`
 - Get public key: `age-keygen -y key.txt`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-age-decrypt" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

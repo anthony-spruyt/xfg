@@ -19,3 +19,5 @@ conditions:
 
 - Ask user what information they need from the password store
 - Use `gpg --list-keys` to see available keys without exposing secrets
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-read-encrypted-stores" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.
