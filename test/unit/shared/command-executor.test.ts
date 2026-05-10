@@ -1,7 +1,7 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { tmpdir } from "node:os";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   ProcessExecutor,
@@ -11,11 +11,7 @@ import {
 
 describe("ProcessExecutor", () => {
   const executor = new ProcessExecutor(process.env);
-  const testDir = join(tmpdir(), `cmd-exec-test-${Date.now()}`);
-
-  test("setup", () => {
-    mkdirSync(testDir, { recursive: true });
-  });
+  const testDir = mkdtempSync(join(tmpdir(), "cmd-exec-test-"));
 
   test("runs simple command and returns trimmed output", async () => {
     const result = await executor.exec("echo", ["hello"], testDir);
