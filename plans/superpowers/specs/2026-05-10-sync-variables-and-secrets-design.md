@@ -38,7 +38,7 @@ secrets:
 
 - **Variables:** `name: value` string pairs. Values support existing `${ENV}` interpolation from config normalizer.
 - **Secrets:** `name: { env: ENV_VAR_NAME }` — the `env` field names the environment variable to read at runtime. Value never written to config.
-- **`deleteOrphaned`:** Independent flag per block. When true, target repo variables/secrets not in config are deleted.
+- **`deleteOrphaned`:** Independent flag per block. When true, target repo variables/secrets not in config are deleted. Note: `deleteOrphaned` is a reserved key name and cannot be used as a secret name (it is a peer of secret entries in the flat config structure, following the same pattern as the `inherit` key in labels).
 
 ## Architecture
 
@@ -46,18 +46,26 @@ secrets:
 
 ```text
 VariablesProcessor (ISettingsProcessor)
-  └─ IVariablesStrategy (injected)
-       └─ GitHubVariablesStrategy
-            list / create / update / delete
+  ├─ IVariablesStrategy (injected)
+  │    └─ GitHubVariablesStrategy
+  │         list / create / update / delete
+  ├─ diffVariables(current, desired, deleteOrphaned)
+  └─ formatVariablesPlan(changes)
 ```
 
 **Lifecycle:** `list()` current → diff against config → create / update / delete (if orphaned). Diff compares values — skip if unchanged.
 
+Variable values support `${ENV}` interpolation (via the existing config normalizer) but NOT `${xfg:repo.name}` templating. This is intentional — variables are set at the settings level before per-repo expansion. If per-repo variable values are needed in the future, this would require changes to the normalizer.
+
 **Files:**
 
 - `src/settings/variables/processor.ts`
-- `src/settings/variables/strategy.ts`
-- `src/settings/variables/validator.ts`
+- `src/settings/variables/types.ts` — strategy interface (`IVariablesStrategy`) and API response types
+- `src/settings/variables/github-variables-strategy.ts` — GitHub API implementation of `IVariablesStrategy`
+- `src/settings/variables/diff.ts` — diffing current vs desired variables
+- `src/settings/variables/formatter.ts` — plan output formatting
+- `src/settings/variables/index.ts` — barrel export
+- Validation lives in existing `src/config/validator.ts`
 
 ### Secrets (own command)
 
@@ -84,9 +92,12 @@ SecretsProcessor
 **Files:**
 
 - `src/secrets/processor.ts`
-- `src/secrets/strategy.ts`
+- `src/secrets/types.ts` — strategy interface (`ISecretsStrategy`) and API response types
+- `src/secrets/github-secrets-strategy.ts` — GitHub API implementation of `ISecretsStrategy`
 - `src/secrets/encryption.ts`
-- `src/secrets/validator.ts`
+- `src/secrets/index.ts` — barrel export
+- `src/cli/secrets-command.ts` — CLI command runner for `xfg secrets sync`
+- Validation lives in existing `src/config/validator.ts`
 
 ### Shared
 
@@ -95,7 +106,7 @@ IEnvResolver (injected into SecretsProcessor)
   └─ resolve(envName) → string | throw
 ```
 
-**File:** `src/shared/env-resolver.ts`
+**File:** `src/shared/env-resolver.ts` — environment variable resolution with fail-fast batch validation
 
 ## CLI
 
@@ -119,10 +130,14 @@ xfg secrets sync --config config.yaml --dry-run
 
 ### Config-time
 
+All validation lives in `src/config/validator.ts` via `validateForSync`:
+
 - Variable/secret names: alphanumeric + `_`, must not start with `GITHUB_`
 - Variable values: must be strings (after env interpolation)
 - Secret entries: must have `env` field (string)
-- Variable and secret names must not overlap (GitHub enforces secrets taking precedence — catch early)
+- Variable name validation happens per-repo in `validateForSync` (since variables are per-repo after normalizer merging)
+- Secret name validation happens at config level (secrets are global, not per-repo)
+- Variable and secret names must not overlap — this check is per-repo, since variables are per-repo but secrets are global; each repo's effective variables are compared against the global secrets
 - Duplicate names caught at parse time
 
 ### Runtime (secrets only)
@@ -135,7 +150,7 @@ xfg secrets sync --config config.yaml --dry-run
 - Missing env var → hard error listing all missing vars (before touching any repo)
 - Single repo API failure → report error, continue to next repo (matches file sync pattern)
 - libsodium unavailable → error at startup with install instructions
-- Summary in GitHub job summary output
+- Summary in GitHub job summary output — `src/output/github-summary.ts` needs updating to include variables and secrets results in CI job summary output (variables alongside other settings results, secrets as a separate section)
 
 ## Testing
 
