@@ -129,10 +129,15 @@ export class AuthenticatedGitOps implements IGitOps {
 
   async clone(gitUrl: string): Promise<void> {
     if (!this.auth) {
-      await this.execWithRetry("git", ["clone", gitUrl, "."]);
+      await this.execWithRetry("git", ["clone", "--", gitUrl, "."]);
       return;
     }
-    await this.execWithRetry("git", ["clone", this.getAuthenticatedUrl(), "."]);
+    await this.execWithRetry("git", [
+      "clone",
+      "--",
+      this.getAuthenticatedUrl(),
+      ".",
+    ]);
   }
 
   async fetch(options?: { prune?: boolean }): Promise<void> {

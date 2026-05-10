@@ -40,7 +40,7 @@ export class AdoMigrationSource implements IMigrationSource {
         () =>
           this.executor.exec(
             "git",
-            ["clone", "--mirror", repoInfo.gitUrl, workDir],
+            ["clone", "--mirror", "--", repoInfo.gitUrl, workDir],
             this.cwd
           ),
         {

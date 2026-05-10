@@ -93,6 +93,10 @@ describe("AuthenticatedGitOps", () => {
         `Expected clone in args: ${calls[0].args.join(" ")}`
       );
       assert.ok(
+        calls[0].args.includes("--"),
+        `Expected -- separator to prevent argument injection: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
         !calls[0].args.some((a) => a.includes("x-access-token")),
         `Should not have auth token: ${calls[0].args.join(" ")}`
       );
@@ -224,6 +228,10 @@ describe("AuthenticatedGitOps", () => {
       assert.ok(
         calls[0].args.includes("clone"),
         `Expected clone in args: ${calls[0].args.join(" ")}`
+      );
+      assert.ok(
+        calls[0].args.includes("--"),
+        `Expected -- separator to prevent argument injection: ${calls[0].args.join(" ")}`
       );
       assert.ok(
         calls[0].args.some((a) => a.includes("test-token-123")),

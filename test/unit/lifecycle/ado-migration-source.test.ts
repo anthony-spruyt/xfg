@@ -27,6 +27,15 @@ describe("AdoMigrationSource", () => {
       assert.equal(calls[0].executable, "git");
       assert.ok(calls[0].args.includes("clone"));
       assert.ok(calls[0].args.includes("--mirror"));
+      const ddIdx = calls[0].args.indexOf("--");
+      assert.ok(
+        ddIdx !== -1,
+        "Expected -- separator to prevent argument injection"
+      );
+      assert.ok(
+        ddIdx < calls[0].args.indexOf(mockRepoInfo.gitUrl),
+        "-- must come before gitUrl"
+      );
     });
 
     test("clones to specified directory", async () => {
