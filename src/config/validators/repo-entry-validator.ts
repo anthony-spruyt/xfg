@@ -2,7 +2,7 @@ import type { RawConfig } from "../types.js";
 import { expandRepoGroups } from "../extends-resolver.js";
 import { validateFileName } from "./file-validator.js";
 import { isPlainObject } from "../../shared/type-guards.js";
-import { escapeRegExp } from "../../shared/shell-utils.js";
+import { escapeRegExp } from "../../shared/regex-utils.js";
 import { ValidationError } from "../../shared/errors.js";
 import {
   validateFileConfigFields,

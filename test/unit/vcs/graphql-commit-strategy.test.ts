@@ -179,6 +179,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit message",
         fileChanges: [{ path: "file1.txt", content: "content1" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       const result = await strategy.commit(options);
@@ -256,6 +257,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Add file",
         fileChanges: [{ path: "test.txt", content: "content" }], // Only additions, no deletions
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
@@ -300,6 +302,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Delete file",
         fileChanges: [{ path: "to-delete.txt", content: null }], // Deletion
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
@@ -342,6 +345,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Add file",
         fileChanges: [{ path: "test.txt", content: "Hello, World!" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
@@ -384,6 +388,7 @@ describe("GraphQLCommitStrategy", () => {
           { path: "delete.txt", content: null }, // null means deletion
         ],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
@@ -453,6 +458,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
@@ -513,6 +519,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 3,
       };
 
@@ -544,6 +551,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -621,6 +629,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -656,6 +665,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -689,6 +699,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_test_token_from_parameter",
       };
 
@@ -786,6 +797,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test retry",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       const result = await strategy.commit(options);
@@ -818,6 +830,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test no retry",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(() => strategy.commit(options), /401/);
@@ -861,6 +874,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test OID mismatch",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 1,
       };
 
@@ -897,6 +911,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       try {
@@ -963,6 +978,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test OID retry with sanitization",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 3,
       };
 
@@ -1004,6 +1020,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         // No token provided
       };
 
@@ -1061,6 +1078,7 @@ describe("GraphQLCommitStrategy", () => {
           },
         ],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       });
 
       assert.equal(result.sha, "sha123");
@@ -1142,6 +1160,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_test_token",
       });
 
@@ -1209,6 +1228,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: true,
         token: "ghs_test_token",
       });
@@ -1261,6 +1281,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Direct commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: false,
         token: "ghs_test_token",
       });
@@ -1313,6 +1334,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_ghe_token",
       });
 
@@ -1344,6 +1366,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Could not resolve|GraphQL|failed/i,
@@ -1382,6 +1405,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             force: true,
             token: "ghs_token",
           }),
@@ -1409,6 +1433,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Field 'repository'/,
@@ -1433,6 +1458,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /missing repository ID.*owner\/repo/,
@@ -1468,6 +1494,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Name already exists/,
@@ -1508,6 +1535,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test fork sync",
         fileChanges: [{ path: "f.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_token",
       });
 
@@ -1537,6 +1565,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Internal server error/,
@@ -1580,6 +1609,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE force commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: true,
         token: "ghs_ghe_token",
       });
@@ -1629,6 +1659,7 @@ describe("GraphQLCommitStrategy", () => {
           message: "Test",
           fileChanges: [{ path: "f.txt", content: "c" }],
           workDir: testDir,
+          gitOps: createMockGitOps(),
           force: true,
           token: "ghs_token",
         });
@@ -1683,6 +1714,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             force: true,
             token: "ghs_token",
           }),
@@ -1720,6 +1752,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "f.txt", content: "c" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_my_secret_token",
       });
 

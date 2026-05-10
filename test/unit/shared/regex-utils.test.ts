@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { escapeRegExp } from "../../../src/shared/shell-utils.js";
+import { escapeRegExp } from "../../../src/shared/regex-utils.js";
 
 describe("escapeRegExp", () => {
   test("escapes special regex characters", () => {

@@ -1,6 +1,6 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeRegExp } from "../shared/shell-utils.js";
+import { escapeRegExp } from "../shared/regex-utils.js";
 import { assertGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";

@@ -179,19 +179,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     let lastError: Error | null = null;
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        if (gitOps) {
-          await gitOps.fetchBranch(branchName);
-        } else {
-          await this.executor.exec(
-            "git",
-            [
-              "fetch",
-              "origin",
-              `+${branchName}:refs/remotes/origin/${branchName}`,
-            ],
-            workDir
+        if (!gitOps) {
+          throw new ValidationError(
+            "gitOps is required for GraphQL commit strategy"
           );
         }
+        await gitOps.fetchBranch(branchName);
 
         const headSha = await this.executor.exec(
           "git",

@@ -135,6 +135,7 @@ export class GitOps implements ILocalGitOps {
       "update-index",
       "--add",
       "--chmod=+x",
+      "--",
       relativePath,
     ]);
   }
@@ -258,6 +259,11 @@ export class GitOps implements ILocalGitOps {
    * Used for createOnly checks against the base branch (not the working directory).
    */
   async fileExistsOnBranch(fileName: string, branch: string): Promise<boolean> {
+    if (branch.startsWith("-")) {
+      throw new ValidationError(
+        `Branch name '${branch}' is not supported: branch names starting with '-' can be misinterpreted as git flags`
+      );
+    }
     try {
       await this.exec("git", ["show", `${branch}:${fileName}`]);
       return true;
