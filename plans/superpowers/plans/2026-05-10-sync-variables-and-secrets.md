@@ -3213,3 +3213,233 @@ git push
 ```
 
 Wait for CI checks to pass before proceeding.
+
+______________________________________________________________________
+
+### Task 15: JSON Schema Updates
+
+**Files:**
+
+- Modify: `config-schema.json`
+
+- [ ] **Step 1: Add variables to rootSettings**
+
+Add `variables` property after `codeScanning` in `rootSettings`:
+
+```json
+"variables": {
+  "type": "object",
+  "description": "Map of GitHub Actions variable names to values. Set a variable to false to disable it.",
+  "properties": {
+    "inherit": false
+  },
+  "additionalProperties": {
+    "oneOf": [
+      {
+        "type": "boolean",
+        "const": false,
+        "description": "Set to false to disable this variable"
+      },
+      {
+        "type": "string",
+        "description": "Variable value"
+      }
+    ]
+  }
+}
+```
+
+- [ ] **Step 2: Add variables to repoSettings**
+
+Add `variables` property after `codeScanning` in `repoSettings`:
+
+```json
+"variables": {
+  "type": "object",
+  "description": "Map of GitHub Actions variable names to values. Set a variable to false to opt out. Set inherit: false to skip all inherited variables.",
+  "properties": {
+    "inherit": {
+      "type": "boolean",
+      "description": "Set to false to skip all inherited root variables. Default: true"
+    }
+  },
+  "additionalProperties": {
+    "oneOf": [
+      {
+        "type": "boolean",
+        "const": false,
+        "description": "Set to false to opt out of this inherited variable"
+      },
+      {
+        "type": "string",
+        "description": "Variable value"
+      }
+    ]
+  }
+}
+```
+
+- [ ] **Step 3: Add SecretConfig definition**
+
+Add `secretConfig` to `definitions`:
+
+```json
+"secretConfig": {
+  "type": "object",
+  "description": "Secret configuration mapping to an environment variable source",
+  "required": ["env"],
+  "properties": {
+    "env": {
+      "type": "string",
+      "description": "Name of the environment variable containing the secret value"
+    }
+  },
+  "additionalProperties": false
+}
+```
+
+- [ ] **Step 4: Add secrets to root config properties**
+
+Add `secrets` property to root config (after `settings`):
+
+```json
+"secrets": {
+  "type": "object",
+  "description": "Secrets config: map of secret names to SecretConfig. Use deleteOrphaned to remove secrets not in config.",
+  "properties": {
+    "deleteOrphaned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Delete secrets from repos that are not defined in this config. Default: false"
+    }
+  },
+  "additionalProperties": {
+    "oneOf": [
+      {
+        "type": "boolean",
+        "description": "Set to false to disable this secret"
+      },
+      {
+        "$ref": "#/definitions/secretConfig"
+      }
+    ]
+  }
+}
+```
+
+- [ ] **Step 5: Update deleteOrphaned descriptions**
+
+Update `deleteOrphaned` descriptions in `rootSettings` and `repoSettings` to mention variables alongside rulesets and labels.
+
+- [ ] **Step 6: Validate schema is valid JSON**
+
+```bash
+node -e "JSON.parse(require('fs').readFileSync('config-schema.json', 'utf8')); console.log('Valid JSON')"
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add config-schema.json
+git commit -m "feat(schema): add variables and secrets to config schema"
+```
+
+______________________________________________________________________
+
+### Task 16: Documentation
+
+**Files:**
+
+- Create: `docs/configuration/variables.md`
+
+- Create: `docs/configuration/secrets.md`
+
+- Modify: `docs/reference/config-schema.md`
+
+- Modify: `docs/reference/cli-options.md`
+
+- Modify: `mkdocs.yml`
+
+- [ ] **Step 1: Create variables documentation page**
+
+Create `docs/configuration/variables.md` following the same structure as `docs/configuration/labels.md`:
+
+- GitHub-Only admonition
+
+- Quick Start example with YAML config
+
+- Variable naming rules (alphanumeric + underscore, no `GITHUB_` prefix)
+
+- Case-insensitive matching note
+
+- Inheritance section (`inherit: false`, `VAR: false` opt-out)
+
+- `deleteOrphaned` behavior
+
+- Dry run output example
+
+- GitHub API reference (Actions Variables API endpoints)
+
+- [ ] **Step 2: Create secrets documentation page**
+
+Create `docs/configuration/secrets.md`:
+
+- GitHub-Only admonition
+
+- Explain `secrets:` is root-level config (not under `settings:`)
+
+- `xfg secrets sync` command (separate from `xfg sync`)
+
+- `SecretConfig` with `env:` field mapping
+
+- `deleteOrphaned` option
+
+- Environment variable requirements (values read at runtime)
+
+- Encryption note (libsodium sealed box encryption)
+
+- Secret naming rules (same as variables)
+
+- Dry run output example
+
+- Security warning: secret values never logged
+
+- [ ] **Step 3: Update CLI options reference**
+
+Update `docs/reference/cli-options.md`:
+
+- Update sync command description to mention variables
+
+- Add new `## Secrets Sync Command` section documenting `xfg secrets sync` with its options (`--config`, `--dry-run`, `--retries`, `--no-delete`)
+
+- [ ] **Step 4: Update config schema reference**
+
+Update `docs/reference/config-schema.md`:
+
+- Add `secrets` row to Root Object table
+
+- Add `variables` mention in settings description
+
+- Add Settings Object subsection listing `variables` field
+
+- [ ] **Step 5: Update mkdocs.yml navigation**
+
+Add new pages to nav under Configuration, after "GitHub Labels":
+
+```yaml
+      - GitHub Variables: configuration/variables.md
+      - Secrets: configuration/secrets.md
+```
+
+- [ ] **Step 6: Verify docs build (if mkdocs available)**
+
+```bash
+npx mkdocs build --strict 2>&1 || echo "mkdocs not available locally — verify in CI"
+```
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add docs/configuration/variables.md docs/configuration/secrets.md docs/reference/config-schema.md docs/reference/cli-options.md mkdocs.yml
+git commit -m "docs: add variables and secrets documentation"
+```
