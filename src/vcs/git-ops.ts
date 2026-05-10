@@ -259,7 +259,7 @@ export class GitOps implements ILocalGitOps {
    */
   async fileExistsOnBranch(fileName: string, branch: string): Promise<boolean> {
     try {
-      await this.exec("git", ["show", "--", `${branch}:${fileName}`]);
+      await this.exec("git", ["show", `${branch}:${fileName}`]);
       return true;
     } catch (error) {
       const message = toErrorMessage(error);

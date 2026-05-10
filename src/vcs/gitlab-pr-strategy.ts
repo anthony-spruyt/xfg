@@ -1,7 +1,6 @@
 import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
-import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
@@ -10,10 +9,7 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import {
-  type ICommandExecutor,
-  getStderr,
-} from "../shared/command-executor.js";
+import { getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -23,10 +19,6 @@ import { SyncError } from "../shared/errors.js";
 const MR_CREATED_MSG = "MR created successfully";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
-    super(executor, log);
-  }
-
   /**
    * Build the repo flag for glab commands.
    * Format: namespace/repo (supports nested groups)
