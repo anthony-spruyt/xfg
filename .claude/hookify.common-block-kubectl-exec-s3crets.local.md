@@ -27,3 +27,5 @@ action: block
 - Check pod logs: `kubectl logs <pod>`
 - Describe pod: `kubectl describe pod <pod>`
 - Check configmaps: `kubectl get configmap <name> -o yaml`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-kubectl-exec-secrets" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

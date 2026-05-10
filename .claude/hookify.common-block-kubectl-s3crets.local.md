@@ -17,3 +17,5 @@ action: block
 - Be accidentally shared in screenshots
 
 **If you need this:** Ask the user to run the command manually.
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-kubectl-secrets" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

@@ -19,3 +19,5 @@ action: block
 3. User can decline if it contains secrets
 
 **Note:** This is a direct filesystem access to environment variables, bypassing normal shell commands.
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-proc-environ" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.
