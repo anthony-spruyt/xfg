@@ -13,7 +13,7 @@ import {
 } from "../shared/retry-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson } from "../shared/json-utils.js";
-import { buildTokenEnv } from "../shared/gh-api-utils.js";
+import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
 /**
@@ -279,27 +279,12 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       variables,
     });
 
-    const hostnameArgs =
-      repoInfo.host !== "github.com" ? ["--hostname", repoInfo.host] : [];
-    const tokenEnv = buildTokenEnv(token);
-
     let response: string;
     try {
-      response = await withRetry(
-        () =>
-          this.executor.exec(
-            "gh",
-            ["api", "graphql", ...hostnameArgs, "--input", "-"],
-            workDir,
-            { env: tokenEnv, input: requestBody }
-          ),
-        {
-          permanentErrorPatterns: [
-            ...DEFAULT_PERMANENT_ERROR_PATTERNS,
-            ...OID_MISMATCH_PATTERNS,
-          ],
-        }
-      );
+      response = await this.execGraphQL(requestBody, repoInfo, workDir, token, [
+        ...DEFAULT_PERMANENT_ERROR_PATTERNS,
+        ...OID_MISMATCH_PATTERNS,
+      ]);
     } catch (error) {
       throw this.sanitizeCommandError(error, repositoryNameWithOwner);
     }
@@ -438,11 +423,28 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     return OID_MISMATCH_PATTERNS.some((pattern) => pattern.test(message));
   }
 
-  /**
-   * Execute a GraphQL query or mutation for ref operations.
-   * Handles command construction, retry, error sanitization, and response parsing.
-   * Uses gh CLI's --input flag to pass GraphQL via stdin (same pattern as executeGraphQLMutation).
-   */
+  private async execGraphQL(
+    requestBody: string,
+    repoInfo: GitHubRepoInfo,
+    workDir: string,
+    token?: string,
+    permanentErrorPatterns?: RegExp[]
+  ): Promise<string> {
+    const hostnameArgs = buildHostnameArgs(repoInfo);
+    const tokenEnv = buildTokenEnv(token);
+
+    return withRetry(
+      () =>
+        this.executor.exec(
+          "gh",
+          ["api", "graphql", ...hostnameArgs, "--input", "-"],
+          workDir,
+          { env: tokenEnv, input: requestBody }
+        ),
+      { permanentErrorPatterns }
+    );
+  }
+
   private async executeGraphQLRefOp<
     T extends {
       data?: Record<string, unknown>;
@@ -456,24 +458,14 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   ): Promise<T> {
     const requestBody = JSON.stringify({ query: queryOrMutation });
 
-    const hostnameArgs =
-      repoInfo.host !== "github.com" ? ["--hostname", repoInfo.host] : [];
-    const tokenEnv = buildTokenEnv(token);
-
     let response: string;
     try {
-      response = await withRetry(
-        () =>
-          this.executor.exec(
-            "gh",
-            ["api", "graphql", ...hostnameArgs, "--input", "-"],
-            workDir,
-            { env: tokenEnv, input: requestBody }
-          ),
-        {
-          permanentErrorPatterns:
-            GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS,
-        }
+      response = await this.execGraphQL(
+        requestBody,
+        repoInfo,
+        workDir,
+        token,
+        GraphQLCommitStrategy.GRAPHQL_PERMANENT_ERROR_PATTERNS
       );
     } catch (error) {
       throw this.sanitizeCommandError(

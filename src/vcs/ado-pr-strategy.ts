@@ -7,7 +7,6 @@ import {
 import type { PRResult } from "./types.js";
 import { SyncError } from "../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
-import type { IPRStrategyLogger } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
   CloseExistingPROptions,
@@ -16,7 +15,6 @@ import type {
   MergeResult,
 } from "./types.js";
 import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
@@ -25,10 +23,6 @@ import { getStderr } from "../shared/command-executor.js";
 
 export class AdoPRStrategy extends BasePRStrategy {
   private readonly bodyFilePath = ".pr-description.md";
-
-  constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
-    super(executor, log);
-  }
 
   private getOrgUrl(repoInfo: AzureDevOpsRepoInfo): string {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}`;
