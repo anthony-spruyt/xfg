@@ -61,35 +61,24 @@ function mergeByKey(
     unknown,
     { item: Record<string, unknown>; index: number }
   >();
+  // findMatchKey guarantees every item in both arrays is a plain object with matchKey
   for (let i = 0; i < base.length; i++) {
-    const item = base[i];
-    if (isPlainObject(item)) {
-      const keyValue = (item as Record<string, unknown>)[matchKey];
-      if (keyValue !== undefined && !baseByKey.has(keyValue)) {
-        baseByKey.set(keyValue, {
-          item: item as Record<string, unknown>,
-          index: i,
-        });
-      }
+    const item = base[i] as Record<string, unknown>;
+    const keyValue = item[matchKey];
+    if (keyValue !== undefined && !baseByKey.has(keyValue)) {
+      baseByKey.set(keyValue, { item, index: i });
     }
   }
 
   const appended: unknown[] = [];
 
   for (const overlayItem of overlay) {
-    if (!isPlainObject(overlayItem)) {
-      appended.push(overlayItem);
-      continue;
-    }
-    const keyValue = (overlayItem as Record<string, unknown>)[matchKey];
+    const item = overlayItem as Record<string, unknown>;
+    const keyValue = item[matchKey];
     const baseEntry = baseByKey.get(keyValue);
     if (baseEntry) {
       baseByKey.set(keyValue, {
-        item: deepMerge(
-          baseEntry.item,
-          overlayItem as Record<string, unknown>,
-          ctx
-        ),
+        item: deepMerge(baseEntry.item, item, ctx),
         index: baseEntry.index,
       });
     } else {
@@ -99,15 +88,11 @@ function mergeByKey(
 
   const result: unknown[] = [];
   for (let i = 0; i < base.length; i++) {
-    const item = base[i];
-    if (isPlainObject(item)) {
-      const keyValue = (item as Record<string, unknown>)[matchKey];
-      const entry = baseByKey.get(keyValue);
-      if (entry && entry.index === i) {
-        result.push(entry.item);
-      } else {
-        result.push(item);
-      }
+    const item = base[i] as Record<string, unknown>;
+    const keyValue = item[matchKey];
+    const entry = baseByKey.get(keyValue);
+    if (entry && entry.index === i) {
+      result.push(entry.item);
     } else {
       result.push(item);
     }
