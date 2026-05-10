@@ -500,6 +500,49 @@ describe("$arrayMerge: merge strategy", () => {
     const result = deepMerge(base, overlay, createContext());
     assert.deepEqual(result, { rules: [{ type: "a", x: 1 }] });
   });
+
+  test("duplicate keys in base — first occurrence wins", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "a", x: 2 },
+        { type: "b", x: 3 },
+      ],
+    };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [{ type: "a", y: 10 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 10 },
+        { type: "a", x: 2 },
+        { type: "b", x: 3 },
+      ],
+    });
+  });
+
+  test("merge as default mergeStrategy via context", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "b", x: 2 },
+      ],
+    };
+    const overlay = {
+      rules: [{ type: "a", y: 3 }],
+    };
+    const result = deepMerge(base, overlay, createContext("merge"));
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 3 },
+        { type: "b", x: 2 },
+      ],
+    });
+  });
 });
 
 describe("stripMergeDirectives", () => {
@@ -768,6 +811,18 @@ describe("mergeTextContent", () => {
     test("prepend empty overlay returns base", () => {
       const result = mergeTextContent(["base"], [], "prepend");
       assert.deepEqual(result, ["base"]);
+    });
+  });
+
+  describe("array overlay with merge strategy", () => {
+    test("merge strategy falls back to append for text arrays", () => {
+      const result = mergeTextContent(["base1", "base2"], ["overlay"], "merge");
+      assert.deepEqual(result, ["base1", "base2", "overlay"]);
+    });
+
+    test("merge strategy on string overlay still replaces", () => {
+      const result = mergeTextContent(["base"], "overlay", "merge");
+      assert.equal(result, "overlay");
     });
   });
 });

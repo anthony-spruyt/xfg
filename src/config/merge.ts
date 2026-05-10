@@ -19,15 +19,18 @@ export function findMatchKey(
   base: unknown[],
   overlay: unknown[]
 ): string | undefined {
-  const allItems = [...base, ...overlay];
-  if (allItems.length === 0) return undefined;
+  if (base.length === 0 && overlay.length === 0) return undefined;
+
+  const hasKey = (item: unknown, key: string): boolean =>
+    isPlainObject(item) && key in (item as Record<string, unknown>);
 
   for (const candidate of MATCH_KEY_CANDIDATES) {
-    const everyItemHasKey = allItems.every(
-      (item) =>
-        isPlainObject(item) && candidate in (item as Record<string, unknown>)
-    );
-    if (everyItemHasKey) return candidate;
+    if (
+      base.every((item) => hasKey(item, candidate)) &&
+      overlay.every((item) => hasKey(item, candidate))
+    ) {
+      return candidate;
+    }
   }
 
   return undefined;
@@ -45,7 +48,7 @@ export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
 type ArrayMergeHandler = (
   base: unknown[],
   overlay: unknown[],
-  ctx?: MergeContext
+  ctx: MergeContext
 ) => unknown[];
 
 function mergeByKey(
@@ -71,7 +74,6 @@ function mergeByKey(
     }
   }
 
-  const matched = new Set<unknown>();
   const appended: unknown[] = [];
 
   for (const overlayItem of overlay) {
@@ -82,7 +84,6 @@ function mergeByKey(
     const keyValue = (overlayItem as Record<string, unknown>)[matchKey];
     const baseEntry = baseByKey.get(keyValue);
     if (baseEntry) {
-      matched.add(keyValue);
       baseByKey.set(keyValue, {
         item: deepMerge(
           baseEntry.item,
@@ -128,7 +129,7 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
         if (!matchKey) {
           return [...base, ...overlay];
         }
-        return mergeByKey(base, overlay, matchKey, ctx!);
+        return mergeByKey(base, overlay, matchKey, ctx);
       },
     ],
   ]);
@@ -315,6 +316,7 @@ export function mergeTextContent(
   if (Array.isArray(base)) {
     switch (strategy) {
       case "append":
+      case "merge":
         return [...base, ...overlay];
       case "prepend":
         return [...overlay, ...base];

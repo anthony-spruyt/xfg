@@ -98,10 +98,11 @@
           "enum": [
             "replace",
             "append",
-            "prepend"
+            "prepend",
+            "merge"
           ],
           "default": "replace",
-          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base. Default: replace"
+          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace"
         },
         "createOnly": {
           "type": "boolean",

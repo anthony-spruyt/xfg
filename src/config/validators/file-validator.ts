@@ -16,6 +16,7 @@ const VALID_STRATEGIES = validValues<ArrayMergeStrategy>([
   "replace",
   "append",
   "prepend",
+  "merge",
 ]);
 
 /**
