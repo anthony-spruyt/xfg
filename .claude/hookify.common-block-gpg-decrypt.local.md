@@ -23,3 +23,5 @@ action: block
 - List recipients: `gpg --list-packets file.gpg`
 - Verify signature: `gpg --verify file.sig`
 - Encrypt (not decrypt): `gpg -e -r recipient file`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-gpg-decrypt" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

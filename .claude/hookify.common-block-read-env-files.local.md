@@ -20,3 +20,5 @@ conditions:
 - Ask user which specific (non-sensitive) values they can share
 - Use `.env.example` or `.env.template` as reference
 - Read application config files for structure without secrets
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-read-env-files" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

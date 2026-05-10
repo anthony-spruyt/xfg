@@ -27,3 +27,5 @@ action: block
    ```
 
 3. **Ask the user** for specific variable values if needed.
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-echo-subshell-secrets" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

@@ -29,3 +29,5 @@ action: block
 - Encrypt: `sops -e file.yaml`
 - Update keys: `sops updatekeys file.yaml`
 - Rotate keys: `sops -r file.yaml`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-sops-decrypt" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

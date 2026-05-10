@@ -26,3 +26,5 @@ EOF
 ```bash
 [ -n "$VAR_NAME" ] && echo "set" || echo "not set"
 ```
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-heredoc-secrets" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.
