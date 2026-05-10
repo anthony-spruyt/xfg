@@ -4,13 +4,13 @@ import { tmpdir } from "node:os";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  ShellCommandExecutor,
+  ProcessExecutor,
   ICommandExecutor,
   getStderr,
 } from "../../../src/shared/command-executor.js";
 
-describe("ShellCommandExecutor", () => {
-  const executor = new ShellCommandExecutor(process.env);
+describe("ProcessExecutor", () => {
+  const executor = new ProcessExecutor(process.env);
   const testDir = join(tmpdir(), `cmd-exec-test-${Date.now()}`);
 
   test("setup", () => {
@@ -74,11 +74,11 @@ describe("ShellCommandExecutor", () => {
   });
 });
 
-describe("ShellCommandExecutor with process.env", () => {
-  const processEnvExecutor = new ShellCommandExecutor(process.env);
+describe("ProcessExecutor with process.env", () => {
+  const processEnvExecutor = new ProcessExecutor(process.env);
 
-  test("is an instance of ShellCommandExecutor", () => {
-    assert.ok(processEnvExecutor instanceof ShellCommandExecutor);
+  test("is an instance of ProcessExecutor", () => {
+    assert.ok(processEnvExecutor instanceof ProcessExecutor);
   });
 
   test("implements ICommandExecutor interface", () => {
@@ -135,7 +135,7 @@ describe("ICommandExecutor interface", () => {
 
 describe("credential sanitization", () => {
   test("sanitizes credentials in error messages", async () => {
-    const executor = new ShellCommandExecutor(process.env);
+    const executor = new ProcessExecutor(process.env);
 
     try {
       await executor.exec(
@@ -158,7 +158,7 @@ describe("credential sanitization", () => {
   });
 
   test("sanitizes credentials in stderr", async () => {
-    const executor = new ShellCommandExecutor(process.env);
+    const executor = new ProcessExecutor(process.env);
 
     try {
       await executor.exec(

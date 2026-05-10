@@ -15,7 +15,7 @@ export interface ICommandExecutor {
   ): Promise<string>;
 }
 
-export class ShellCommandExecutor implements ICommandExecutor {
+export class ProcessExecutor implements ICommandExecutor {
   private readonly baseEnv: Record<string, string | undefined>;
 
   constructor(baseEnv: Record<string, string | undefined>) {
