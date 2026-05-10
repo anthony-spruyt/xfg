@@ -41,12 +41,14 @@ export interface SecretConfig {
 }
 
 // In RawConfig (after settings field):
-  /** Secrets config: Record<name, SecretConfig> with optional deleteOrphaned flag.
-   *  Uses the same pattern as labels' inherit: a peer key alongside data entries. */
-  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
+  /** Secrets config: Record<name, SecretConfig | boolean> with optional deleteOrphaned flag.
+   *  Uses the same pattern as labels' inherit: a peer key alongside data entries.
+   *  The `| boolean` in the Record allows deleteOrphaned (boolean) alongside
+   *  SecretConfig entries — same approach as labels using `Record<string, Label | false>`. */
+  secrets?: Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean };
 
 // In Config (after settings field):
-  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
+  secrets?: Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean };
 ```
 
 The flat structure matches the YAML layout:
@@ -2083,11 +2085,11 @@ const mockGitHubRepo: GitHubRepoInfo = {
 };
 
 /** Build a flat secrets config matching the type:
- *  Record<string, SecretConfig> & { deleteOrphaned?: boolean } */
+ *  Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean } */
 function makeSecretsConfig(
   secrets: Record<string, SecretConfig>,
   deleteOrphaned = false
-): Record<string, SecretConfig> & { deleteOrphaned?: boolean } {
+): Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean } {
   return { ...secrets, deleteOrphaned };
 }
 
@@ -2252,8 +2254,10 @@ import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
 import type { SecretConfig } from "../config/types.js";
 
-/** Flat secrets config: Record<name, SecretConfig> & { deleteOrphaned?: boolean } */
-type SecretsConfig = Record<string, SecretConfig> & {
+/** Flat secrets config: Record<name, SecretConfig | boolean> & { deleteOrphaned?: boolean }.
+ *  The `| boolean` allows the deleteOrphaned peer key (same pattern as labels' inherit).
+ *  When iterating secret entries, filter out boolean values. */
+type SecretsConfig = Record<string, SecretConfig | boolean> & {
   deleteOrphaned?: boolean;
 };
 
@@ -2301,11 +2305,14 @@ export class SecretsProcessor {
 
     const githubRepo = repoInfo as GitHubRepoInfo;
     // Separate deleteOrphaned flag from secret entries (same pattern as labels' inherit)
-    const { deleteOrphaned = false, ...desiredSecrets } = secretsConfig;
+    const { deleteOrphaned = false, ...rawEntries } = secretsConfig;
     const { dryRun, token } = options;
     const strategyOptions = { token, host: githubRepo.host };
 
-    const secretEntries = Object.entries(desiredSecrets);
+    // Filter out boolean values (deleteOrphaned peer key) — keep only SecretConfig entries
+    const secretEntries = Object.entries(rawEntries).filter(
+      (entry): entry is [string, SecretConfig] => typeof entry[1] !== "boolean"
+    );
 
     // Resolve all env vars upfront (fail fast) — skip in dry run
     let resolvedValues: Map<string, string>;
