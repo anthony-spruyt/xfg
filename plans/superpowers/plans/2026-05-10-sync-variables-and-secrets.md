@@ -40,21 +40,31 @@ export interface SecretConfig {
   env: string;
 }
 
-export interface SecretsConfig {
-  [name: string]: SecretConfig;
-}
-
-export interface RawSecretsConfig {
-  secrets?: Record<string, SecretConfig>;
-  deleteOrphaned?: boolean;
-}
-
 // In RawConfig (after settings field):
-  secrets?: RawSecretsConfig;
+  /** Secrets config: Record<name, SecretConfig> with optional deleteOrphaned flag.
+   *  Uses the same pattern as labels' inherit: a peer key alongside data entries. */
+  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
 
 // In Config (after settings field):
-  secrets?: RawSecretsConfig;
+  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
 ```
+
+The flat structure matches the YAML layout:
+
+```yaml
+secrets:
+  DEPLOY_TOKEN:
+    env: DEPLOY_TOKEN_VALUE
+  deleteOrphaned: true
+```
+
+In the processor/normalizer, separate `deleteOrphaned` from secret entries:
+
+```typescript
+const { deleteOrphaned = false, ...secretEntries } = config.secrets ?? {};
+```
+
+This follows the same pattern as labels' `inherit` key.
 
 - [ ] **Step 3: Verify build compiles**
 
@@ -158,27 +168,21 @@ Run: `npm test -- --grep "validateVariables"` Expected: PASS
 describe("validateSecrets", () => {
   test("accepts valid secret config", () => {
     const config = makeConfig({
-      secrets: {
-        secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
-      },
+      secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
     });
     assert.doesNotThrow(() => validateForSync(config));
   });
 
   test("rejects secret names starting with GITHUB_", () => {
     const config = makeConfig({
-      secrets: {
-        secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
-      },
+      secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
     });
     assert.throws(() => validateForSync(config), /GITHUB_/);
   });
 
   test("rejects secret without env field", () => {
     const config = makeConfig({
-      secrets: {
-        secrets: { MY_SECRET: {} as SecretConfig },
-      },
+      secrets: { MY_SECRET: {} as SecretConfig },
     });
     assert.throws(() => validateForSync(config), /env/);
   });
@@ -282,7 +286,10 @@ export interface IVariablesStrategy {
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { GitHubVariablesStrategy } from "../../../../src/settings/variables/github-variables-strategy.js";
-import type { ICommandExecutor } from "../../../../src/shared/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../../src/shared/command-executor.js";
 import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 
 class MockExecutor implements ICommandExecutor {
@@ -292,7 +299,8 @@ class MockExecutor implements ICommandExecutor {
   async exec(
     executable: string,
     args: string[],
-    _cwd: string
+    _cwd: string,
+    _options?: ExecOptions
   ): Promise<string> {
     this.calls.push({ executable, args });
     return this.response;
@@ -300,12 +308,11 @@ class MockExecutor implements ICommandExecutor {
 }
 
 const mockRepo: GitHubRepoInfo = {
+  type: "github",
   owner: "test-org",
   repo: "test-repo",
   host: "github.com",
-  platform: "github",
-  defaultBranch: "main",
-  isPrivate: false,
+  gitUrl: "https://github.com/test-org/test-repo.git",
 };
 
 describe("GitHubVariablesStrategy", () => {
@@ -854,7 +861,11 @@ import type {
   GitHubVariable,
 } from "../../../../src/settings/variables/types.js";
 import type { RepoConfig } from "../../../../src/config/index.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../../../src/repo/index.js";
+import type {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+  RepoInfo,
+} from "../../../../src/repo/index.js";
 import type { GhApiOptions } from "../../../../src/shared/gh-api-utils.js";
 
 class MockVariablesStrategy implements IVariablesStrategy {
@@ -888,12 +899,11 @@ class MockVariablesStrategy implements IVariablesStrategy {
 }
 
 const mockGitHubRepo: GitHubRepoInfo = {
+  type: "github",
   owner: "test-org",
   repo: "test-repo",
   host: "github.com",
-  platform: "github",
-  defaultBranch: "main",
-  isPrivate: false,
+  gitUrl: "https://github.com/test-org/test-repo.git",
 };
 
 function makeRepoConfig(
@@ -901,7 +911,7 @@ function makeRepoConfig(
   deleteOrphaned = false
 ): RepoConfig {
   return {
-    git: "github.com/test-org/test-repo",
+    git: "https://github.com/test-org/test-repo.git",
     files: [],
     settings: { variables, deleteOrphaned },
   };
@@ -1001,13 +1011,13 @@ describe("VariablesProcessor", () => {
   test("skips non-GitHub repos", async () => {
     const strategy = new MockVariablesStrategy();
     const processor = new VariablesProcessor(strategy);
-    const adoRepo: RepoInfo = {
+    const adoRepo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
       owner: "org",
       repo: "repo",
-      platform: "azure-devops",
-      defaultBranch: "main",
-      isPrivate: false,
+      organization: "org",
       project: "proj",
+      gitUrl: "https://dev.azure.com/org/proj/_git/repo",
     };
 
     const result = await processor.process(
@@ -1024,7 +1034,7 @@ describe("VariablesProcessor", () => {
     const processor = new VariablesProcessor(strategy);
 
     const result = await processor.process(
-      { git: "github.com/o/r", files: [], settings: {} },
+      { git: "https://github.com/o/r.git", files: [], settings: {} },
       mockGitHubRepo,
       {}
     );
@@ -1264,7 +1274,26 @@ variables:
 
 - [ ] **Step 5: Add variables to settings-runner.ts**
 
-In `buildSettingsDescriptors`, add entry:
+First, update the `SettingsDescriptor` key union in `settings-runner.ts` (line 12) to include `"variables"`:
+
+```typescript
+interface SettingsDescriptor {
+  key: "rulesets" | "labels" | "repo" | "codeScanning" | "variables";
+  label: string;
+  run: () => Promise<SettingsResult>;
+}
+```
+
+> **Note:** `applyRepoSettings` (line 157-158) does:
+>
+> ```typescript
+> const settingsValue = repoConfig.settings[desc.key];
+> if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
+> ```
+>
+> This naturally works for `variables: Record<string, string>` -- `Object.keys()` on an empty object returns `[]`, so empty variables configs are correctly skipped.
+
+Then in `buildSettingsDescriptors`, add entry:
 
 ```typescript
 {
@@ -1621,9 +1650,15 @@ export class SodiumEncryptor implements ISecretEncryptor {
   private sodium: typeof _sodium | undefined;
 
   async initialize(): Promise<void> {
-    const sodium = await import("libsodium-wrappers");
-    await sodium.default.ready;
-    this.sodium = sodium.default;
+    try {
+      const sodium = await import("libsodium-wrappers");
+      await sodium.default.ready;
+      this.sodium = sodium.default;
+    } catch {
+      throw new Error(
+        "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
+      );
+    }
   }
 
   async encrypt(
@@ -1730,7 +1765,10 @@ export interface ISecretsStrategy {
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { GitHubSecretsStrategy } from "../../../src/secrets/github-secrets-strategy.js";
-import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
+import type {
+  ICommandExecutor,
+  ExecOptions,
+} from "../../../src/shared/command-executor.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
 class MockExecutor implements ICommandExecutor {
@@ -1740,7 +1778,8 @@ class MockExecutor implements ICommandExecutor {
   async exec(
     executable: string,
     args: string[],
-    _cwd: string
+    _cwd: string,
+    _options?: ExecOptions
   ): Promise<string> {
     this.calls.push({ executable, args });
     return this.response;
@@ -1748,12 +1787,11 @@ class MockExecutor implements ICommandExecutor {
 }
 
 const mockRepo: GitHubRepoInfo = {
+  type: "github",
   owner: "test-org",
   repo: "test-repo",
   host: "github.com",
-  platform: "github",
-  defaultBranch: "main",
-  isPrivate: false,
+  gitUrl: "https://github.com/test-org/test-repo.git",
 };
 
 describe("GitHubSecretsStrategy", () => {
@@ -1954,9 +1992,13 @@ import type {
 } from "../../../src/secrets/types.js";
 import type { ISecretEncryptor } from "../../../src/secrets/encryption.js";
 import type { IEnvResolver } from "../../../src/shared/env-resolver.js";
-import type { GitHubRepoInfo, RepoInfo } from "../../../src/repo/index.js";
+import type {
+  GitHubRepoInfo,
+  AzureDevOpsRepoInfo,
+  RepoInfo,
+} from "../../../src/repo/index.js";
 import type { GhApiOptions } from "../../../src/shared/gh-api-utils.js";
-import type { SecretConfig, RawSecretsConfig } from "../../../src/config/types.js";
+import type { SecretConfig } from "../../../src/config/types.js";
 
 class MockSecretsStrategy implements ISecretsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
@@ -2033,19 +2075,20 @@ class MockEnvResolver implements IEnvResolver {
 }
 
 const mockGitHubRepo: GitHubRepoInfo = {
+  type: "github",
   owner: "test-org",
   repo: "test-repo",
   host: "github.com",
-  platform: "github",
-  defaultBranch: "main",
-  isPrivate: false,
+  gitUrl: "https://github.com/test-org/test-repo.git",
 };
 
+/** Build a flat secrets config matching the type:
+ *  Record<string, SecretConfig> & { deleteOrphaned?: boolean } */
 function makeSecretsConfig(
   secrets: Record<string, SecretConfig>,
   deleteOrphaned = false
-): RawSecretsConfig {
-  return { secrets, deleteOrphaned };
+): Record<string, SecretConfig> & { deleteOrphaned?: boolean } {
+  return { ...secrets, deleteOrphaned };
 }
 
 describe("SecretsProcessor", () => {
@@ -2171,13 +2214,13 @@ describe("SecretsProcessor", () => {
       new MockEncryptor(),
       new MockEnvResolver({})
     );
-    const adoRepo: RepoInfo = {
+    const adoRepo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
       owner: "org",
       repo: "repo",
-      platform: "azure-devops",
-      defaultBranch: "main",
-      isPrivate: false,
+      organization: "org",
       project: "proj",
+      gitUrl: "https://dev.azure.com/org/proj/_git/repo",
     };
 
     const result = await processor.process(
@@ -2207,7 +2250,12 @@ import {
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
-import type { RawSecretsConfig } from "../config/types.js";
+import type { SecretConfig } from "../config/types.js";
+
+/** Flat secrets config: Record<name, SecretConfig> & { deleteOrphaned?: boolean } */
+type SecretsConfig = Record<string, SecretConfig> & {
+  deleteOrphaned?: boolean;
+};
 
 export interface SecretsProcessorOptions {
   dryRun?: boolean;
@@ -2233,7 +2281,7 @@ export class SecretsProcessor {
   ) {}
 
   async process(
-    secretsConfig: RawSecretsConfig,
+    secretsConfig: SecretsConfig,
     repoInfo: RepoInfo,
     options: SecretsProcessorOptions
   ): Promise<SecretsProcessorResult> {
@@ -2252,8 +2300,8 @@ export class SecretsProcessor {
     }
 
     const githubRepo = repoInfo as GitHubRepoInfo;
-    const desiredSecrets = secretsConfig.secrets ?? {};
-    const deleteOrphaned = secretsConfig.deleteOrphaned ?? false;
+    // Separate deleteOrphaned flag from secret entries (same pattern as labels' inherit)
+    const { deleteOrphaned = false, ...desiredSecrets } = secretsConfig;
     const { dryRun, token } = options;
     const strategyOptions = { token, host: githubRepo.host };
 
@@ -2397,16 +2445,67 @@ import { GitHubSecretsStrategy } from "../secrets/github-secrets-strategy.js";
 import { SodiumEncryptor } from "../secrets/encryption.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { resolveGitHubToken } from "../shared/token-resolver.js";
-import { identifyRepo } from "../repo/index.js";
+import {
+  detectRepoType,
+  parseGitUrl,
+  type RepoInfo,
+  type GitHubRepoInfo,
+  type AzureDevOpsRepoInfo,
+  type GitLabRepoInfo,
+} from "../repo/index.js";
 import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { SecretConfig } from "../config/types.js";
 
 export interface SecretsSyncOptions {
   config: string;
   dryRun?: boolean;
   workDir?: string;
   retries?: number;
+}
+
+/**
+ * Construct a RepoInfo from a git URL.
+ * Follow the same pattern used in the sync flow's composition root
+ * (src/sync/repository-processor.ts and settings-runner pipeline).
+ */
+function buildRepoInfo(
+  gitUrl: string,
+  githubHosts?: string[]
+): RepoInfo {
+  const parsed = parseGitUrl(gitUrl);
+  const platform = detectRepoType(gitUrl, { githubHosts });
+
+  switch (platform) {
+    case "github":
+      return {
+        type: "github",
+        owner: parsed.owner,
+        repo: parsed.repo,
+        host: parsed.host,
+        gitUrl,
+      } satisfies GitHubRepoInfo;
+    case "azure-devops":
+      // For ADO, owner is the org, project is extracted from the URL path
+      // parseGitUrl already handles this — check actual codebase for details
+      return {
+        type: "azure-devops",
+        owner: parsed.owner,
+        repo: parsed.repo,
+        organization: parsed.owner,
+        project: parsed.owner, // Agent: read parseGitUrl to get actual project extraction
+        gitUrl,
+      } satisfies AzureDevOpsRepoInfo;
+    case "gitlab":
+      return {
+        type: "gitlab",
+        owner: parsed.owner,
+        repo: parsed.repo,
+        namespace: parsed.owner,
+        host: parsed.host,
+        gitUrl,
+      } satisfies GitLabRepoInfo;
+  }
 }
 
 export async function runSecretsSync(
@@ -2418,10 +2517,18 @@ export async function runSecretsSync(
   const rawConfig = await readConfig(configPath);
   const config = normalizeConfig(rawConfig, process.env);
 
-  if (
-    !config.secrets?.secrets ||
-    Object.keys(config.secrets.secrets).length === 0
-  ) {
+  if (!config.secrets) {
+    logger.info("No secrets configured. Nothing to do.");
+    return;
+  }
+
+  // Separate deleteOrphaned from secret entries (flat config pattern)
+  const { deleteOrphaned, ...secretEntries } = config.secrets;
+  const secretNames = Object.keys(secretEntries).filter(
+    (k) => k !== "deleteOrphaned"
+  );
+
+  if (secretNames.length === 0) {
     logger.info("No secrets configured. Nothing to do.");
     return;
   }
@@ -2440,6 +2547,9 @@ export async function runSecretsSync(
     envResolver
   );
 
+  // Read token from env (CLI entry point pattern, no App token manager needed)
+  const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+
   let hasErrors = false;
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -2447,12 +2557,10 @@ export async function runSecretsSync(
     const repoName = repoConfig.git;
 
     try {
-      const repoInfo = await identifyRepo(
+      const repoInfo = buildRepoInfo(
         repoConfig.git,
-        executor,
-        { cwd, githubHosts: config.githubHosts }
+        config.githubHosts
       );
-      const token = await resolveGitHubToken(executor, cwd);
 
       const result = await processor.process(config.secrets, repoInfo, {
         dryRun,
@@ -2481,6 +2589,9 @@ export async function runSecretsSync(
   }
 }
 ```
+
+> **Implementation note:** The `buildRepoInfo` helper constructs `RepoInfo` from a git URL using `detectRepoType` and `parseGitUrl` from `src/repo/index.js`. The implementing agent should read `src/sync/repository-processor.ts` and the sync command's composition root to verify the exact pattern for building `RepoInfo` objects from git URLs, especially for Azure DevOps where the project field needs
+> proper extraction from the URL path.
 
 - [ ] **Step 2: Register secrets command in program.ts**
 
@@ -2555,16 +2666,21 @@ describe("normalizeConfig secrets", () => {
   test("passes secrets config through to normalized config", () => {
     const raw = makeRawConfig({
       secrets: {
-        secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
+        MY_SECRET: { env: "SOURCE_VAR" },
         deleteOrphaned: true,
       },
     });
     const config = normalizeConfig(raw, {});
 
-    assert.deepStrictEqual(config.secrets?.secrets, {
-      MY_SECRET: { env: "SOURCE_VAR" },
-    });
-    assert.equal(config.secrets?.deleteOrphaned, true);
+    // Flat config: secret entries are peers of deleteOrphaned
+    assert.deepStrictEqual(
+      (config.secrets as Record<string, unknown>)["MY_SECRET"],
+      { env: "SOURCE_VAR" }
+    );
+    assert.equal(
+      (config.secrets as Record<string, unknown>)["deleteOrphaned"],
+      true
+    );
   });
 });
 ```
@@ -2585,15 +2701,23 @@ Run: `npm test -- --grep "normalizeConfig secrets"` Expected: PASS
 
 - [ ] **Step 4: Write failing test for variable/secret name overlap validation**
 
+Secrets config is global (on `Config`), variables are per-repo (on `RepoConfig.settings`). The cross-validation needs to iterate each repo's effective variables and check against global secrets.
+
 ```typescript
 describe("cross-validation", () => {
   test("rejects overlapping variable and secret names", () => {
     const config = makeConfig({
-      settings: {
-        variables: { DEPLOY_TOKEN: "value" },
-      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          files: [],
+          settings: {
+            variables: { DEPLOY_TOKEN: "value" },
+          },
+        },
+      ],
       secrets: {
-        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
+        DEPLOY_TOKEN: { env: "SRC" },
       },
     });
     assert.throws(
@@ -2606,23 +2730,30 @@ describe("cross-validation", () => {
 
 - [ ] **Step 5: Implement cross-validation**
 
-In `validateForSync`, after existing validations:
+In `validateForSync`, after per-repo validation. Since secrets is global and variables is per-repo, iterate repos:
 
 ```typescript
-const variableNames = new Set(
-  Object.keys(config.settings?.variables ?? {}).map((n) =>
-    n.toUpperCase()
-  )
-);
-const secretNames = Object.keys(config.secrets?.secrets ?? {});
-const overlapping = secretNames.filter((n) =>
-  variableNames.has(n.toUpperCase())
-);
-if (overlapping.length > 0) {
-  throw new ValidationError(
-    `Variable and secret names overlap: ${overlapping.join(", ")}. ` +
-      "GitHub does not allow variables and secrets with the same name."
+// Cross-validate: no overlap between global secret names and per-repo variable names
+if (config.secrets) {
+  const { deleteOrphaned: _, ...secretEntries } = config.secrets;
+  const secretNames = new Set(
+    Object.keys(secretEntries).map((n) => n.toUpperCase())
   );
+
+  for (const repo of config.repos) {
+    const variableNames = Object.keys(
+      repo.settings?.variables ?? {}
+    );
+    const overlapping = variableNames.filter((n) =>
+      secretNames.has(n.toUpperCase())
+    );
+    if (overlapping.length > 0) {
+      throw new ValidationError(
+        `Repo '${repo.git}': variable and secret names overlap: ${overlapping.join(", ")}. ` +
+          "GitHub does not allow variables and secrets with the same name."
+      );
+    }
+  }
 }
 ```
 
@@ -2651,44 +2782,182 @@ ______________________________________________________________________
 
 **Files:**
 
-- Create: `test/integration/github/variables.test.ts`
+- Create: `test/integration/github-variables.test.ts`
 
-- Create: `test/integration/github/secrets.test.ts`
+- Create: `test/integration/github-secrets.test.ts`
+
+> **Note:** Integration tests live in `test/integration/` (not a `github/` subdirectory). Follow the same patterns as `test/integration/github-labels.test.ts`: ephemeral repos via `generateRepoName`/`createRepo`/`deleteRepo`, inline configs via `writeConfig`, rate-limit-safe helpers from `test-helpers.ts`.
 
 - [ ] **Step 1: Create variables integration test**
 
-Follow patterns from existing integration test files in `test/integration/github/`. Use real GitHub API against test repo.
+Follow patterns from existing integration test files in `test/integration/`. Use real GitHub API against an ephemeral test repo.
 
 ```typescript
-// test/integration/github/variables.test.ts
-import { describe, test, after } from "node:test";
-import assert from "node:assert/strict";
+// test/integration/github-variables.test.ts
+import { test, describe, before, after, beforeEach } from "node:test";
+import { strict as assert } from "node:assert";
+import { mkdirSync, rmSync } from "node:fs";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  exec as execHelper,
+  execWithRetry,
+  projectRoot,
+  generateRepoName,
+  createRepo,
+  deleteRepo,
+  writeConfig,
+  withTestRetry,
+} from "./test-helpers.js";
 
-describe("GitHub Variables Integration", () => {
-  const testVarName = `XFG_TEST_${Date.now()}`;
+const OWNER = "spruyt-labs";
 
-  after(async () => {
-    // Cleanup: delete test variable via strategy
+interface Variable {
+  name: string;
+  value: string;
+}
+
+let repoName: string;
+let testRepo: string;
+let tmpDir: string;
+
+async function getVariables(): Promise<Variable[]> {
+  try {
+    const output = await execWithRetry(
+      `gh api repos/${testRepo}/actions/variables --jq '.variables'`
+    );
+    return JSON.parse(output) as Variable[];
+  } catch {
+    return [];
+  }
+}
+
+async function runSync(configPath: string, extraArgs = ""): Promise<string> {
+  return execHelper(
+    `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
+    { cwd: projectRoot }
+  );
+}
+
+describe("GitHub Variables Integration Test", () => {
+  before(async () => {
+    repoName = generateRepoName("variables");
+    testRepo = `${OWNER}/${repoName}`;
+    tmpDir = mkdtempSync(join(tmpdir(), "xfg-variables-"));
+    await createRepo(OWNER, repoName);
   });
 
-  test("creates a new variable", async () => {
-    // Create variable via strategy
-    // Verify it exists via list
+  after(async () => {
+    await deleteRepo(OWNER, repoName);
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test("creates variables via sync", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables
+files:
+  .xfg-var-test:
+    content: "# Placeholder"
+    createOnly: true
+settings:
+  variables:
+    XFG_TEST_VAR: "test-value"
+repos:
+  - git: https://github.com/${testRepo}.git
+    files:
+      .xfg-var-test: false
+`
+    );
+
+    await runSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const variables = await getVariables();
+        const found = variables.find(
+          (v) => v.name === "XFG_TEST_VAR"
+        );
+        assert.ok(found, "Variable XFG_TEST_VAR should exist");
+        assert.equal(found.value, "test-value");
+      },
+      { description: "variable creation visible" }
+    );
   });
 
   test("updates variable value", async () => {
-    // Update variable
-    // Verify new value via list
-  });
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables
+settings:
+  variables:
+    XFG_TEST_VAR: "updated-value"
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
 
-  test("deletes variable", async () => {
-    // Delete variable
-    // Verify it's gone via list
+    await runSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const variables = await getVariables();
+        const found = variables.find(
+          (v) => v.name === "XFG_TEST_VAR"
+        );
+        assert.ok(found, "Variable XFG_TEST_VAR should exist");
+        assert.equal(found.value, "updated-value");
+      },
+      { description: "variable update visible" }
+    );
   });
 
   test("dry run does not create variable", async () => {
-    // Run processor with dryRun: true
-    // Verify variable not created
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables
+settings:
+  variables:
+    XFG_DRY_RUN_VAR: "should-not-exist"
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    await runSync(configPath, "--dry-run");
+
+    const variables = await getVariables();
+    const found = variables.find(
+      (v) => v.name === "XFG_DRY_RUN_VAR"
+    );
+    assert.equal(found, undefined, "Dry-run variable should not exist");
+  });
+
+  test("deletes orphaned variables with deleteOrphaned", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables
+settings:
+  variables: {}
+  deleteOrphaned: true
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    await runSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const variables = await getVariables();
+        const found = variables.find(
+          (v) => v.name === "XFG_TEST_VAR"
+        );
+        assert.equal(found, undefined, "Orphaned variable should be deleted");
+      },
+      { description: "variable deletion visible" }
+    );
   });
 });
 ```
@@ -2696,30 +2965,165 @@ describe("GitHub Variables Integration", () => {
 - [ ] **Step 2: Create secrets integration test**
 
 ```typescript
-// test/integration/github/secrets.test.ts
-import { describe, test, after } from "node:test";
-import assert from "node:assert/strict";
+// test/integration/github-secrets.test.ts
+import { test, describe, before, after } from "node:test";
+import { strict as assert } from "node:assert";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import {
+  exec as execHelper,
+  execWithRetry,
+  projectRoot,
+  generateRepoName,
+  createRepo,
+  deleteRepo,
+  writeConfig,
+  withTestRetry,
+} from "./test-helpers.js";
 
-describe("GitHub Secrets Integration", () => {
-  const testSecretName = `XFG_TEST_${Date.now()}`;
+const OWNER = "spruyt-labs";
+
+interface Secret {
+  name: string;
+}
+
+let repoName: string;
+let testRepo: string;
+let tmpDir: string;
+
+async function getSecrets(): Promise<Secret[]> {
+  try {
+    const output = await execWithRetry(
+      `gh api repos/${testRepo}/actions/secrets --jq '.secrets'`
+    );
+    return JSON.parse(output) as Secret[];
+  } catch {
+    return [];
+  }
+}
+
+async function runSecretsSync(
+  configPath: string,
+  extraArgs = ""
+): Promise<string> {
+  return execHelper(
+    `node dist/cli.js secrets sync --config ${configPath} ${extraArgs}`.trim(),
+    {
+      cwd: projectRoot,
+      env: {
+        // Set env vars that the secrets config references
+        XFG_TEST_SECRET_VALUE: "integration-test-secret",
+      },
+    }
+  );
+}
+
+describe("GitHub Secrets Integration Test", () => {
+  before(async () => {
+    repoName = generateRepoName("secrets");
+    testRepo = `${OWNER}/${repoName}`;
+    tmpDir = mkdtempSync(join(tmpdir(), "xfg-secrets-"));
+    await createRepo(OWNER, repoName);
+  });
 
   after(async () => {
-    // Cleanup: delete test secret via strategy
+    await deleteRepo(OWNER, repoName);
+    rmSync(tmpDir, { recursive: true, force: true });
   });
 
   test("creates a new secret", async () => {
-    // Create secret via processor
-    // Verify it exists via list (can't verify value)
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  XFG_TEST_SECRET:
+    env: XFG_TEST_SECRET_VALUE
+`
+    );
+
+    await runSecretsSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const secrets = await getSecrets();
+        const found = secrets.find(
+          (s) => s.name === "XFG_TEST_SECRET"
+        );
+        assert.ok(found, "Secret XFG_TEST_SECRET should exist");
+      },
+      { description: "secret creation visible" }
+    );
   });
 
   test("upserts existing secret", async () => {
-    // Upsert same secret
-    // Verify it still exists
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  XFG_TEST_SECRET:
+    env: XFG_TEST_SECRET_VALUE
+`
+    );
+
+    // Should succeed without error (upsert, not create)
+    await runSecretsSync(configPath);
+
+    const secrets = await getSecrets();
+    const found = secrets.find(
+      (s) => s.name === "XFG_TEST_SECRET"
+    );
+    assert.ok(found, "Secret XFG_TEST_SECRET should still exist");
+  });
+
+  test("dry run does not create secret", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  XFG_DRY_RUN_SECRET:
+    env: XFG_TEST_SECRET_VALUE
+`
+    );
+
+    await runSecretsSync(configPath, "--dry-run");
+
+    const secrets = await getSecrets();
+    const found = secrets.find(
+      (s) => s.name === "XFG_DRY_RUN_SECRET"
+    );
+    assert.equal(found, undefined, "Dry-run secret should not exist");
   });
 
   test("deletes orphaned secret", async () => {
-    // Create secret, then sync with empty config + deleteOrphaned
-    // Verify it's gone
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  deleteOrphaned: true
+`
+    );
+
+    await runSecretsSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const secrets = await getSecrets();
+        const found = secrets.find(
+          (s) => s.name === "XFG_TEST_SECRET"
+        );
+        assert.equal(found, undefined, "Orphaned secret should be deleted");
+      },
+      { description: "secret deletion visible" }
+    );
   });
 });
 ```
@@ -2741,15 +3145,29 @@ Expected: All PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add test/integration/github/variables.test.ts test/integration/github/secrets.test.ts
+git add test/integration/github-variables.test.ts test/integration/github-secrets.test.ts
 git commit -m "test(integration): add GitHub variables and secrets integration tests"
 ```
 
 ______________________________________________________________________
 
-### Task 14: Final Verification and Cleanup
+### Task 14: GitHub Summary, Final Verification, and Cleanup
 
-- [ ] **Step 1: Verify all barrel exports are complete**
+- [ ] **Step 1: Update settings report to include variables**
+
+Update `src/output/settings-report.ts` to include variables in `SettingsReport`, `RepoChanges`, and the totals. Read the existing file to understand the pattern for adding a new settings type. The key changes:
+
+- Add `variables: VariableChange[]` to `RepoChanges`
+- Add `variables: { create: number; update: number; delete: number }` to `totals`
+- Add processing block in `buildSettingsReport` for `variablesResult` (similar to how `labelsResult` is processed)
+
+Then update `src/cli/settings-report-builder.ts` to populate `variablesResult` from the processor results.
+
+- [ ] **Step 2: Update GitHub job summary**
+
+Update `src/output/settings-report.ts`'s markdown formatter (`formatSettingsReportMarkdown`) to include a variables section in the GitHub step summary output. Follow the same pattern used for labels/rulesets sections.
+
+- [ ] **Step 3: Verify all barrel exports are complete**
 
 Check `src/settings/index.ts` includes variables exports. Create `src/secrets/index.ts` barrel if needed:
 
@@ -2765,7 +3183,7 @@ export type {
 } from "./types.js";
 ```
 
-- [ ] **Step 2: Run full test suite**
+- [ ] **Step 4: Run full test suite**
 
 ```bash
 npm test
@@ -2773,7 +3191,7 @@ npm run test:typecheck
 ./lint.sh
 ```
 
-- [ ] **Step 3: Test CLI commands manually**
+- [ ] **Step 5: Test CLI commands manually**
 
 ```bash
 node dist/index.js sync --help
@@ -2781,7 +3199,7 @@ node dist/index.js secrets sync --help
 node dist/index.js secrets sync --config test-config.yaml --dry-run
 ```
 
-- [ ] **Step 4: Push and verify CI**
+- [ ] **Step 6: Push and verify CI**
 
 ```bash
 git push
