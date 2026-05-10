@@ -2,7 +2,7 @@
 name: block-set-dump
 enabled: true
 event: bash
-pattern: (^|\s|&&|\|\||;|\(|`)set(\s*$|\s*\||\s*;|\s*&&|\s*\|\||\s*\)|\s*`)
+pattern: (^|\s|&&|\|\||;|\(|`)set([^\S\n]*$|[^\S\n]*\||[^\S\n]*;|[^\S\n]*&&|[^\S\n]*\|\||[^\S\n]*\)|[^\S\n]*`|[^\S\n]*([0-9]*|&)?>[^\S\n]*\S)
 action: block
 ---
 
@@ -19,3 +19,5 @@ action: block
 3. **List variable names only:** `compgen -v` or `env | cut -d= -f1`
 
 **Note:** `set -e`, `set -x`, `set -o pipefail` and other option-setting uses are allowed.
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-set-dump" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

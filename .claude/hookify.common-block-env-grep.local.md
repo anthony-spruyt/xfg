@@ -2,7 +2,7 @@
 name: block-env-grep
 enabled: true
 event: bash
-pattern: (env|printenv)\s*\|\s*grep
+pattern: (^|\s|&&|\|\||;|\(|`)(env|printenv)[^\S\n]*\|[^\S\n]*grep
 action: block
 ---
 
@@ -24,4 +24,6 @@ action: block
 
 - List keys only: `env | cut -d= -f1` or `printenv | cut -d= -f1`
 - Count variables: `env | wc -l`
-- Check if key exists: `printenv VARNAME >/dev/null 2>&1 && echo "exists"`
+- Check if key exists: `[ -n "$VARNAME" ] && echo "exists"`
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-env-grep" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.

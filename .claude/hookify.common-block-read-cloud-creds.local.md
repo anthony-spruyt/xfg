@@ -20,3 +20,5 @@ conditions:
 - AWS: Use `aws sts get-caller-identity` to verify access
 - Kubernetes: Use `kubectl config current-context` for context info
 - Docker: Use `docker info` for registry status
+
+**False positive?** Open an issue: `gh issue create --repo anthony-spruyt/claude-config --title "False positive: block-read-cloud-creds" --label bug` and describe the blocked command in the body using `--body-file` to avoid re-triggering hooks.
