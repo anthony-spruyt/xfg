@@ -176,7 +176,7 @@ describe("GitHubLifecycleProvider", () => {
   describe("create()", () => {
     test("creates repo with gh repo create --add-readme and deletes README", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([["contents/README.md --jq", "abc123def"]]),
+        responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
@@ -343,7 +343,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("initializes default branch with --add-readme then deletes README", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([["contents/README.md --jq", "abc123def"]]),
+        responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
@@ -486,9 +486,9 @@ describe("GitHubLifecycleProvider", () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([
             ["gh repo create", ""],
-            [".default_branch", "main"],
-            ["contents/README.md --jq", "abc123def"],
-            ["DELETE", ""],
+            ["gh .default_branch", "main"],
+            ["gh contents/README.md --jq", "abc123def"],
+            ["gh DELETE", ""],
           ]),
           defaultResponse: "",
         });
@@ -512,7 +512,7 @@ describe("GitHubLifecycleProvider", () => {
 
       test("no extra API calls when defaultBranch is not set", async () => {
         const { mock: executor, calls } = createMockExecutor({
-          responses: new Map([["contents/README.md --jq", "abc123def"]]),
+          responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
           defaultResponse: "",
         });
 
@@ -585,9 +585,9 @@ describe("GitHubLifecycleProvider", () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map<string, string | Error>([
             ["gh repo create", ""],
-            [".default_branch", "master"],
+            ["gh .default_branch", "master"],
             [
-              "new_name=main",
+              "gh new_name=main",
               new Error("Rename failed: 422 Unprocessable Entity"),
             ],
           ]),
@@ -633,7 +633,7 @@ describe("GitHubLifecycleProvider", () => {
       const { mock: executor, calls } = createMockExecutor({
         // Use 'users/' pattern to match the owner type check API call
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -673,7 +673,7 @@ describe("GitHubLifecycleProvider", () => {
       const { mock: executor, calls } = createMockExecutor({
         // Use 'users/myusername' pattern to match the owner type check API call
         responses: new Map([
-          ["users/myusername", '{"type": "User"}'],
+          ["gh users/myusername", '{"type": "User"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -703,7 +703,7 @@ describe("GitHubLifecycleProvider", () => {
     test("includes --clone=false flag", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -729,7 +729,7 @@ describe("GitHubLifecycleProvider", () => {
     test("defaults to org behavior when API check fails", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/test-org", new Error("API error")],
+          ["gh users/test-org", new Error("API error")],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -756,7 +756,7 @@ describe("GitHubLifecycleProvider", () => {
     test("applies visibility settings after fork", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
           ["gh repo edit", ""],
         ]),
@@ -791,7 +791,7 @@ describe("GitHubLifecycleProvider", () => {
     test("applies description settings after fork", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
           ["gh repo edit", ""],
         ]),
@@ -823,7 +823,7 @@ describe("GitHubLifecycleProvider", () => {
     test("does not call gh repo edit when no settings provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -901,7 +901,7 @@ describe("GitHubLifecycleProvider", () => {
     test("throws on fork failure", async () => {
       const { mock: executor } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", new Error("Cannot fork private repo")],
         ]),
       });
@@ -976,7 +976,7 @@ describe("GitHubLifecycleProvider", () => {
     test("fork with defaultBranch set completes without rename", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -1092,7 +1092,7 @@ describe("GitHubLifecycleProvider", () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
           [
-            "for-each-ref",
+            "git for-each-ref",
             "refs/heads/main\nrefs/tags/v1.0\nrefs/pull/1/head\nrefs/merge-requests/1/head",
           ],
         ]),
@@ -1167,7 +1167,10 @@ describe("GitHubLifecycleProvider", () => {
     test("passes settings to create", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0\nrefs/pull/1/head"],
+          [
+            "git for-each-ref",
+            "refs/heads/main\nrefs/tags/v1.0\nrefs/pull/1/head",
+          ],
         ]),
         defaultResponse: "",
       });
@@ -1198,10 +1201,10 @@ describe("GitHubLifecycleProvider", () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map<string, string | Error>([
           [
-            "remote remove origin",
+            "git remote remove origin",
             new Error("fatal: No such remote: 'origin'"),
           ],
-          ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+          ["git for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
         ]),
         defaultResponse: "",
       });
@@ -1229,7 +1232,7 @@ describe("GitHubLifecycleProvider", () => {
     test("continues when ref cleanup fails", async () => {
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["for-each-ref", new Error("not a git repository")],
+          ["git for-each-ref", new Error("not a git repository")],
         ]),
         defaultResponse: "",
       });
@@ -1258,8 +1261,8 @@ describe("GitHubLifecycleProvider", () => {
       test("renames branch in mirror clone when source HEAD differs from desired", async () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([
-            ["for-each-ref", "refs/heads/master\nrefs/tags/v1.0"],
-            ["symbolic-ref HEAD", "refs/heads/master"],
+            ["git for-each-ref", "refs/heads/master\nrefs/tags/v1.0"],
+            ["git symbolic-ref HEAD", "refs/heads/master"],
           ]),
           defaultResponse: "",
         });
@@ -1297,8 +1300,8 @@ describe("GitHubLifecycleProvider", () => {
       test("skips rename when source HEAD matches desired branch", async () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([
-            ["for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
-            ["symbolic-ref HEAD", "refs/heads/main"],
+            ["git for-each-ref", "refs/heads/main\nrefs/tags/v1.0"],
+            ["git symbolic-ref HEAD", "refs/heads/main"],
           ]),
           defaultResponse: "",
         });
@@ -1323,7 +1326,7 @@ describe("GitHubLifecycleProvider", () => {
         const { mock: executor, calls } = createMockExecutor({
           responses: new Map([
             [
-              "for-each-ref",
+              "git for-each-ref",
               "refs/heads/master\nrefs/tags/v1.0\nrefs/pull/1/head",
             ],
           ]),
@@ -1351,8 +1354,8 @@ describe("GitHubLifecycleProvider", () => {
       test("throws descriptive error when symbolic-ref output is not refs/heads/", async () => {
         const { mock: executor } = createMockExecutor({
           responses: new Map([
-            ["for-each-ref", "refs/heads/main"],
-            ["symbolic-ref HEAD", "refs/tags/v1.0"],
+            ["git for-each-ref", "refs/heads/main"],
+            ["git symbolic-ref HEAD", "refs/tags/v1.0"],
           ]),
           defaultResponse: "",
         });
@@ -1406,7 +1409,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("create() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([["contents/README.md --jq", "abc123def"]]),
+        responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
@@ -1471,7 +1474,7 @@ describe("GitHubLifecycleProvider", () => {
 
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map([
-          ["users/test-org", '{"type": "Organization"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",
@@ -1516,7 +1519,7 @@ describe("GitHubLifecycleProvider", () => {
 
       const { mock: executor, calls } = createMockExecutor({
         responses: new Map<string, string | Error>([
-          ["users/test-org", new Error("API rate limit exceeded")],
+          ["gh users/test-org", new Error("API rate limit exceeded")],
           ["gh repo fork", ""],
         ]),
         defaultResponse: "",

@@ -154,6 +154,7 @@ export class AuthenticatedGitOps implements IGitOps {
       ...(options?.force ? ["--force-with-lease"] : []),
       "-u",
       "origin",
+      "--",
       branchName,
     ];
     await this.execWithRetry("git", args);
@@ -211,6 +212,7 @@ export class AuthenticatedGitOps implements IGitOps {
       ...(options?.delete ? ["--delete"] : []),
       "-u",
       "origin",
+      "--",
       refspec,
     ];
     await this.execWithRetry("git", args);

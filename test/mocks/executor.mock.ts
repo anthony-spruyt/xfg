@@ -39,9 +39,11 @@ function matchesPattern(
   args: string[],
   pattern: string
 ): boolean {
-  const allParts = [executable, ...args];
   const tokens = pattern.split(/\s+/);
-  return tokens.every((token) => allParts.includes(token));
+  if (tokens.length === 0) return false;
+  if (tokens[0] !== executable) return false;
+  const remainingTokens = tokens.slice(1);
+  return remainingTokens.every((token) => args.includes(token));
 }
 
 export function createMockExecutor(
@@ -76,8 +78,15 @@ export function createMockExecutor(
         if (executable === "git" && args.includes("push")) {
           git.pushForce = args.includes("--force-with-lease");
           const originIndex = args.indexOf("origin");
-          if (originIndex !== -1 && originIndex + 1 < args.length) {
-            git.pushBranch = args[originIndex + 1];
+          if (originIndex !== -1) {
+            // Skip "--" separator if present after "origin"
+            const nextIndex =
+              originIndex + 1 < args.length && args[originIndex + 1] === "--"
+                ? originIndex + 2
+                : originIndex + 1;
+            if (nextIndex < args.length) {
+              git.pushBranch = args[nextIndex];
+            }
           }
         }
       }
