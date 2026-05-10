@@ -1,5 +1,3 @@
-import { existsSync, writeFileSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
 import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/index.js";
 import type { PRResult } from "./types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
@@ -15,16 +13,12 @@ import { getStderr } from "../shared/command-executor.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import { safeCleanup } from "../shared/cleanup-utils.js";
-import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import type { MergeStrategy } from "../config/index.js";
 import { SyncError } from "../shared/errors.js";
 
 const MR_CREATED_MSG = "MR created successfully";
 
 export class GitLabPRStrategy extends BasePRStrategy {
-  private readonly bodyFilePath = ".mr-body.md";
-
   /**
    * Build the repo flag for glab commands.
    * Format: namespace/repo (supports nested groups)
@@ -221,16 +215,6 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     const repoFlag = this.getRepoFlag(repoInfo);
 
-    const bodyFile = join(workDir, this.bodyFilePath);
-    try {
-      writeFileSync(bodyFile, body, "utf-8");
-    } catch (err) {
-      throw new SyncError(
-        `Failed to write MR description to ${bodyFile}: ${toErrorMessage(err)}`,
-        { cause: err }
-      );
-    }
-
     const args = [
       "mr",
       "create",
@@ -240,50 +224,40 @@ export class GitLabPRStrategy extends BasePRStrategy {
       baseBranch,
       "--title",
       title,
-      "--body-file",
-      bodyFile,
+      "--description",
+      body,
       "--yes",
       "-R",
       repoFlag,
     ];
 
-    try {
-      const result = await withRetry(
-        () => this.executor.exec("glab", args, workDir),
-        { retries, log: this.log }
-      );
+    const result = await withRetry(
+      () => this.executor.exec("glab", args, workDir),
+      { retries, log: this.log }
+    );
 
-      // Extract MR URL from output
-      // glab typically outputs the URL directly
-      const urlMatch = result.match(/https:\/\/[^\s]+\/-\/merge_requests\/\d+/);
-      if (urlMatch) {
-        return {
-          url: urlMatch[0],
-          success: true,
-          message: MR_CREATED_MSG,
-        };
-      }
-
-      // Fallback: extract MR number and build URL
-      const mrMatch = result.match(/!(\d+)/);
-      if (mrMatch) {
-        return {
-          url: this.buildMRUrl(repoInfo, mrMatch[1]),
-          success: true,
-          message: MR_CREATED_MSG,
-        };
-      }
-
-      throw new SyncError(`Could not parse MR URL from output: ${result}`);
-    } finally {
-      safeCleanup(
-        () => {
-          if (existsSync(bodyFile)) unlinkSync(bodyFile);
-        },
-        `failed to remove ${bodyFile}`,
-        this.log ?? NO_OP_DEBUG_LOG
-      );
+    // Extract MR URL from output
+    // glab typically outputs the URL directly
+    const urlMatch = result.match(/https:\/\/[^\s]+\/-\/merge_requests\/\d+/);
+    if (urlMatch) {
+      return {
+        url: urlMatch[0],
+        success: true,
+        message: MR_CREATED_MSG,
+      };
     }
+
+    // Fallback: extract MR number and build URL
+    const mrMatch = result.match(/!(\d+)/);
+    if (mrMatch) {
+      return {
+        url: this.buildMRUrl(repoInfo, mrMatch[1]),
+        success: true,
+        message: MR_CREATED_MSG,
+      };
+    }
+
+    throw new SyncError(`Could not parse MR URL from output: ${result}`);
   }
 
   async merge(options: MergeOptions): Promise<MergeResult> {

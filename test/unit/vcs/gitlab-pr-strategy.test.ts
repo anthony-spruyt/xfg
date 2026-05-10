@@ -1,6 +1,6 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
+import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
@@ -202,9 +202,8 @@ describe("GitLabPRStrategy with mock executor", () => {
       assert.equal(mockExecutor.calls[0].executable, "glab");
       assert.ok(mockExecutor.calls[0].args.includes("create"));
       assert.ok(mockExecutor.calls[0].args.includes("Test MR"));
-      // Should use --body-file instead of --description to avoid ARG_MAX limits
-      assert.ok(mockExecutor.calls[0].args.includes("--body-file"));
-      assert.ok(!mockExecutor.calls[0].args.includes("--description"));
+      assert.ok(mockExecutor.calls[0].args.includes("--description"));
+      assert.ok(mockExecutor.calls[0].args.includes("Test body"));
     });
 
     test("creates MR and builds URL from MR number in output", async () => {
@@ -256,22 +255,11 @@ describe("GitLabPRStrategy with mock executor", () => {
       );
     });
 
-    test("writes body to temp file and passes path via --body-file", async () => {
-      let capturedArgs: string[] = [];
-      mockExecutor.responses.set("glab mr create", () => {
-        capturedArgs = [...mockExecutor.calls[0].args];
-        // Verify the body file exists at exec time
-        const bodyFileIndex = capturedArgs.indexOf("--body-file");
-        assert.ok(bodyFileIndex !== -1, "Should have --body-file flag");
-        const bodyFilePath = capturedArgs[bodyFileIndex + 1];
-        assert.ok(
-          existsSync(bodyFilePath),
-          "Body file should exist during exec"
-        );
-        const content = readFileSync(bodyFilePath, "utf-8");
-        assert.equal(content, "Large MR body content");
-        return "https://gitlab.com/myorg/myrepo/-/merge_requests/100";
-      });
+    test("passes body via --description arg", async () => {
+      mockExecutor.responses.set(
+        "glab mr create",
+        "https://gitlab.com/myorg/myrepo/-/merge_requests/100"
+      );
 
       const strategy = new GitLabPRStrategy(mockExecutor.mock);
       const options: PRStrategyOptions = {
@@ -286,34 +274,11 @@ describe("GitLabPRStrategy with mock executor", () => {
 
       await strategy.create(options);
 
-      // Body file should be cleaned up after create completes
-      const bodyFilePath = join(testDir, ".mr-body.md");
-      assert.ok(!existsSync(bodyFilePath), "Body file should be cleaned up");
-    });
-
-    test("cleans up body file even when create fails", async () => {
-      mockExecutor.responses.set(
-        "glab mr create",
-        new Error("glab: network error")
-      );
-
-      const strategy = new GitLabPRStrategy(mockExecutor.mock);
-      const options: PRStrategyOptions = {
-        repoInfo: gitlabRepoInfo,
-        title: "Test MR",
-        body: "Test body",
-        branchName: "test-branch",
-        baseBranch: "main",
-        workDir: testDir,
-        retries: 0,
-      };
-
-      await assert.rejects(() => strategy.create(options));
-
-      const bodyFilePath = join(testDir, ".mr-body.md");
-      assert.ok(
-        !existsSync(bodyFilePath),
-        "Body file should be cleaned up after failure"
+      const descIndex = mockExecutor.calls[0].args.indexOf("--description");
+      assert.ok(descIndex !== -1, "Should have --description flag");
+      assert.equal(
+        mockExecutor.calls[0].args[descIndex + 1],
+        "Large MR body content"
       );
     });
   });
