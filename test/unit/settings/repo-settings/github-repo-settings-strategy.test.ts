@@ -7,29 +7,73 @@ import type {
   ExecOptions,
 } from "../../../../src/shared/command-executor.js";
 
-// Mock executor that records commands and returns configured responses
-// Note: This follows the existing test pattern from github-ruleset-strategy.test.ts
+interface CallRecord {
+  executable: string;
+  args: string[];
+  cwd: string;
+  options?: ExecOptions;
+}
+
+// Mock executor that records calls and returns configured responses
 class MockExecutor implements ICommandExecutor {
-  commands: string[] = [];
+  calls: CallRecord[] = [];
   responses: Map<string, string> = new Map();
   errors: Map<string, string> = new Map();
   defaultResponse = "{}";
 
-  async exec(command: string, _cwd: string): Promise<string> {
-    this.commands.push(command);
+  async exec(
+    executable: string,
+    args: string[],
+    cwd: string,
+    options?: ExecOptions
+  ): Promise<string> {
+    this.calls.push({ executable, args, cwd, options });
 
-    // Check for error responses first
+    // Check for error responses first.
+    // Use longest-match: find the pattern whose longest match in any arg wins.
+    // This ensures more-specific patterns (e.g. "automated-security-fixes") beat
+    // broader ones (e.g. "/repos/test-org/test-repo") even if the broader one is
+    // longer in raw string length.
+    let bestErrorMatch: [string, string] | undefined;
+    let bestErrorMatchLen = -1;
     for (const [pattern, errorMessage] of this.errors) {
-      if (command.includes(pattern)) {
-        throw new Error(errorMessage);
+      for (const a of args) {
+        if (a.includes(pattern) && pattern.length > bestErrorMatchLen) {
+          // Prefer patterns that appear at the end of the arg (more specific)
+          const endsAt = a.lastIndexOf(pattern) + pattern.length;
+          if (endsAt === a.length && pattern.length > bestErrorMatchLen) {
+            bestErrorMatchLen = pattern.length;
+            bestErrorMatch = [pattern, errorMessage];
+          } else if (bestErrorMatchLen === -1) {
+            bestErrorMatchLen = 0;
+            bestErrorMatch = [pattern, errorMessage];
+          }
+        }
       }
     }
+    if (bestErrorMatch) {
+      throw new Error(bestErrorMatch[1]);
+    }
 
-    // Find matching response by endpoint pattern
+    // Find matching response. Prefer the pattern that best matches the tail of
+    // an arg (so "automated-security-fixes" wins over "/repos/test-org/test-repo"
+    // when the arg is "/repos/test-org/test-repo/automated-security-fixes").
+    let bestResponse: string | undefined;
+    let bestMatchLen = -1;
     for (const [pattern, response] of this.responses) {
-      if (command.includes(pattern)) {
-        return response;
+      for (const a of args) {
+        if (a.includes(pattern)) {
+          const endsAt = a.lastIndexOf(pattern) + pattern.length;
+          const tailLen = endsAt === a.length ? a.length : pattern.length;
+          if (tailLen > bestMatchLen) {
+            bestMatchLen = tailLen;
+            bestResponse = response;
+          }
+        }
       }
+    }
+    if (bestMatchLen >= 0) {
+      return bestResponse!;
     }
     return this.defaultResponse;
   }
@@ -43,7 +87,7 @@ class MockExecutor implements ICommandExecutor {
   }
 
   reset(): void {
-    this.commands = [];
+    this.calls = [];
     this.responses.clear();
     this.errors.clear();
   }
@@ -67,7 +111,7 @@ describe("GitHubRepoSettingsStrategy", () => {
   describe("getSettings", () => {
     test("should fetch repository settings", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({
           has_issues: true,
           has_wiki: false,
@@ -88,9 +132,13 @@ describe("GitHubRepoSettingsStrategy", () => {
       const result = await strategy.get(githubRepo);
 
       // 4 commands: base settings + 3 security endpoints
-      assert.equal(mockExecutor.commands.length, 4);
-      assert.ok(mockExecutor.commands[0].includes("gh api"));
-      assert.ok(mockExecutor.commands[0].includes("/repos/test-org/test-repo"));
+      assert.equal(mockExecutor.calls.length, 4);
+      assert.strictEqual(mockExecutor.calls[0].executable, "gh");
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("/repos/test-org/test-repo")
+        )
+      );
       assert.equal(result.has_issues, true);
       assert.equal(result.has_wiki, false);
     });
@@ -99,7 +147,7 @@ describe("GitHubRepoSettingsStrategy", () => {
   describe("getSettings owner_type extraction", () => {
     test("should extract owner_type from API response", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({
           has_issues: true,
           owner: { type: "Organization", login: "test-org" },
@@ -123,7 +171,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should extract owner_type User from API response", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({
           has_issues: true,
           owner: { type: "User", login: "test-org" },
@@ -147,7 +195,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return undefined owner_type when API response lacks owner field", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({
           has_issues: true,
         })
@@ -172,7 +220,7 @@ describe("GitHubRepoSettingsStrategy", () => {
   describe("getSettings security endpoints", () => {
     test("should return vulnerability_alerts true when endpoint returns 204", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -193,7 +241,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return vulnerability_alerts false when endpoint returns 404", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setError("vulnerability-alerts", "gh: Not Found (HTTP 404)");
@@ -214,7 +262,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should throw on non-404 errors for vulnerability_alerts", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setError(
@@ -232,7 +280,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return automated_security_fixes true when endpoint returns 204", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -253,7 +301,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return automated_security_fixes based on API even when vulnerability_alerts is disabled", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       // vulnerability-alerts returns 404 (disabled)
@@ -278,7 +326,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return automated_security_fixes false when endpoint returns 404", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -302,7 +350,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should throw on non-404 errors for automated_security_fixes", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -321,7 +369,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return private_vulnerability_reporting true when enabled", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -342,7 +390,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return private_vulnerability_reporting false when disabled", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -363,7 +411,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should return private_vulnerability_reporting false when endpoint returns 404", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -384,7 +432,7 @@ describe("GitHubRepoSettingsStrategy", () => {
 
     test("should throw on non-404 errors for private_vulnerability_reporting", async () => {
       mockExecutor.setResponse(
-        "/repos/test-org/test-repo'",
+        "/repos/test-org/test-repo",
         JSON.stringify({ has_issues: true })
       );
       mockExecutor.setResponse("vulnerability-alerts", "");
@@ -416,9 +464,11 @@ describe("GitHubRepoSettingsStrategy", () => {
         allowSquashMerge: true,
       });
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
-      assert.ok(mockExecutor.commands[0].includes("has_issues"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PATCH"));
+      const input = mockExecutor.calls[0].options?.input ?? "";
+      assert.ok(input.includes("has_issues"));
     });
 
     test("should include web_commit_signoff_required in payload", async () => {
@@ -432,11 +482,11 @@ describe("GitHubRepoSettingsStrategy", () => {
         webCommitSignoffRequired: true,
       });
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
-      assert.ok(
-        mockExecutor.commands[0].includes("web_commit_signoff_required")
-      );
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PATCH"));
+      const input = mockExecutor.calls[0].options?.input ?? "";
+      assert.ok(input.includes("web_commit_signoff_required"));
     });
 
     test("should include default_branch in payload", async () => {
@@ -450,9 +500,11 @@ describe("GitHubRepoSettingsStrategy", () => {
         defaultBranch: "develop",
       });
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
-      assert.ok(mockExecutor.commands[0].includes("default_branch"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PATCH"));
+      const input = mockExecutor.calls[0].options?.input ?? "";
+      assert.ok(input.includes("default_branch"));
     });
 
     test("should include description in payload", async () => {
@@ -466,10 +518,12 @@ describe("GitHubRepoSettingsStrategy", () => {
         description: "My repo description",
       });
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PATCH"));
-      assert.ok(mockExecutor.commands[0].includes("description"));
-      assert.ok(mockExecutor.commands[0].includes("My repo description"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PATCH"));
+      const input = mockExecutor.calls[0].options?.input ?? "";
+      assert.ok(input.includes("description"));
+      assert.ok(input.includes("My repo description"));
     });
 
     test("should skip update when no settings provided", async () => {
@@ -479,7 +533,7 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.update(githubRepo, {});
 
-      assert.equal(mockExecutor.commands.length, 0);
+      assert.equal(mockExecutor.calls.length, 0);
     });
   });
 
@@ -493,9 +547,14 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updateVulnerabilityAlerts(githubRepo, true);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PUT"));
-      assert.ok(mockExecutor.commands[0].includes("vulnerability-alerts"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PUT"));
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("vulnerability-alerts")
+        )
+      );
     });
 
     test("should disable vulnerability alerts via DELETE", async () => {
@@ -507,9 +566,14 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updateVulnerabilityAlerts(githubRepo, false);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
-      assert.ok(mockExecutor.commands[0].includes("vulnerability-alerts"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("DELETE"));
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("vulnerability-alerts")
+        )
+      );
     });
   });
 
@@ -523,9 +587,14 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updateAutomatedSecurityFixes(githubRepo, true);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PUT"));
-      assert.ok(mockExecutor.commands[0].includes("automated-security-fixes"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PUT"));
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("automated-security-fixes")
+        )
+      );
     });
 
     test("should disable automated security fixes via DELETE", async () => {
@@ -537,9 +606,14 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updateAutomatedSecurityFixes(githubRepo, false);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
-      assert.ok(mockExecutor.commands[0].includes("automated-security-fixes"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("DELETE"));
+      assert.ok(
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("automated-security-fixes")
+        )
+      );
     });
   });
 
@@ -553,10 +627,13 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updatePrivateVulnerabilityReporting(githubRepo, true);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X PUT"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("PUT"));
       assert.ok(
-        mockExecutor.commands[0].includes("private-vulnerability-reporting")
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("private-vulnerability-reporting")
+        )
       );
     });
 
@@ -569,10 +646,13 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.updatePrivateVulnerabilityReporting(githubRepo, false);
 
-      assert.equal(mockExecutor.commands.length, 1);
-      assert.ok(mockExecutor.commands[0].includes("-X DELETE"));
+      assert.equal(mockExecutor.calls.length, 1);
+      assert.ok(mockExecutor.calls[0].args.includes("-X"));
+      assert.ok(mockExecutor.calls[0].args.includes("DELETE"));
       assert.ok(
-        mockExecutor.commands[0].includes("private-vulnerability-reporting")
+        mockExecutor.calls[0].args.some((a) =>
+          a.includes("private-vulnerability-reporting")
+        )
       );
     });
   });
@@ -621,8 +701,8 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.get(gheRepo, { host: "github.example.com" });
 
-      assert.ok(mockExecutor.commands[0].includes("--hostname"));
-      assert.ok(mockExecutor.commands[0].includes("github.example.com"));
+      assert.ok(mockExecutor.calls[0].args.includes("--hostname"));
+      assert.ok(mockExecutor.calls[0].args.includes("github.example.com"));
     });
   });
 
@@ -677,10 +757,10 @@ describe("GitHubRepoSettingsStrategy", () => {
       });
       await strategy.branchExists(githubRepo, "feature/my-branch");
       assert.ok(
-        mockExecutor.commands.some((cmd) =>
-          cmd.includes("feature%2Fmy-branch")
+        mockExecutor.calls.some((call) =>
+          call.args.some((a) => a.includes("feature%2Fmy-branch"))
         ),
-        `Expected command with feature%2Fmy-branch, got: ${mockExecutor.commands.join(", ")}`
+        `Expected arg with feature%2Fmy-branch, got: ${mockExecutor.calls.map((c) => c.args.join(" ")).join(", ")}`
       );
     });
   });
@@ -690,11 +770,12 @@ describe("GitHubRepoSettingsStrategy", () => {
       let callCount = 0;
       const executor: ICommandExecutor = {
         async exec(
-          command: string,
+          _executable: string,
+          args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {
-          if (command.includes("-X PATCH")) {
+          if (args.includes("PATCH")) {
             callCount++;
             if (callCount === 1) {
               throw new Error("Connection timed out");
@@ -721,11 +802,12 @@ describe("GitHubRepoSettingsStrategy", () => {
       let callCount = 0;
       const executor: ICommandExecutor = {
         async exec(
-          command: string,
+          _executable: string,
+          args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {
-          if (command.includes("-X PATCH")) {
+          if (args.includes("PATCH")) {
             callCount++;
             throw new Error("gh: Not Found (HTTP 404)");
           }
@@ -753,18 +835,19 @@ describe("GitHubRepoSettingsStrategy", () => {
       let callCount = 0;
       const executor: ICommandExecutor = {
         async exec(
-          command: string,
+          _executable: string,
+          args: string[],
           _cwd: string,
           _options?: ExecOptions
         ): Promise<string> {
-          if (command.includes("vulnerability-alerts")) {
+          if (args.some((a) => a.includes("vulnerability-alerts"))) {
             callCount++;
             throw new Error("gh: Not Found (HTTP 404)");
           }
-          if (command.includes("automated-security-fixes")) {
+          if (args.some((a) => a.includes("automated-security-fixes"))) {
             return "";
           }
-          if (command.includes("private-vulnerability-reporting")) {
+          if (args.some((a) => a.includes("private-vulnerability-reporting"))) {
             return JSON.stringify({ enabled: false });
           }
           return JSON.stringify({ has_issues: true });

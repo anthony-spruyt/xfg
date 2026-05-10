@@ -14,7 +14,11 @@ const githubRepo: GitHubRepoInfo = {
 
 class MockExecutor implements ICommandExecutor {
   result = "";
-  async exec(_command: string, _cwd: string): Promise<string> {
+  async exec(
+    _executable: string,
+    _args: string[],
+    _cwd: string
+  ): Promise<string> {
     return this.result;
   }
 }

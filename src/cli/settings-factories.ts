@@ -9,7 +9,7 @@ import {
   GitHubCodeScanningStrategy,
 } from "../settings/index.js";
 import { GitHubRepoMetadataProvider } from "../repo/index.js";
-import type { ShellCommandExecutor } from "../shared/command-executor.js";
+import type { ProcessExecutor } from "../shared/command-executor.js";
 import type {
   RulesetProcessorFactory,
   RepoSettingsProcessorFactory,
@@ -19,7 +19,7 @@ import type {
 } from "./types.js";
 
 export function createDefaultRulesetProcessorFactory(
-  executor: ShellCommandExecutor
+  executor: ProcessExecutor
 ): RulesetProcessorFactory {
   const cwd = process.cwd();
   return () =>
@@ -27,7 +27,7 @@ export function createDefaultRulesetProcessorFactory(
 }
 
 export function createDefaultRepoSettingsProcessorFactory(
-  executor: ShellCommandExecutor
+  executor: ProcessExecutor
 ): RepoSettingsProcessorFactory {
   const cwd = process.cwd();
   return () =>
@@ -38,14 +38,14 @@ export function createDefaultRepoSettingsProcessorFactory(
 }
 
 export function createDefaultLabelsProcessorFactory(
-  executor: ShellCommandExecutor
+  executor: ProcessExecutor
 ): LabelsProcessorFactory {
   const cwd = process.cwd();
   return () => new LabelsProcessor(new GitHubLabelsStrategy(executor, { cwd }));
 }
 
 export function createDefaultCodeScanningProcessorFactory(
-  executor: ShellCommandExecutor
+  executor: ProcessExecutor
 ): CodeScanningProcessorFactory {
   const cwd = process.cwd();
   return () =>
@@ -56,7 +56,7 @@ export function createDefaultCodeScanningProcessorFactory(
 }
 
 export function createDefaultFactories(
-  executor: ShellCommandExecutor,
+  executor: ProcessExecutor,
   overrides?: Partial<SettingsProcessorFactories>
 ): SettingsProcessorFactories {
   return {

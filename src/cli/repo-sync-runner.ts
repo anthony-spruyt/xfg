@@ -9,7 +9,7 @@ import {
 } from "../repo/index.js";
 import type { createTokenManager } from "../vcs/index.js";
 import type { IRepositoryProcessor } from "../sync/index.js";
-import type { ShellCommandExecutor } from "../shared/command-executor.js";
+import type { ProcessExecutor } from "../shared/command-executor.js";
 import type { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -40,7 +40,7 @@ export interface RepoIterationContext {
   settingsCollector: ResultsCollector;
   factories: SettingsProcessorFactories;
   logger: Logger;
-  executor: ShellCommandExecutor;
+  executor: ProcessExecutor;
 }
 
 interface RepoPhaseParams {

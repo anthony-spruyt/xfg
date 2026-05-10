@@ -154,7 +154,7 @@ describe("GraphQLCommitStrategy", () => {
   describe("commit", () => {
     test("calls GraphQL API with createCommitOnBranch mutation", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+      mockExecutor.responses.set("git rev-parse", "abc123def456789");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -179,6 +179,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit message",
         fileChanges: [{ path: "file1.txt", content: "content1" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       const result = await strategy.commit(options);
@@ -189,54 +190,54 @@ describe("GraphQLCommitStrategy", () => {
       assert.equal(result.pushed, true);
 
       // Verify GraphQL was called with correct mutation structure
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       // Find the createCommitOnBranch call (not queryRemoteRef)
       const commitCall = graphqlCalls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(commitCall, "Should have called createCommitOnBranch");
       assert.ok(
-        commitCall.command.includes("owner/repo"),
+        commitCall.options?.input?.includes("owner/repo"),
         "Should include repositoryNameWithOwner"
       );
       assert.ok(
-        commitCall.command.includes("test-branch"),
+        commitCall.options?.input?.includes("test-branch"),
         "Should include branch name"
       );
       assert.ok(
-        commitCall.command.includes("abc123def456789"),
+        commitCall.options?.input?.includes("abc123def456789"),
         "Should include expectedHeadOid"
       );
 
       // Verify commit message is passed in the mutation variables
       assert.ok(
-        commitCall.command.includes("Test commit message"),
+        commitCall.options?.input?.includes("Test commit message"),
         "Should include commit message headline in mutation variables"
       );
 
       // Verify file additions are base64-encoded in the payload
       const expectedBase64 = Buffer.from("content1").toString("base64");
       assert.ok(
-        commitCall.command.includes(expectedBase64),
+        commitCall.options?.input?.includes(expectedBase64),
         "Should include base64-encoded file content"
       );
       assert.ok(
-        commitCall.command.includes("file1.txt"),
+        commitCall.options?.input?.includes("file1.txt"),
         "Should include file path in additions"
       );
 
       // Verify the mutation uses the correct GraphQL mutation signature
       assert.ok(
-        commitCall.command.includes("CreateCommitOnBranchInput"),
+        commitCall.options?.input?.includes("CreateCommitOnBranchInput"),
         "Should use CreateCommitOnBranchInput type in mutation"
       );
     });
 
     test("does not include empty deletions array in payload", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -256,31 +257,32 @@ describe("GraphQLCommitStrategy", () => {
         message: "Add file",
         fileChanges: [{ path: "test.txt", content: "content" }], // Only additions, no deletions
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
 
       const graphqlCall = mockExecutor.calls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(graphqlCall, "Should have called createCommitOnBranch");
 
       // Verify deletions key is not in the payload
       assert.ok(
-        !graphqlCall.command.includes('"deletions"'),
+        !graphqlCall.options?.input?.includes('"deletions"'),
         "Should not include deletions key when there are no deletions"
       );
 
       // Verify additions are included
       assert.ok(
-        graphqlCall.command.includes('"additions"'),
+        graphqlCall.options?.input?.includes('"additions"'),
         "Should include additions key"
       );
     });
 
     test("includes deletions when files need to be deleted", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -300,29 +302,30 @@ describe("GraphQLCommitStrategy", () => {
         message: "Delete file",
         fileChanges: [{ path: "to-delete.txt", content: null }], // Deletion
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
 
       const graphqlCall = mockExecutor.calls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(graphqlCall, "Should have called createCommitOnBranch");
 
       // Verify deletions is included
       assert.ok(
-        graphqlCall.command.includes('"deletions"'),
+        graphqlCall.options?.input?.includes('"deletions"'),
         "Should include deletions key when there are deletions"
       );
       assert.ok(
-        graphqlCall.command.includes("to-delete.txt"),
+        graphqlCall.options?.input?.includes("to-delete.txt"),
         "Should include the file path in deletions"
       );
     });
 
     test("base64 encodes file contents", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -342,26 +345,27 @@ describe("GraphQLCommitStrategy", () => {
         message: "Add file",
         fileChanges: [{ path: "test.txt", content: "Hello, World!" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
 
       const graphqlCall = mockExecutor.calls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(graphqlCall, "Should have called createCommitOnBranch");
 
       // "Hello, World!" in base64 is "SGVsbG8sIFdvcmxkIQ=="
       const expectedBase64 = Buffer.from("Hello, World!").toString("base64");
       assert.ok(
-        graphqlCall.command.includes(expectedBase64),
+        graphqlCall.options?.input?.includes(expectedBase64),
         `Should include base64 encoded content. Expected: ${expectedBase64}`
       );
     });
 
     test("handles file deletions", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -384,26 +388,27 @@ describe("GraphQLCommitStrategy", () => {
           { path: "delete.txt", content: null }, // null means deletion
         ],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
 
       const graphqlCall = mockExecutor.calls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(graphqlCall, "Should have called createCommitOnBranch");
 
       // Should include additions and deletions
       assert.ok(
-        graphqlCall.command.includes("additions"),
+        graphqlCall.options?.input?.includes("additions"),
         "Should include additions"
       );
       assert.ok(
-        graphqlCall.command.includes("deletions"),
+        graphqlCall.options?.input?.includes("deletions"),
         "Should include deletions"
       );
       assert.ok(
-        graphqlCall.command.includes("delete.txt"),
+        graphqlCall.options?.input?.includes("delete.txt"),
         "Should include deleted file path"
       );
     });
@@ -433,7 +438,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("supports GitHub Enterprise with custom host", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -453,21 +458,22 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE commit",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await strategy.commit(options);
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       // All GraphQL calls should include GHE hostname
       for (const call of graphqlCalls) {
         assert.ok(
-          call.command.includes("--hostname"),
+          call.args.includes("--hostname"),
           "Should include --hostname flag"
         );
         assert.ok(
-          call.command.includes("github.enterprise.com"),
+          call.args.includes("github.enterprise.com"),
           "Should include GHE hostname"
         );
       }
@@ -477,7 +483,7 @@ describe("GraphQLCommitStrategy", () => {
       let revParseCallCount = 0;
 
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", () => {
+      mockExecutor.responses.set("git rev-parse", () => {
         revParseCallCount++;
         if (revParseCallCount <= 1) {
           return "oldsha123";
@@ -513,6 +519,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 3,
       };
 
@@ -524,7 +531,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("throws descriptive error for permission denied", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -544,6 +551,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -598,7 +606,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("throws error when GraphQL response contains errors", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -621,6 +629,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -632,7 +641,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("throws error when GraphQL response missing commit OID", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -656,6 +665,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(
@@ -667,7 +677,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("uses token parameter for authorization when provided", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123def456789");
+      mockExecutor.responses.set("git rev-parse", "abc123def456789");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -689,19 +699,20 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_test_token_from_parameter",
       };
 
       await strategy.commit(options);
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       // All GraphQL calls should pass token via env, not in command string
       for (const call of graphqlCalls) {
         assert.ok(
-          !call.command.includes("GH_TOKEN"),
-          "GraphQL command should not have token in command string"
+          !call.args.includes("GH_TOKEN"),
+          "GraphQL command should not have token in args"
         );
         assert.strictEqual(
           call.options?.env?.GH_TOKEN,
@@ -712,7 +723,7 @@ describe("GraphQLCommitStrategy", () => {
     });
 
     test("uses gitOps.fetchBranch during commit (GitHub App auth)", async () => {
-      mockExecutor.responses.set("rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -760,7 +771,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("should retry GraphQL API call on transient network error", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -786,6 +797,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test retry",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       const result = await strategy.commit(options);
@@ -799,7 +811,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("should not retry GraphQL API call on permanent error", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -818,6 +830,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test no retry",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       await assert.rejects(() => strategy.commit(options), /401/);
@@ -831,7 +844,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("should not waste inner retries on OID mismatch errors", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -861,6 +874,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test OID mismatch",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 1,
       };
 
@@ -876,7 +890,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("sanitizes error messages to exclude GraphQL payload", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
 
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
@@ -897,6 +911,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       };
 
       try {
@@ -926,7 +941,7 @@ describe("GraphQLCommitStrategy", () => {
       let revParseCallCount = 0;
 
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", () => {
+      mockExecutor.responses.set("git rev-parse", () => {
         revParseCallCount++;
         if (revParseCallCount <= 1) {
           return "oldsha123";
@@ -963,6 +978,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test OID retry with sanitization",
         fileChanges: [{ path: "test.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         retries: 3,
       };
 
@@ -1004,24 +1020,25 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         // No token provided
       };
 
       await strategy.commit(options);
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       assert.ok(
         graphqlCalls.length >= 2,
         "Should have called gh api graphql at least twice"
       );
 
-      // No command should include GH_TOKEN and env should not have it
+      // No args should include GH_TOKEN and env should not have it
       for (const call of graphqlCalls) {
         assert.ok(
-          !call.command.includes("GH_TOKEN"),
-          "GraphQL command should not have token in command string"
+          !call.args.includes("GH_TOKEN"),
+          "GraphQL command should not have token in args"
         );
         assert.strictEqual(
           call.options?.env,
@@ -1033,7 +1050,7 @@ describe("GraphQLCommitStrategy", () => {
 
     test("skips modeOnly entries from GraphQL payload", async () => {
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       const queryRefResponse = JSON.stringify({
         data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
       });
@@ -1061,19 +1078,20 @@ describe("GraphQLCommitStrategy", () => {
           },
         ],
         workDir: testDir,
+        gitOps: createMockGitOps(),
       });
 
       assert.equal(result.sha, "sha123");
       const commitCall = mockExecutor.calls.find((c) =>
-        c.command.includes("createCommitOnBranch")
+        c.options?.input?.includes("createCommitOnBranch")
       );
       assert.ok(commitCall);
       assert.ok(
-        !commitCall.command.includes("scripts/run"),
+        !commitCall.options?.input?.includes("scripts/run"),
         "modeOnly entry should not appear in GraphQL payload"
       );
       assert.ok(
-        commitCall.command.includes("normal.txt"),
+        commitCall.options?.input?.includes("normal.txt"),
         "content entry should appear in GraphQL payload"
       );
     });
@@ -1099,8 +1117,8 @@ describe("GraphQLCommitStrategy", () => {
         /no content changes to commit/i
       );
       // Should not have made any GraphQL API calls
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       assert.equal(
         graphqlCalls.length,
@@ -1127,7 +1145,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "abc123def456");
+      mockExecutor.responses.set("git rev-parse", "abc123def456");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1142,34 +1160,35 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_test_token",
       });
 
       assert.equal(result.sha, "newcommitsha");
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       assert.ok(
         graphqlCalls.length >= 3,
         `Expected >= 3 GraphQL calls, got ${graphqlCalls.length}`
       );
       assert.ok(
-        graphqlCalls[0].command.includes("repository(owner:"),
+        graphqlCalls[0].options?.input?.includes("repository(owner:"),
         "First call should be queryRemoteRef"
       );
       assert.ok(
-        graphqlCalls[1].command.includes("createRef"),
+        graphqlCalls[1].options?.input?.includes("createRef"),
         "Second call should be createRef"
       );
 
       // No git push or git ls-remote calls
-      const pushCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("git push")
+      const pushCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
       assert.equal(pushCalls.length, 0, "Should NOT use git push");
-      const lsRemoteCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("git ls-remote")
+      const lsRemoteCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "git" && c.args.includes("ls-remote")
       );
       assert.equal(lsRemoteCalls.length, 0, "Should NOT use git ls-remote");
     });
@@ -1193,7 +1212,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha123");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha123");
+      mockExecutor.responses.set("git rev-parse", "headsha123");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1209,28 +1228,29 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: true,
         token: "ghs_test_token",
       });
 
       assert.equal(result.sha, "sha123");
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       assert.ok(
         graphqlCalls.length >= 4,
         `Expected >= 4 GraphQL calls, got ${graphqlCalls.length}`
       );
       assert.ok(
-        graphqlCalls[1].command.includes("deleteRef"),
+        graphqlCalls[1].options?.input?.includes("deleteRef"),
         "Second call should be deleteRef"
       );
       assert.ok(
-        graphqlCalls[2].command.includes("createRef"),
+        graphqlCalls[2].options?.input?.includes("createRef"),
         "Third call should be createRef"
       );
-      const pushCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("git push")
+      const pushCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "git" && c.args.includes("push")
       );
       assert.equal(pushCalls.length, 0, "Should NOT use git push");
     });
@@ -1247,7 +1267,7 @@ describe("GraphQLCommitStrategy", () => {
 
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "abc123");
+      mockExecutor.responses.set("git rev-parse", "abc123");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1261,13 +1281,14 @@ describe("GraphQLCommitStrategy", () => {
         message: "Direct commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: false,
         token: "ghs_test_token",
       });
 
       assert.equal(result.sha, "sha123");
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       assert.equal(
         graphqlCalls.length,
@@ -1275,11 +1296,11 @@ describe("GraphQLCommitStrategy", () => {
         `Expected 2 GraphQL calls, got ${graphqlCalls.length}`
       );
       assert.ok(
-        !graphqlCalls.some((c) => c.command.includes("deleteRef")),
+        !graphqlCalls.some((c) => c.options?.input?.includes("deleteRef")),
         "Should NOT call deleteRef"
       );
       assert.ok(
-        !graphqlCalls.some((c) => c.command.includes("createRef")),
+        !graphqlCalls.some((c) => c.options?.input?.includes("createRef")),
         "Should NOT call createRef"
       );
     });
@@ -1298,7 +1319,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "gheheadsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "gheheadsha");
+      mockExecutor.responses.set("git rev-parse", "gheheadsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1313,17 +1334,18 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_ghe_token",
       });
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       for (const call of graphqlCalls) {
         assert.ok(
-          call.command.includes("--hostname") &&
-            call.command.includes("github.enterprise.com"),
-          `GraphQL call should include GHE hostname: ${call.command.substring(0, 100)}...`
+          call.args.includes("--hostname") &&
+            call.args.includes("github.enterprise.com"),
+          `GraphQL call should include GHE hostname: ${call.args.join(" ").substring(0, 100)}...`
         );
       }
     });
@@ -1344,6 +1366,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Could not resolve|GraphQL|failed/i,
@@ -1362,7 +1385,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("git rev-parse", "headsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1382,6 +1405,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             force: true,
             token: "ghs_token",
           }),
@@ -1409,6 +1433,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Field 'repository'/,
@@ -1433,6 +1458,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /missing repository ID.*owner\/repo/,
@@ -1449,7 +1475,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha123");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha123");
+      mockExecutor.responses.set("git rev-parse", "headsha123");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1468,6 +1494,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Name already exists/,
@@ -1488,7 +1515,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("git rev-parse", "headsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1508,6 +1535,7 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test fork sync",
         fileChanges: [{ path: "f.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_token",
       });
 
@@ -1537,6 +1565,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             token: "ghs_token",
           }),
         /Internal server error/,
@@ -1564,7 +1593,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "gheheadsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "gheheadsha");
+      mockExecutor.responses.set("git rev-parse", "gheheadsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1580,21 +1609,22 @@ describe("GraphQLCommitStrategy", () => {
         message: "GHE force commit",
         fileChanges: [{ path: "file.txt", content: "content" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         force: true,
         token: "ghs_ghe_token",
       });
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       // The deleteRef call (second graphql call) should include --hostname
       assert.ok(
-        graphqlCalls[1].command.includes("deleteRef"),
+        graphqlCalls[1].options?.input?.includes("deleteRef"),
         "Second call should be deleteRef"
       );
       assert.ok(
-        graphqlCalls[1].command.includes("--hostname") &&
-          graphqlCalls[1].command.includes("github.enterprise.com"),
+        graphqlCalls[1].args.includes("--hostname") &&
+          graphqlCalls[1].args.includes("github.enterprise.com"),
         "deleteRef call should include GHE hostname"
       );
     });
@@ -1610,7 +1640,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("git rev-parse", "headsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1629,6 +1659,7 @@ describe("GraphQLCommitStrategy", () => {
           message: "Test",
           fileChanges: [{ path: "f.txt", content: "c" }],
           workDir: testDir,
+          gitOps: createMockGitOps(),
           force: true,
           token: "ghs_token",
         });
@@ -1664,7 +1695,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("git rev-parse", "headsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1683,6 +1714,7 @@ describe("GraphQLCommitStrategy", () => {
             message: "Test",
             fileChanges: [{ path: "f.txt", content: "c" }],
             workDir: testDir,
+            gitOps: createMockGitOps(),
             force: true,
             token: "ghs_token",
           }),
@@ -1705,7 +1737,7 @@ describe("GraphQLCommitStrategy", () => {
       let graphqlCallCount = 0;
       mockExecutor.responses.set("git rev-parse HEAD", "headsha");
       mockExecutor.responses.set("git fetch", "");
-      mockExecutor.responses.set("git rev-parse origin/", "headsha");
+      mockExecutor.responses.set("git rev-parse", "headsha");
       mockExecutor.responses.set("gh api graphql", () => {
         graphqlCallCount++;
         if (graphqlCallCount === 1) return queryResponse;
@@ -1720,17 +1752,18 @@ describe("GraphQLCommitStrategy", () => {
         message: "Test",
         fileChanges: [{ path: "f.txt", content: "c" }],
         workDir: testDir,
+        gitOps: createMockGitOps(),
         token: "ghs_my_secret_token",
       });
 
-      const graphqlCalls = mockExecutor.calls.filter((c) =>
-        c.command.includes("gh api graphql")
+      const graphqlCalls = mockExecutor.calls.filter(
+        (c) => c.executable === "gh" && c.args.includes("graphql")
       );
       // First two calls are ref operations (query + create)
       for (let i = 0; i < 2; i++) {
         assert.ok(
-          !graphqlCalls[i].command.includes("GH_TOKEN"),
-          `GraphQL ref call ${i} should not have token in command string`
+          !graphqlCalls[i].args.includes("GH_TOKEN"),
+          `GraphQL ref call ${i} should not have token in args`
         );
         assert.strictEqual(
           graphqlCalls[i].options?.env?.GH_TOKEN,

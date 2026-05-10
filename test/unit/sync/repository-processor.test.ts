@@ -729,10 +729,12 @@ describe("RepositoryProcessor", () => {
       const mockFactory: GitOpsFactory = () => gitOps;
 
       // Mock executor that returns a PR URL - this is a mock interface, not subprocess execution
-      const mockExecutor: {
-        exec: (cmd: string, cwd: string) => Promise<string>;
-      } = {
-        async exec(_cmd: string, _cwd: string): Promise<string> {
+      const mockExecutor: ICommandExecutor = {
+        async exec(
+          _exe: string,
+          _args: string[],
+          _cwd: string
+        ): Promise<string> {
           return "https://github.com/test/repo/pull/123";
         },
       };
@@ -1768,12 +1770,19 @@ describe("RepositoryProcessor", () => {
         const executorCalls: string[] = [];
         let graphqlCallCount = 0;
         const mockExecutor: ICommandExecutor = {
-          async exec(command: string): Promise<string> {
-            executorCalls.push(command);
+          async exec(
+            executable: string,
+            args: string[],
+            _cwd: string,
+            opts?: import("../../../src/shared/command-executor.js").ExecOptions
+          ): Promise<string> {
+            executorCalls.push(
+              [[executable, ...args].join(" "), opts?.input ?? ""].join(" ")
+            );
 
             // Return mock responses for GraphQL calls
             // Call 1: queryRemoteRef, Call 2+: createCommitOnBranch
-            if (command.includes("gh api graphql")) {
+            if (executable === "gh" && args.includes("graphql")) {
               graphqlCallCount++;
               if (graphqlCallCount === 1) {
                 return JSON.stringify({
@@ -1794,11 +1803,19 @@ describe("RepositoryProcessor", () => {
               });
             }
             // Return mock PR URL
-            if (command.includes("gh pr create")) {
+            if (
+              executable === "gh" &&
+              args.includes("pr") &&
+              args.includes("create")
+            ) {
               return "https://github.com/test/repo/pull/123";
             }
             // Return mock HEAD sha for GraphQL strategy
-            if (command.includes("git rev-parse HEAD")) {
+            if (
+              executable === "git" &&
+              args.includes("rev-parse") &&
+              args.includes("HEAD")
+            ) {
               return "deadbeef1234567890";
             }
             return "";
@@ -1888,11 +1905,19 @@ describe("RepositoryProcessor", () => {
 
         // Mock executor with ICommandExecutor interface
         const mockExecutor: ICommandExecutor = {
-          async exec(command: string): Promise<string> {
-            if (command.includes("gh api graphql")) {
+          async exec(
+            executable: string,
+            args: string[],
+            _cwd: string
+          ): Promise<string> {
+            if (executable === "gh" && args.includes("graphql")) {
               throw new Error("Push rejected: protected branch");
             }
-            if (command.includes("git rev-parse HEAD")) {
+            if (
+              executable === "git" &&
+              args.includes("rev-parse") &&
+              args.includes("HEAD")
+            ) {
               return "deadbeef1234567890";
             }
             return "";
@@ -1966,11 +1991,19 @@ describe("RepositoryProcessor", () => {
 
         // Test uses mock executor to simulate protected branch error
         const mockExecutor: ICommandExecutor = {
-          async exec(command: string): Promise<string> {
-            if (command.includes("gh api graphql")) {
+          async exec(
+            executable: string,
+            args: string[],
+            _cwd: string
+          ): Promise<string> {
+            if (executable === "gh" && args.includes("graphql")) {
               throw new Error("Cannot push to protected branch");
             }
-            if (command.includes("git rev-parse HEAD")) {
+            if (
+              executable === "git" &&
+              args.includes("rev-parse") &&
+              args.includes("HEAD")
+            ) {
               return "deadbeef1234567890";
             }
             return "";
@@ -2038,11 +2071,19 @@ describe("RepositoryProcessor", () => {
 
         // Test uses mock executor to simulate permission denied error
         const mockExecutor: ICommandExecutor = {
-          async exec(command: string): Promise<string> {
-            if (command.includes("gh api graphql")) {
+          async exec(
+            executable: string,
+            args: string[],
+            _cwd: string
+          ): Promise<string> {
+            if (executable === "gh" && args.includes("graphql")) {
               throw new Error("Permission denied for this operation");
             }
-            if (command.includes("git rev-parse HEAD")) {
+            if (
+              executable === "git" &&
+              args.includes("rev-parse") &&
+              args.includes("HEAD")
+            ) {
               return "deadbeef1234567890";
             }
             return "";
@@ -2109,11 +2150,19 @@ describe("RepositoryProcessor", () => {
         const mockFactory: GitOpsFactory = () => gitOps;
 
         const mockExecutor: ICommandExecutor = {
-          async exec(command: string): Promise<string> {
-            if (command.includes("gh api graphql")) {
+          async exec(
+            executable: string,
+            args: string[],
+            _cwd: string
+          ): Promise<string> {
+            if (executable === "gh" && args.includes("graphql")) {
               throw new Error("Network timeout");
             }
-            if (command.includes("git rev-parse HEAD")) {
+            if (
+              executable === "git" &&
+              args.includes("rev-parse") &&
+              args.includes("HEAD")
+            ) {
               return "deadbeef1234567890";
             }
             return "";
@@ -2760,8 +2809,16 @@ describe("RepositoryProcessor", () => {
 
       // Mock executor
       const trackingExecutor: ICommandExecutor = {
-        async exec(cmd: string): Promise<string> {
-          if (cmd.includes("git rev-parse HEAD")) {
+        async exec(
+          executable: string,
+          args: string[],
+          _cwd: string
+        ): Promise<string> {
+          if (
+            executable === "git" &&
+            args.includes("rev-parse") &&
+            args.includes("HEAD")
+          ) {
             return "abc123";
           }
           return "";
@@ -2851,8 +2908,16 @@ describe("RepositoryProcessor", () => {
 
       // Mock executor
       const trackingExecutor: ICommandExecutor = {
-        async exec(cmd: string): Promise<string> {
-          if (cmd.includes("git rev-parse HEAD")) {
+        async exec(
+          executable: string,
+          args: string[],
+          _cwd: string
+        ): Promise<string> {
+          if (
+            executable === "git" &&
+            args.includes("rev-parse") &&
+            args.includes("HEAD")
+          ) {
             return "abc123";
           }
           return "";
