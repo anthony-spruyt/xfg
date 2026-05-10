@@ -172,7 +172,10 @@ async function ghApiCall(
 
   const env = buildTokenEnv(apiOpts?.token);
 
-  const execAndParse = async (execArgs: string[], execOptions?: ExecOptions): Promise<string> => {
+  const execAndParse = async (
+    execArgs: string[],
+    execOptions?: ExecOptions
+  ): Promise<string> => {
     try {
       const raw = await executor.exec("gh", execArgs, cwd, execOptions);
       return paginate ? raw : parseResponseBody(raw);
@@ -195,7 +198,11 @@ async function ghApiCall(
     (method === "POST" || method === "PUT" || method === "PATCH")
   ) {
     const payloadJson = JSON.stringify(payload);
-    return withRetry(() => execAndParse([...args, "--input", "-"], { env, input: payloadJson }), retryOpts);
+    return withRetry(
+      () =>
+        execAndParse([...args, "--input", "-"], { env, input: payloadJson }),
+      retryOpts
+    );
   }
 
   return withRetry(() => execAndParse(args, { env }), retryOpts);
