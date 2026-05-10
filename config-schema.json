@@ -809,13 +809,13 @@
     },
     "arrayMergeDirective": {
       "type": "object",
-      "description": "Merge directive for arrays. Instead of replacing the base array, append or prepend values to the inherited array.",
+      "description": "Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.",
       "required": ["$arrayMerge", "$values"],
       "properties": {
         "$arrayMerge": {
           "type": "string",
-          "enum": ["replace", "append", "prepend"],
-          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely"
+          "enum": ["replace", "append", "prepend", "merge"],
+          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id)"
         },
         "$values": {
           "type": "array",
@@ -832,7 +832,7 @@
       "properties": {
         "$arrayMerge": {
           "type": "string",
-          "enum": ["replace", "append", "prepend"],
+          "enum": ["replace", "append", "prepend", "merge"],
           "description": "How to merge with the base array"
         },
         "$values": {
@@ -852,7 +852,7 @@
       "properties": {
         "$arrayMerge": {
           "type": "string",
-          "enum": ["replace", "append", "prepend"],
+          "enum": ["replace", "append", "prepend", "merge"],
           "description": "How to merge with the base array"
         },
         "$values": {

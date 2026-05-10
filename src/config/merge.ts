@@ -6,21 +6,131 @@
 import { isPlainObject } from "../shared/type-guards.js";
 
 /**
+ * Candidate keys for matching array items by identity rather than index.
+ * Order matters — first key found across all items wins.
+ */
+export const MATCH_KEY_CANDIDATES = ["type", "actor_id"] as const;
+
+/**
+ * Finds a key that uniquely identifies items in both arrays.
+ * Returns the first candidate key present in every item of both arrays, or undefined.
+ */
+export function findMatchKey(
+  base: unknown[],
+  overlay: unknown[]
+): string | undefined {
+  const allItems = [...base, ...overlay];
+  if (allItems.length === 0) return undefined;
+
+  for (const candidate of MATCH_KEY_CANDIDATES) {
+    const everyItemHasKey = allItems.every(
+      (item) =>
+        isPlainObject(item) && candidate in (item as Record<string, unknown>)
+    );
+    if (everyItemHasKey) return candidate;
+  }
+
+  return undefined;
+}
+
+/**
  * Keys reserved for xfg merge directives.
  * Only these are stripped during merge — standard $-prefixed keys
  * like $schema, $id, $ref, $generated are preserved.
  */
 const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values"]);
 
-export type ArrayMergeStrategy = "replace" | "append" | "prepend";
+export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
 
-type ArrayMergeHandler = (base: unknown[], overlay: unknown[]) => unknown[];
+type ArrayMergeHandler = (
+  base: unknown[],
+  overlay: unknown[],
+  ctx?: MergeContext
+) => unknown[];
+
+function mergeByKey(
+  base: unknown[],
+  overlay: unknown[],
+  matchKey: string,
+  ctx: MergeContext
+): unknown[] {
+  const baseByKey = new Map<
+    unknown,
+    { item: Record<string, unknown>; index: number }
+  >();
+  for (let i = 0; i < base.length; i++) {
+    const item = base[i];
+    if (isPlainObject(item)) {
+      const keyValue = (item as Record<string, unknown>)[matchKey];
+      if (keyValue !== undefined && !baseByKey.has(keyValue)) {
+        baseByKey.set(keyValue, {
+          item: item as Record<string, unknown>,
+          index: i,
+        });
+      }
+    }
+  }
+
+  const matched = new Set<unknown>();
+  const appended: unknown[] = [];
+
+  for (const overlayItem of overlay) {
+    if (!isPlainObject(overlayItem)) {
+      appended.push(overlayItem);
+      continue;
+    }
+    const keyValue = (overlayItem as Record<string, unknown>)[matchKey];
+    const baseEntry = baseByKey.get(keyValue);
+    if (baseEntry) {
+      matched.add(keyValue);
+      baseByKey.set(keyValue, {
+        item: deepMerge(
+          baseEntry.item,
+          overlayItem as Record<string, unknown>,
+          ctx
+        ),
+        index: baseEntry.index,
+      });
+    } else {
+      appended.push(overlayItem);
+    }
+  }
+
+  const result: unknown[] = [];
+  for (let i = 0; i < base.length; i++) {
+    const item = base[i];
+    if (isPlainObject(item)) {
+      const keyValue = (item as Record<string, unknown>)[matchKey];
+      const entry = baseByKey.get(keyValue);
+      if (entry && entry.index === i) {
+        result.push(entry.item);
+      } else {
+        result.push(item);
+      }
+    } else {
+      result.push(item);
+    }
+  }
+
+  result.push(...appended);
+  return result;
+}
 
 const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
   new Map([
     ["replace", (_base, overlay) => overlay],
     ["append", (base, overlay) => [...base, ...overlay]],
     ["prepend", (base, overlay) => [...overlay, ...base]],
+    [
+      "merge",
+      (base, overlay, ctx) => {
+        const matchKey = findMatchKey(base, overlay);
+        if (!matchKey) {
+          return [...base, ...overlay];
+        }
+        return mergeByKey(base, overlay, matchKey, ctx!);
+      },
+    ],
   ]);
 
 /**
@@ -48,13 +158,13 @@ export interface MergeContext {
 function mergeArrays(
   base: unknown[],
   overlay: unknown[],
-  strategy: ArrayMergeStrategy
+  strategy: ArrayMergeStrategy,
+  ctx: MergeContext
 ): unknown[] {
   const handler = arrayMergeStrategies.get(strategy);
   if (handler) {
-    return handler(base, overlay);
+    return handler(base, overlay, ctx);
   }
-  // Fallback to replace for unknown strategies
   return overlay;
 }
 
@@ -92,11 +202,12 @@ export function deepMerge(
       if (
         (strategy === "replace" ||
           strategy === "append" ||
-          strategy === "prepend") &&
+          strategy === "prepend" ||
+          strategy === "merge") &&
         Array.isArray(values) &&
         Array.isArray(resolvedBase)
       ) {
-        result[key] = mergeArrays(resolvedBase, values, strategy);
+        result[key] = mergeArrays(resolvedBase, values, strategy, ctx);
         continue;
       }
     }
@@ -106,7 +217,8 @@ export function deepMerge(
       result[key] = mergeArrays(
         resolvedBase,
         overlayValue,
-        ctx.defaultArrayStrategy
+        ctx.defaultArrayStrategy,
+        ctx
       );
       continue;
     }

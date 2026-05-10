@@ -1,4 +1,5 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
+import { MATCH_KEY_CANDIDATES, findMatchKey } from "../../config/merge.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import { countActions, type SettingsAction } from "../base-processor.js";
@@ -132,34 +133,6 @@ function projectObjects(
     // If key not in current, skip — diff will handle it as an addition
   }
   return result;
-}
-
-/**
- * Candidate keys for matching array items by identity rather than index.
- * Order matters — first key found across all items wins.
- */
-const MATCH_KEY_CANDIDATES = ["type", "actor_id"] as const;
-
-/**
- * Finds a key that uniquely identifies items in both arrays.
- * Returns the first candidate key present in every item of both arrays, or undefined.
- */
-function findMatchKey(
-  current: unknown[],
-  desired: unknown[]
-): string | undefined {
-  const allItems = [...current, ...desired];
-  if (allItems.length === 0) return undefined;
-
-  for (const candidate of MATCH_KEY_CANDIDATES) {
-    const everyItemHasKey = allItems.every(
-      (item) =>
-        isPlainObject(item) && candidate in (item as Record<string, unknown>)
-    );
-    if (everyItemHasKey) return candidate;
-  }
-
-  return undefined;
 }
 
 function projectArrays(current: unknown[], desired: unknown[]): unknown[] {
