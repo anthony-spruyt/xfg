@@ -143,7 +143,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     try {
       const stdout = await withRetry(
         () =>
-          this.executor.exec("gh", [...baseArgs, "users/" + owner], this.cwd, {
+          this.executor.exec("gh", [...baseArgs, `users/${owner}`], this.cwd, {
             env: tokenEnv,
           }),
         { retries: this.retries }
@@ -505,7 +505,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
       await this.executor.exec(
         "git",
-        ["-C", sourceDir, "symbolic-ref", "HEAD", "refs/heads/" + targetBranch],
+        ["-C", sourceDir, "symbolic-ref", "HEAD", `refs/heads/${targetBranch}`],
         this.cwd
       );
     }
@@ -589,11 +589,11 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           "gh",
           [
             ...baseArgs,
-            apiPath + "/branches/" + current + "/rename",
+            `${apiPath}/branches/${current}/rename`,
             "--method",
             "POST",
             "-f",
-            "new_name=" + desired,
+            `new_name=${desired}`,
           ],
           this.cwd,
           { env: tokenEnv }
@@ -656,7 +656,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       () =>
         this.executor.exec(
           "gh",
-          [...baseArgs, apiPath + "/contents/README.md", "--jq", ".sha"],
+          [...baseArgs, `${apiPath}/contents/README.md`, "--jq", ".sha"],
           this.cwd,
           { env: tokenEnv }
         ),
@@ -675,13 +675,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
           "gh",
           [
             ...baseArgs,
-            apiPath + "/contents/README.md",
+            `${apiPath}/contents/README.md`,
             "--method",
             "DELETE",
             "-f",
             "message=Remove initialization file",
             "-f",
-            "sha=" + sha,
+            `sha=${sha}`,
           ],
           this.cwd,
           { env: tokenEnv }

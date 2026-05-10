@@ -24,9 +24,10 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 export class AdoPRStrategy extends BasePRStrategy {
+  private readonly bodyFilePath = ".pr-description.md";
+
   constructor(executor: ICommandExecutor, log?: IPRStrategyLogger) {
     super(executor, log);
-    this.bodyFilePath = ".pr-description.md";
   }
 
   private getOrgUrl(repoInfo: AzureDevOpsRepoInfo): string {
@@ -165,7 +166,7 @@ export class AdoPRStrategy extends BasePRStrategy {
         "--project",
         azureRepoInfo.project,
         "--filter",
-        "heads/" + branchName,
+        `heads/${branchName}`,
         "--query",
         "[0].objectId",
         "-o",
@@ -182,7 +183,7 @@ export class AdoPRStrategy extends BasePRStrategy {
           "ref",
           "delete",
           "--name",
-          "refs/heads/" + branchName,
+          `refs/heads/${branchName}`,
           "--repository",
           azureRepoInfo.repo,
           "--org",
@@ -244,7 +245,7 @@ export class AdoPRStrategy extends BasePRStrategy {
       "--title",
       title,
       "--description",
-      "@" + descFile,
+      `@${descFile}`,
       "--org",
       orgUrl,
       "--project",

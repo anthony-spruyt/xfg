@@ -38,6 +38,8 @@ function buildPRUrlRegex(host: string): RegExp {
 }
 
 export class GitHubPRStrategy extends BasePRStrategy {
+  private readonly bodyFilePath = ".pr-body.md";
+
   async findExistingPRUrl(
     options: CloseExistingPROptions
   ): Promise<string | null> {

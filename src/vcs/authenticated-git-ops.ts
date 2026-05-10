@@ -224,7 +224,7 @@ export class AuthenticatedGitOps implements IGitOps {
     await this.execWithRetry("git", [
       "fetch",
       "origin",
-      "+" + branchName + ":refs/remotes/origin/" + branchName,
+      `+${branchName}:refs/remotes/origin/${branchName}`,
     ]);
   }
 }
