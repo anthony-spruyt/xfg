@@ -37,18 +37,18 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field                | Type        | Required | Description                                         |
-| -------------------- | ----------- | -------- | --------------------------------------------------- |
-| `id`                 | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)   |
-| `files`              | `object`    | *        | Map of filenames to file configs                    |
-| `groups`             | `object`    | *        | Named config groups referenced by repos             |
-| `conditionalGroups`  | `array`     | *        | Groups that activate based on repo group membership |
-| `repos`              | `array`     | Yes      | List of repository configurations                   |
-| `settings`           | `object`    | *        | Repository settings (rulesets, labels, etc.)        |
-| `prOptions`          | `PROptions` | No       | Global PR merge options                             |
-| `prTemplate`         | `string`    | No       | Custom PR body template                             |
-| `githubHosts`        | `array`     | No       | GitHub Enterprise Server hostnames                  |
-| `deleteOrphaned`     | `boolean`   | No       | Global default for orphan file deletion             |
+| Field               | Type        | Required | Description                                         |
+| ------------------- | ----------- | -------- | --------------------------------------------------- |
+| `id`                | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)   |
+| `files`             | `object`    | \*       | Map of filenames to file configs                    |
+| `groups`            | `object`    | \*       | Named config groups referenced by repos             |
+| `conditionalGroups` | `array`     | \*       | Groups that activate based on repo group membership |
+| `repos`             | `array`     | Yes      | List of repository configurations                   |
+| `settings`          | `object`    | \*       | Repository settings (rulesets, labels, etc.)        |
+| `prOptions`         | `PROptions` | No       | Global PR merge options                             |
+| `prTemplate`        | `string`    | No       | Custom PR body template                             |
+| `githubHosts`       | `array`     | No       | GitHub Enterprise Server hostnames                  |
+| `deleteOrphaned`    | `boolean`   | No       | Global default for orphan file deletion             |
 
 !!! note "files/settings/groups requirement"
     At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
@@ -69,44 +69,44 @@ Or configure in `.vscode/settings.json`:
 
 ### Group Config
 
-| Field       | Type                 | Required | Description                                                  |
-| ----------- | -------------------- | -------- | ------------------------------------------------------------ |
-| `extends`   | `string \| string[]` | No       | Parent group name(s) to inherit from                         |
-| `files`     | `object`             | No       | Files defined or overridden by this group                    |
-| `prOptions` | `PROptions`          | No       | PR options for repos using this group                        |
-| `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`)     |
+| Field       | Type                 | Required | Description                                              |
+| ----------- | -------------------- | -------- | -------------------------------------------------------- |
+| `extends`   | `string \| string[]` | No       | Parent group name(s) to inherit from                     |
+| `files`     | `object`             | No       | Files defined or overridden by this group                |
+| `prOptions` | `PROptions`          | No       | PR options for repos using this group                    |
+| `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`) |
 
 Groups support `extends` (inherit from parent groups), `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
 
 ### Conditional Group Config
 
-| Field       | Type        | Required | Description                                              |
-| ----------- | ----------- | -------- | -------------------------------------------------------- |
-| `when`      | `object`    | Yes      | Condition that determines when this group activates      |
-| `files`     | `object`    | No       | Files defined or overridden (same capabilities as groups)|
-| `prOptions` | `PROptions` | No       | PR options for matching repos                            |
-| `settings`  | `object`    | No       | Settings for matching repos (supports `inherit`)         |
+| Field       | Type        | Required | Description                                               |
+| ----------- | ----------- | -------- | --------------------------------------------------------- |
+| `when`      | `object`    | Yes      | Condition that determines when this group activates       |
+| `files`     | `object`    | No       | Files defined or overridden (same capabilities as groups) |
+| `prOptions` | `PROptions` | No       | PR options for matching repos                             |
+| `settings`  | `object`    | No       | Settings for matching repos (supports `inherit`)          |
 
 The `when` clause:
 
-| Field   | Type       | Required | Description                                  |
-| ------- | ---------- | -------- | -------------------------------------------- |
-| `allOf` | `string[]` | *        | All listed groups must be present on the repo|
-| `anyOf` | `string[]` | *        | At least one listed group must be present    |
+| Field   | Type       | Required | Description                                   |
+| ------- | ---------- | -------- | --------------------------------------------- |
+| `allOf` | `string[]` | \*       | All listed groups must be present on the repo |
+| `anyOf` | `string[]` | \*       | At least one listed group must be present     |
 
 At least one of `allOf` or `anyOf` is required. When both are specified, both conditions must be satisfied. See [Groups — Conditional Groups](../configuration/groups.md#conditional-groups).
 
 ### Repo Config
 
-| Field       | Type           | Required | Description                                                 |
-| ----------- | -------------- | -------- | ----------------------------------------------------------- |
-| `git`       | `string/array` | Yes      | Git URL(s)                                                  |
-| `files`     | `object`       | No       | Per-repo file overrides                                     |
-| `groups`    | `string[]`     | No       | Group names to apply (merged in order)                      |
-| `settings`  | `object`       | No       | Per-repo settings (rulesets, labels, repo settings)         |
-| `prOptions` | `PROptions`    | No       | Per-repo PR options                                         |
-| `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist                  |
-| `source`    | `string`       | No       | Migrate from this URL if target doesn't exist               |
+| Field       | Type           | Required | Description                                         |
+| ----------- | -------------- | -------- | --------------------------------------------------- |
+| `git`       | `string/array` | Yes      | Git URL(s)                                          |
+| `files`     | `object`       | No       | Per-repo file overrides                             |
+| `groups`    | `string[]`     | No       | Group names to apply (merged in order)              |
+| `settings`  | `object`       | No       | Per-repo settings (rulesets, labels, repo settings) |
+| `prOptions` | `PROptions`    | No       | Per-repo PR options                                 |
+| `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist          |
+| `source`    | `string`       | No       | Migrate from this URL if target doesn't exist       |
 
 !!! note "`upstream` and `source` are mutually exclusive"
     See [Repo Lifecycle](../configuration/lifecycle.md) for details.
@@ -127,13 +127,13 @@ At least one of `allOf` or `anyOf` is required. When both are specified, both co
 
 ### PR Options
 
-| Field           | Type       | Default  | Description                                      |
-| --------------- | ---------- | -------- | ------------------------------------------------ |
-| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`              |
-| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                      |
-| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                        |
-| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)            |
-| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only)     |
+| Field           | Type       | Default  | Description                                  |
+| --------------- | ---------- | -------- | -------------------------------------------- |
+| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`          |
+| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                  |
+| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                    |
+| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)        |
+| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only) |
 
 ## Validation
 

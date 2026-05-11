@@ -55,7 +55,7 @@ The user needs at least "Developer" role on the project.
 xfg uses the `glab` CLI to:
 
 1. Create the merge request with `glab mr create`
-2. Configure merge behavior based on `prOptions`
+1. Configure merge behavior based on `prOptions`
 
 ## Direct Push Mode
 

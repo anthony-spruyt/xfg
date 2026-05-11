@@ -12,17 +12,17 @@ xfg sync --config <path> [options]
 
 ### Options
 
-| Option             | Alias | Description                                           | Default                                         |
-| ------------------ | ----- | ----------------------------------------------------- | ----------------------------------------------- |
-| `--config`         | `-c`  | Path to YAML config file                              | **Required**                                    |
-| `--dry-run`        | `-d`  | Show what would be done without making changes        | `false`                                         |
-| `--work-dir`       | `-w`  | Temporary directory for cloning                       | `./tmp`                                         |
-| `--retries`        | `-r`  | Number of retries for network operations              | `3`                                             |
-| `--branch`         | `-b`  | Override branch name                                  | `chore/sync-{filename}` or `chore/sync-config`  |
-| `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct`    | `auto`                                          |
-| `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`           | `squash`                                        |
-| `--delete-branch`  |       | Delete source branch after merge                      | `true`                                          |
-| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, and labels | `false`                                         |
+| Option             | Alias | Description                                           | Default                                        |
+| ------------------ | ----- | ----------------------------------------------------- | ---------------------------------------------- |
+| `--config`         | `-c`  | Path to YAML config file                              | **Required**                                   |
+| `--dry-run`        | `-d`  | Show what would be done without making changes        | `false`                                        |
+| `--work-dir`       | `-w`  | Temporary directory for cloning                       | `./tmp`                                        |
+| `--retries`        | `-r`  | Number of retries for network operations              | `3`                                            |
+| `--branch`         | `-b`  | Override branch name                                  | `chore/sync-{filename}` or `chore/sync-config` |
+| `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct`    | `auto`                                         |
+| `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`           | `squash`                                       |
+| `--delete-branch`  |       | Delete source branch after merge                      | `true`                                         |
+| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, and labels | `false`                                        |
 
 !!! note "GitHub-Only Settings"
     Repository settings, rulesets, and labels management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
@@ -72,11 +72,11 @@ Completed: 3 succeeded, 0 skipped, 0 failed
 CLI flags override config file settings:
 
 1. CLI flags (highest priority)
-2. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
-3. Conditional group settings (applied in array order)
-4. Group settings (applied in order, later groups override earlier ones)
-5. Global settings
-6. Built-in defaults (lowest priority)
+1. Per-repo settings (e.g., `prOptions`, `settings.rulesets`)
+1. Conditional group settings (applied in array order)
+1. Group settings (applied in order, later groups override earlier ones)
+1. Global settings
+1. Built-in defaults (lowest priority)
 
 ## Exit Codes
 

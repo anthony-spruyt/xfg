@@ -122,7 +122,8 @@ rules:
 # Result: [{type: "pull_request", parameters: {requiredApprovingReviewCount: 2}}]
 ```
 
-!!! note "Directives are stripped" Both `$arrayMerge` and `$values` are internal directives and do not appear in the final output.
+!!! note "Directives are stripped"
+    Both `$arrayMerge` and `$values` are internal directives and do not appear in the final output.
 
 ### Merge by Key
 
@@ -199,7 +200,8 @@ dist/
 coverage/
 ```
 
-!!! note String content (not lines array) always uses replace strategy - the entire string is replaced.
+!!! note
+    String content (not lines array) always uses replace strategy - the entire string is replaced.
 
 ## Settings Array Merge
 
@@ -264,7 +266,8 @@ conditionalGroups:
 
 Repos with the `github-ci` group get both the `pull_request` rule and the `required_status_checks` rule. Repos without `github-ci` only get the `pull_request` rule.
 
-!!! note "Same syntax as file content" The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`.
+!!! note "Same syntax as file content"
+    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`.
 
 ## Example: Different Strategies per File
 

@@ -4,11 +4,11 @@ xfg supports GitHub, Azure DevOps, and GitLab (including self-hosted instances).
 
 ## Supported Platforms
 
-| Platform     | SSH URLs | HTTPS URLs | Self-Hosted                                                    |
-| ------------ | -------- | ---------- | -------------------------------------------------------------- |
-| GitHub       | Yes      | Yes        | Yes (via [`githubHosts`](github.md#github-enterprise-server))  |
-| Azure DevOps | Yes      | Yes        | -                                                              |
-| GitLab       | Yes      | Yes        | Yes                                                            |
+| Platform     | SSH URLs | HTTPS URLs | Self-Hosted                                                   |
+| ------------ | -------- | ---------- | ------------------------------------------------------------- |
+| GitHub       | Yes      | Yes        | Yes (via [`githubHosts`](github.md#github-enterprise-server)) |
+| Azure DevOps | Yes      | Yes        | -                                                             |
+| GitLab       | Yes      | Yes        | Yes                                                           |
 
 ## Platform-Specific Details
 

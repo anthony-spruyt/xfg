@@ -36,11 +36,11 @@ xfg sync -c config.yaml
 
 ## Label Properties
 
-| Property      | Required | Description                                                          |
-| ------------- | -------- | -------------------------------------------------------------------- |
-| `color`       | Yes      | Hex color code, with or without `#` (e.g., `d73a4a` or `#d73a4a`)    |
-| `description` | No       | Label description (max 100 characters)                               |
-| `new_name`    | No       | Rename the label to this value                                       |
+| Property      | Required | Description                                                       |
+| ------------- | -------- | ----------------------------------------------------------------- |
+| `color`       | Yes      | Hex color code, with or without `#` (e.g., `d73a4a` or `#d73a4a`) |
+| `description` | No       | Label description (max 100 characters)                            |
+| `new_name`    | No       | Rename the label to this value                                    |
 
 ## Color Format
 
@@ -133,9 +133,9 @@ repos:
 The `xfg sync` command:
 
 1. Fetches current labels from the GitHub API
-2. Compares them against the desired state in config (case-insensitive matching)
-3. Shows a Terraform-style plan of changes
-4. Applies changes in order: deletes, then updates/renames, then creates
+1. Compares them against the desired state in config (case-insensitive matching)
+1. Shows a Terraform-style plan of changes
+1. Applies changes in order: deletes, then updates/renames, then creates
 
 Label name matching is **case-insensitive** (GitHub treats label names as case-insensitive).
 

@@ -37,43 +37,43 @@ xfg sync -c config.yaml
 
 ### Features
 
-| Setting | Type | Description |
-| ------- | ---- | ----------- |
-| `description` | string | Repository description |
-| `hasIssues` | boolean | Enable/disable GitHub Issues |
-| `hasProjects` | boolean | Enable/disable GitHub Projects |
-| `hasWiki` | boolean | Enable/disable the repository wiki |
-| `hasDiscussions` | boolean | Enable/disable GitHub Discussions |
-| `isTemplate` | boolean | Mark as a template repository |
-| `allowForking` | boolean | Allow forking (private repos) |
-| `visibility` | string | `public`, `private`, or `internal` |
-| `archived` | boolean | Archive the repository |
+| Setting                    | Type    | Description                           |
+| -------------------------- | ------- | ------------------------------------- |
+| `description`              | string  | Repository description                |
+| `hasIssues`                | boolean | Enable/disable GitHub Issues          |
+| `hasProjects`              | boolean | Enable/disable GitHub Projects        |
+| `hasWiki`                  | boolean | Enable/disable the repository wiki    |
+| `hasDiscussions`           | boolean | Enable/disable GitHub Discussions     |
+| `isTemplate`               | boolean | Mark as a template repository         |
+| `allowForking`             | boolean | Allow forking (private repos)         |
+| `visibility`               | string  | `public`, `private`, or `internal`    |
+| `archived`                 | boolean | Archive the repository                |
 | `webCommitSignoffRequired` | boolean | Require sign-off on web-based commits |
-| `defaultBranch` | string | Set the default branch |
+| `defaultBranch`            | string  | Set the default branch                |
 
 ### Merge Options
 
-| Setting | Type | Description |
-| ------- | ---- | ----------- |
-| `allowSquashMerge` | boolean | Allow squash merging |
-| `allowMergeCommit` | boolean | Allow merge commits |
-| `allowRebaseMerge` | boolean | Allow rebase merging |
-| `allowAutoMerge` | boolean | Allow auto-merge |
-| `deleteBranchOnMerge` | boolean | Auto-delete head branches |
-| `allowUpdateBranch` | boolean | Show "Update branch" button |
-| `squashMergeCommitTitle` | string | `PR_TITLE` or `COMMIT_OR_PR_TITLE` |
-| `squashMergeCommitMessage` | string | `PR_BODY`, `COMMIT_MESSAGES`, or `BLANK` |
-| `mergeCommitTitle` | string | `PR_TITLE` or `MERGE_MESSAGE` |
-| `mergeCommitMessage` | string | `PR_BODY`, `PR_TITLE`, or `BLANK` |
+| Setting                    | Type    | Description                              |
+| -------------------------- | ------- | ---------------------------------------- |
+| `allowSquashMerge`         | boolean | Allow squash merging                     |
+| `allowMergeCommit`         | boolean | Allow merge commits                      |
+| `allowRebaseMerge`         | boolean | Allow rebase merging                     |
+| `allowAutoMerge`           | boolean | Allow auto-merge                         |
+| `deleteBranchOnMerge`      | boolean | Auto-delete head branches                |
+| `allowUpdateBranch`        | boolean | Show "Update branch" button              |
+| `squashMergeCommitTitle`   | string  | `PR_TITLE` or `COMMIT_OR_PR_TITLE`       |
+| `squashMergeCommitMessage` | string  | `PR_BODY`, `COMMIT_MESSAGES`, or `BLANK` |
+| `mergeCommitTitle`         | string  | `PR_TITLE` or `MERGE_MESSAGE`            |
+| `mergeCommitMessage`       | string  | `PR_BODY`, `PR_TITLE`, or `BLANK`        |
 
 ### Security
 
-| Setting | Type | Description |
-| ------- | ---- | ----------- |
-| `vulnerabilityAlerts` | boolean | Dependabot vulnerability alerts |
-| `automatedSecurityFixes` | boolean | Dependabot security updates |
-| `secretScanning` | boolean | Secret scanning |
-| `secretScanningPushProtection` | boolean | Push protection for secrets |
+| Setting                         | Type    | Description                     |
+| ------------------------------- | ------- | ------------------------------- |
+| `vulnerabilityAlerts`           | boolean | Dependabot vulnerability alerts |
+| `automatedSecurityFixes`        | boolean | Dependabot security updates     |
+| `secretScanning`                | boolean | Secret scanning                 |
+| `secretScanningPushProtection`  | boolean | Push protection for secrets     |
 | `privateVulnerabilityReporting` | boolean | Private vulnerability reporting |
 
 ## Inheritance
@@ -147,12 +147,12 @@ repos:
 
 xfg displays warnings for potentially destructive operations:
 
-| Operation | Warning |
-| --------- | ------- |
-| Change `visibility` | "visibility change may expose or hide repository" |
-| Set `archived: true` | "archiving makes repository read-only" |
-| Disable `hasIssues`, `hasWiki`, `hasProjects` | "may hide existing content" |
-| Change `defaultBranch` | "may affect existing PRs, CI workflows, and branch protections" |
+| Operation                                     | Warning                                                         |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| Change `visibility`                           | "visibility change may expose or hide repository"               |
+| Set `archived: true`                          | "archiving makes repository read-only"                          |
+| Disable `hasIssues`, `hasWiki`, `hasProjects` | "may hide existing content"                                     |
+| Change `defaultBranch`                        | "may affect existing PRs, CI workflows, and branch protections" |
 
 Example output:
 

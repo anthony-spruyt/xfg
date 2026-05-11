@@ -20,12 +20,12 @@ xfg-config/
 
 ## Merge Rules
 
-| Key | Behavior |
-| --- | --- |
-| `groups` | Merged by name — group names must be unique across files |
-| `conditionalGroups` | Concatenated in alphabetical file order |
-| `repos` | Concatenated in alphabetical file order |
-| All other keys | Must appear in exactly one file |
+| Key                 | Behavior                                                 |
+| ------------------- | -------------------------------------------------------- |
+| `groups`            | Merged by name — group names must be unique across files |
+| `conditionalGroups` | Concatenated in alphabetical file order                  |
+| `repos`             | Concatenated in alphabetical file order                  |
+| All other keys      | Must appear in exactly one file                          |
 
 ### Single-file keys
 
@@ -82,9 +82,9 @@ repos:
 
 Common errors when using directory-based config:
 
-| Error | Cause |
-| --- | --- |
-| `'id' is defined in both base.yaml and team.yaml` | A single-file key appears in multiple files |
-| `group 'X' is defined in both base.yaml and team.yaml` | Duplicate group name across files |
-| `no 'id' found in any file in directory ./xfg-config/` | No file defines `id` |
-| `no .yaml or .yml files found in directory ./xfg-config/` | Directory is empty or has no YAML files |
+| Error                                                     | Cause                                       |
+| --------------------------------------------------------- | ------------------------------------------- |
+| `'id' is defined in both base.yaml and team.yaml`         | A single-file key appears in multiple files |
+| `group 'X' is defined in both base.yaml and team.yaml`    | Duplicate group name across files           |
+| `no 'id' found in any file in directory ./xfg-config/`    | No file defines `id`                        |
+| `no .yaml or .yml files found in directory ./xfg-config/` | Directory is empty or has no YAML files     |
