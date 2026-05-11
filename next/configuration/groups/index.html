@@ -2981,9 +2981,7 @@
 </span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="c1"># PR options: merge: auto, labels: [from-group]</span>
 </span></code></pre></div>
 <h2 id="conditional-groups">Conditional Groups<a class="headerlink" href="#conditional-groups" title="Permanent link">&para;</a></h2>
-<p>Conditional groups activate automatically based on which groups a repo has.
-They are defined in a top-level <code>conditionalGroups</code> array, separate from
-regular groups.</p>
+<p>Conditional groups activate automatically based on which groups a repo has. They are defined in a top-level <code>conditionalGroups</code> array, separate from regular groups.</p>
 <h3 id="allof-intersection"><code>allOf</code> — Intersection<a class="headerlink" href="#allof-intersection" title="Permanent link">&para;</a></h3>
 <p>Include config only when <strong>all</strong> listed groups are present:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
@@ -2995,8 +2993,7 @@ regular groups.</p>
 </span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">          </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#ededed&quot;</span>
 </span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">          </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
 </span></code></pre></div>
-<p>The <code>renovate/terraform</code> label is only added to repos that have both
-<code>terraform</code> and <code>renovate</code> in their <code>groups</code> array.</p>
+<p>The <code>renovate/terraform</code> label is only added to repos that have both <code>terraform</code> and <code>renovate</code> in their <code>groups</code> array.</p>
 <h3 id="anyof-union"><code>anyOf</code> — Union<a class="headerlink" href="#anyof-union" title="Permanent link">&para;</a></h3>
 <p>Include config when <strong>any</strong> listed group is present:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
@@ -3019,11 +3016,9 @@ regular groups.</p>
 </span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">              </span><span class="nt">hooks</span><span class="p">:</span>
 </span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">                </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">trailing-whitespace</span>
 </span></code></pre></div>
-<p>This applies the default pre-commit config to all repos except those with the
-<code>custom-pre-commit</code> group, which can define their own variant.</p>
+<p>This applies the default pre-commit config to all repos except those with the <code>custom-pre-commit</code> group, which can define their own variant.</p>
 <h3 id="combined-conditions">Combined Conditions<a class="headerlink" href="#combined-conditions" title="Permanent link">&para;</a></h3>
-<p>All operators in a <code>when</code> clause must be satisfied (AND logic). Any
-combination of <code>allOf</code>, <code>anyOf</code>, and <code>noneOf</code> can be used together:</p>
+<p>All operators in a <code>when</code> clause must be satisfied (AND logic). Any combination of <code>allOf</code>, <code>anyOf</code>, and <code>noneOf</code> can be used together:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">conditionalGroups</span><span class="p">:</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">when</span><span class="p">:</span>
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">      </span><span class="nt">anyOf</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">pre-commit</span><span class="p p-Indicator">]</span>
@@ -3056,17 +3051,12 @@ combination of <code>allOf</code>, <code>anyOf</code>, and <code>noneOf</code> c
 </ul>
 <h3 id="restrictions">Restrictions<a class="headerlink" href="#restrictions" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Group names in <code>allOf</code>/<code>anyOf</code>/<code>noneOf</code> must reference groups defined in
-  the <code>groups</code> map</li>
-<li>Group names in <code>noneOf</code> must not overlap with <code>allOf</code> or <code>anyOf</code> in the
-  same <code>when</code> clause</li>
+<li>Group names in <code>allOf</code>/<code>anyOf</code>/<code>noneOf</code> must reference groups defined in the <code>groups</code> map</li>
+<li>Group names in <code>noneOf</code> must not overlap with <code>allOf</code> or <code>anyOf</code> in the same <code>when</code> clause</li>
 <li>Conditional groups cannot be listed in a repo's <code>groups</code> array</li>
 <li>Conditional groups cannot reference other conditional groups</li>
-<li>A repo with no <code>groups</code> field or <code>groups: []</code> has an empty effective group
-  set — only <code>noneOf</code> conditions can match it</li>
-<li>Conditional groups do not expand the effective group set — one conditional
-  group matching cannot cause another conditional group to match. All
-  conditions are evaluated against the same frozen set of explicit groups.</li>
+<li>A repo with no <code>groups</code> field or <code>groups: []</code> has an empty effective group set — only <code>noneOf</code> conditions can match it</li>
+<li>Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same frozen set of explicit groups.</li>
 </ul>
 
 
