@@ -180,12 +180,12 @@ Require specific GitHub Actions workflows to pass:
 
 All pattern rules support the same parameters:
 
-| Parameter  | Type    | Description                                                |
-| ---------- | ------- | ---------------------------------------------------------- |
-| `name`     | string  | Display name for the rule (optional)                       |
-| `operator` | string  | `starts_with`, `ends_with`, `contains`, or `regex`         |
-| `pattern`  | string  | The pattern to match                                       |
-| `negate`   | boolean | If true, the rule applies when the pattern does NOT match  |
+| Parameter  | Type    | Description                                               |
+| ---------- | ------- | --------------------------------------------------------- |
+| `name`     | string  | Display name for the rule (optional)                      |
+| `operator` | string  | `starts_with`, `ends_with`, `contains`, or `regex`        |
+| `pattern`  | string  | The pattern to match                                      |
+| `negate`   | boolean | If true, the rule applies when the pattern does NOT match |
 
 ```yaml
 - type: commit_message_pattern

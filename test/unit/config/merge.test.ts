@@ -5,6 +5,8 @@ import {
   stripMergeDirectives,
   isTextContent,
   mergeTextContent,
+  findMatchKey,
+  MATCH_KEY_CANDIDATES,
   type ArrayMergeStrategy,
   type MergeContext,
 } from "../../../src/config/merge.js";
@@ -290,6 +292,259 @@ describe("deepMerge", () => {
   });
 });
 
+describe("findMatchKey", () => {
+  test("returns 'type' when all items have type field", () => {
+    const base = [{ type: "a" }, { type: "b" }];
+    const overlay = [{ type: "c" }];
+    assert.equal(findMatchKey(base, overlay), "type");
+  });
+
+  test("returns 'actor_id' when all items have actor_id field", () => {
+    const base = [{ actor_id: 1 }, { actor_id: 2 }];
+    const overlay = [{ actor_id: 3 }];
+    assert.equal(findMatchKey(base, overlay), "actor_id");
+  });
+
+  test("prefers 'type' over 'actor_id' when both present", () => {
+    const base = [{ type: "a", actor_id: 1 }];
+    const overlay = [{ type: "b", actor_id: 2 }];
+    assert.equal(findMatchKey(base, overlay), "type");
+  });
+
+  test("returns undefined for primitive arrays", () => {
+    assert.equal(findMatchKey([1, 2], [3]), undefined);
+  });
+
+  test("returns undefined when not all items share key", () => {
+    const base = [{ type: "a" }, { name: "b" }];
+    const overlay = [{ type: "c" }];
+    assert.equal(findMatchKey(base, overlay), undefined);
+  });
+
+  test("returns undefined for empty arrays", () => {
+    assert.equal(findMatchKey([], []), undefined);
+  });
+
+  test("exports MATCH_KEY_CANDIDATES", () => {
+    assert.deepEqual([...MATCH_KEY_CANDIDATES], ["type", "actor_id"]);
+  });
+});
+
+describe("$arrayMerge: merge strategy", () => {
+  test("deep-merges items matched by type key", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "b", x: 2 },
+      ],
+    };
+    const overlay = {
+      rules: { $arrayMerge: "merge", $values: [{ type: "a", y: 3 }] },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 3 },
+        { type: "b", x: 2 },
+      ],
+    });
+  });
+
+  test("falls back to append when no match key found", () => {
+    const base = { items: [{ name: "a" }, { name: "b" }] };
+    const overlay = {
+      items: { $arrayMerge: "merge", $values: [{ name: "c" }] },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      items: [{ name: "a" }, { name: "b" }, { name: "c" }],
+    });
+  });
+
+  test("handles mixed matched and unmatched items", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "b", x: 2 },
+      ],
+    };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [
+          { type: "a", y: 3 },
+          { type: "c", z: 4 },
+        ],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 3 },
+        { type: "b", x: 2 },
+        { type: "c", z: 4 },
+      ],
+    });
+  });
+
+  test("nested $arrayMerge: append inside matched items honored", () => {
+    const base = {
+      rules: [{ type: "rsc", parameters: { checks: ["ci"] } }],
+    };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [
+          {
+            type: "rsc",
+            parameters: {
+              checks: { $arrayMerge: "append", $values: ["mergify"] },
+            },
+          },
+        ],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [{ type: "rsc", parameters: { checks: ["ci", "mergify"] } }],
+    });
+  });
+
+  test("matches by actor_id key", () => {
+    const base = {
+      actors: [
+        { actor_id: 1, bypass_mode: "always" },
+        { actor_id: 2, bypass_mode: "pull_request" },
+      ],
+    };
+    const overlay = {
+      actors: {
+        $arrayMerge: "merge",
+        $values: [{ actor_id: 1, bypass_mode: "pull_request" }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      actors: [
+        { actor_id: 1, bypass_mode: "pull_request" },
+        { actor_id: 2, bypass_mode: "pull_request" },
+      ],
+    });
+  });
+
+  test("primitive arrays (no keys) fall back to append", () => {
+    const base = { tags: [1, 2, 3] };
+    const overlay = {
+      tags: { $arrayMerge: "merge", $values: [4, 5] },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, { tags: [1, 2, 3, 4, 5] });
+  });
+
+  test("stacked directives — base has $arrayMerge: merge directive", () => {
+    const base = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [
+          { type: "a", x: 1 },
+          { type: "b", x: 2 },
+        ],
+      },
+    };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [{ type: "a", y: 3 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext("replace"));
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 3 },
+        { type: "b", x: 2 },
+      ],
+    });
+  });
+
+  test("overlay item overwrites scalar in matched base item", () => {
+    const base = { rules: [{ type: "a", value: "old", keep: true }] };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [{ type: "a", value: "new" }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [{ type: "a", value: "new", keep: true }],
+    });
+  });
+
+  test("empty base array returns overlay items", () => {
+    const base = { rules: [] as unknown[] };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [{ type: "a", x: 1 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, { rules: [{ type: "a", x: 1 }] });
+  });
+
+  test("empty overlay array returns base items", () => {
+    const base = { rules: [{ type: "a", x: 1 }] };
+    const overlay = {
+      rules: { $arrayMerge: "merge", $values: [] as unknown[] },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, { rules: [{ type: "a", x: 1 }] });
+  });
+
+  test("duplicate keys in base — first occurrence wins", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "a", x: 2 },
+        { type: "b", x: 3 },
+      ],
+    };
+    const overlay = {
+      rules: {
+        $arrayMerge: "merge",
+        $values: [{ type: "a", y: 10 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 10 },
+        { type: "a", x: 2 },
+        { type: "b", x: 3 },
+      ],
+    });
+  });
+
+  test("merge as default mergeStrategy via context", () => {
+    const base = {
+      rules: [
+        { type: "a", x: 1 },
+        { type: "b", x: 2 },
+      ],
+    };
+    const overlay = {
+      rules: [{ type: "a", y: 3 }],
+    };
+    const result = deepMerge(base, overlay, createContext("merge"));
+    assert.deepEqual(result, {
+      rules: [
+        { type: "a", x: 1, y: 3 },
+        { type: "b", x: 2 },
+      ],
+    });
+  });
+});
+
 describe("stripMergeDirectives", () => {
   test("removes $arrayMerge keys", () => {
     const obj = { $arrayMerge: "append", key: "value" };
@@ -556,6 +811,18 @@ describe("mergeTextContent", () => {
     test("prepend empty overlay returns base", () => {
       const result = mergeTextContent(["base"], [], "prepend");
       assert.deepEqual(result, ["base"]);
+    });
+  });
+
+  describe("array overlay with merge strategy", () => {
+    test("merge strategy falls back to append for text arrays", () => {
+      const result = mergeTextContent(["base1", "base2"], ["overlay"], "merge");
+      assert.deepEqual(result, ["base1", "base2", "overlay"]);
+    });
+
+    test("merge strategy on string overlay still replaces", () => {
+      const result = mergeTextContent(["base"], "overlay", "merge");
+      assert.equal(result, "overlay");
     });
   });
 });

@@ -17,6 +17,7 @@ gh auth login --hostname github.mycompany.com
 ```
 
 !!! note "Required Scopes"
+
 Your token needs the `repo` scope to create PRs in target repositories.
 
 ## Azure DevOps Authentication
@@ -29,6 +30,7 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 ```
 
 !!! note "Required Permissions"
+
 Ensure the user/service account has "Contribute to pull requests" permission.
 
 ## GitLab Authentication
@@ -46,4 +48,5 @@ glab auth login --hostname gitlab.example.com
 ```
 
 !!! note "Required Permissions"
+
 Ensure the user has at least "Developer" role on the project.

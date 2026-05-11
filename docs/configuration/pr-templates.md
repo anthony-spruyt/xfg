@@ -41,15 +41,15 @@ repos:
 
 PR templates support all [templating variables](templating.md), plus PR-specific variables:
 
-| Variable                | Description                         | Example Output                                           |
-| ----------------------- | ----------------------------------- | -------------------------------------------------------- |
-| `${xfg:pr.fileChanges}` | Bulleted list of files with actions | `- Created \`config.json\`\n- Updated \`settings.yaml\`` |
-| `${xfg:pr.fileCount}`   | Number of changed files             | `3`                                                      |
-| `${xfg:pr.title}`       | The generated PR title              | `chore: sync config.json, settings.yaml`                 |
-| `${xfg:repo.name}`      | Repository name                     | `my-repo`                                                |
-| `${xfg:repo.owner}`     | Repository owner                    | `my-org`                                                 |
-| `${xfg:repo.fullName}`  | Full repository path                | `my-org/my-repo`                                         |
-| `${xfg:repo.platform}`  | Platform type                       | `github`, `azure-devops`, `gitlab`                       |
+| Variable                | Description                         | Example Output                                             |
+| ----------------------- | ----------------------------------- | ---------------------------------------------------------- |
+| `${xfg:pr.fileChanges}` | Bulleted list of files with actions | `- Created \`config.json\`\\n- Updated \`settings.yaml\`\` |
+| `${xfg:pr.fileCount}`   | Number of changed files             | `3`                                                        |
+| `${xfg:pr.title}`       | The generated PR title              | `chore: sync config.json, settings.yaml`                   |
+| `${xfg:repo.name}`      | Repository name                     | `my-repo`                                                  |
+| `${xfg:repo.owner}`     | Repository owner                    | `my-org`                                                   |
+| `${xfg:repo.fullName}`  | Full repository path                | `my-org/my-repo`                                           |
+| `${xfg:repo.platform}`  | Platform type                       | `github`, `azure-devops`, `gitlab`                         |
 
 ## Default Template
 
