@@ -26,7 +26,7 @@ settings:
   variables:
     REGISTRY_URL: "ghcr.io"
     DEPLOY_ENV: "${DEPLOY_ENVIRONMENT}"
-  deleteOrphaned: true
+    deleteOrphaned: true
 
 secrets:
   DEPLOY_TOKEN:
@@ -38,7 +38,8 @@ secrets:
 
 - **Variables:** `name: value` string pairs. Values support existing `${ENV}` interpolation from config normalizer.
 - **Secrets:** `name: { env: ENV_VAR_NAME }` — the `env` field names the environment variable to read at runtime. Value never written to config.
-- **`deleteOrphaned`:** Independent flag per block. When true, target repo variables/secrets not in config are deleted. Note: `deleteOrphaned` is a reserved key name and cannot be used as a secret name (it is a peer of secret entries in the flat config structure, following the same pattern as the `inherit` key in labels).
+- **`deleteOrphaned`:** Each block has its own `deleteOrphaned` peer key. Variables' `deleteOrphaned` is inside `settings.variables`, independent from the settings-level `deleteOrphaned` used by labels/rulesets. Secrets' `deleteOrphaned` is inside the root `secrets` block. Both are reserved key names (cannot be used as variable/secret names). This follows the same flat peer-key pattern as labels'
+  `inherit` key.
 
 ## Architecture
 
@@ -138,6 +139,7 @@ All validation lives in `src/config/validator.ts` via `validateForSync`:
 - Variable name validation happens per-repo in `validateForSync` (since variables are per-repo after normalizer merging)
 - Secret name validation happens at config level (secrets are global, not per-repo)
 - Variable and secret names must not overlap — this check is per-repo, since variables are per-repo but secrets are global; each repo's effective variables are compared against the global secrets
+- Reserved peer keys: `deleteOrphaned` cannot be used as a variable or secret name; `inherit` cannot be used as a variable name
 - Duplicate names caught at parse time
 
 ### Runtime (secrets only)

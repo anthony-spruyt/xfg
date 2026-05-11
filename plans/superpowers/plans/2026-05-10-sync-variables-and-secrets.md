@@ -20,16 +20,24 @@
 
 - [ ] **Step 1: Add variables to RepoSettings, RawRootSettings, RawRepoSettings**
 
+Variables use their own `deleteOrphaned` peer key (same flat pattern as secrets' `deleteOrphaned` and labels' `inherit`). This keeps variable orphan deletion independent from the shared `settings.deleteOrphaned` flag used by labels/rulesets.
+
 ```typescript
 // In RepoSettings (after codeScanning field):
   /** GitHub Actions repository variables keyed by name */
-  variables?: Record<string, string>;
+  variables?: Record<string, string> & { deleteOrphaned?: boolean };
 
 // In RawRootSettings (after codeScanning field):
-  variables?: Record<string, string | false>;
+  variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
 
 // In RawRepoSettings (after codeScanning field):
-  variables?: Record<string, string | false> & { inherit?: boolean };
+  variables?: Record<string, string | false> & { inherit?: boolean; deleteOrphaned?: boolean };
+```
+
+In the processor, separate `deleteOrphaned` from variable entries (same pattern as secrets):
+
+```typescript
+const { deleteOrphaned = false, inherit: _, ...variableEntries } = repoConfig.settings?.variables ?? {};
 ```
 
 - [ ] **Step 2: Add SecretConfig type and secrets to RawConfig**
@@ -121,6 +129,18 @@ describe("validateVariables", () => {
     });
     assert.throws(() => validateForSync(config), /invalid.*character/i);
   });
+
+  test("skips reserved peer keys (deleteOrphaned, inherit) during name validation", () => {
+    const config = makeConfig({
+      settings: {
+        variables: Object.assign(
+          { MY_VAR: "value" },
+          { deleteOrphaned: true, inherit: false }
+        ),
+      },
+    });
+    assert.doesNotThrow(() => validateForSync(config));
+  });
 });
 ```
 
@@ -150,15 +170,24 @@ export function validateVariableName(name: string): void {
 Add to `hasActionableSettings`:
 
 ```typescript
-if (
-  settings.variables &&
-  Object.keys(settings.variables).filter((k) => k !== "inherit").length > 0
-) {
-  return true;
+if (settings.variables) {
+  const { deleteOrphaned: _, inherit: _i, ...entries } = settings.variables as Record<string, unknown>;
+  if (Object.keys(entries).length > 0 || (settings.variables as Record<string, unknown>).deleteOrphaned === true) {
+    return true;
+  }
 }
 ```
 
-Add variable name validation call in `validateForSync` or the appropriate per-repo validation path.
+Add variable name validation call in `validateForSync` or the appropriate per-repo validation path. When iterating variable names for validation, skip the reserved peer keys `deleteOrphaned` and `inherit`:
+
+```typescript
+const VARIABLE_RESERVED_KEYS = new Set(["deleteOrphaned", "inherit"]);
+// In validation loop:
+for (const name of Object.keys(variables)) {
+  if (VARIABLE_RESERVED_KEYS.has(name)) continue;
+  validateVariableName(name);
+}
+```
 
 - [ ] **Step 4: Run tests to verify they pass**
 
@@ -915,7 +944,7 @@ function makeRepoConfig(
   return {
     git: "https://github.com/test-org/test-repo.git",
     files: [],
-    settings: { variables, deleteOrphaned },
+    settings: { variables: { ...variables, deleteOrphaned } },
   };
 }
 
@@ -1097,8 +1126,11 @@ export class VariablesProcessor implements IVariablesProcessor {
     options: VariablesProcessorOptions
   ): Promise<VariablesProcessorResult> {
     return withGitHubGuards(repoConfig, repoInfo, options, {
-      hasDesiredSettings: (rc) =>
-        Object.keys(rc.settings?.variables ?? {}).length > 0,
+      hasDesiredSettings: (rc) => {
+        const vars = rc.settings?.variables ?? {};
+        const { deleteOrphaned, inherit: _i, ...entries } = vars as Record<string, unknown>;
+        return Object.keys(entries).length > 0 || deleteOrphaned === true;
+      },
       emptySettingsMessage: "No variables configured",
       applySettings: (githubRepo, rc, opts, token, repoName) =>
         this.applySettings(githubRepo, rc, opts, token, repoName),
@@ -1114,9 +1146,11 @@ export class VariablesProcessor implements IVariablesProcessor {
   ): Promise<VariablesProcessorResult> {
     const { dryRun, noDelete } = options;
     const settings = repoConfig.settings;
-    const desiredVariables = settings?.variables ?? {};
+    // Separate deleteOrphaned peer key from variable entries (same pattern as secrets)
+    const { deleteOrphaned: varDeleteOrphaned = false, inherit: _, ...desiredVariables } =
+      (settings?.variables ?? {}) as Record<string, unknown>;
     const deleteOrphaned =
-      (settings?.deleteOrphaned ?? false) && !(noDelete ?? false);
+      (varDeleteOrphaned as boolean) && !(noDelete ?? false);
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
     const currentVariables = await this.strategy.list(
@@ -1286,14 +1320,8 @@ interface SettingsDescriptor {
 }
 ```
 
-> **Note:** `applyRepoSettings` (line 157-158) does:
->
-> ```typescript
-> const settingsValue = repoConfig.settings[desc.key];
-> if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
-> ```
->
-> This naturally works for `variables: Record<string, string>` -- `Object.keys()` on an empty object returns `[]`, so empty variables configs are correctly skipped.
+> **Note:** `applyRepoSettings` uses `Object.keys(settingsValue).length === 0` to skip empty settings. With `deleteOrphaned` as a peer key, `{ deleteOrphaned: true }` (no actual variables) will have length 1 and NOT be skipped — this is correct because `deleteOrphaned: true` with no variables means "delete all orphans." The processor's `hasDesiredSettings` guard already filters out
+> `deleteOrphaned` from the entry count, so a config with only `deleteOrphaned` will still run the processor to handle orphan deletion.
 
 Then in `buildSettingsDescriptors`, add entry:
 
@@ -1389,6 +1417,28 @@ describe("mergeSettings variables", () => {
     assert.equal(result?.variables?.REPO_VAR, "val");
   });
 
+  test("merges deleteOrphaned peer key from root variables", () => {
+    const root: RawRootSettings = {
+      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+    };
+    const result = mergeSettings(root, undefined);
+
+    assert.equal(result?.variables?.ROOT_VAR, "value");
+    assert.equal((result?.variables as Record<string, unknown>)?.deleteOrphaned, true);
+  });
+
+  test("per-repo deleteOrphaned overrides root deleteOrphaned", () => {
+    const root: RawRootSettings = {
+      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+    };
+    const perRepo: RawRepoSettings = {
+      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: false }),
+    };
+    const result = mergeSettings(root, perRepo);
+
+    assert.equal((result?.variables as Record<string, unknown>)?.deleteOrphaned, false);
+  });
+
   test("per-repo variable: false opts out of root variable", () => {
     const root: RawRootSettings = {
       variables: { ROOT_VAR: "value", KEEP: "yes" },
@@ -1413,26 +1463,37 @@ Run: `npm test -- --grep "mergeSettings variables"` Expected: FAIL
 In `mergeSettings`, add variables merging after the labels section:
 
 ```typescript
-// Variables merging
+// Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
 if (root?.variables || perRepo?.variables) {
   const rootVars = root?.variables ?? {};
   const repoVars = perRepo?.variables ?? {};
 
+  // Preserve deleteOrphaned from whichever level sets it (per-repo overrides root)
+  const rootDeleteOrphaned = (rootVars as Record<string, unknown>).deleteOrphaned;
+  const repoDeleteOrphaned = (repoVars as Record<string, unknown>).deleteOrphaned;
+  const effectiveDeleteOrphaned = repoDeleteOrphaned ?? rootDeleteOrphaned;
+
   const inherit = (repoVars as Record<string, unknown>).inherit;
   if (inherit === false) {
-    const { inherit: _, ...rest } = repoVars as Record<string, unknown>;
+    const { inherit: _, deleteOrphaned: _d, ...rest } = repoVars as Record<string, unknown>;
     merged.variables = Object.fromEntries(
       Object.entries(rest).filter(([, v]) => v !== false)
     ) as Record<string, string>;
   } else {
     const combined = { ...rootVars, ...repoVars };
-    const { inherit: _, ...rest } = combined as Record<string, unknown>;
+    const { inherit: _, deleteOrphaned: _d, ...rest } = combined as Record<string, unknown>;
     merged.variables = Object.fromEntries(
       Object.entries(rest).filter(([, v]) => v !== false)
     ) as Record<string, string>;
   }
 
-  if (Object.keys(merged.variables).length === 0) {
+  if (effectiveDeleteOrphaned !== undefined) {
+    (merged.variables as Record<string, unknown>).deleteOrphaned = effectiveDeleteOrphaned;
+  }
+
+  // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
+  const { deleteOrphaned: _check, ...varEntries } = merged.variables as Record<string, unknown>;
+  if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
     delete merged.variables;
   }
 }
@@ -2264,6 +2325,7 @@ type SecretsConfig = Record<string, SecretConfig | boolean> & {
 export interface SecretsProcessorOptions {
   dryRun?: boolean;
   token?: string;
+  noDelete?: boolean;
 }
 
 export interface SecretsProcessorResult {
@@ -2305,8 +2367,9 @@ export class SecretsProcessor {
 
     const githubRepo = repoInfo as GitHubRepoInfo;
     // Separate deleteOrphaned flag from secret entries (same pattern as labels' inherit)
-    const { deleteOrphaned = false, ...rawEntries } = secretsConfig;
-    const { dryRun, token } = options;
+    const { deleteOrphaned: configDeleteOrphaned = false, ...rawEntries } = secretsConfig;
+    const { dryRun, token, noDelete } = options;
+    const deleteOrphaned = configDeleteOrphaned && !(noDelete ?? false);
     const strategyOptions = { token, host: githubRepo.host };
 
     // Filter out boolean values (deleteOrphaned peer key) — keep only SecretConfig entries
@@ -2452,73 +2515,23 @@ import { GitHubSecretsStrategy } from "../secrets/github-secrets-strategy.js";
 import { SodiumEncryptor } from "../secrets/encryption.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import {
-  detectRepoType,
-  parseGitUrl,
-  type RepoInfo,
-  type GitHubRepoInfo,
-  type AzureDevOpsRepoInfo,
-  type GitLabRepoInfo,
-} from "../repo/index.js";
+import { parseGitUrl } from "../repo/index.js";
 import { logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { SecretConfig } from "../config/types.js";
 
 export interface SecretsSyncOptions {
   config: string;
   dryRun?: boolean;
+  delete?: boolean; // Commander's --no-delete sets this to false
   workDir?: string;
   retries?: number;
-}
-
-/**
- * Construct a RepoInfo from a git URL.
- * Follow the same pattern used in the sync flow's composition root
- * (src/sync/repository-processor.ts and settings-runner pipeline).
- */
-function buildRepoInfo(
-  gitUrl: string,
-  githubHosts?: string[]
-): RepoInfo {
-  const parsed = parseGitUrl(gitUrl);
-  const platform = detectRepoType(gitUrl, { githubHosts });
-
-  switch (platform) {
-    case "github":
-      return {
-        type: "github",
-        owner: parsed.owner,
-        repo: parsed.repo,
-        host: parsed.host,
-        gitUrl,
-      } satisfies GitHubRepoInfo;
-    case "azure-devops":
-      // For ADO, owner is the org, project is extracted from the URL path
-      // parseGitUrl already handles this — check actual codebase for details
-      return {
-        type: "azure-devops",
-        owner: parsed.owner,
-        repo: parsed.repo,
-        organization: parsed.owner,
-        project: parsed.owner, // Agent: read parseGitUrl to get actual project extraction
-        gitUrl,
-      } satisfies AzureDevOpsRepoInfo;
-    case "gitlab":
-      return {
-        type: "gitlab",
-        owner: parsed.owner,
-        repo: parsed.repo,
-        namespace: parsed.owner,
-        host: parsed.host,
-        gitUrl,
-      } satisfies GitLabRepoInfo;
-  }
 }
 
 export async function runSecretsSync(
   options: SecretsSyncOptions
 ): Promise<void> {
   const { config: configPath, dryRun, workDir, retries } = options;
+  const noDelete = options.delete === false;
   const cwd = workDir ?? process.cwd();
 
   const rawConfig = await readConfig(configPath);
@@ -2532,10 +2545,10 @@ export async function runSecretsSync(
   // Separate deleteOrphaned from secret entries (flat config pattern)
   const { deleteOrphaned, ...secretEntries } = config.secrets;
   const secretNames = Object.keys(secretEntries).filter(
-    (k) => k !== "deleteOrphaned"
+    (k) => typeof secretEntries[k] !== "boolean"
   );
 
-  if (secretNames.length === 0) {
+  if (secretNames.length === 0 && !deleteOrphaned) {
     logger.info("No secrets configured. Nothing to do.");
     return;
   }
@@ -2564,14 +2577,14 @@ export async function runSecretsSync(
     const repoName = repoConfig.git;
 
     try {
-      const repoInfo = buildRepoInfo(
-        repoConfig.git,
-        config.githubHosts
-      );
+      const repoInfo = parseGitUrl(repoConfig.git, {
+        githubHosts: config.githubHosts,
+      });
 
       const result = await processor.process(config.secrets, repoInfo, {
         dryRun,
         token,
+        noDelete,
       });
 
       if (result.skipped) {
@@ -2597,8 +2610,7 @@ export async function runSecretsSync(
 }
 ```
 
-> **Implementation note:** The `buildRepoInfo` helper constructs `RepoInfo` from a git URL using `detectRepoType` and `parseGitUrl` from `src/repo/index.js`. The implementing agent should read `src/sync/repository-processor.ts` and the sync command's composition root to verify the exact pattern for building `RepoInfo` objects from git URLs, especially for Azure DevOps where the project field needs
-> proper extraction from the URL path.
+> **Note:** Uses `parseGitUrl` from `src/repo/index.js` directly — it already returns the correct `RepoInfo` subtype (including ADO project extraction). Same pattern as `src/cli/repo-sync-runner.ts`.
 
 - [ ] **Step 2: Register secrets command in program.ts**
 
@@ -2618,6 +2630,7 @@ const secretsSyncCommand = new Command("sync")
   .description("Sync secrets to target repositories")
   .requiredOption("-c, --config <path>", "Path to xfg config file")
   .option("-d, --dry-run", "Show what would change without applying")
+  .option("--no-delete", "Skip deletion of orphaned secrets")
   .option("-w, --work-dir <path>", "Working directory")
   .option(
     "-r, --retries <number>",
@@ -2946,8 +2959,8 @@ repos:
       tmpDir,
       `id: integration-test-github-variables
 settings:
-  variables: {}
-  deleteOrphaned: true
+  variables:
+    deleteOrphaned: true
 repos:
   - git: https://github.com/${testRepo}.git
 `
@@ -3160,19 +3173,48 @@ ______________________________________________________________________
 
 ### Task 14: GitHub Summary, Final Verification, and Cleanup
 
+**Files:**
+
+- Modify: `src/output/settings-report.ts`
+
+- Modify: `src/cli/settings-report-builder.ts`
+
 - [ ] **Step 1: Update settings report to include variables**
 
-Update `src/output/settings-report.ts` to include variables in `SettingsReport`, `RepoChanges`, and the totals. Read the existing file to understand the pattern for adding a new settings type. The key changes:
+Read `src/output/settings-report.ts` and follow the exact pattern used for labels. Changes:
 
-- Add `variables: VariableChange[]` to `RepoChanges`
-- Add `variables: { create: number; update: number; delete: number }` to `totals`
-- Add processing block in `buildSettingsReport` for `variablesResult` (similar to how `labelsResult` is processed)
+1. In `RepoChanges` interface, add:
 
-Then update `src/cli/settings-report-builder.ts` to populate `variablesResult` from the processor results.
+   ```typescript
+   variables?: { name: string; action: SettingsAction; oldValue?: string; newValue?: string }[];
+   ```
+
+1. In `SettingsReportTotals`, add:
+
+   ```typescript
+   variables: { create: number; update: number; delete: number };
+   ```
+
+1. In `buildSettingsReport`, add a processing block for `variablesResult` that maps `planOutput.entries` to `RepoChanges.variables` and accumulates totals (same pattern as `labelsResult`).
+
+Then in `src/cli/settings-report-builder.ts`:
+
+- Import `VariablesPlanEntry` from settings index
+
+- In `ProcessorResults`, add `variablesResult?: { planOutput?: { entries?: VariablesPlanEntry[] } }`
+
+- In the builder function, map `variablesResult.planOutput.entries` into the report's `variables` field
 
 - [ ] **Step 2: Update GitHub job summary**
 
-Update `src/output/settings-report.ts`'s markdown formatter (`formatSettingsReportMarkdown`) to include a variables section in the GitHub step summary output. Follow the same pattern used for labels/rulesets sections.
+In `src/output/settings-report.ts`'s `formatSettingsReportMarkdown`:
+
+1. Add a "Variables" section after the labels section using the same table format:
+   ```markdown
+   | Variable | Action | Value |
+   ```
+1. Include variables totals in the summary line at the bottom
+1. Skip the section entirely if no variable changes exist (same pattern as labels)
 
 - [ ] **Step 3: Verify all barrel exports are complete**
 
@@ -3201,9 +3243,9 @@ npm run test:typecheck
 - [ ] **Step 5: Test CLI commands manually**
 
 ```bash
-node dist/index.js sync --help
-node dist/index.js secrets sync --help
-node dist/index.js secrets sync --config test-config.yaml --dry-run
+node dist/cli.js sync --help
+node dist/cli.js secrets sync --help
+node dist/cli.js secrets sync --config test-config.yaml --dry-run
 ```
 
 - [ ] **Step 6: Push and verify CI**
@@ -3229,9 +3271,13 @@ Add `variables` property after `codeScanning` in `rootSettings`:
 ```json
 "variables": {
   "type": "object",
-  "description": "Map of GitHub Actions variable names to values. Set a variable to false to disable it.",
+  "description": "Map of GitHub Actions variable names to values. Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.",
   "properties": {
-    "inherit": false
+    "deleteOrphaned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Delete variables from repos that are not defined in this config. Independent from the settings-level deleteOrphaned flag. Default: false"
+    }
   },
   "additionalProperties": {
     "oneOf": [
@@ -3261,6 +3307,11 @@ Add `variables` property after `codeScanning` in `repoSettings`:
     "inherit": {
       "type": "boolean",
       "description": "Set to false to skip all inherited root variables. Default: true"
+    },
+    "deleteOrphaned": {
+      "type": "boolean",
+      "default": false,
+      "description": "Delete variables from repos that are not defined in this config. Overrides root-level variables.deleteOrphaned. Default: false"
     }
   },
   "additionalProperties": {
@@ -3329,7 +3380,7 @@ Add `secrets` property to root config (after `settings`):
 
 - [ ] **Step 5: Update deleteOrphaned descriptions**
 
-Update `deleteOrphaned` descriptions in `rootSettings` and `repoSettings` to mention variables alongside rulesets and labels.
+The settings-level `deleteOrphaned` flag does NOT affect variables (variables has its own `deleteOrphaned` peer key). No changes needed to existing `deleteOrphaned` descriptions — they already correctly reference rulesets and labels only.
 
 - [ ] **Step 6: Validate schema is valid JSON**
 
