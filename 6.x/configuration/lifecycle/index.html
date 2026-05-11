@@ -2394,18 +2394,18 @@
 </tbody>
 </table>
 <!-- markdownlint-disable MD046 -->
+
 <div class="admonition warning">
 <p class="admonition-title">Mutually exclusive</p>
-<p><code>upstream</code> and <code>source</code> cannot be used together on the same repo.
-Use <code>upstream</code> for forking within GitHub, or <code>source</code> for cross-platform migration.</p>
+<p><code>upstream</code> and <code>source</code> cannot be used together on the same repo. Use <code>upstream</code> for forking within GitHub, or <code>source</code> for cross-platform migration.</p>
 </div>
 <!-- markdownlint-enable MD046 -->
 
 <!-- markdownlint-disable MD046 -->
+
 <div class="admonition note">
 <p class="admonition-title">Forking is GitHub-only</p>
-<p>Both the <code>upstream</code> and target repos must be on GitHub (or GitHub Enterprise).
-Cross-platform forking is not supported. For cross-platform transfers, use <code>source</code> (migration) instead.</p>
+<p>Both the <code>upstream</code> and target repos must be on GitHub (or GitHub Enterprise). Cross-platform forking is not supported. For cross-platform transfers, use <code>source</code> (migration) instead.</p>
 </div>
 <!-- markdownlint-enable MD046 -->
 
@@ -2428,6 +2428,7 @@ Cross-platform forking is not supported. For cross-platform transfers, use <code
 </ol>
 <p>If the repo already exists, the <code>upstream</code> field is ignored.</p>
 <!-- markdownlint-disable MD046 -->
+
 <div class="admonition note">
 <p class="admonition-title">Git array expansion</p>
 <p>When using a <code>git</code> array with <code>upstream</code>, the same upstream is applied to all expanded repos:</p>
@@ -2442,10 +2443,10 @@ Cross-platform forking is not supported. For cross-platform transfers, use <code
 <!-- markdownlint-enable MD046 -->
 
 <!-- markdownlint-disable MD046 -->
+
 <div class="admonition note">
 <p class="admonition-title">Fork settings</p>
-<p>After forking, xfg will apply <code>settings.repo.visibility</code> and <code>settings.repo.description</code>
-if configured. This allows you to fork a public repo and make it private, or vice versa.</p>
+<p>After forking, xfg will apply <code>settings.repo.visibility</code> and <code>settings.repo.description</code> if configured. This allows you to fork a public repo and make it private, or vice versa.</p>
 </div>
 <!-- markdownlint-enable MD046 -->
 
@@ -2465,8 +2466,7 @@ if configured. This allows you to fork a public repo and make it private, or vic
 </ol>
 <p>If the repo already exists, the <code>source</code> field is ignored.</p>
 <h2 id="creation-settings">Creation Settings<a class="headerlink" href="#creation-settings" title="Permanent link">&para;</a></h2>
-<p>When creating a new repo (via create, fork, or migrate), xfg applies settings from <code>settings.repo</code> if configured.
-Repos are created as <strong>private</strong> by default. Set <code>visibility: public</code> explicitly if needed.</p>
+<p>When creating a new repo (via create, fork, or migrate), xfg applies settings from <code>settings.repo</code> if configured. Repos are created as <strong>private</strong> by default. Set <code>visibility: public</code> explicitly if needed.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">settings</span><span class="p">:</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">repo</span><span class="p">:</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;My</span><span class="nv"> </span><span class="s">new</span><span class="nv"> </span><span class="s">repository&quot;</span>
