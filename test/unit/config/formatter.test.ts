@@ -650,3 +650,16 @@ describe("convertContentToString YAML block scalar preservation", () => {
     );
   });
 });
+
+describe("convertContentToString YAML no line wrapping", () => {
+  test("does not wrap long string values", () => {
+    const longValue = "a".repeat(200);
+    const content = { uses: longValue };
+    const result = convertContentToString(content, "config.yaml");
+    const valueLine = result.split("\n").find((l) => l.startsWith("uses:"));
+    assert.ok(
+      valueLine && valueLine.includes(longValue),
+      `Expected no wrapping, got: ${result}`
+    );
+  });
+});
