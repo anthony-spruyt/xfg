@@ -408,6 +408,7 @@ export interface RawFileConfig {
   executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
+  lineWidth?: number;
   template?: boolean;
   vars?: Record<string, string>;
   deleteOrphaned?: boolean;
@@ -421,6 +422,7 @@ export interface RawRepoFileOverride {
   executable?: boolean;
   header?: string | string[];
   schemaUrl?: string;
+  lineWidth?: number;
   template?: boolean;
   vars?: Record<string, string>;
   deleteOrphaned?: boolean;
@@ -519,6 +521,7 @@ export interface FileContent {
   executable?: boolean;
   header?: string[];
   schemaUrl?: string;
+  lineWidth?: number;
   template?: boolean;
   vars?: Record<string, string>;
   deleteOrphaned?: boolean;

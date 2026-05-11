@@ -5,6 +5,7 @@ type OutputFormat = "json" | "json5" | "yaml";
 interface ConvertOptions {
   header?: string[];
   schemaUrl?: string;
+  lineWidth?: number;
 }
 
 export function detectOutputFormat(fileName: string): OutputFormat {
@@ -145,6 +146,7 @@ export function convertContentToString(
       indent: 2,
       defaultStringType: "QUOTE_DOUBLE",
       defaultKeyType: "PLAIN",
+      lineWidth: options?.lineWidth ?? 80,
     });
   }
 

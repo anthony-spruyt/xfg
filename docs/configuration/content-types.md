@@ -90,7 +90,23 @@ files:
 ```
 
 !!! note
-    `header` and `schemaUrl` only apply to YAML output files. They are ignored for JSON files.
+    `header`, `schemaUrl`, and `lineWidth` only apply to YAML output files. They are ignored for JSON files.
+
+### Line Width
+
+By default, the YAML serializer wraps long values at 80 characters. Use `lineWidth` to control this:
+
+```yaml
+files:
+  .github/workflows/scan.yaml:
+    lineWidth: 0  # disable wrapping entirely
+    content:
+      jobs:
+        scan:
+          uses: "org/repo/.github/workflows/reusable.yaml@main"
+```
+
+Set `lineWidth: 0` to disable wrapping, or any positive number to wrap at that column.
 
 ## Text Files
 
