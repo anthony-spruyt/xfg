@@ -42,20 +42,20 @@ repos:
 
 Groups support the same override capabilities as repos:
 
-| Field        | Description                                           |
-| ------------ | ----------------------------------------------------- |
-| `extends`    | Parent group name(s) to inherit from                  |
-| `files`      | File definitions or overrides (same syntax as repos)  |
-| `prOptions`  | PR merge options (merged into chain)                  |
-| `settings`   | Repository settings like rulesets, labels             |
+| Field       | Description                                          |
+| ----------- | ---------------------------------------------------- |
+| `extends`   | Parent group name(s) to inherit from                 |
+| `files`     | File definitions or overrides (same syntax as repos) |
+| `prOptions` | PR merge options (merged into chain)                 |
+| `settings`  | Repository settings like rulesets, labels            |
 
 ## Merge Chain
 
 When a repo references groups, the merge chain is:
 
 1. **Root files** — base layer
-2. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
-3. **Repo overrides** — final layer
+1. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
+1. **Repo overrides** — final layer
 
 Each layer deep-merges onto the previous. Later values win for conflicting keys.
 
@@ -334,9 +334,7 @@ repos:
 
 ## Conditional Groups
 
-Conditional groups activate automatically based on which groups a repo has.
-They are defined in a top-level `conditionalGroups` array, separate from
-regular groups.
+Conditional groups activate automatically based on which groups a repo has. They are defined in a top-level `conditionalGroups` array, separate from regular groups.
 
 ### `allOf` — Intersection
 
@@ -353,8 +351,7 @@ conditionalGroups:
           description: ""
 ```
 
-The `renovate/terraform` label is only added to repos that have both
-`terraform` and `renovate` in their `groups` array.
+The `renovate/terraform` label is only added to repos that have both `terraform` and `renovate` in their `groups` array.
 
 ### `anyOf` — Union
 
@@ -386,13 +383,11 @@ conditionalGroups:
                 - id: trailing-whitespace
 ```
 
-This applies the default pre-commit config to all repos except those with the
-`custom-pre-commit` group, which can define their own variant.
+This applies the default pre-commit config to all repos except those with the `custom-pre-commit` group, which can define their own variant.
 
 ### Combined Conditions
 
-All operators in a `when` clause must be satisfied (AND logic). Any
-combination of `allOf`, `anyOf`, and `noneOf` can be used together:
+All operators in a `when` clause must be satisfied (AND logic). Any combination of `allOf`, `anyOf`, and `noneOf` can be used together:
 
 ```yaml
 conditionalGroups:
@@ -415,9 +410,9 @@ This matches repos that have `pre-commit` but **not** `pre-commit-custom-exclude
 Conditional groups merge **after** explicit groups and **before** repo overrides:
 
 1. **Root files/settings** — base layer
-2. **Explicit group layers** — applied left-to-right
-3. **Conditional group layers** — applied in array order
-4. **Repo overrides** — final layer
+1. **Explicit group layers** — applied left-to-right
+1. **Conditional group layers** — applied in array order
+1. **Repo overrides** — final layer
 
 Later conditional groups override earlier ones when they conflict.
 
@@ -432,14 +427,9 @@ Conditional groups support the same capabilities as regular groups:
 
 ### Restrictions
 
-- Group names in `allOf`/`anyOf`/`noneOf` must reference groups defined in
-  the `groups` map
-- Group names in `noneOf` must not overlap with `allOf` or `anyOf` in the
-  same `when` clause
+- Group names in `allOf`/`anyOf`/`noneOf` must reference groups defined in the `groups` map
+- Group names in `noneOf` must not overlap with `allOf` or `anyOf` in the same `when` clause
 - Conditional groups cannot be listed in a repo's `groups` array
 - Conditional groups cannot reference other conditional groups
-- A repo with no `groups` field or `groups: []` has an empty effective group
-  set — only `noneOf` conditions can match it
-- Conditional groups do not expand the effective group set — one conditional
-  group matching cannot cause another conditional group to match. All
-  conditions are evaluated against the same frozen set of explicit groups.
+- A repo with no `groups` field or `groups: []` has an empty effective group set — only `noneOf` conditions can match it
+- Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same frozen set of explicit groups.

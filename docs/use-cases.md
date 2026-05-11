@@ -37,7 +37,7 @@ repos:
 
 Run `xfg` whenever standards change—PRs are created automatically for review.
 
----
+______________________________________________________________________
 
 ## CI/CD Workflow Standardization
 
@@ -78,7 +78,7 @@ repos:
       - git@github.com:your-org/shared-libs.git
 ```
 
----
+______________________________________________________________________
 
 ## Security & Compliance Governance
 
@@ -114,7 +114,7 @@ repos:
 
 Use [file references](configuration/file-references.md) to load complex templates from external files.
 
----
+______________________________________________________________________
 
 ## Branch Protection at Scale
 
@@ -183,7 +183,7 @@ repos:
                 requiredApprovingReviewCount: 3 # Override default
 ```
 
----
+______________________________________________________________________
 
 ## Repository Settings at Scale
 
@@ -259,7 +259,7 @@ repos:
         hasWiki: true
 ```
 
----
+______________________________________________________________________
 
 ## Developer Experience Consistency
 
@@ -305,7 +305,7 @@ repos:
 
 New team members get the same experience in every repo from day one.
 
----
+______________________________________________________________________
 
 ## Open Source Project Maintainers
 
@@ -337,7 +337,7 @@ repos:
       - git@github.com:your-name/project-plugins.git
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Drift Prevention
 
@@ -369,7 +369,7 @@ jobs:
 
 Drift is detected weekly, and PRs are created to bring repos back into compliance.
 
----
+______________________________________________________________________
 
 ## Migrating to New Standards
 
@@ -401,7 +401,7 @@ repos:
       - git@github.com:your-org/repo-2.git
 ```
 
----
+______________________________________________________________________
 
 ## Hybrid Teams (Multi-Platform)
 
@@ -427,7 +427,7 @@ repos:
   - git: git@gitlab.example.com:your-org/internal-tool.git
 ```
 
----
+______________________________________________________________________
 
 ## Why xfg vs. Alternatives
 

@@ -29,25 +29,25 @@ xfg sync -c config.yaml
 
 ## Configuration Fields
 
-| Property     | Required | Description                                                                                      |
-| ------------ | -------- | ------------------------------------------------------------------------------------------------ |
-| `state`      | Yes      | `configured` to enable code scanning, `not-configured` to disable                                |
-| `querySuite` | No       | `default` for standard queries, `extended` for additional queries. Omit to let GitHub decide.    |
-| `languages`  | No       | Array of languages to analyze. Omit to let GitHub auto-detect languages in the repository.       |
+| Property     | Required | Description                                                                                   |
+| ------------ | -------- | --------------------------------------------------------------------------------------------- |
+| `state`      | Yes      | `configured` to enable code scanning, `not-configured` to disable                             |
+| `querySuite` | No       | `default` for standard queries, `extended` for additional queries. Omit to let GitHub decide. |
+| `languages`  | No       | Array of languages to analyze. Omit to let GitHub auto-detect languages in the repository.    |
 
 ## Supported Languages
 
-| Language                   | Value                      |
-| -------------------------- | -------------------------- |
-| GitHub Actions             | `actions`                  |
-| C / C++                    | `c-cpp`                    |
-| C#                         | `csharp`                   |
-| Go                         | `go`                       |
-| Java / Kotlin              | `java-kotlin`              |
-| JavaScript / TypeScript    | `javascript-typescript`    |
-| Python                     | `python`                   |
-| Ruby                       | `ruby`                     |
-| Swift                      | `swift`                    |
+| Language                | Value                   |
+| ----------------------- | ----------------------- |
+| GitHub Actions          | `actions`               |
+| C / C++                 | `c-cpp`                 |
+| C#                      | `csharp`                |
+| Go                      | `go`                    |
+| Java / Kotlin           | `java-kotlin`           |
+| JavaScript / TypeScript | `javascript-typescript` |
+| Python                  | `python`                |
+| Ruby                    | `ruby`                  |
+| Swift                   | `swift`                 |
 
 ## Full Example
 

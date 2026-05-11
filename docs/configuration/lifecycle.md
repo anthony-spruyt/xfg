@@ -7,27 +7,29 @@ xfg can automatically create, fork, or migrate repositories before syncing files
 Before processing each repo, xfg checks if the target repository exists:
 
 1. **Exists** - Proceed normally with sync/settings
-2. **Missing** - Create an empty repo
-3. **Missing + `upstream`** - Fork from the upstream repo
-4. **Missing + `source`** - Clone source with `--mirror` and push to new target
+1. **Missing** - Create an empty repo
+1. **Missing + `upstream`** - Fork from the upstream repo
+1. **Missing + `source`** - Clone source with `--mirror` and push to new target
 
 ## Fields
 
-| Field      | Type   | Description                                                      |
-| ---------- | ------ | ---------------------------------------------------------------- |
-| `upstream` | string | Git URL of repo to fork from (GitHub only)                       |
-| `source`   | string | Git URL of repo to migrate from (e.g., Azure DevOps to GitHub)   |
+| Field      | Type   | Description                                                    |
+| ---------- | ------ | -------------------------------------------------------------- |
+| `upstream` | string | Git URL of repo to fork from (GitHub only)                     |
+| `source`   | string | Git URL of repo to migrate from (e.g., Azure DevOps to GitHub) |
 
 <!-- markdownlint-disable MD046 -->
+
 !!! warning "Mutually exclusive"
-    `upstream` and `source` cannot be used together on the same repo.
-    Use `upstream` for forking within GitHub, or `source` for cross-platform migration.
+    `upstream` and `source` cannot be used together on the same repo. Use `upstream` for forking within GitHub, or `source` for cross-platform migration.
+
 <!-- markdownlint-enable MD046 -->
 
 <!-- markdownlint-disable MD046 -->
+
 !!! note "Forking is GitHub-only"
-    Both the `upstream` and target repos must be on GitHub (or GitHub Enterprise).
-    Cross-platform forking is not supported. For cross-platform transfers, use `source` (migration) instead.
+    Both the `upstream` and target repos must be on GitHub (or GitHub Enterprise). Cross-platform forking is not supported. For cross-platform transfers, use `source` (migration) instead.
+
 <!-- markdownlint-enable MD046 -->
 
 ## Forking (`upstream`)
@@ -48,12 +50,13 @@ repos:
 When the target repo doesn't exist, xfg will:
 
 1. Detect whether the target owner is an organization or user
-2. Fork the upstream repo accordingly
-3. Continue with normal sync/settings
+1. Fork the upstream repo accordingly
+1. Continue with normal sync/settings
 
 If the repo already exists, the `upstream` field is ignored.
 
 <!-- markdownlint-disable MD046 -->
+
 !!! note "Git array expansion"
     When using a `git` array with `upstream`, the same upstream is applied to all expanded repos:
 
@@ -66,12 +69,14 @@ If the repo already exists, the `upstream` field is ignored.
     ```
 
     This creates two forks of `opensource/tool` with different names (`fork-a` and `fork-b`).
+
 <!-- markdownlint-enable MD046 -->
 
 <!-- markdownlint-disable MD046 -->
+
 !!! note "Fork settings"
-    After forking, xfg will apply `settings.repo.visibility` and `settings.repo.description`
-    if configured. This allows you to fork a public repo and make it private, or vice versa.
+    After forking, xfg will apply `settings.repo.visibility` and `settings.repo.description` if configured. This allows you to fork a public repo and make it private, or vice versa.
+
 <!-- markdownlint-enable MD046 -->
 
 ## Migration (`source`)
@@ -87,17 +92,16 @@ repos:
 When `my-org/migrated-app` doesn't exist, xfg will:
 
 1. Clone `legacy-app` from Azure DevOps with `--mirror` (all branches and tags)
-2. Create `migrated-app` on GitHub
-3. Push the mirrored content to the new repo
-4. Clean up the temporary clone
-5. Continue with normal sync/settings
+1. Create `migrated-app` on GitHub
+1. Push the mirrored content to the new repo
+1. Clean up the temporary clone
+1. Continue with normal sync/settings
 
 If the repo already exists, the `source` field is ignored.
 
 ## Creation Settings
 
-When creating a new repo (via create, fork, or migrate), xfg applies settings from `settings.repo` if configured.
-Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
+When creating a new repo (via create, fork, or migrate), xfg applies settings from `settings.repo` if configured. Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
 
 ```yaml
 settings:
@@ -163,12 +167,12 @@ In dry-run mode (`--dry-run`), lifecycle operations are reported but not execute
 
 ## Supported Platforms
 
-| Operation         | GitHub | Azure DevOps | GitLab |
-| ----------------- | ------ | ------------ | ------ |
-| Create (target)   | Yes    | -            | -      |
-| Fork (target)     | Yes    | -            | -      |
-| Migrate (target)  | Yes    | -            | -      |
-| Migrate (source)  | -      | Yes          | -      |
+| Operation        | GitHub | Azure DevOps | GitLab |
+| ---------------- | ------ | ------------ | ------ |
+| Create (target)  | Yes    | -            | -      |
+| Fork (target)    | Yes    | -            | -      |
+| Migrate (target) | Yes    | -            | -      |
+| Migrate (source) | -      | Yes          | -      |
 
 ## Example: Full Lifecycle Config
 
