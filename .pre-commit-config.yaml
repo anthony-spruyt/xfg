@@ -45,6 +45,7 @@ repos:
         additional_dependencies:
           - "mdformat-gfm"
           - "mdformat-frontmatter"
+          - "mdformat-admon"
   - repo: "https://github.com/igorshubovych/markdownlint-cli"
     rev: "v0.48.0"
     hooks:

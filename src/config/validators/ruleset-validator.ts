@@ -74,7 +74,7 @@ const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
 ]);
 
 // Intentionally duplicated from merge.ts — validator should not depend on merge internals
-const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend"];
+const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend", "merge"];
 
 /**
  * Checks if a value is an $arrayMerge directive: { $arrayMerge: strategy, $values: [...] }

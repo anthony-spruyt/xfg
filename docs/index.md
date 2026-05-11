@@ -158,12 +158,12 @@ repos:
 
 Control how changes are delivered with [PR options](configuration/pr-options.md):
 
-| Mode | Behavior |
-| ---- | -------- |
-| `auto` | Enable auto-merge — merge when checks pass (default) |
-| `manual` | Leave PR open for manual review |
-| `force` | Merge immediately, bypassing checks |
-| `direct` | Push directly to default branch, no PR |
+| Mode     | Behavior                                             |
+| -------- | ---------------------------------------------------- |
+| `auto`   | Enable auto-merge — merge when checks pass (default) |
+| `manual` | Leave PR open for manual review                      |
+| `force`  | Merge immediately, bypassing checks                  |
+| `direct` | Push directly to default branch, no PR               |
 
 Merge strategies: `squash` (default), `merge`, `rebase`. Set globally, override per-repo, or override via CLI.
 
@@ -171,15 +171,15 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 
 ### Platform Support
 
-| Feature | GitHub | Azure DevOps | GitLab |
-| ------- | ------ | ------------ | ------ |
-| File sync | Yes | Yes | Yes |
-| Self-hosted | Yes (GHE) | Yes | Yes |
-| Repo settings | Yes | - | - |
-| Rulesets | Yes | - | - |
-| Repo lifecycle | Yes | Source only | - |
-| Auto-merge PRs | Yes | Yes | Yes |
-| Direct push | Yes | Yes | Yes |
+| Feature        | GitHub    | Azure DevOps | GitLab |
+| -------------- | --------- | ------------ | ------ |
+| File sync      | Yes       | Yes          | Yes    |
+| Self-hosted    | Yes (GHE) | Yes          | Yes    |
+| Repo settings  | Yes       | -            | -      |
+| Rulesets       | Yes       | -            | -      |
+| Repo lifecycle | Yes       | Source only  | -      |
+| Auto-merge PRs | Yes       | Yes          | Yes    |
+| Direct push    | Yes       | Yes          | Yes    |
 
 ### Enterprise & CI/CD
 

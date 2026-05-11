@@ -4,11 +4,12 @@ Control how arrays and text lines merge when combining base content with per-rep
 
 ## Strategies
 
-| Strategy  | Behavior                              |
-| --------- | ------------------------------------- |
-| `replace` | Overlay completely replaces base      |
-| `append`  | Overlay items added after base items  |
-| `prepend` | Overlay items added before base items |
+| Strategy  | Behavior                                                                                       |
+| --------- | ---------------------------------------------------------------------------------------------- |
+| `replace` | Overlay completely replaces base                                                               |
+| `append`  | Overlay items added after base items                                                           |
+| `prepend` | Overlay items added before base items                                                          |
+| `merge`   | Deep-merges array items matched by identity key (`type`, `actor_id`); unmatched items appended |
 
 ## File-Level Strategy
 
@@ -109,10 +110,67 @@ features:
   $arrayMerge: replace
   $values: ["new-item"]
 # Base ["a", "b"] + overlay ["c"] = ["c"]
+
+# merge — deep-merge items matched by identity key
+rules:
+  $arrayMerge: merge
+  $values:
+    - type: pull_request
+      parameters:
+        requiredApprovingReviewCount: 2
+# Base [{type: "pull_request", parameters: {requiredApprovingReviewCount: 1}}]
+# Result: [{type: "pull_request", parameters: {requiredApprovingReviewCount: 2}}]
 ```
 
 !!! note "Directives are stripped"
     Both `$arrayMerge` and `$values` are internal directives and do not appear in the final output.
+
+### Merge by Key
+
+The `merge` strategy matches array items by an identity key and deep-merges matched pairs. This is useful when multiple conditional groups need to modify properties of the same item rather than duplicating it.
+
+**How it works:**
+
+1. xfg auto-detects the identity key by checking candidates in order: `type`, `actor_id`
+1. The first candidate key present in every item of both arrays wins
+1. For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended
+1. Unmatched base items are preserved in their original position
+1. Nested `$arrayMerge` directives inside matched items are honored (deep-merge recurses)
+
+**When no match key is found** (e.g. primitive arrays or objects without `type`/`actor_id`), the strategy falls back to `append` behavior.
+
+```yaml
+# Example: merging required_status_checks across conditional groups
+settings:
+  rulesets:
+    pr-rules:
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+        - type: required_status_checks
+          parameters:
+            requiredStatusChecks:
+              - context: "ci / build"
+
+conditionalGroups:
+  - when:
+      allOf: [has-mergify]
+    settings:
+      rulesets:
+        pr-rules:
+          rules:
+            $arrayMerge: merge
+            $values:
+              - type: required_status_checks
+                parameters:
+                  requiredStatusChecks:
+                    $arrayMerge: append
+                    $values:
+                      - context: "mergify / queue"
+```
+
+Result for repos with `has-mergify`: the `required_status_checks` rule has both `ci / build` and `mergify / queue` checks — no duplication of the rule itself, and the nested `$arrayMerge: append` adds the check inside the matched item.
 
 ## Text File Merge Strategies
 
@@ -209,7 +267,7 @@ conditionalGroups:
 Repos with the `github-ci` group get both the `pull_request` rule and the `required_status_checks` rule. Repos without `github-ci` only get the `pull_request` rule.
 
 !!! note "Same syntax as file content"
-    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`.
+    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`.
 
 ## Example: Different Strategies per File
 

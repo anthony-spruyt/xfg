@@ -145,6 +145,7 @@ export function convertContentToString(
       indent: 2,
       defaultStringType: "QUOTE_DOUBLE",
       defaultKeyType: "PLAIN",
+      lineWidth: 0,
     });
   }
 
