@@ -193,7 +193,6 @@ export class FileWriter implements IFileWriter {
     return convertContentToString(contentToWrite, file.fileName, {
       header: file.header,
       schemaUrl: file.schemaUrl,
-      lineWidth: file.lineWidth,
     });
   }
 

@@ -1052,60 +1052,6 @@ describe("normalizeConfig", () => {
     });
   });
 
-  describe("lineWidth propagation", () => {
-    test("root lineWidth passed to FileContent", () => {
-      const raw: RawConfig = {
-        id: "test-config",
-        files: {
-          "config.yaml": {
-            content: {},
-            lineWidth: 120,
-          },
-        },
-        repos: [{ git: "git@github.com:org/repo.git" }],
-      };
-
-      const result = normalizeConfig(raw, process.env);
-      assert.equal(result.repos[0].files[0].lineWidth, 120);
-    });
-
-    test("per-repo lineWidth overrides root", () => {
-      const raw: RawConfig = {
-        id: "test-config",
-        files: {
-          "config.yaml": {
-            content: {},
-            lineWidth: 120,
-          },
-        },
-        repos: [
-          {
-            git: "git@github.com:org/repo.git",
-            files: {
-              "config.yaml": { lineWidth: 0 },
-            },
-          },
-        ],
-      };
-
-      const result = normalizeConfig(raw, process.env);
-      assert.equal(result.repos[0].files[0].lineWidth, 0);
-    });
-
-    test("lineWidth is undefined when not specified", () => {
-      const raw: RawConfig = {
-        id: "test-config",
-        files: {
-          "config.yaml": { content: {} },
-        },
-        repos: [{ git: "git@github.com:org/repo.git" }],
-      };
-
-      const result = normalizeConfig(raw, process.env);
-      assert.equal(result.repos[0].files[0].lineWidth, undefined);
-    });
-  });
-
   describe("type safety", () => {
     test("overlay wins when merging text base with object overlay", () => {
       const raw: RawConfig = {

@@ -63,7 +63,6 @@ Or configure in `.vscode/settings.json`:
 | `executable`     | `boolean`             | No       | Mark file as executable              |
 | `header`         | `string/array`        | No       | YAML header comment(s)               |
 | `schemaUrl`      | `string`              | No       | YAML schema directive URL            |
-| `lineWidth`      | `number`              | No       | YAML line width (0 = no wrap)        |
 | `template`       | `boolean`             | No       | Enable `${xfg:...}` variable support |
 | `vars`           | `object`              | No       | Custom template variables            |
 | `deleteOrphaned` | `boolean`             | No       | Track file for orphan deletion       |
@@ -122,7 +121,6 @@ At least one of `allOf` or `anyOf` is required. When both are specified, both co
 | `executable`     | `boolean`             | No       | Override root-level executable        |
 | `header`         | `string/array`        | No       | Override root-level header            |
 | `schemaUrl`      | `string`              | No       | Override root-level schemaUrl         |
-| `lineWidth`      | `number`              | No       | Override root-level lineWidth         |
 | `template`       | `boolean`             | No       | Override root-level template          |
 | `vars`           | `object`              | No       | Per-repo template variables           |
 | `deleteOrphaned` | `boolean`             | No       | Override file-level deleteOrphaned    |

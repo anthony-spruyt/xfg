@@ -624,7 +624,6 @@ function resolveFileEntry(
     executable: repoOverride?.executable ?? fileConfig.executable,
     header: normalizeHeader(repoOverride?.header ?? fileConfig.header),
     schemaUrl: repoOverride?.schemaUrl ?? fileConfig.schemaUrl,
-    lineWidth: repoOverride?.lineWidth ?? fileConfig.lineWidth,
     template: repoOverride?.template ?? fileConfig.template,
     vars:
       fileConfig.vars || repoOverride?.vars

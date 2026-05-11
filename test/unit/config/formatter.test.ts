@@ -651,77 +651,15 @@ describe("convertContentToString YAML block scalar preservation", () => {
   });
 });
 
-describe("convertContentToString YAML lineWidth", () => {
-  test("wraps long strings at default width (80)", () => {
-    const longValue = "a".repeat(100);
+describe("convertContentToString YAML no line wrapping", () => {
+  test("does not wrap long string values", () => {
+    const longValue = "a".repeat(200);
     const content = { uses: longValue };
     const result = convertContentToString(content, "config.yaml");
-    const lines = result.split("\n");
-    assert.ok(
-      lines.some((l) => l.includes("\\")),
-      `Expected line continuation at default width, got: ${result}`
-    );
-  });
-
-  test("lineWidth 0 disables wrapping", () => {
-    const longValue = "a".repeat(200);
-    const content = { uses: longValue };
-    const result = convertContentToString(content, "config.yaml", {
-      lineWidth: 0,
-    });
     const valueLine = result.split("\n").find((l) => l.startsWith("uses:"));
     assert.ok(
       valueLine && valueLine.includes(longValue),
-      `Expected no wrapping with lineWidth 0, got: ${result}`
-    );
-  });
-
-  test("lineWidth 120 wraps at 120 characters", () => {
-    const longValue = "a".repeat(150);
-    const content = { uses: longValue };
-    const result120 = convertContentToString(content, "config.yaml", {
-      lineWidth: 120,
-    });
-    const result80 = convertContentToString(content, "config.yaml");
-    assert.notEqual(
-      result120,
-      result80,
-      "lineWidth 120 should produce different output than default 80"
-    );
-  });
-
-  test("lineWidth does not affect JSON output", () => {
-    const longValue = "a".repeat(200);
-    const content = { uses: longValue };
-    const result = convertContentToString(content, "config.json", {
-      lineWidth: 0,
-    });
-    const parsed = JSON.parse(result);
-    assert.equal(parsed.uses, longValue);
-  });
-
-  test("lineWidth does not affect text content", () => {
-    const longLine = "a".repeat(200);
-    const result = convertContentToString(longLine, "file.txt", {
-      lineWidth: 0,
-    });
-    assert.equal(result, longLine + "\n");
-  });
-
-  test("lineWidth works with header and schemaUrl", () => {
-    const longValue = "a".repeat(200);
-    const content = { uses: longValue };
-    const result = convertContentToString(content, "config.yaml", {
-      lineWidth: 0,
-      header: ["Managed by xfg"],
-      schemaUrl: "https://example.com/schema.json",
-    });
-    assert.ok(result.includes("# Managed by xfg"));
-    assert.ok(result.includes("yaml-language-server"));
-    const valueLine = result.split("\n").find((l) => l.startsWith("uses:"));
-    assert.ok(
-      valueLine && valueLine.includes(longValue),
-      `Expected no wrapping with lineWidth 0, got: ${result}`
+      `Expected no wrapping, got: ${result}`
     );
   });
 });
