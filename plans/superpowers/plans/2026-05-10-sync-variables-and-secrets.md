@@ -24,8 +24,12 @@ Variables use their own `deleteOrphaned` peer key (same flat pattern as secrets'
 
 ```typescript
 // In RepoSettings (after codeScanning field):
-  /** GitHub Actions repository variables keyed by name */
-  variables?: Record<string, string> & { deleteOrphaned?: boolean };
+  /** GitHub Actions repository variables keyed by name.
+   *  The `| boolean` union allows the `deleteOrphaned` peer key (boolean)
+   *  alongside string variable values — same approach as labels using
+   *  `Record<string, Label | false>`. Without the union, the string index
+   *  signature would conflict with the boolean `deleteOrphaned` property. */
+  variables?: Record<string, string | boolean> & { deleteOrphaned?: boolean };
 
 // In RawRootSettings (after codeScanning field):
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
@@ -56,6 +60,9 @@ export interface SecretConfig {
   secrets?: Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean };
 
 // In Config (after settings field):
+  /** Secrets config passes through from RawConfig unchanged (no normalizer
+   *  transformation). The `| boolean` allows the deleteOrphaned peer key;
+   *  processors filter out boolean entries before iterating secrets. */
   secrets?: Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean };
 ```
 
@@ -368,8 +375,8 @@ describe("GitHubVariablesStrategy", () => {
     assert.equal(result[0].name, "MY_VAR");
     const apiCall = executor.calls[0];
     assert.ok(
-      apiCall.args.includes(
-        "/repos/test-org/test-repo/actions/variables"
+      apiCall.args.some((a) =>
+        a.startsWith("/repos/test-org/test-repo/actions/variables")
       )
     );
   });
@@ -448,10 +455,14 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
   ): Promise<GitHubVariable[]> {
     assertGitHubRepo(repoInfo, "GitHub Variables strategy");
 
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables`;
+    // NOTE: Do NOT use `paginate: true` here. The /actions/variables endpoint
+    // returns an envelope `{ total_count, variables: [] }`. With --paginate,
+    // `gh` outputs one envelope per page as concatenated JSON objects (not valid
+    // JSON). Instead use per_page=100 (API max). Repos with >100 variables are
+    // extremely rare; add proper --jq pagination if needed in future.
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables?per_page=100`;
     const result = await this.api.call("GET", endpoint, {
       options,
-      paginate: true,
     });
 
     const response = parseApiJson<GitHubVariablesListResponse>(
@@ -1021,7 +1032,7 @@ describe("VariablesProcessor", () => {
     assert.equal(result.changes?.delete, 1);
   });
 
-  test("dry run does not call create/update/delete", async () => {
+  test("dry run lists current state but does not mutate", async () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [];
     const processor = new VariablesProcessor(strategy);
@@ -1034,8 +1045,14 @@ describe("VariablesProcessor", () => {
 
     assert.equal(result.dryRun, true);
     assert.equal(
+      strategy.calls.filter((c) => c.method === "list").length,
+      1,
+      "list should still be called for diffing"
+    );
+    assert.equal(
       strategy.calls.filter((c) => c.method !== "list").length,
-      0
+      0,
+      "no mutating calls in dry run"
     );
   });
 
@@ -1071,6 +1088,28 @@ describe("VariablesProcessor", () => {
     );
 
     assert.equal(result.skipped, true);
+  });
+
+  test("deleteOrphaned only (no variable entries) still runs processor", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [
+      { name: "ORPHAN", value: "val", created_at: "", updated_at: "" },
+    ];
+    const processor = new VariablesProcessor(strategy);
+
+    const result = await processor.process(
+      {
+        git: "https://github.com/o/r.git",
+        files: [],
+        settings: { variables: Object.assign({}, { deleteOrphaned: true }) },
+      },
+      mockGitHubRepo,
+      {}
+    );
+
+    assert.equal(result.success, true);
+    assert.equal(result.skipped, undefined);
+    assert.equal(result.changes?.delete, 1);
   });
 });
 ```
@@ -1146,9 +1185,15 @@ export class VariablesProcessor implements IVariablesProcessor {
   ): Promise<VariablesProcessorResult> {
     const { dryRun, noDelete } = options;
     const settings = repoConfig.settings;
-    // Separate deleteOrphaned peer key from variable entries (same pattern as secrets)
-    const { deleteOrphaned: varDeleteOrphaned = false, inherit: _, ...desiredVariables } =
+    // Separate peer keys from variable entries, then filter out any remaining
+    // boolean values (same pattern as secrets processor's boolean filtering)
+    const { deleteOrphaned: varDeleteOrphaned = false, inherit: _, ...rawEntries } =
       (settings?.variables ?? {}) as Record<string, unknown>;
+    const desiredVariables = Object.fromEntries(
+      Object.entries(rawEntries).filter(
+        (entry): entry is [string, string] => typeof entry[1] === "string"
+      )
+    );
     const deleteOrphaned =
       (varDeleteOrphaned as boolean) && !(noDelete ?? false);
 
@@ -1252,6 +1297,7 @@ ______________________________________________________________________
 
 ```typescript
 // src/settings/variables/index.ts
+export { type VariableChange, type VariableAction } from "./diff.js";
 export { type VariablesPlanEntry } from "./formatter.js";
 export {
   VariablesProcessor,
@@ -1877,8 +1923,8 @@ describe("GitHubSecretsStrategy", () => {
     assert.equal(result.length, 1);
     assert.equal(result[0].name, "MY_SECRET");
     assert.ok(
-      executor.calls[0].args.includes(
-        "/repos/test-org/test-repo/actions/secrets"
+      executor.calls[0].args.some((a) =>
+        a.startsWith("/repos/test-org/test-repo/actions/secrets")
       )
     );
   });
@@ -1966,10 +2012,10 @@ export class GitHubSecretsStrategy implements ISecretsStrategy {
   ): Promise<GitHubSecret[]> {
     assertGitHubRepo(repoInfo, "GitHub Secrets strategy");
 
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets`;
+    // Same as variables: envelope endpoint, don't use --paginate (see variables strategy comment)
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets?per_page=100`;
     const result = await this.api.call("GET", endpoint, {
       options,
-      paginate: true,
     });
 
     const response = parseApiJson<GitHubSecretsListResponse>(
@@ -2496,7 +2542,145 @@ git commit -m "feat(secrets): add SecretsProcessor with env resolution and encry
 
 ______________________________________________________________________
 
-### Task 11: Secrets CLI Command
+### Task 11: Config Normalizer for Secrets and Cross-Validation
+
+> **Ordering note:** This task was moved before the CLI command (now Task 12) because `runSecretsSync` calls `normalizeConfig()` and accesses `config.secrets`. Without the secrets passthrough in the normalizer, `config.secrets` would be undefined.
+
+**Files:**
+
+- Modify: `src/config/normalizer.ts`
+
+- Modify: `src/config/validator.ts`
+
+- Test: `test/unit/config/normalizer.test.ts`
+
+- Test: `test/unit/config/validator.test.ts`
+
+- [ ] **Step 1: Write failing test for secrets config passthrough in normalizer**
+
+```typescript
+describe("normalizeConfig secrets", () => {
+  test("passes secrets config through to normalized config", () => {
+    const raw = makeRawConfig({
+      secrets: {
+        MY_SECRET: { env: "SOURCE_VAR" },
+        deleteOrphaned: true,
+      },
+    });
+    const config = normalizeConfig(raw, {});
+
+    // Flat config: secret entries are peers of deleteOrphaned
+    assert.deepStrictEqual(
+      (config.secrets as Record<string, unknown>)["MY_SECRET"],
+      { env: "SOURCE_VAR" }
+    );
+    assert.equal(
+      (config.secrets as Record<string, unknown>)["deleteOrphaned"],
+      true
+    );
+  });
+});
+```
+
+- [ ] **Step 2: Implement secrets passthrough in normalizer**
+
+In `normalizeConfig`, add:
+
+```typescript
+if (raw.secrets) {
+  normalized.secrets = raw.secrets;
+}
+```
+
+- [ ] **Step 3: Run test to verify it passes**
+
+Run: `npm test -- --grep "normalizeConfig secrets"` Expected: PASS
+
+- [ ] **Step 4: Write failing test for variable/secret name overlap validation**
+
+Secrets config is global (on `Config`), variables are per-repo (on `RepoConfig.settings`). The cross-validation needs to iterate each repo's effective variables and check against global secrets.
+
+```typescript
+describe("cross-validation", () => {
+  test("rejects overlapping variable and secret names", () => {
+    const config = makeConfig({
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          files: [],
+          settings: {
+            variables: { DEPLOY_TOKEN: "value" },
+          },
+        },
+      ],
+      secrets: {
+        DEPLOY_TOKEN: { env: "SRC" },
+      },
+    });
+    assert.throws(
+      () => validateForSync(config),
+      /DEPLOY_TOKEN.*overlap/i
+    );
+  });
+});
+```
+
+- [ ] **Step 5: Implement cross-validation**
+
+In `validateForSync`, after per-repo validation. Since secrets is global and variables is per-repo, iterate repos:
+
+```typescript
+// Cross-validate: no overlap between global secret names and per-repo variable names
+if (config.secrets) {
+  const { deleteOrphaned: _, ...secretEntries } = config.secrets;
+  const secretNames = new Set(
+    Object.keys(secretEntries)
+      .filter((k) => typeof secretEntries[k] !== "boolean")
+      .map((n) => n.toUpperCase())
+  );
+
+  for (const repo of config.repos) {
+    // Filter out reserved peer keys (deleteOrphaned, inherit) from variable names
+    const { deleteOrphaned: _d, inherit: _i, ...varEntries } =
+      (repo.settings?.variables ?? {}) as Record<string, unknown>;
+    const variableNames = Object.keys(varEntries).filter(
+      (k) => typeof varEntries[k] !== "boolean"
+    );
+    const overlapping = variableNames.filter((n) =>
+      secretNames.has(n.toUpperCase())
+    );
+    if (overlapping.length > 0) {
+      throw new ValidationError(
+        `Repo '${repo.git}': variable and secret names overlap: ${overlapping.join(", ")}. ` +
+          "GitHub does not allow variables and secrets with the same name."
+      );
+    }
+  }
+}
+```
+
+- [ ] **Step 6: Run all tests**
+
+Run: `npm test` Expected: PASS
+
+- [ ] **Step 7: Run lint**
+
+Run: `./lint.sh` Expected: PASS
+
+- [ ] **Step 8: Run typecheck**
+
+Run: `npm run test:typecheck` Expected: PASS
+
+- [ ] **Step 9: Commit**
+
+```bash
+git add src/config/normalizer.ts src/config/validator.ts test/unit/config/normalizer.test.ts test/unit/config/validator.test.ts
+git commit -m "feat(config): add secrets normalization and cross-validation"
+```
+
+______________________________________________________________________
+
+### Task 12: Secrets CLI Command
 
 **Files:**
 
@@ -2663,137 +2847,6 @@ Run: `npm test` Expected: PASS
 ```bash
 git add src/cli/secrets-command.ts src/cli/program.ts
 git commit -m "feat(secrets): add 'xfg secrets sync' CLI command"
-```
-
-______________________________________________________________________
-
-### Task 12: Config Normalizer for Secrets and Cross-Validation
-
-**Files:**
-
-- Modify: `src/config/normalizer.ts`
-
-- Modify: `src/config/validator.ts`
-
-- Test: `test/unit/config/normalizer.test.ts`
-
-- Test: `test/unit/config/validator.test.ts`
-
-- [ ] **Step 1: Write failing test for secrets config passthrough in normalizer**
-
-```typescript
-describe("normalizeConfig secrets", () => {
-  test("passes secrets config through to normalized config", () => {
-    const raw = makeRawConfig({
-      secrets: {
-        MY_SECRET: { env: "SOURCE_VAR" },
-        deleteOrphaned: true,
-      },
-    });
-    const config = normalizeConfig(raw, {});
-
-    // Flat config: secret entries are peers of deleteOrphaned
-    assert.deepStrictEqual(
-      (config.secrets as Record<string, unknown>)["MY_SECRET"],
-      { env: "SOURCE_VAR" }
-    );
-    assert.equal(
-      (config.secrets as Record<string, unknown>)["deleteOrphaned"],
-      true
-    );
-  });
-});
-```
-
-- [ ] **Step 2: Implement secrets passthrough in normalizer**
-
-In `normalizeConfig`, add:
-
-```typescript
-if (raw.secrets) {
-  normalized.secrets = raw.secrets;
-}
-```
-
-- [ ] **Step 3: Run test to verify it passes**
-
-Run: `npm test -- --grep "normalizeConfig secrets"` Expected: PASS
-
-- [ ] **Step 4: Write failing test for variable/secret name overlap validation**
-
-Secrets config is global (on `Config`), variables are per-repo (on `RepoConfig.settings`). The cross-validation needs to iterate each repo's effective variables and check against global secrets.
-
-```typescript
-describe("cross-validation", () => {
-  test("rejects overlapping variable and secret names", () => {
-    const config = makeConfig({
-      repos: [
-        {
-          git: "https://github.com/o/r.git",
-          files: [],
-          settings: {
-            variables: { DEPLOY_TOKEN: "value" },
-          },
-        },
-      ],
-      secrets: {
-        DEPLOY_TOKEN: { env: "SRC" },
-      },
-    });
-    assert.throws(
-      () => validateForSync(config),
-      /DEPLOY_TOKEN.*overlap/i
-    );
-  });
-});
-```
-
-- [ ] **Step 5: Implement cross-validation**
-
-In `validateForSync`, after per-repo validation. Since secrets is global and variables is per-repo, iterate repos:
-
-```typescript
-// Cross-validate: no overlap between global secret names and per-repo variable names
-if (config.secrets) {
-  const { deleteOrphaned: _, ...secretEntries } = config.secrets;
-  const secretNames = new Set(
-    Object.keys(secretEntries).map((n) => n.toUpperCase())
-  );
-
-  for (const repo of config.repos) {
-    const variableNames = Object.keys(
-      repo.settings?.variables ?? {}
-    );
-    const overlapping = variableNames.filter((n) =>
-      secretNames.has(n.toUpperCase())
-    );
-    if (overlapping.length > 0) {
-      throw new ValidationError(
-        `Repo '${repo.git}': variable and secret names overlap: ${overlapping.join(", ")}. ` +
-          "GitHub does not allow variables and secrets with the same name."
-      );
-    }
-  }
-}
-```
-
-- [ ] **Step 6: Run all tests**
-
-Run: `npm test` Expected: PASS
-
-- [ ] **Step 7: Run lint**
-
-Run: `./lint.sh` Expected: PASS
-
-- [ ] **Step 8: Run typecheck**
-
-Run: `npm run test:typecheck` Expected: PASS
-
-- [ ] **Step 9: Commit**
-
-```bash
-git add src/config/normalizer.ts src/config/validator.ts test/unit/config/normalizer.test.ts test/unit/config/validator.test.ts
-git commit -m "feat(config): add secrets normalization and cross-validation"
 ```
 
 ______________________________________________________________________
@@ -3032,6 +3085,7 @@ async function runSecretsSync(
     {
       cwd: projectRoot,
       env: {
+        ...process.env,
         // Set env vars that the secrets config references
         XFG_TEST_SECRET_VALUE: "integration-test-secret",
       },
@@ -3245,7 +3299,14 @@ npm run test:typecheck
 ```bash
 node dist/cli.js sync --help
 node dist/cli.js secrets sync --help
-node dist/cli.js secrets sync --config test-config.yaml --dry-run
+# Use one of the integration test configs, or create a minimal one inline:
+echo 'id: manual-test
+repos:
+  - git: https://github.com/spruyt-labs/xfg-test.git
+secrets:
+  TEST_SECRET:
+    env: TEST_SECRET_VALUE' > /tmp/xfg-secrets-test.yaml
+node dist/cli.js secrets sync --config /tmp/xfg-secrets-test.yaml --dry-run
 ```
 
 - [ ] **Step 6: Push and verify CI**
