@@ -45,6 +45,14 @@ const { deleteOrphaned = false, ...variableEntries } = repoConfig.settings?.vari
 
 - [ ] **Step 2: Add SecretConfig type and secrets to RawConfig**
 
+> **Important:** Also add `SecretConfig` to the barrel export in `src/config/index.ts`:
+>
+> ```typescript
+> export type { SecretConfig } from "./types.js";
+> ```
+>
+> Add it in the type re-export block alongside the other type exports (e.g., after `ContentValue`).
+
 ```typescript
 // New type (before RepoSettings):
 export interface SecretConfig {
@@ -270,11 +278,56 @@ export function validateSecretsConfig(config: RawConfig): void {
 }
 ```
 
-- [ ] **Step 7: Run all tests**
+- [ ] **Step 7: Update `validateRawConfig` to accept secrets-only configs**
+
+`loadRawConfig` calls `validateRawConfig` which requires files or settings. A config with only `secrets:` and `repos:` will fail validation. Add `hasSecrets` to the OR condition:
+
+```typescript
+// In validateRawConfig, add after existing checks:
+const hasSecrets =
+  isPlainObject(config.secrets) && Object.keys(config.secrets).length > 0;
+
+// Update the "requires at least one of" check to include hasSecrets:
+if (
+  !hasFiles &&
+  !hasSettings &&
+  !hasGrpFiles &&
+  !hasGrpSettings &&
+  !hasCondGrpFiles &&
+  !hasCondGrpSettings &&
+  !hasCondGrpPR &&
+  !hasSecrets
+) {
+  throw new ValidationError(
+    "Config requires at least one of: 'files', 'settings', or 'secrets'. " +
+      "Use 'files' to sync configuration files, 'settings' to manage repository settings, " +
+      "or 'secrets' to manage GitHub Actions secrets."
+  );
+}
+```
+
+Add a test:
+
+```typescript
+test("accepts config with only secrets and repos", () => {
+  const config: RawConfig = {
+    id: "test",
+    repos: [{ git: "https://github.com/o/r.git" }],
+    secrets: {
+      MY_SECRET: { env: "SOURCE_VAR" },
+    },
+  };
+  assert.doesNotThrow(() => validateRawConfig(config));
+});
+```
+
+> **Note:** This is required for the `xfg secrets sync` command (Task 12) to work, since `runSecretsSync` calls `loadRawConfig` which calls `validateRawConfig`. The secrets integration test configs (Task 13) also depend on this fix.
+
+- [ ] **Step 8: Run all tests**
 
 Run: `npm test` Expected: PASS
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add src/config/validator.ts test/unit/config/validator.test.ts
@@ -1539,25 +1592,25 @@ if (root?.variables || perRepo?.variables) {
   const inherit = (repoVars as Record<string, unknown>).inherit;
   if (inherit === false) {
     const { inherit: _, deleteOrphaned: _d, ...rest } = repoVars as Record<string, unknown>;
-    merged.variables = Object.fromEntries(
+    result.variables = Object.fromEntries(
       Object.entries(rest).filter(([, v]) => v !== false)
     ) as Record<string, string>;
   } else {
     const combined = { ...rootVars, ...repoVars };
     const { inherit: _, deleteOrphaned: _d, ...rest } = combined as Record<string, unknown>;
-    merged.variables = Object.fromEntries(
+    result.variables = Object.fromEntries(
       Object.entries(rest).filter(([, v]) => v !== false)
     ) as Record<string, string>;
   }
 
   if (effectiveDeleteOrphaned !== undefined) {
-    (merged.variables as Record<string, unknown>).deleteOrphaned = effectiveDeleteOrphaned;
+    (result.variables as Record<string, unknown>).deleteOrphaned = effectiveDeleteOrphaned;
   }
 
   // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
-  const { deleteOrphaned: _check, ...varEntries } = merged.variables as Record<string, unknown>;
+  const { deleteOrphaned: _check, ...varEntries } = result.variables as Record<string, unknown>;
   if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
-    delete merged.variables;
+    delete result.variables;
   }
 }
 ```
@@ -1566,11 +1619,117 @@ if (root?.variables || perRepo?.variables) {
 
 Run: `npm test -- --grep "mergeSettings variables"` Expected: PASS
 
-- [ ] **Step 5: Run all tests**
+- [ ] **Step 5: Add variables merging to `mergeRawSettings`**
+
+`mergeRawSettings` is used for group-level settings inheritance. Without this, group-level variables are silently dropped. Note: `mergeNamedEntries` won't work for variables because it checks `typeof entry === "object"` and variable values are strings. Use a custom overlay merge with `false` opt-outs and `inherit` support.
+
+In `mergeRawSettings`, add variables merging after the `codeScanning` section (before the `deleteOrphaned` handling):
+
+```typescript
+// Variables: simple string values with false opt-outs (mergeNamedEntries won't work for strings)
+if (overlay.variables) {
+  const overlayVars = overlay.variables as Record<string, unknown>;
+  const inherit = overlayVars.inherit !== false;
+  const base = inherit ? { ...(result.variables ?? {}) } : {};
+  for (const [name, entry] of Object.entries(overlay.variables)) {
+    if (name === "inherit" || name === "deleteOrphaned") continue;
+    (base as Record<string, unknown>)[name] = entry;
+  }
+  const overlayDelete = overlayVars.deleteOrphaned;
+  if (overlayDelete !== undefined) {
+    (base as Record<string, unknown>).deleteOrphaned = overlayDelete;
+  }
+  result.variables = base as typeof result.variables;
+}
+```
+
+- [ ] **Step 6: Write test for group-level variables merging**
+
+Add a test to verify group-level variables are merged via `mergeRawSettings`:
+
+```typescript
+describe("mergeRawSettings variables", () => {
+  test("group-level variables merge into root settings", () => {
+    const raw = makeRawConfig({
+      settings: {
+        variables: { ROOT_VAR: "root-value" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: { GROUP_VAR: "group-value" },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    });
+    const config = normalizeConfig(raw, {});
+
+    assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, "root-value");
+    assert.equal(config.repos[0].settings?.variables?.GROUP_VAR, "group-value");
+  });
+
+  test("group-level variables override root variables", () => {
+    const raw = makeRawConfig({
+      settings: {
+        variables: { SHARED: "root" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: { SHARED: "group" },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    });
+    const config = normalizeConfig(raw, {});
+
+    assert.equal(config.repos[0].settings?.variables?.SHARED, "group");
+  });
+
+  test("group-level inherit: false discards root variables", () => {
+    const raw = makeRawConfig({
+      settings: {
+        variables: { ROOT_VAR: "value" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: Object.assign({ GROUP_VAR: "val" }, { inherit: false }),
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    });
+    const config = normalizeConfig(raw, {});
+
+    assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, undefined);
+    assert.equal(config.repos[0].settings?.variables?.GROUP_VAR, "val");
+  });
+});
+```
+
+- [ ] **Step 7: Run all tests**
 
 Run: `npm test` Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add src/config/normalizer.ts test/unit/config/normalizer.test.ts
@@ -2366,6 +2525,7 @@ Run: `npm test -- --grep "SecretsProcessor"` Expected: FAIL
 // src/secrets/processor.ts
 import {
   isGitHubRepo,
+  getRepoDisplayName,
   type GitHubRepoInfo,
   type RepoInfo,
 } from "../repo/index.js";
@@ -2410,7 +2570,7 @@ export class SecretsProcessor {
     repoInfo: RepoInfo,
     options: SecretsProcessorOptions
   ): Promise<SecretsProcessorResult> {
-    const repoName = `${repoInfo.owner}/${repoInfo.repo}`;
+    const repoName = getRepoDisplayName(repoInfo);
 
     if (!isGitHubRepo(repoInfo)) {
       return {
@@ -2644,7 +2804,6 @@ describe("cross-validation", () => {
       repos: [
         {
           git: "https://github.com/o/r.git",
-          files: [],
           settings: {
             variables: { DEPLOY_TOKEN: "value" },
           },
@@ -2721,6 +2880,8 @@ git commit -m "feat(config): add secrets normalization and cross-validation"
 ______________________________________________________________________
 
 ### Task 12: Secrets CLI Command
+
+> **Dependency:** `runSecretsSync` calls `loadRawConfig` which calls `validateRawConfig`. Task 2 Step 7 updated `validateRawConfig` to accept secrets-only configs (no files/settings required). Without that fix, a secrets-only config would fail validation at load time.
 
 **Files:**
 
@@ -2912,8 +3073,7 @@ Follow patterns from existing integration test files in `test/integration/`. Use
 // test/integration/github-variables.test.ts
 import { test, describe, before, after, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -3073,6 +3233,8 @@ repos:
 ```
 
 - [ ] **Step 2: Create secrets integration test**
+
+> **Note:** The secrets integration test configs below use only `secrets:` and `repos:` with no `files:` or `settings:`. This is valid because Task 2 Step 7 updated `validateRawConfig` to accept secrets-only configs.
 
 ```typescript
 // test/integration/github-secrets.test.ts
@@ -3292,7 +3454,7 @@ Then in `src/cli/settings-report-builder.ts`:
 
 - Import `VariablesPlanEntry` from settings index
 
-- In `ProcessorResults`, add `variablesResult?: { planOutput?: { entries?: VariablesPlanEntry[] } }`
+- `variablesResult` was already added to `ProcessorResults` in Task 6 Step 6 — verify it is present. Do NOT add it again.
 
 - In the builder function, map `variablesResult.planOutput.entries` into the report's `variables` field
 
