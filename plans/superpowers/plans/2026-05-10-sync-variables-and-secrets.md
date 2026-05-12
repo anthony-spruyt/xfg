@@ -212,6 +212,9 @@ Run: `npm test -- --grep "validateVariables"` Expected: PASS
 - [ ] **Step 5: Write failing tests for secret config validation**
 
 ```typescript
+// Add to imports at top of test file:
+import type { SecretConfig } from "../../../src/config/index.js";
+
 describe("validateSecrets", () => {
   test("accepts valid secret config", () => {
     const config = createValidConfig({
@@ -2846,6 +2849,21 @@ describe("cross-validation", () => {
       /DEPLOY_TOKEN.*overlap/i
     );
   });
+
+  test("rejects overlapping root variable and secret names", () => {
+    const config = createValidConfig({
+      settings: {
+        variables: { DEPLOY_TOKEN: "value" },
+      },
+      secrets: {
+        DEPLOY_TOKEN: { env: "SRC" },
+      },
+    });
+    assert.throws(
+      () => validateForSync(config),
+      /DEPLOY_TOKEN.*overlap/i
+    );
+  });
 });
 ```
 
@@ -2857,7 +2875,7 @@ In `validateForSync`, after per-repo validation. First validate secret names/con
 // Validate secret names and configs (also validated by `xfg secrets sync` independently)
 validateSecretsConfig(config);
 
-// Cross-validate: no overlap between global secret names and per-repo variable names
+// Cross-validate: no overlap between global secret names and variable names
 if (config.secrets) {
   const { deleteOrphaned: _, ...secretEntries } = config.secrets;
   const secretNames = new Set(
@@ -2865,6 +2883,24 @@ if (config.secrets) {
       .filter((k) => typeof secretEntries[k] !== "boolean")
       .map((n) => n.toUpperCase())
   );
+
+  // Check root-level variables (inherited by all repos unless overridden)
+  if (config.settings?.variables) {
+    const { deleteOrphaned: _rd, ...rootVarEntries } =
+      config.settings.variables as Record<string, unknown>;
+    const rootVariableNames = Object.keys(rootVarEntries).filter(
+      (k) => typeof rootVarEntries[k] !== "boolean"
+    );
+    const overlapping = rootVariableNames.filter((n) =>
+      secretNames.has(n.toUpperCase())
+    );
+    if (overlapping.length > 0) {
+      throw new ValidationError(
+        `Root variable and secret names overlap: ${overlapping.join(", ")}. ` +
+          "GitHub does not allow variables and secrets with the same name."
+      );
+    }
+  }
 
   for (const repo of config.repos) {
     // Filter out reserved peer keys (deleteOrphaned, inherit) from variable names
@@ -3101,11 +3137,11 @@ Follow patterns from existing integration test files in `test/integration/`. Use
 // test/integration/github-variables.test.ts
 import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  exec as execHelper,
+  exec,
   execWithRetry,
   projectRoot,
   generateRepoName,
@@ -3138,7 +3174,7 @@ async function getVariables(): Promise<Variable[]> {
 }
 
 async function runSync(configPath: string, extraArgs = ""): Promise<string> {
-  return execHelper(
+  return exec(
     `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
     { cwd: projectRoot }
   );
@@ -3148,7 +3184,8 @@ describe("GitHub Variables Integration Test", () => {
   before(async () => {
     repoName = generateRepoName("variables");
     testRepo = `${OWNER}/${repoName}`;
-    tmpDir = mkdtempSync(join(tmpdir(), "xfg-variables-"));
+    tmpDir = join(tmpdir(), `xfg-variables-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     await createRepo(OWNER, repoName);
   });
 
@@ -3268,11 +3305,11 @@ repos:
 // test/integration/github-secrets.test.ts
 import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  exec as execHelper,
+  exec,
   execWithRetry,
   projectRoot,
   generateRepoName,
@@ -3307,7 +3344,7 @@ async function runSecretsSync(
   configPath: string,
   extraArgs = ""
 ): Promise<string> {
-  return execHelper(
+  return exec(
     `node dist/cli.js secrets sync --config ${configPath} ${extraArgs}`.trim(),
     {
       cwd: projectRoot,
@@ -3324,7 +3361,8 @@ describe("GitHub Secrets Integration Test", () => {
   before(async () => {
     repoName = generateRepoName("secrets");
     testRepo = `${OWNER}/${repoName}`;
-    tmpDir = mkdtempSync(join(tmpdir(), "xfg-secrets-"));
+    tmpDir = join(tmpdir(), `xfg-secrets-test-${Date.now()}`);
+    mkdirSync(tmpDir, { recursive: true });
     await createRepo(OWNER, repoName);
   });
 
