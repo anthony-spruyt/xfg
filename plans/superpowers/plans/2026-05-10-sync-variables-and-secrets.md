@@ -144,6 +144,8 @@ describe("validateVariables", () => {
     assert.throws(() => validateForSync(config), /invalid.*character/i);
   });
 
+  // Defensive test: root-level settings don't use `inherit`, but the validator
+  // should still skip it gracefully if present (e.g., from a copy-paste error).
   test("skips reserved peer keys (deleteOrphaned, inherit) during name validation", () => {
     const config = createValidConfig({
       settings: {
@@ -1261,7 +1263,7 @@ export class VariablesProcessor implements IVariablesProcessor {
     const { deleteOrphaned: varDeleteOrphaned = false, ...desiredVariables } =
       (settings?.variables ?? {}) as Record<string, string> & { deleteOrphaned?: boolean };
     const deleteOrphaned =
-      (varDeleteOrphaned as boolean) && !(noDelete ?? false);
+      varDeleteOrphaned && !(noDelete ?? false);
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
     const currentVariables = await this.strategy.list(
@@ -1461,6 +1463,13 @@ Then in `buildSettingsDescriptors`, add entry:
 ```
 
 - [ ] **Step 6: Add variablesResult to ProcessorResults in settings-report-builder.ts**
+
+```typescript
+// Add import at top of file:
+import type { VariablesPlanEntry } from "../settings/index.js";
+```
+
+Then add to the `ProcessorResults` interface:
 
 ```typescript
 variablesResult?: {
@@ -2538,7 +2547,7 @@ import {
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
-import type { SecretConfig } from "../config/types.js";
+import type { SecretConfig } from "../config/index.js";
 
 /** Flat secrets config: Record<name, SecretConfig | boolean> & { deleteOrphaned?: boolean }.
  *  The `| boolean` allows the deleteOrphaned peer key (same pattern as labels' inherit).
@@ -2693,13 +2702,23 @@ export class SecretsProcessor {
     if (deleted > 0) parts.push(`${deleted} deleted`);
     const summary =
       parts.length > 0 ? parts.join(", ") : "no changes";
-    const prefix = dryRun ? "[DRY RUN] " : "";
+
+    if (dryRun) {
+      return {
+        success: true,
+        repoName,
+        message: `[DRY RUN] ${summary}`,
+        dryRun: true,
+        created,
+        updated,
+        deleted,
+      };
+    }
 
     return {
       success: true,
       repoName,
-      message: `${prefix}${summary}`,
-      dryRun: dryRun ?? false,
+      message: summary,
       created,
       updated,
       deleted,
@@ -3448,16 +3467,38 @@ Read `src/output/settings-report.ts` and follow the exact pattern used for label
 1. In `RepoChanges` interface, add:
 
    ```typescript
-   variables?: { name: string; action: ActiveAction; oldValue?: string; newValue?: string }[];
+   variables: { name: string; action: ActiveAction; oldValue?: string; newValue?: string }[];
    ```
 
-1. In `SettingsReportTotals`, add:
+1. In the `totals` property of the `SettingsReport` interface, add:
 
    ```typescript
    variables: { create: number; update: number; delete: number };
    ```
 
-1. In `buildSettingsReport`, add a processing block for `variablesResult` that maps `planOutput.entries` to `RepoChanges.variables` and accumulates totals (same pattern as `labelsResult`).
+1. In `buildSettingsReport`:
+
+   - Add `variables: { create: 0, update: 0, delete: 0 }` to the `totals` initializer
+   - Add `variables: []` to the `repoChanges` initializer (required field, initialized as empty array)
+   - Add a processing block for `variablesResult` after the labels block (same pattern as `labelsResult`):
+
+   ```typescript
+   if (result.variablesResult?.planOutput?.entries) {
+     for (const entry of result.variablesResult.planOutput.entries) {
+       if (!isActiveAction(entry)) continue;
+       repoChanges.variables.push({
+         name: entry.name,
+         action: entry.action,
+         oldValue: entry.oldValue,
+         newValue: entry.newValue,
+       });
+     }
+     const counts = countActions(repoChanges.variables);
+     totals.variables.create += counts.create;
+     totals.variables.update += counts.update;
+     totals.variables.delete += counts.delete;
+   }
+   ```
 
 Then in `src/cli/settings-report-builder.ts`:
 
@@ -3475,11 +3516,11 @@ In `src/output/settings-report.ts`, update the following functions to include va
 
    ```typescript
    // Blank line before variables if there was content above
-   if (repo.variables && repo.variables.length > 0 && diffLines.length > startLength) {
+   if (repo.variables.length > 0 && diffLines.length > startLength) {
      diffLines.push("");
    }
 
-   for (const variable of repo.variables ?? []) {
+   for (const variable of repo.variables) {
      if (variable.action === "create") {
        diffLines.push(`+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`);
      } else if (variable.action === "update") {
@@ -3497,7 +3538,7 @@ In `src/output/settings-report.ts`, update the following functions to include va
      repo.settings.length === 0 &&
      repo.rulesets.length === 0 &&
      repo.labels.length === 0 &&
-     (!repo.variables || repo.variables.length === 0) &&
+     repo.variables.length === 0 &&
      !repo.error
    ) {
      continue;
@@ -3511,7 +3552,7 @@ In `src/output/settings-report.ts`, update the following functions to include va
      repo.settings.length === 0 &&
      repo.rulesets.length === 0 &&
      repo.labels.length === 0 &&
-     (!repo.variables || repo.variables.length === 0) &&
+     repo.variables.length === 0 &&
      !repo.error
    ) {
      continue;
