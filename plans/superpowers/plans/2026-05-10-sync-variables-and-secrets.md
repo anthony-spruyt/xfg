@@ -45,13 +45,13 @@ const { deleteOrphaned = false, ...variableEntries } = repoConfig.settings?.vari
 
 - [ ] **Step 2: Add SecretConfig type and secrets to RawConfig**
 
-> **Important:** Also add `SecretConfig` to the barrel export in `src/config/index.ts`:
+> **Important:** Also add to the barrel export in `src/config/index.ts`:
 >
 > ```typescript
-> export type { SecretConfig } from "./types.js";
+> export type { SecretConfig, RawRootSettings } from "./types.js";
 > ```
 >
-> Add it in the type re-export block alongside the other type exports (e.g., after `ContentValue`).
+> Add in the type re-export block alongside the other type exports (e.g., after `ContentValue`). `RawRootSettings` is needed by normalizer tests (Task 7).
 
 ```typescript
 // New type (before RepoSettings):
@@ -1508,6 +1508,8 @@ ______________________________________________________________________
 - Test: `test/unit/config/normalizer.test.ts`
 
 - [ ] **Step 1: Write failing tests for variables normalization**
+
+> Add `RawRootSettings` to imports at top of test file (exported from `src/config/index.ts` per Task 1 Step 2).
 
 ```typescript
 describe("mergeSettings variables", () => {
@@ -3024,6 +3026,7 @@ export async function runSecretsSync(
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
   let hasErrors = false;
+  logger.setTotal(config.repos.length);
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
