@@ -97,7 +97,7 @@ Run: `npm run build` Expected: PASS (no consumers of new types yet)
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/config/types.ts
+git add src/config/types.ts src/config/index.ts
 git commit -m "feat(config): add types for variables and secrets"
 ```
 
@@ -118,7 +118,7 @@ Add to the existing validator test file:
 ```typescript
 describe("validateVariables", () => {
   test("accepts valid variable names", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       settings: {
         variables: { MY_VAR: "value", ANOTHER_123: "val" },
       },
@@ -127,7 +127,7 @@ describe("validateVariables", () => {
   });
 
   test("rejects variable names starting with GITHUB_", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       settings: {
         variables: { GITHUB_TOKEN: "value" },
       },
@@ -136,7 +136,7 @@ describe("validateVariables", () => {
   });
 
   test("rejects variable names with invalid characters", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       settings: {
         variables: { "my-var": "value" },
       },
@@ -145,7 +145,7 @@ describe("validateVariables", () => {
   });
 
   test("skips reserved peer keys (deleteOrphaned, inherit) during name validation", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       settings: {
         variables: Object.assign(
           { MY_VAR: "value" },
@@ -185,8 +185,8 @@ Add to `hasActionableSettings`:
 
 ```typescript
 if (settings.variables) {
-  const { deleteOrphaned: _, inherit: _i, ...entries } = settings.variables as Record<string, unknown>;
-  if (Object.keys(entries).length > 0 || (settings.variables as Record<string, unknown>).deleteOrphaned === true) {
+  const { deleteOrphaned, inherit: _i, ...entries } = settings.variables as Record<string, unknown>;
+  if (Object.keys(entries).length > 0 || deleteOrphaned === true) {
     return true;
   }
 }
@@ -212,28 +212,28 @@ Run: `npm test -- --grep "validateVariables"` Expected: PASS
 ```typescript
 describe("validateSecrets", () => {
   test("accepts valid secret config", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
     });
     assert.doesNotThrow(() => validateSecretsConfig(config));
   });
 
   test("rejects secret names starting with GITHUB_", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
     });
     assert.throws(() => validateSecretsConfig(config), /GITHUB_/);
   });
 
   test("rejects secret without env field", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       secrets: { MY_SECRET: {} as SecretConfig },
     });
     assert.throws(() => validateSecretsConfig(config), /env/);
   });
 
   test("skips when no secrets configured", () => {
-    const config = makeConfig({});
+    const config = createValidConfig({});
     assert.doesNotThrow(() => validateSecretsConfig(config));
   });
 });
@@ -1650,7 +1650,9 @@ Add a test to verify group-level variables are merged via `mergeRawSettings`:
 ```typescript
 describe("mergeRawSettings variables", () => {
   test("group-level variables merge into root settings", () => {
-    const raw = makeRawConfig({
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
       settings: {
         variables: { ROOT_VAR: "root-value" },
       },
@@ -1667,7 +1669,7 @@ describe("mergeRawSettings variables", () => {
           groups: ["myGroup"],
         },
       ],
-    });
+    };
     const config = normalizeConfig(raw, {});
 
     assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, "root-value");
@@ -1675,7 +1677,9 @@ describe("mergeRawSettings variables", () => {
   });
 
   test("group-level variables override root variables", () => {
-    const raw = makeRawConfig({
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
       settings: {
         variables: { SHARED: "root" },
       },
@@ -1692,14 +1696,16 @@ describe("mergeRawSettings variables", () => {
           groups: ["myGroup"],
         },
       ],
-    });
+    };
     const config = normalizeConfig(raw, {});
 
     assert.equal(config.repos[0].settings?.variables?.SHARED, "group");
   });
 
   test("group-level inherit: false discards root variables", () => {
-    const raw = makeRawConfig({
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
       settings: {
         variables: { ROOT_VAR: "value" },
       },
@@ -1716,7 +1722,7 @@ describe("mergeRawSettings variables", () => {
           groups: ["myGroup"],
         },
       ],
-    });
+    };
     const config = normalizeConfig(raw, {});
 
     assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, undefined);
@@ -2280,7 +2286,7 @@ import type {
   RepoInfo,
 } from "../../../src/repo/index.js";
 import type { GhApiOptions } from "../../../src/shared/gh-api-utils.js";
-import type { SecretConfig } from "../../../src/config/types.js";
+import type { SecretConfig } from "../../../src/config/index.js";
 
 class MockSecretsStrategy implements ISecretsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
@@ -2752,12 +2758,15 @@ ______________________________________________________________________
 ```typescript
 describe("normalizeConfig secrets", () => {
   test("passes secrets config through to normalized config", () => {
-    const raw = makeRawConfig({
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
       secrets: {
         MY_SECRET: { env: "SOURCE_VAR" },
         deleteOrphaned: true,
       },
-    });
+    };
     const config = normalizeConfig(raw, {});
 
     // Flat config: secret entries are peers of deleteOrphaned
@@ -2800,7 +2809,7 @@ Secrets config is global (on `Config`), variables are per-repo (on `RepoConfig.s
 ```typescript
 describe("cross-validation", () => {
   test("rejects overlapping variable and secret names", () => {
-    const config = makeConfig({
+    const config = createValidConfig({
       repos: [
         {
           git: "https://github.com/o/r.git",
@@ -3071,7 +3080,7 @@ Follow patterns from existing integration test files in `test/integration/`. Use
 
 ```typescript
 // test/integration/github-variables.test.ts
-import { test, describe, before, after, beforeEach } from "node:test";
+import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -3439,7 +3448,7 @@ Read `src/output/settings-report.ts` and follow the exact pattern used for label
 1. In `RepoChanges` interface, add:
 
    ```typescript
-   variables?: { name: string; action: SettingsAction; oldValue?: string; newValue?: string }[];
+   variables?: { name: string; action: ActiveAction; oldValue?: string; newValue?: string }[];
    ```
 
 1. In `SettingsReportTotals`, add:
@@ -3458,16 +3467,67 @@ Then in `src/cli/settings-report-builder.ts`:
 
 - In the builder function, map `variablesResult.planOutput.entries` into the report's `variables` field
 
-- [ ] **Step 2: Update GitHub job summary**
+- [ ] **Step 2: Update report rendering functions**
 
-In `src/output/settings-report.ts`'s `formatSettingsReportMarkdown`:
+In `src/output/settings-report.ts`, update the following functions to include variables (follow the exact patterns used for labels/rulesets):
 
-1. Add a "Variables" section after the labels section using the same table format:
-   ```markdown
-   | Variable | Action | Value |
+1. **`renderRepoSettingsDiffLines`** — Add a variables rendering section after the labels section. Use the same blank-line-before pattern:
+
+   ```typescript
+   // Blank line before variables if there was content above
+   if (repo.variables && repo.variables.length > 0 && diffLines.length > startLength) {
+     diffLines.push("");
+   }
+
+   for (const variable of repo.variables ?? []) {
+     if (variable.action === "create") {
+       diffLines.push(`+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`);
+     } else if (variable.action === "update") {
+       diffLines.push(`! variable "${variable.name}": ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`);
+     } else if (variable.action === "delete") {
+       diffLines.push(`- variable "${variable.name}"`);
+     }
+   }
    ```
-1. Include variables totals in the summary line at the bottom
-1. Skip the section entirely if no variable changes exist (same pattern as labels)
+
+1. **`formatSettingsReportCLI`** — Update the skip-check to include variables emptiness:
+
+   ```typescript
+   if (
+     repo.settings.length === 0 &&
+     repo.rulesets.length === 0 &&
+     repo.labels.length === 0 &&
+     (!repo.variables || repo.variables.length === 0) &&
+     !repo.error
+   ) {
+     continue;
+   }
+   ```
+
+1. **`formatSettingsReportMarkdown`** — Update the same skip-check:
+
+   ```typescript
+   if (
+     repo.settings.length === 0 &&
+     repo.rulesets.length === 0 &&
+     repo.labels.length === 0 &&
+     (!repo.variables || repo.variables.length === 0) &&
+     !repo.error
+   ) {
+     continue;
+   }
+   ```
+
+1. **`formatSettingsSummary`** — Add a variables entry after the labels entry:
+
+   ```typescript
+   const variablesEntry = formatCountEntry("variable", "variables", [
+     { label: "to create", value: totals.variables.create },
+     { label: "to update", value: totals.variables.update },
+     { label: "to delete", value: totals.variables.delete },
+   ]);
+   if (variablesEntry) parts.push(variablesEntry);
+   ```
 
 - [ ] **Step 3: Verify all barrel exports are complete**
 
