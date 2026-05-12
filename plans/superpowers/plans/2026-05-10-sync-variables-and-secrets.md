@@ -3041,7 +3041,7 @@ export async function runSecretsSync(
       });
 
       if (result.skipped) {
-        logger.warn(i + 1, repoName, result.message);
+        logger.skip(i + 1, repoName, result.message);
       } else if (result.success) {
         logger.success(i + 1, repoName, `Secrets: ${result.message}`);
       }
