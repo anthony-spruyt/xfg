@@ -25,11 +25,10 @@ Variables use their own `deleteOrphaned` peer key (same flat pattern as secrets'
 ```typescript
 // In RepoSettings (after codeScanning field):
   /** GitHub Actions repository variables keyed by name.
-   *  The `| boolean` union allows the `deleteOrphaned` peer key (boolean)
-   *  alongside string variable values — same approach as labels using
-   *  `Record<string, Label | false>`. Without the union, the string index
-   *  signature would conflict with the boolean `deleteOrphaned` property. */
-  variables?: Record<string, string | boolean> & { deleteOrphaned?: boolean };
+   *  After normalization, `false` opt-outs and `inherit` are stripped — only
+   *  string values remain. The `deleteOrphaned` peer key uses a branded
+   *  intersection (same pattern as labels). */
+  variables?: Record<string, string> & { deleteOrphaned?: boolean };
 
 // In RawRootSettings (after codeScanning field):
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
@@ -38,10 +37,10 @@ Variables use their own `deleteOrphaned` peer key (same flat pattern as secrets'
   variables?: Record<string, string | false> & { inherit?: boolean; deleteOrphaned?: boolean };
 ```
 
-In the processor, separate `deleteOrphaned` from variable entries (same pattern as secrets):
+In the processor, separate `deleteOrphaned` from variable entries:
 
 ```typescript
-const { deleteOrphaned = false, inherit: _, ...variableEntries } = repoConfig.settings?.variables ?? {};
+const { deleteOrphaned = false, ...variableEntries } = repoConfig.settings?.variables ?? {};
 ```
 
 - [ ] **Step 2: Add SecretConfig type and secrets to RawConfig**
@@ -208,26 +207,31 @@ describe("validateSecrets", () => {
     const config = makeConfig({
       secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
     });
-    assert.doesNotThrow(() => validateForSync(config));
+    assert.doesNotThrow(() => validateSecretsConfig(config));
   });
 
   test("rejects secret names starting with GITHUB_", () => {
     const config = makeConfig({
       secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
     });
-    assert.throws(() => validateForSync(config), /GITHUB_/);
+    assert.throws(() => validateSecretsConfig(config), /GITHUB_/);
   });
 
   test("rejects secret without env field", () => {
     const config = makeConfig({
       secrets: { MY_SECRET: {} as SecretConfig },
     });
-    assert.throws(() => validateForSync(config), /env/);
+    assert.throws(() => validateSecretsConfig(config), /env/);
+  });
+
+  test("skips when no secrets configured", () => {
+    const config = makeConfig({});
+    assert.doesNotThrow(() => validateSecretsConfig(config));
   });
 });
 ```
 
-- [ ] **Step 6: Implement validateSecretConfig**
+- [ ] **Step 6: Implement validateSecretName, validateSecretEntry, and validateSecretsConfig**
 
 ```typescript
 export function validateSecretName(name: string): void {
@@ -243,12 +247,25 @@ export function validateSecretName(name: string): void {
   }
 }
 
-export function validateSecretConfig(name: string, config: SecretConfig): void {
+function validateSecretEntry(name: string, config: SecretConfig): void {
   validateSecretName(name);
   if (!config.env || typeof config.env !== "string") {
     throw new ValidationError(
       `Secret '${name}' requires an 'env' field (string) specifying the environment variable source.`
     );
+  }
+}
+
+/** Top-level secrets validation — called by `xfg secrets sync` CLI command.
+ *  Separate from `validateForSync` because a secrets-only config may have no
+ *  files or settings (which `validateForSync` requires). */
+export function validateSecretsConfig(config: RawConfig): void {
+  if (!config.secrets) return;
+
+  const { deleteOrphaned: _, ...entries } = config.secrets;
+  for (const [name, value] of Object.entries(entries)) {
+    if (typeof value === "boolean") continue;
+    validateSecretEntry(name, value as SecretConfig);
   }
 }
 ```
@@ -458,8 +475,9 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
     // NOTE: Do NOT use `paginate: true` here. The /actions/variables endpoint
     // returns an envelope `{ total_count, variables: [] }`. With --paginate,
     // `gh` outputs one envelope per page as concatenated JSON objects (not valid
-    // JSON). Instead use per_page=100 (API max). Repos with >100 variables are
-    // extremely rare; add proper --jq pagination if needed in future.
+    // JSON). Instead use per_page=100 (API max).
+    // Known limitation: repos with >100 variables will be truncated. If needed,
+    // implement manual pagination using per_page + page params.
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables?per_page=100`;
     const result = await this.api.call("GET", endpoint, {
       options,
@@ -1167,7 +1185,7 @@ export class VariablesProcessor implements IVariablesProcessor {
     return withGitHubGuards(repoConfig, repoInfo, options, {
       hasDesiredSettings: (rc) => {
         const vars = rc.settings?.variables ?? {};
-        const { deleteOrphaned, inherit: _i, ...entries } = vars as Record<string, unknown>;
+        const { deleteOrphaned, ...entries } = vars as Record<string, unknown>;
         return Object.keys(entries).length > 0 || deleteOrphaned === true;
       },
       emptySettingsMessage: "No variables configured",
@@ -1185,15 +1203,10 @@ export class VariablesProcessor implements IVariablesProcessor {
   ): Promise<VariablesProcessorResult> {
     const { dryRun, noDelete } = options;
     const settings = repoConfig.settings;
-    // Separate peer keys from variable entries, then filter out any remaining
-    // boolean values (same pattern as secrets processor's boolean filtering)
-    const { deleteOrphaned: varDeleteOrphaned = false, inherit: _, ...rawEntries } =
-      (settings?.variables ?? {}) as Record<string, unknown>;
-    const desiredVariables = Object.fromEntries(
-      Object.entries(rawEntries).filter(
-        (entry): entry is [string, string] => typeof entry[1] === "string"
-      )
-    );
+    // Separate deleteOrphaned peer key from variable entries.
+    // After normalization, `inherit` and `false` opt-outs are already stripped.
+    const { deleteOrphaned: varDeleteOrphaned = false, ...desiredVariables } =
+      (settings?.variables ?? {}) as Record<string, string> & { deleteOrphaned?: boolean };
     const deleteOrphaned =
       (varDeleteOrphaned as boolean) && !(noDelete ?? false);
 
@@ -1329,7 +1342,11 @@ export type VariablesProcessorFactory =
   SettingsProcessorFactory<IVariablesProcessor>;
 ```
 
-Add `"variables"` to `SettingsKind` union.
+Update `SettingsKind` union (must stay in sync with `SettingsDescriptor.key` in settings-runner.ts):
+
+```typescript
+export type SettingsKind = "rulesets" | "labels" | "repo" | "codeScanning" | "variables";
+```
 
 Add `variables: VariablesProcessorFactory` to `SettingsProcessorFactories`.
 
@@ -1707,7 +1724,6 @@ import { SodiumEncryptor } from "../../../src/secrets/encryption.js";
 describe("SodiumEncryptor", () => {
   test("encrypt returns base64 string", async () => {
     const encryptor = new SodiumEncryptor();
-    await encryptor.initialize();
 
     const testKey = Buffer.from(new Uint8Array(32).fill(1)).toString(
       "base64"
@@ -1722,7 +1738,6 @@ describe("SodiumEncryptor", () => {
 
   test("encrypt produces different output each call (nonce)", async () => {
     const encryptor = new SodiumEncryptor();
-    await encryptor.initialize();
 
     const testKey = Buffer.from(new Uint8Array(32).fill(1)).toString(
       "base64"
@@ -1751,46 +1766,44 @@ npm install -D @types/libsodium-wrappers
 import type _sodium from "libsodium-wrappers";
 
 export interface ISecretEncryptor {
-  initialize(): Promise<void>;
   encrypt(value: string, publicKeyBase64: string): Promise<string>;
 }
 
 export class SodiumEncryptor implements ISecretEncryptor {
   private sodium: typeof _sodium | undefined;
 
-  async initialize(): Promise<void> {
-    try {
-      const sodium = await import("libsodium-wrappers");
-      await sodium.default.ready;
-      this.sodium = sodium.default;
-    } catch {
-      throw new Error(
-        "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
-      );
+  private async ensureInitialized(): Promise<typeof _sodium> {
+    if (!this.sodium) {
+      try {
+        const sodium = await import("libsodium-wrappers");
+        await sodium.default.ready;
+        this.sodium = sodium.default;
+      } catch {
+        throw new Error(
+          "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
+        );
+      }
     }
+    return this.sodium;
   }
 
   async encrypt(
     value: string,
     publicKeyBase64: string
   ): Promise<string> {
-    if (!this.sodium) {
-      throw new Error(
-        "SodiumEncryptor not initialized. Call initialize() first."
-      );
-    }
+    const sodium = await this.ensureInitialized();
 
-    const messageBytes = this.sodium.from_string(value);
-    const publicKey = this.sodium.from_base64(
+    const messageBytes = sodium.from_string(value);
+    const publicKey = sodium.from_base64(
       publicKeyBase64,
-      this.sodium.base64_variants.ORIGINAL
+      sodium.base64_variants.ORIGINAL
     );
 
-    const encrypted = this.sodium.crypto_box_seal(messageBytes, publicKey);
+    const encrypted = sodium.crypto_box_seal(messageBytes, publicKey);
 
-    return this.sodium.to_base64(
+    return sodium.to_base64(
       encrypted,
-      this.sodium.base64_variants.ORIGINAL
+      sodium.base64_variants.ORIGINAL
     );
   }
 }
@@ -2012,7 +2025,8 @@ export class GitHubSecretsStrategy implements ISecretsStrategy {
   ): Promise<GitHubSecret[]> {
     assertGitHubRepo(repoInfo, "GitHub Secrets strategy");
 
-    // Same as variables: envelope endpoint, don't use --paginate (see variables strategy comment)
+    // Envelope endpoint — don't use --paginate (see variables strategy comment).
+    // Known limitation: repos with >100 secrets will be truncated.
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets?per_page=100`;
     const result = await this.api.call("GET", endpoint, {
       options,
@@ -2145,7 +2159,6 @@ class MockSecretsStrategy implements ISecretsStrategy {
 }
 
 class MockEncryptor implements ISecretEncryptor {
-  async initialize(): Promise<void> {}
   async encrypt(value: string, _key: string): Promise<string> {
     return Buffer.from(`encrypted:${value}`).toString("base64");
   }
@@ -2533,10 +2546,28 @@ export class SecretsProcessor {
 
 Run: `npm test -- --grep "SecretsProcessor"` Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Create secrets barrel export**
+
+```typescript
+// src/secrets/index.ts
+export { SecretsProcessor } from "./processor.js";
+export type {
+  SecretsProcessorOptions,
+  SecretsProcessorResult,
+} from "./processor.js";
+export { GitHubSecretsStrategy } from "./github-secrets-strategy.js";
+export { SodiumEncryptor, type ISecretEncryptor } from "./encryption.js";
+export type {
+  ISecretsStrategy,
+  GitHubSecret,
+  GitHubPublicKey,
+} from "./types.js";
+```
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add src/secrets/processor.ts test/unit/secrets/processor.test.ts
+git add src/secrets/processor.ts src/secrets/index.ts test/unit/secrets/processor.test.ts
 git commit -m "feat(secrets): add SecretsProcessor with env resolution and encryption"
 ```
 
@@ -2584,12 +2615,18 @@ describe("normalizeConfig secrets", () => {
 
 - [ ] **Step 2: Implement secrets passthrough in normalizer**
 
-In `normalizeConfig`, add:
+In `normalizeConfig`'s return object (around line 782), add `secrets` alongside other fields:
 
 ```typescript
-if (raw.secrets) {
-  normalized.secrets = raw.secrets;
-}
+return {
+  id: raw.id,
+  repos: expandedRepos,
+  prTemplate: raw.prTemplate,
+  githubHosts: raw.githubHosts,
+  deleteOrphaned: raw.deleteOrphaned,
+  settings: normalizedRootSettings,
+  secrets: raw.secrets,
+};
 ```
 
 - [ ] **Step 3: Run test to verify it passes**
@@ -2627,9 +2664,12 @@ describe("cross-validation", () => {
 
 - [ ] **Step 5: Implement cross-validation**
 
-In `validateForSync`, after per-repo validation. Since secrets is global and variables is per-repo, iterate repos:
+In `validateForSync`, after per-repo validation. First validate secret names/configs (reuse `validateSecretsConfig`), then cross-validate overlap:
 
 ```typescript
+// Validate secret names and configs (also validated by `xfg secrets sync` independently)
+validateSecretsConfig(config);
+
 // Cross-validate: no overlap between global secret names and per-repo variable names
 if (config.secrets) {
   const { deleteOrphaned: _, ...secretEntries } = config.secrets;
@@ -2692,11 +2732,14 @@ ______________________________________________________________________
 
 ```typescript
 // src/cli/secrets-command.ts
-import { readConfig } from "../config/index.js";
+import { loadRawConfig } from "../config/index.js";
 import { normalizeConfig } from "../config/normalizer.js";
-import { SecretsProcessor } from "../secrets/processor.js";
-import { GitHubSecretsStrategy } from "../secrets/github-secrets-strategy.js";
-import { SodiumEncryptor } from "../secrets/encryption.js";
+import { validateSecretsConfig } from "../config/validator.js";
+import {
+  SecretsProcessor,
+  GitHubSecretsStrategy,
+  SodiumEncryptor,
+} from "../secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { parseGitUrl } from "../repo/index.js";
@@ -2718,7 +2761,8 @@ export async function runSecretsSync(
   const noDelete = options.delete === false;
   const cwd = workDir ?? process.cwd();
 
-  const rawConfig = await readConfig(configPath);
+  const rawConfig = loadRawConfig(configPath);
+  validateSecretsConfig(rawConfig);
   const config = normalizeConfig(rawConfig, process.env);
 
   if (!config.secrets) {
@@ -2739,7 +2783,6 @@ export async function runSecretsSync(
 
   const executor = new ProcessExecutor(process.env);
   const encryptor = new SodiumEncryptor();
-  await encryptor.initialize();
   const envResolver = new EnvResolver(process.env);
   const strategy = new GitHubSecretsStrategy(executor, {
     cwd,
@@ -2930,17 +2973,11 @@ describe("GitHub Variables Integration Test", () => {
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-variables
-files:
-  .xfg-var-test:
-    content: "# Placeholder"
-    createOnly: true
 settings:
   variables:
     XFG_TEST_VAR: "test-value"
 repos:
   - git: https://github.com/${testRepo}.git
-    files:
-      .xfg-var-test: false
 `
     );
 
@@ -3272,19 +3309,7 @@ In `src/output/settings-report.ts`'s `formatSettingsReportMarkdown`:
 
 - [ ] **Step 3: Verify all barrel exports are complete**
 
-Check `src/settings/index.ts` includes variables exports. Create `src/secrets/index.ts` barrel if needed:
-
-```typescript
-// src/secrets/index.ts
-export { SecretsProcessor } from "./processor.js";
-export { GitHubSecretsStrategy } from "./github-secrets-strategy.js";
-export { SodiumEncryptor, type ISecretEncryptor } from "./encryption.js";
-export type {
-  ISecretsStrategy,
-  GitHubSecret,
-  GitHubPublicKey,
-} from "./types.js";
-```
+Check `src/settings/index.ts` includes variables exports. `src/secrets/index.ts` barrel was already created in Task 10 Step 5 — verify it exports all needed types.
 
 - [ ] **Step 4: Run full test suite**
 
@@ -3443,11 +3468,13 @@ Add `secrets` property to root config (after `settings`):
 
 The settings-level `deleteOrphaned` flag does NOT affect variables (variables has its own `deleteOrphaned` peer key). No changes needed to existing `deleteOrphaned` descriptions — they already correctly reference rulesets and labels only.
 
-- [ ] **Step 6: Validate schema is valid JSON**
+- [ ] **Step 6: Validate schema is valid JSON and test with a sample config**
 
 ```bash
 node -e "JSON.parse(require('fs').readFileSync('config-schema.json', 'utf8')); console.log('Valid JSON')"
 ```
+
+Also verify `additionalProperties` with `oneOf` (boolean + string/$ref) validates correctly against a sample config with both variables and secrets — some JSON Schema validators are strict about `additionalProperties` conflicting with `properties`.
 
 - [ ] **Step 7: Commit**
 
