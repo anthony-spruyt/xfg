@@ -2968,7 +2968,7 @@ import {
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { parseGitUrl } from "../repo/index.js";
-import { logger } from "../shared/logger.js";
+import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 
 export interface SecretsSyncOptions {
@@ -2982,6 +2982,7 @@ export interface SecretsSyncOptions {
 export async function runSecretsSync(
   options: SecretsSyncOptions
 ): Promise<void> {
+  const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
   const { config: configPath, dryRun, workDir, retries } = options;
   const noDelete = options.delete === false;
   const cwd = workDir ?? process.cwd();
