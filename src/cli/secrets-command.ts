@@ -1,6 +1,9 @@
 import { loadRawConfig } from "../config/index.js";
 import { normalizeConfig } from "../config/normalizer.js";
-import { validateSecretsConfig } from "../config/validator.js";
+import {
+  validateRawConfig,
+  validateSecretsConfig,
+} from "../config/validator.js";
 import {
   SecretsProcessor,
   GitHubSecretsStrategy,
@@ -29,6 +32,7 @@ export async function runSecretsSync(
   const cwd = workDir ?? process.cwd();
 
   const rawConfig = loadRawConfig(configPath);
+  validateRawConfig(rawConfig);
   validateSecretsConfig(rawConfig);
   const config = normalizeConfig(rawConfig, process.env);
 

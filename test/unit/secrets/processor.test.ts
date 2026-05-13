@@ -155,13 +155,33 @@ describe("SecretsProcessor", () => {
     assert.equal(deleteCalls.length, 1);
   });
 
+  test("noDelete suppresses orphan deletion even with deleteOrphaned true", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [
+      { name: "OLD_SECRET", created_at: "", updated_at: "" },
+    ];
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const result = await processor.process(
+      makeSecretsConfig({}, true),
+      mockGitHubRepo,
+      { noDelete: true }
+    );
+    assert.equal(result.deleted, 0);
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(deleteCalls.length, 0);
+  });
+
   test("dry run does not call upsert or delete", async () => {
     const strategy = new MockSecretsStrategy();
     strategy.listResponse = [];
     const processor = new SecretsProcessor(
       strategy,
       new MockEncryptor(),
-      new MockEnvResolver({ SRC: "val" })
+      new MockEnvResolver({})
     );
     const result = await processor.process(
       makeSecretsConfig({ MY_SECRET: { env: "SRC" } }),

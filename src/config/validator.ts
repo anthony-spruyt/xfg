@@ -286,10 +286,13 @@ export function validateForSync(config: RawConfig): void {
   }
 
   // Validate variable names across all settings
-  for (const settings of [
+  const allSettings: (RawRootSettings | RawRepoSettings | undefined)[] = [
     config.settings,
     ...config.repos.map((r) => r.settings),
-  ]) {
+    ...Object.values(config.groups ?? {}).map((g) => g.settings),
+    ...(config.conditionalGroups ?? []).map((cg) => cg.settings),
+  ];
+  for (const settings of allSettings) {
     if (!settings?.variables) continue;
     for (const name of Object.keys(settings.variables)) {
       if (VARIABLE_RESERVED_KEYS.has(name)) continue;
@@ -344,6 +347,55 @@ export function validateForSync(config: RawConfig): void {
           `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
             "GitHub does not allow variables and secrets with the same name."
         );
+      }
+    }
+
+    // Check group-level variables
+    if (isPlainObject(config.groups)) {
+      for (const [groupName, group] of Object.entries(config.groups)) {
+        if (!group.settings?.variables) continue;
+        const {
+          deleteOrphaned: _gd,
+          inherit: _gi,
+          ...groupVarEntries
+        } = group.settings.variables as Record<string, unknown>;
+        const groupVariableNames = Object.keys(groupVarEntries).filter(
+          (k) => typeof groupVarEntries[k] !== "boolean"
+        );
+        const overlapping = groupVariableNames.filter((n) =>
+          secretNames.has(n.toUpperCase())
+        );
+        if (overlapping.length > 0) {
+          throw new ValidationError(
+            `Group '${groupName}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
+              "GitHub does not allow variables and secrets with the same name."
+          );
+        }
+      }
+    }
+
+    // Check conditional group-level variables
+    if (Array.isArray(config.conditionalGroups)) {
+      for (let i = 0; i < config.conditionalGroups.length; i++) {
+        const cg = config.conditionalGroups[i];
+        if (!cg.settings?.variables) continue;
+        const {
+          deleteOrphaned: _cd,
+          inherit: _ci,
+          ...cgVarEntries
+        } = cg.settings.variables as Record<string, unknown>;
+        const cgVariableNames = Object.keys(cgVarEntries).filter(
+          (k) => typeof cgVarEntries[k] !== "boolean"
+        );
+        const overlapping = cgVariableNames.filter((n) =>
+          secretNames.has(n.toUpperCase())
+        );
+        if (overlapping.length > 0) {
+          throw new ValidationError(
+            `Conditional group ${i}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
+              "GitHub does not allow variables and secrets with the same name."
+          );
+        }
       }
     }
   }
@@ -428,7 +480,15 @@ function validateSecretEntry(name: string, config: SecretConfig): void {
 export function validateSecretsConfig(config: RawConfig): void {
   if (!config.secrets) return;
 
-  const { deleteOrphaned: _, ...entries } = config.secrets;
+  const { deleteOrphaned, ...entries } = config.secrets;
+
+  // Reject 'deleteOrphaned' used as a secret name (it's a reserved peer key)
+  if (deleteOrphaned !== undefined && typeof deleteOrphaned !== "boolean") {
+    throw new ValidationError(
+      "'deleteOrphaned' is a reserved key in secrets config and cannot be used as a secret name."
+    );
+  }
+
   for (const [name, value] of Object.entries(entries)) {
     if (typeof value === "boolean") continue;
     validateSecretEntry(name, value as SecretConfig);

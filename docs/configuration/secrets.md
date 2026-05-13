@@ -108,7 +108,7 @@ The plaintext value never leaves your environment unencrypted.
 
 ## Deleting Orphaned Secrets
 
-When `deleteOrphaned: true` is set, secrets that were previously managed by xfg but are no longer in the config will be deleted:
+When `deleteOrphaned: true` is set, secrets not present in the config will be deleted from the repository:
 
 ```yaml
 secrets:
@@ -117,8 +117,8 @@ secrets:
     env: MY_API_KEY_VALUE
 ```
 
-!!! warning
-    `deleteOrphaned` only deletes secrets that xfg previously managed (tracked in the manifest). It will not delete secrets that were created manually or by other tools.
+!!! danger
+    `deleteOrphaned` deletes **all** secrets from the repository that are not defined in your config, including secrets created manually or by other tools. Use with caution.
 
 ## Dry Run Output
 

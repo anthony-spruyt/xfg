@@ -129,6 +129,23 @@ describe("VariablesProcessor", () => {
     assert.equal(result.changes?.delete, 1);
   });
 
+  test("noDelete suppresses orphan deletion even with deleteOrphaned true", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [
+      { name: "ORPHAN", value: "val", created_at: "", updated_at: "" },
+    ];
+    const processor = new VariablesProcessor(strategy);
+    const result = await processor.process(
+      makeRepoConfig({}, true),
+      mockGitHubRepo,
+      { noDelete: true }
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.delete, 0);
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(deleteCalls.length, 0);
+  });
+
   test("dry run lists current state but does not mutate", async () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [];

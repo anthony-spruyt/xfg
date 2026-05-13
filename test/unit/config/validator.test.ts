@@ -5180,6 +5180,40 @@ describe("group extends validation", () => {
       });
       assert.doesNotThrow(() => validateForSync(config));
     });
+
+    test("rejects invalid variable name in group", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        groups: {
+          myGroup: {
+            settings: {
+              variables: { GITHUB_BAD: "value" },
+            },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["myGroup"] }],
+      };
+      assert.throws(() => validateForSync(config), /GITHUB_/);
+    });
+
+    test("rejects invalid variable name in conditional group", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        groups: { g1: {} },
+        conditionalGroups: [
+          {
+            when: { allOf: ["g1"] },
+            settings: {
+              variables: { GITHUB_BAD: "value" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["g1"] }],
+      };
+      assert.throws(() => validateForSync(config), /GITHUB_/);
+    });
   });
 
   describe("validateSecrets", () => {
@@ -5207,6 +5241,25 @@ describe("group extends validation", () => {
     test("skips when no secrets configured", () => {
       const config = createValidConfig({});
       assert.doesNotThrow(() => validateSecretsConfig(config));
+    });
+
+    test("rejects deleteOrphaned used as a secret name", () => {
+      const config = createValidConfig({
+        secrets: {
+          deleteOrphaned: { env: "FOO" },
+        } as unknown as RawConfig["secrets"],
+      });
+      assert.throws(
+        () => validateSecretsConfig(config),
+        /deleteOrphaned.*reserved/i
+      );
+    });
+
+    test("rejects secret names with invalid characters", () => {
+      const config = createValidConfig({
+        secrets: { "MY-SECRET": { env: "SRC" } },
+      });
+      assert.throws(() => validateSecretsConfig(config), /invalid.*character/i);
     });
   });
 
@@ -5251,6 +5304,52 @@ describe("group extends validation", () => {
         },
       });
       assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+    });
+
+    test("rejects overlapping group variable and secret names", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        groups: {
+          myGroup: {
+            settings: {
+              variables: { DEPLOY_TOKEN: "value" },
+            },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["myGroup"] }],
+        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
+      };
+      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+    });
+
+    test("rejects overlapping conditional group variable and secret names", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        groups: { g1: {} },
+        conditionalGroups: [
+          {
+            when: { allOf: ["g1"] },
+            settings: {
+              variables: { DEPLOY_TOKEN: "value" },
+            },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["g1"] }],
+        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
+      };
+      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+    });
+
+    test("rejects case-insensitive overlapping variable and secret names", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { deploy_token: "value" },
+        },
+        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
+      });
+      assert.throws(() => validateForSync(config), /deploy_token.*overlap/i);
     });
   });
 });

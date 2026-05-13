@@ -12,7 +12,7 @@ describe("SodiumEncryptor", () => {
     assert.equal(typeof result, "string");
     assert.doesNotThrow(() => Buffer.from(result, "base64"));
     const decoded = Buffer.from(result, "base64");
-    assert.ok(decoded.length > 48);
+    assert.equal(decoded.length, Buffer.byteLength("test-secret-value") + 48);
   });
 
   test("encrypt produces different output each call (nonce)", async () => {

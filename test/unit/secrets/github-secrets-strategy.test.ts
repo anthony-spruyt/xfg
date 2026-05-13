@@ -72,7 +72,13 @@ describe("GitHubSecretsStrategy", () => {
     const strategy = new GitHubSecretsStrategy(executor, { cwd: "/tmp" });
     await strategy.upsert(mockRepo, "MY_SECRET", "encrypted-base64", "key-123");
     const call = executor.calls[0];
-    assert.ok(call.args.some((a) => a.includes("PUT")));
+    assert.equal(call.args[1], "-X");
+    assert.equal(call.args[2], "PUT");
+    assert.ok(
+      call.args.some((a) =>
+        a.includes("/repos/test-org/test-repo/actions/secrets/MY_SECRET")
+      )
+    );
   });
 
   test("delete calls DELETE endpoint", async () => {
@@ -81,6 +87,12 @@ describe("GitHubSecretsStrategy", () => {
     const strategy = new GitHubSecretsStrategy(executor, { cwd: "/tmp" });
     await strategy.delete(mockRepo, "MY_SECRET");
     const call = executor.calls[0];
-    assert.ok(call.args.some((a) => a.includes("DELETE")));
+    assert.equal(call.args[1], "-X");
+    assert.equal(call.args[2], "DELETE");
+    assert.ok(
+      call.args.some((a) =>
+        a.includes("/repos/test-org/test-repo/actions/secrets/MY_SECRET")
+      )
+    );
   });
 });

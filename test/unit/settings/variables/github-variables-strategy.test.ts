@@ -51,10 +51,9 @@ describe("GitHubVariablesStrategy", () => {
     assert.equal(result.length, 1);
     assert.equal(result[0].name, "MY_VAR");
     const apiCall = executor.calls[0];
+    assert.equal(apiCall.args[0], "api");
     assert.ok(
-      apiCall.args.some((a) =>
-        a.startsWith("/repos/test-org/test-repo/actions/variables")
-      )
+      apiCall.args[2].startsWith("/repos/test-org/test-repo/actions/variables")
     );
   });
 
@@ -66,7 +65,9 @@ describe("GitHubVariablesStrategy", () => {
     await strategy.create(mockRepo, "NEW_VAR", "new-value");
 
     const call = executor.calls[0];
-    assert.ok(call.args.some((a) => a.includes("POST")));
+    assert.equal(call.args[1], "-X");
+    assert.equal(call.args[2], "POST");
+    assert.equal(call.args[4], "/repos/test-org/test-repo/actions/variables");
   });
 
   test("update calls PATCH with value", async () => {
@@ -77,7 +78,12 @@ describe("GitHubVariablesStrategy", () => {
     await strategy.update(mockRepo, "MY_VAR", "updated-value");
 
     const call = executor.calls[0];
-    assert.ok(call.args.some((a) => a.includes("PATCH")));
+    assert.equal(call.args[1], "-X");
+    assert.equal(call.args[2], "PATCH");
+    assert.equal(
+      call.args[4],
+      "/repos/test-org/test-repo/actions/variables/MY_VAR"
+    );
   });
 
   test("delete calls DELETE endpoint", async () => {
@@ -88,6 +94,12 @@ describe("GitHubVariablesStrategy", () => {
     await strategy.delete(mockRepo, "MY_VAR");
 
     const call = executor.calls[0];
-    assert.ok(call.args.some((a) => a.includes("DELETE")));
+    assert.equal(call.args[1], "-X");
+    assert.equal(call.args[2], "DELETE");
+    assert.ok(
+      call.args.some((a) =>
+        a.includes("/repos/test-org/test-repo/actions/variables/MY_VAR")
+      )
+    );
   });
 });
