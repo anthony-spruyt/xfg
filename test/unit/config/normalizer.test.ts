@@ -6006,7 +6006,10 @@ describe("mergeSettings variables", () => {
       variables: { ROOT_VAR: "value" },
     };
     const perRepo: RawRepoSettings = {
-      variables: Object.assign({ REPO_VAR: "val" }, { inherit: false }),
+      variables: Object.assign(
+        { REPO_VAR: "val" },
+        { inherit: false }
+      ) as RawRepoSettings["variables"],
     };
     const result = mergeSettings(root, perRepo);
     assert.equal(result?.variables?.ROOT_VAR, undefined);
@@ -6015,7 +6018,10 @@ describe("mergeSettings variables", () => {
 
   test("merges deleteOrphaned peer key from root variables", () => {
     const root: RawRootSettings = {
-      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+      variables: Object.assign(
+        { ROOT_VAR: "value" },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["variables"],
     };
     const result = mergeSettings(root, undefined);
     assert.equal(result?.variables?.ROOT_VAR, "value");
@@ -6027,13 +6033,16 @@ describe("mergeSettings variables", () => {
 
   test("per-repo deleteOrphaned overrides root deleteOrphaned", () => {
     const root: RawRootSettings = {
-      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+      variables: Object.assign(
+        { ROOT_VAR: "value" },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["variables"],
     };
     const perRepo: RawRepoSettings = {
       variables: Object.assign(
         { ROOT_VAR: "value" },
         { deleteOrphaned: false }
-      ),
+      ) as RawRepoSettings["variables"],
     };
     const result = mergeSettings(root, perRepo);
     assert.equal(
@@ -6117,7 +6126,10 @@ describe("mergeRawSettings variables", () => {
       groups: {
         myGroup: {
           settings: {
-            variables: Object.assign({ GROUP_VAR: "val" }, { inherit: false }),
+            variables: Object.assign(
+              { GROUP_VAR: "val" },
+              { inherit: false }
+            ) as RawRepoSettings["variables"],
           },
         },
       },

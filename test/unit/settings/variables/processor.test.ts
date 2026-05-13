@@ -58,7 +58,12 @@ function makeRepoConfig(
   return {
     git: "https://github.com/test-org/test-repo.git",
     files: [],
-    settings: { variables: { ...variables, deleteOrphaned } },
+    settings: {
+      variables: Object.assign({ ...variables }, { deleteOrphaned }) as Record<
+        string,
+        string
+      > & { deleteOrphaned?: boolean },
+    },
   };
 }
 
@@ -178,7 +183,12 @@ describe("VariablesProcessor", () => {
       {
         git: "https://github.com/o/r.git",
         files: [],
-        settings: { variables: Object.assign({}, { deleteOrphaned: true }) },
+        settings: {
+          variables: Object.assign({}, { deleteOrphaned: true }) as Record<
+            string,
+            string
+          > & { deleteOrphaned?: boolean },
+        },
       },
       mockGitHubRepo,
       {}

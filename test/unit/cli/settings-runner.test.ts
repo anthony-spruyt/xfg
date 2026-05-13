@@ -138,6 +138,8 @@ function buildCtx(
     repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
     codeScanning:
       neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+    variables:
+      neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
   };
   return {
     repoConfig: { name: "org/repo" } as unknown as RepoConfig,
@@ -180,6 +182,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -210,6 +214,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -245,6 +251,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -284,6 +292,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -325,6 +335,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -372,6 +384,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -413,6 +427,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -447,6 +463,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -492,6 +510,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -533,6 +553,8 @@ describe("applyRepoSettings", () => {
           successResult,
           codeScanningCalled
         ) as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
@@ -573,6 +595,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        variables:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
       },
       logger,
     });
