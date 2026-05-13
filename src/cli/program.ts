@@ -6,6 +6,7 @@ import { MergeMode, MergeStrategy } from "../config/index.js";
 import { ValidationError } from "../shared/errors.js";
 import { runSync } from "./sync-command.js";
 import type { SyncOptions } from "./sync-command.js";
+import { runSecretsSync, type SecretsSyncOptions } from "./secrets-command.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -108,5 +109,28 @@ const syncCommand = new Command("sync")
 
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
+
+const secretsCommand = new Command("secrets").description(
+  "Manage repository secrets"
+);
+
+const secretsSyncCommand = new Command("sync")
+  .description("Sync secrets to target repositories")
+  .requiredOption("-c, --config <path>", "Path to xfg config file")
+  .option("-d, --dry-run", "Show what would change without applying")
+  .option("--no-delete", "Skip deletion of orphaned secrets")
+  .option("-w, --work-dir <path>", "Working directory")
+  .option("-r, --retries <number>", "Number of API retries", parseInt)
+  .action(async (opts) => {
+    try {
+      await runSecretsSync(opts as SecretsSyncOptions);
+    } catch (error) {
+      console.error("Fatal error:", error);
+      return process.exit(1);
+    }
+  });
+
+secretsCommand.addCommand(secretsSyncCommand);
+program.addCommand(secretsCommand);
 
 export { program, getVersion };
