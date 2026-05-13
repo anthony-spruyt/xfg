@@ -65,6 +65,28 @@
     "settings": {
       "$ref": "#/definitions/rootSettings",
       "description": "Global repository settings including GitHub Rulesets. Can be overridden per-repo. Settings are merged: per-repo rulesets override root rulesets with same name."
+    },
+    "secrets": {
+      "type": "object",
+      "description": "Secrets config: map of secret names to SecretConfig. Use deleteOrphaned to remove secrets not in config.",
+      "properties": {
+        "deleteOrphaned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delete secrets from repos that are not defined in this config. Default: false"
+        }
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "boolean",
+            "description": "Set to false to disable this secret"
+          },
+          {
+            "$ref": "#/definitions/secretConfig"
+          }
+        ]
+      }
     }
   },
   "definitions": {
@@ -587,6 +609,30 @@
           "$ref": "#/definitions/codeScanningSettings",
           "description": "GitHub code scanning default setup configuration."
         },
+        "variables": {
+          "type": "object",
+          "description": "Map of GitHub Actions variable names to values. Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.",
+          "properties": {
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete variables from repos that are not defined in this config. Independent from the settings-level deleteOrphaned flag. Default: false"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to disable this variable"
+              },
+              {
+                "type": "string",
+                "description": "Variable value"
+              }
+            ]
+          }
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
@@ -667,6 +713,34 @@
             }
           ],
           "description": "GitHub code scanning default setup configuration. Set to false at per-repo level to opt out of inherited settings."
+        },
+        "variables": {
+          "type": "object",
+          "description": "Map of GitHub Actions variable names to values. Set a variable to false to opt out. Set inherit: false to skip all inherited variables.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited root variables. Default: true"
+            },
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete variables from repos that are not defined in this config. Overrides root-level variables.deleteOrphaned. Default: false"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited variable"
+              },
+              {
+                "type": "string",
+                "description": "Variable value"
+              }
+            ]
+          }
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -1595,6 +1669,18 @@
           "description": "Rename this label. Maps to GitHub API's new_name field."
         }
       }
+    },
+    "secretConfig": {
+      "type": "object",
+      "description": "Secret configuration mapping to an environment variable source",
+      "required": ["env"],
+      "properties": {
+        "env": {
+          "type": "string",
+          "description": "Name of the environment variable containing the secret value"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
