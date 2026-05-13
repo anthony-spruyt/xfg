@@ -1,4 +1,9 @@
-import type { RawConfig, RawRootSettings, RawRepoSettings } from "./types.js";
+import type {
+  RawConfig,
+  RawRootSettings,
+  RawRepoSettings,
+  SecretConfig,
+} from "./types.js";
 import { validateFileName } from "./validators/file-validator.js";
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
@@ -13,6 +18,8 @@ import {
 import { validateRepoEntry } from "./validators/repo-entry-validator.js";
 
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
+const VARIABLE_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const VARIABLE_RESERVED_KEYS = new Set(["deleteOrphaned", "inherit"]);
 const CONFIG_ID_MAX_LENGTH = 64;
 
 function validateConfigId(config: RawConfig): void {
@@ -196,6 +203,8 @@ export function validateRawConfig(config: RawConfig): void {
   const hasCondGrpFiles = hasConditionalGroupFiles(config);
   const hasCondGrpSettings = hasConditionalGroupSettingsPresent(config);
   const hasCondGrpPR = hasConditionalGroupPR(config);
+  const hasSecrets =
+    isPlainObject(config.secrets) && Object.keys(config.secrets).length > 0;
 
   if (
     !hasFiles &&
@@ -204,11 +213,13 @@ export function validateRawConfig(config: RawConfig): void {
     !hasGrpSettings &&
     !hasCondGrpFiles &&
     !hasCondGrpSettings &&
-    !hasCondGrpPR
+    !hasCondGrpPR &&
+    !hasSecrets
   ) {
     throw new ValidationError(
-      "Config requires at least one of: 'files' or 'settings'. " +
-        "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
+      "Config requires at least one of: 'files', 'settings', or 'secrets'. " +
+        "Use 'files' to sync configuration files, 'settings' to manage repository settings, " +
+        "or 'secrets' to manage GitHub Actions secrets."
     );
   }
 
@@ -273,6 +284,18 @@ export function validateForSync(config: RawConfig): void {
         "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
     );
   }
+
+  // Validate variable names across all settings
+  for (const settings of [
+    config.settings,
+    ...config.repos.map((r) => r.settings),
+  ]) {
+    if (!settings?.variables) continue;
+    for (const name of Object.keys(settings.variables)) {
+      if (VARIABLE_RESERVED_KEYS.has(name)) continue;
+      validateVariableName(name);
+    }
+  }
 }
 
 export function hasActionableSettings(
@@ -302,5 +325,61 @@ export function hasActionableSettings(
     return true;
   }
 
+  if (settings.variables) {
+    const {
+      deleteOrphaned,
+      inherit: _i,
+      ...entries
+    } = settings.variables as Record<string, unknown>;
+    if (Object.keys(entries).length > 0 || deleteOrphaned === true) {
+      return true;
+    }
+  }
+
   return false;
+}
+
+export function validateVariableName(name: string): void {
+  if (!VARIABLE_NAME_PATTERN.test(name)) {
+    throw new ValidationError(
+      `Variable name '${name}' contains invalid characters. Only alphanumeric and underscore allowed.`
+    );
+  }
+  if (name.startsWith("GITHUB_")) {
+    throw new ValidationError(
+      `Variable name '${name}' cannot start with 'GITHUB_' (reserved prefix).`
+    );
+  }
+}
+
+export function validateSecretName(name: string): void {
+  if (!VARIABLE_NAME_PATTERN.test(name)) {
+    throw new ValidationError(
+      `Secret name '${name}' contains invalid characters. Only alphanumeric and underscore allowed.`
+    );
+  }
+  if (name.startsWith("GITHUB_")) {
+    throw new ValidationError(
+      `Secret name '${name}' cannot start with 'GITHUB_' (reserved prefix).`
+    );
+  }
+}
+
+function validateSecretEntry(name: string, config: SecretConfig): void {
+  validateSecretName(name);
+  if (!config.env || typeof config.env !== "string") {
+    throw new ValidationError(
+      `Secret '${name}' requires an 'env' field (string) specifying the environment variable source.`
+    );
+  }
+}
+
+export function validateSecretsConfig(config: RawConfig): void {
+  if (!config.secrets) return;
+
+  const { deleteOrphaned: _, ...entries } = config.secrets;
+  for (const [name, value] of Object.entries(entries)) {
+    if (typeof value === "boolean") continue;
+    validateSecretEntry(name, value as SecretConfig);
+  }
 }

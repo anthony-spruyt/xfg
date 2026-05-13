@@ -4,6 +4,7 @@ import {
   validateRawConfig,
   validateForSync,
   hasActionableSettings,
+  validateSecretsConfig,
 } from "../../../src/config/validator.js";
 import { ValidationError } from "../../../src/shared/errors.js";
 import type {
@@ -12,6 +13,7 @@ import type {
   RawFileConfig,
   RawRepoConfig,
   RawRepoSettings,
+  SecretConfig,
 } from "../../../src/config/index.js";
 
 describe("validateRawConfig", () => {
@@ -151,7 +153,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires at least one of: 'files' or 'settings'/
+        /Config requires at least one of:/
       );
     });
 
@@ -164,7 +166,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires at least one of: 'files' or 'settings'/
+        /Config requires at least one of:/
       );
     });
 
@@ -2763,7 +2765,7 @@ describe("validateRawConfig", () => {
 
       assert.throws(
         () => validateRawConfig(config),
-        /Config requires at least one of: 'files' or 'settings'/
+        /Config requires at least one of:/
       );
     });
 
@@ -3547,7 +3549,7 @@ describe("validateForSync", () => {
 
     assert.throws(
       () => validateForSync(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -3560,7 +3562,7 @@ describe("validateForSync", () => {
 
     assert.throws(
       () => validateForSync(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -3662,7 +3664,7 @@ describe("validateForSync", () => {
 
     assert.throws(
       () => validateForSync(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -4724,7 +4726,7 @@ describe("validateForSync - group coverage", () => {
     } as RawConfig;
     assert.throws(
       () => validateForSync(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -4742,7 +4744,7 @@ describe("validateForSync - group coverage", () => {
     } as RawConfig;
     assert.throws(
       () => validateForSync(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -4823,7 +4825,7 @@ describe("validateRawConfig - group files with no root files", () => {
     } as RawConfig;
     assert.throws(
       () => validateRawConfig(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -4841,7 +4843,7 @@ describe("validateRawConfig - group files with no root files", () => {
     } as RawConfig;
     assert.throws(
       () => validateRawConfig(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 
@@ -4859,7 +4861,7 @@ describe("validateRawConfig - group files with no root files", () => {
     } as RawConfig;
     assert.throws(
       () => validateRawConfig(config),
-      /Config requires at least one of: 'files' or 'settings'/
+      /Config requires at least one of:/
     );
   });
 });
@@ -5131,5 +5133,93 @@ describe("group extends validation", () => {
       ],
     };
     assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  describe("validateVariables", () => {
+    test("accepts valid variable names", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: "value", ANOTHER_123: "val" },
+        },
+      });
+      assert.doesNotThrow(() => validateForSync(config));
+    });
+
+    test("rejects variable names starting with GITHUB_", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { GITHUB_TOKEN: "value" },
+        },
+      });
+      assert.throws(() => validateForSync(config), /GITHUB_/);
+    });
+
+    test("rejects variable names with invalid characters", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { "my-var": "value" },
+        },
+      });
+      assert.throws(() => validateForSync(config), /invalid.*character/i);
+    });
+
+    test("skips reserved peer keys (deleteOrphaned, inherit) during name validation", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              variables: {
+                MY_VAR: "value",
+                deleteOrphaned: true,
+                inherit: false,
+              } as unknown as RawRepoSettings["variables"],
+            },
+          },
+        ],
+      });
+      assert.doesNotThrow(() => validateForSync(config));
+    });
+  });
+
+  describe("validateSecrets", () => {
+    test("accepts valid secret config", () => {
+      const config = createValidConfig({
+        secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
+      });
+      assert.doesNotThrow(() => validateSecretsConfig(config));
+    });
+
+    test("rejects secret names starting with GITHUB_", () => {
+      const config = createValidConfig({
+        secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
+      });
+      assert.throws(() => validateSecretsConfig(config), /GITHUB_/);
+    });
+
+    test("rejects secret without env field", () => {
+      const config = createValidConfig({
+        secrets: { MY_SECRET: {} as SecretConfig },
+      });
+      assert.throws(() => validateSecretsConfig(config), /env/);
+    });
+
+    test("skips when no secrets configured", () => {
+      const config = createValidConfig({});
+      assert.doesNotThrow(() => validateSecretsConfig(config));
+    });
+  });
+
+  describe("secrets-only config", () => {
+    test("accepts config with only secrets and repos", () => {
+      const config: RawConfig = {
+        id: "test",
+        repos: [{ git: "https://github.com/o/r.git" }],
+        secrets: {
+          MY_SECRET: { env: "SOURCE_VAR" },
+        },
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
   });
 });
