@@ -4,6 +4,7 @@ import {
   type RulesetPlanEntry,
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
+  type VariablesPlanEntry,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
@@ -32,6 +33,11 @@ export interface ProcessorResults {
   codeScanningResult?: {
     planOutput?: {
       entries?: CodeScanningPlanEntry[];
+    };
+  };
+  variablesResult?: {
+    planOutput?: {
+      entries?: VariablesPlanEntry[];
     };
   };
   error?: string;
