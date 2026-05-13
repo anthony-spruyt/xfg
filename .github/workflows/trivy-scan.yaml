@@ -8,7 +8,7 @@ on:
   workflow_dispatch: {}
 permissions:
   contents: "read"
-  issues: "write"
+  security-events: "write"
   packages: "read"
 jobs:
   fs-scan:
