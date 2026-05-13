@@ -6133,3 +6133,27 @@ describe("mergeRawSettings variables", () => {
     assert.equal(config.repos[0].settings?.variables?.GROUP_VAR, "val");
   });
 });
+
+describe("normalizeConfig secrets", () => {
+  test("passes secrets config through to normalized config", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+      secrets: {
+        MY_SECRET: { env: "SOURCE_VAR" },
+        deleteOrphaned: true,
+      },
+    };
+    const config = normalizeConfig(raw, {});
+
+    assert.deepStrictEqual(
+      (config.secrets as Record<string, unknown>)["MY_SECRET"],
+      { env: "SOURCE_VAR" }
+    );
+    assert.equal(
+      (config.secrets as Record<string, unknown>)["deleteOrphaned"],
+      true
+    );
+  });
+});

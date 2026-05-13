@@ -5222,4 +5222,35 @@ describe("group extends validation", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
   });
+
+  describe("cross-validation", () => {
+    test("rejects overlapping variable and secret names", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "https://github.com/o/r.git",
+            settings: {
+              variables: { DEPLOY_TOKEN: "value" },
+            },
+          },
+        ],
+        secrets: {
+          DEPLOY_TOKEN: { env: "SRC" },
+        },
+      });
+      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+    });
+
+    test("rejects overlapping root variable and secret names", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { DEPLOY_TOKEN: "value" },
+        },
+        secrets: {
+          DEPLOY_TOKEN: { env: "SRC" },
+        },
+      });
+      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+    });
+  });
 });

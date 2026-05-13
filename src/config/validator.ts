@@ -296,6 +296,57 @@ export function validateForSync(config: RawConfig): void {
       validateVariableName(name);
     }
   }
+
+  // Validate secret names and configs
+  validateSecretsConfig(config);
+
+  // Cross-validate: no overlap between global secret names and variable names
+  if (config.secrets) {
+    const { deleteOrphaned: _, ...secretEntries } = config.secrets;
+    const secretNames = new Set(
+      Object.keys(secretEntries)
+        .filter((k) => typeof secretEntries[k] !== "boolean")
+        .map((n) => n.toUpperCase())
+    );
+
+    // Check root-level variables
+    if (config.settings?.variables) {
+      const { deleteOrphaned: _rd, ...rootVarEntries } = config.settings
+        .variables as Record<string, unknown>;
+      const rootVariableNames = Object.keys(rootVarEntries).filter(
+        (k) => typeof rootVarEntries[k] !== "boolean"
+      );
+      const overlapping = rootVariableNames.filter((n) =>
+        secretNames.has(n.toUpperCase())
+      );
+      if (overlapping.length > 0) {
+        throw new ValidationError(
+          `${overlapping.join(", ")} overlap between root variables and secrets. ` +
+            "GitHub does not allow variables and secrets with the same name."
+        );
+      }
+    }
+
+    for (const repo of config.repos) {
+      const {
+        deleteOrphaned: _d,
+        inherit: _i,
+        ...varEntries
+      } = (repo.settings?.variables ?? {}) as Record<string, unknown>;
+      const variableNames = Object.keys(varEntries).filter(
+        (k) => typeof varEntries[k] !== "boolean"
+      );
+      const overlapping = variableNames.filter((n) =>
+        secretNames.has(n.toUpperCase())
+      );
+      if (overlapping.length > 0) {
+        throw new ValidationError(
+          `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
+            "GitHub does not allow variables and secrets with the same name."
+        );
+      }
+    }
+  }
 }
 
 export function hasActionableSettings(
