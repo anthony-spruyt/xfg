@@ -385,6 +385,10 @@ export interface CodeScanningSettings {
   languages?: CodeScanningLanguage[];
 }
 
+export interface SecretConfig {
+  env: string;
+}
+
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -394,6 +398,8 @@ export interface RepoSettings {
   labels?: Record<string, Label>;
   /** GitHub code scanning default setup */
   codeScanning?: CodeScanningSettings;
+  /** GitHub Actions variables keyed by name */
+  variables?: Record<string, string> & { deleteOrphaned?: boolean };
   deleteOrphaned?: boolean;
 }
 
@@ -470,6 +476,7 @@ export interface RawRootSettings {
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false>;
   codeScanning?: CodeScanningSettings | false;
+  variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   deleteOrphaned?: boolean;
 }
 
@@ -479,6 +486,10 @@ export interface RawRepoSettings {
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false> & { inherit?: boolean };
   codeScanning?: CodeScanningSettings | false;
+  variables?: Record<string, string | false> & {
+    inherit?: boolean;
+    deleteOrphaned?: boolean;
+  };
   deleteOrphaned?: boolean;
 }
 
@@ -509,6 +520,9 @@ export interface RawConfig {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RawRootSettings;
+  secrets?: Record<string, SecretConfig | boolean> & {
+    deleteOrphaned?: boolean;
+  };
 }
 
 // File content for a single file in a repo
@@ -544,4 +558,7 @@ export interface Config {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RepoSettings;
+  secrets?: Record<string, SecretConfig | boolean> & {
+    deleteOrphaned?: boolean;
+  };
 }

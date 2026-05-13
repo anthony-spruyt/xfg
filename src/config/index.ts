@@ -30,6 +30,8 @@ export type {
   RawFileConfig,
   RawRepoFileOverride,
   RawGroupConfig,
+  SecretConfig,
+  RawRootSettings,
   RawRepoSettings,
   RawRepoConfig,
   RawConfig,
