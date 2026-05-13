@@ -81,6 +81,8 @@ nav:
       - Repository Settings: configuration/repo-settings.md
       - GitHub Rulesets: configuration/rulesets.md
       - GitHub Labels: configuration/labels.md
+      - GitHub Variables: configuration/variables.md
+      - Secrets: configuration/secrets.md
       - Code Scanning: configuration/code-scanning.md
   - Examples:
       - Overview: examples/index.md

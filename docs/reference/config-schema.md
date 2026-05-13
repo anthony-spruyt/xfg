@@ -37,21 +37,64 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field               | Type        | Required | Description                                         |
-| ------------------- | ----------- | -------- | --------------------------------------------------- |
-| `id`                | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)   |
-| `files`             | `object`    | \*       | Map of filenames to file configs                    |
-| `groups`            | `object`    | \*       | Named config groups referenced by repos             |
-| `conditionalGroups` | `array`     | \*       | Groups that activate based on repo group membership |
-| `repos`             | `array`     | Yes      | List of repository configurations                   |
-| `settings`          | `object`    | \*       | Repository settings (rulesets, labels, etc.)        |
-| `prOptions`         | `PROptions` | No       | Global PR merge options                             |
-| `prTemplate`        | `string`    | No       | Custom PR body template                             |
-| `githubHosts`       | `array`     | No       | GitHub Enterprise Server hostnames                  |
-| `deleteOrphaned`    | `boolean`   | No       | Global default for orphan file deletion             |
+| Field               | Type        | Required | Description                                                        |
+| ------------------- | ----------- | -------- | ------------------------------------------------------------------ |
+| `id`                | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)                  |
+| `files`             | `object`    | \*       | Map of filenames to file configs                                   |
+| `groups`            | `object`    | \*       | Named config groups referenced by repos                            |
+| `conditionalGroups` | `array`     | \*       | Groups that activate based on repo group membership                |
+| `repos`             | `array`     | Yes      | List of repository configurations                                  |
+| `settings`          | `object`    | \*       | Repository settings (rulesets, labels, variables, etc.)            |
+| `secrets`           | `object`    | No       | GitHub Actions secrets (root-level, synced via `xfg secrets sync`) |
+| `prOptions`         | `PROptions` | No       | Global PR merge options                                            |
+| `prTemplate`        | `string`    | No       | Custom PR body template                                            |
+| `githubHosts`       | `array`     | No       | GitHub Enterprise Server hostnames                                 |
+| `deleteOrphaned`    | `boolean`   | No       | Global default for orphan file deletion                            |
 
 !!! note "files/settings/groups requirement"
     At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
+
+### Settings Object
+
+The `settings` object (at root, group, or repo level) supports the following fields:
+
+| Field            | Type      | Description                                               |
+| ---------------- | --------- | --------------------------------------------------------- |
+| `rulesets`       | `object`  | GitHub rulesets keyed by name                             |
+| `repo`           | `object`  | GitHub repository settings                                |
+| `labels`         | `object`  | GitHub labels keyed by name                               |
+| `codeScanning`   | `object`  | GitHub code scanning default setup                        |
+| `variables`      | `object`  | GitHub Actions variables keyed by name (see below)        |
+| `deleteOrphaned` | `boolean` | Default for orphan deletion across all settings sub-types |
+
+#### Variables Field
+
+The `variables` field in `settings` maps variable names to their string values. Two special keys control behavior:
+
+| Key              | Type              | Description                                                                           |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------- |
+| `deleteOrphaned` | `boolean`         | Delete variables removed from config (independent of settings-level `deleteOrphaned`) |
+| `inherit`        | `boolean`         | Set to `false` to discard all inherited variables (per-repo/group only)               |
+| `VAR_NAME`       | `string \| false` | Variable value, or `false` to opt out of an inherited variable                        |
+
+See [GitHub Variables](../configuration/variables.md) for full details.
+
+### Secrets Object
+
+The `secrets` object is at the **root level** (not under `settings`) and is synced via `xfg secrets sync`, not `xfg sync`. It maps secret names to `SecretConfig` objects:
+
+| Field            | Type      | Description                                    |
+| ---------------- | --------- | ---------------------------------------------- |
+| `deleteOrphaned` | `boolean` | Delete secrets removed from config             |
+| `SECRET_NAME`    | `object`  | `SecretConfig` with an `env` field (see below) |
+
+#### SecretConfig
+
+| Field | Type     | Required | Description                                               |
+| ----- | -------- | -------- | --------------------------------------------------------- |
+| `env` | `string` | Yes      | Name of the environment variable holding the secret value |
+
+See [Secrets](../configuration/secrets.md) for full details.
 
 ### File Config
 
