@@ -10,6 +10,7 @@ import type {
   RawRepoFileOverride,
   RawFileConfig,
   RawRepoSettings,
+  RawRootSettings,
   PullRequestRuleParameters,
 } from "../../../src/config/index.js";
 
@@ -5977,5 +5978,158 @@ describe("conditional group configuration", () => {
       const result = normalizeConfig(raw, {});
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
     });
+  });
+});
+
+describe("mergeSettings variables", () => {
+  test("merges root variables into repo settings", () => {
+    const root: RawRootSettings = {
+      variables: { ROOT_VAR: "root-value" },
+    };
+    const result = mergeSettings(root, undefined);
+    assert.deepStrictEqual(result?.variables, { ROOT_VAR: "root-value" });
+  });
+
+  test("per-repo variables override root", () => {
+    const root: RawRootSettings = {
+      variables: { SHARED: "root" },
+    };
+    const perRepo: RawRepoSettings = {
+      variables: { SHARED: "repo" },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.variables?.SHARED, "repo");
+  });
+
+  test("per-repo inherit false discards root variables", () => {
+    const root: RawRootSettings = {
+      variables: { ROOT_VAR: "value" },
+    };
+    const perRepo: RawRepoSettings = {
+      variables: Object.assign({ REPO_VAR: "val" }, { inherit: false }),
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.variables?.ROOT_VAR, undefined);
+    assert.equal(result?.variables?.REPO_VAR, "val");
+  });
+
+  test("merges deleteOrphaned peer key from root variables", () => {
+    const root: RawRootSettings = {
+      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+    };
+    const result = mergeSettings(root, undefined);
+    assert.equal(result?.variables?.ROOT_VAR, "value");
+    assert.equal(
+      (result?.variables as Record<string, unknown>)?.deleteOrphaned,
+      true
+    );
+  });
+
+  test("per-repo deleteOrphaned overrides root deleteOrphaned", () => {
+    const root: RawRootSettings = {
+      variables: Object.assign({ ROOT_VAR: "value" }, { deleteOrphaned: true }),
+    };
+    const perRepo: RawRepoSettings = {
+      variables: Object.assign(
+        { ROOT_VAR: "value" },
+        { deleteOrphaned: false }
+      ),
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(
+      (result?.variables as Record<string, unknown>)?.deleteOrphaned,
+      false
+    );
+  });
+
+  test("per-repo variable: false opts out of root variable", () => {
+    const root: RawRootSettings = {
+      variables: { ROOT_VAR: "value", KEEP: "yes" },
+    };
+    const perRepo: RawRepoSettings = {
+      variables: { ROOT_VAR: false as unknown as string },
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.variables?.ROOT_VAR, undefined);
+    assert.equal(result?.variables?.KEEP, "yes");
+  });
+});
+
+describe("mergeRawSettings variables", () => {
+  test("group-level variables merge into root settings", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: { ROOT_VAR: "root-value" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: { GROUP_VAR: "group-value" },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, "root-value");
+    assert.equal(config.repos[0].settings?.variables?.GROUP_VAR, "group-value");
+  });
+
+  test("group-level variables override root variables", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: { SHARED: "root" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: { SHARED: "group" },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.equal(config.repos[0].settings?.variables?.SHARED, "group");
+  });
+
+  test("group-level inherit: false discards root variables", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: { ROOT_VAR: "value" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: Object.assign({ GROUP_VAR: "val" }, { inherit: false }),
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.equal(config.repos[0].settings?.variables?.ROOT_VAR, undefined);
+    assert.equal(config.repos[0].settings?.variables?.GROUP_VAR, "val");
   });
 });

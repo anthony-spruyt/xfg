@@ -310,6 +310,52 @@ export function mergeSettings(
     }
   }
 
+  // Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
+  if (root?.variables || perRepo?.variables) {
+    const rootVars = root?.variables ?? {};
+    const repoVars = perRepo?.variables ?? {};
+
+    const rootDeleteOrphaned = (rootVars as Record<string, unknown>)
+      .deleteOrphaned;
+    const repoDeleteOrphaned = (repoVars as Record<string, unknown>)
+      .deleteOrphaned;
+    const effectiveDeleteOrphaned = repoDeleteOrphaned ?? rootDeleteOrphaned;
+
+    const inherit = (repoVars as Record<string, unknown>).inherit;
+    if (inherit === false) {
+      const {
+        inherit: _,
+        deleteOrphaned: _d,
+        ...rest
+      } = repoVars as Record<string, unknown>;
+      result.variables = Object.fromEntries(
+        Object.entries(rest).filter(([, v]) => v !== false)
+      ) as Record<string, string>;
+    } else {
+      const combined = { ...rootVars, ...repoVars };
+      const {
+        inherit: _,
+        deleteOrphaned: _d,
+        ...rest
+      } = combined as Record<string, unknown>;
+      result.variables = Object.fromEntries(
+        Object.entries(rest).filter(([, v]) => v !== false)
+      ) as Record<string, string>;
+    }
+
+    if (effectiveDeleteOrphaned !== undefined) {
+      (result.variables as Record<string, unknown>).deleteOrphaned =
+        effectiveDeleteOrphaned;
+    }
+
+    // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
+    const { deleteOrphaned: _check, ...varEntries } =
+      result.variables as Record<string, unknown>;
+    if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
+      delete result.variables;
+    }
+  }
+
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
@@ -497,6 +543,22 @@ function mergeRawSettings(
     } else {
       result.codeScanning = structuredClone(overlay.codeScanning);
     }
+  }
+
+  // Variables: simple string values with false opt-outs (mergeNamedEntries won't work for strings)
+  if (overlay.variables) {
+    const overlayVars = overlay.variables as Record<string, unknown>;
+    const inherit = overlayVars.inherit !== false;
+    const base = inherit ? { ...(result.variables ?? {}) } : {};
+    for (const [name, entry] of Object.entries(overlay.variables)) {
+      if (name === "inherit" || name === "deleteOrphaned") continue;
+      (base as Record<string, unknown>)[name] = entry;
+    }
+    const overlayDelete = overlayVars.deleteOrphaned;
+    if (overlayDelete !== undefined) {
+      (base as Record<string, unknown>).deleteOrphaned = overlayDelete;
+    }
+    result.variables = base as typeof result.variables;
   }
 
   // deleteOrphaned: overlay wins
