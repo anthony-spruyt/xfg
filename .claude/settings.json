@@ -11,6 +11,7 @@
   "autoUpdatesChannel": "latest",
   "effortLevel": "xhigh",
   "viewMode": "verbose",
+  "autoMemoryEnabled": false,
   "permissions": {
     "defaultMode": "bypassPermissions",
     "allow": [
@@ -170,19 +171,29 @@
     "security-guidance@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
     "hookify-plus@hookify-plus": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "agentmemory@agentmemory": true
   },
   "extraKnownMarketplaces": {
     "hookify-plus": {
+      "autoUpdate": true,
       "source": {
         "source": "github",
         "repo": "anthony-spruyt/hookify-plus"
       }
     },
     "caveman": {
+      "autoUpdate": true,
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "agentmemory": {
+      "autoUpdate": true,
+      "source": {
+        "source": "github",
+        "repo": "rohitg00/agentmemory"
       }
     }
   }
