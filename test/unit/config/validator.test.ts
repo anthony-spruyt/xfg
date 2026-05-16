@@ -5255,6 +5255,19 @@ describe("group extends validation", () => {
       );
     });
 
+    test("rejects duplicate case-insensitive secret names", () => {
+      const config = createValidConfig({
+        secrets: {
+          MY_SECRET: { env: "SRC_UPPER" },
+          my_secret: { env: "SRC_LOWER" },
+        },
+      });
+      assert.throws(
+        () => validateSecretsConfig(config),
+        /[Dd]uplicate secret name/
+      );
+    });
+
     test("rejects secret names with invalid characters", () => {
       const config = createValidConfig({
         secrets: { "MY-SECRET": { env: "SRC" } },

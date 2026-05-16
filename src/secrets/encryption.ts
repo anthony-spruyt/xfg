@@ -6,20 +6,26 @@ export interface ISecretEncryptor {
 
 export class SodiumEncryptor implements ISecretEncryptor {
   private sodium: typeof _sodium | undefined;
+  private initPromise: Promise<void> | null = null;
 
-  private async ensureInitialized(): Promise<typeof _sodium> {
-    if (!this.sodium) {
-      try {
-        const sodium = await import("libsodium-wrappers");
-        await sodium.default.ready;
-        this.sodium = sodium.default;
-      } catch {
-        throw new Error(
-          "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
-        );
-      }
+  private ensureInitialized(): Promise<typeof _sodium> {
+    if (!this.initPromise) {
+      this.initPromise = (async () => {
+        try {
+          const sodium = await import("libsodium-wrappers");
+          await sodium.default.ready;
+          this.sodium = sodium.default;
+        } catch {
+          throw new Error(
+            "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
+          );
+        }
+      })().catch((err) => {
+        this.initPromise = null;
+        throw err;
+      });
     }
-    return this.sodium;
+    return this.initPromise.then(() => this.sodium!);
   }
 
   async encrypt(value: string, publicKeyBase64: string): Promise<string> {

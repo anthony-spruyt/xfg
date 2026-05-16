@@ -73,6 +73,10 @@ secrets:
     env: SECRET
 ```
 
+## Case-Insensitive Matching
+
+Secret name matching is **case-insensitive** (GitHub treats secret names as case-insensitive). Defining `MY_SECRET` and `my_secret` in the same config is rejected as a duplicate. xfg normalizes names to uppercase when comparing against remote state.
+
 ## Environment Variable Requirements
 
 Secret values are **never stored in your config file**. They are read from environment variables at runtime, so you must export them before running `xfg secrets sync`:

@@ -80,6 +80,7 @@
         "oneOf": [
           {
             "type": "boolean",
+            "const": false,
             "description": "Set to false to disable this secret"
           },
           {

@@ -490,6 +490,28 @@ export function validateSecretsConfig(config: RawConfig): void {
     );
   }
 
+  // Reject boolean true — only false (opt-out) is valid
+  for (const [name, value] of Object.entries(entries)) {
+    if (value === true) {
+      throw new ValidationError(
+        `Secret '${name}' is set to true, which is not valid. Use false to opt out, or provide a SecretConfig object.`
+      );
+    }
+  }
+
+  // Reject duplicate case-insensitive secret names
+  const seen = new Map<string, string>();
+  for (const name of Object.keys(entries)) {
+    const upper = name.toUpperCase();
+    const existing = seen.get(upper);
+    if (existing) {
+      throw new ValidationError(
+        `Duplicate secret name: '${name}' and '${existing}' collide (GitHub treats secret names case-insensitively).`
+      );
+    }
+    seen.set(upper, name);
+  }
+
   for (const [name, value] of Object.entries(entries)) {
     if (typeof value === "boolean") continue;
     validateSecretEntry(name, value as SecretConfig);

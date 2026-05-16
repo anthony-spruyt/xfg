@@ -231,29 +231,24 @@ describe("SecretsProcessor", () => {
     );
   });
 
-  test("case-differing secret names both get upserted", async () => {
+  test("matches existing secret case-insensitively against API response", async () => {
     const strategy = new MockSecretsStrategy();
-    strategy.listResponse = [];
-    const envResolver = new MockEnvResolver({
-      SRC_UPPER: "val1",
-      SRC_LOWER: "val2",
-    });
+    strategy.listResponse = [
+      { name: "my_secret", created_at: "", updated_at: "" },
+    ];
+    const envResolver = new MockEnvResolver({ SRC: "val1" });
     const processor = new SecretsProcessor(
       strategy,
       new MockEncryptor(),
       envResolver
     );
     const result = await processor.process(
-      makeSecretsConfig({
-        MY_SECRET: { env: "SRC_UPPER" },
-        my_secret: { env: "SRC_LOWER" },
-      }),
+      makeSecretsConfig({ MY_SECRET: { env: "SRC" } }),
       mockGitHubRepo,
       {}
     );
-    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
-    assert.equal(upsertCalls.length, 2);
-    assert.equal(result.created, 2);
+    assert.equal(result.updated, 1);
+    assert.equal(result.created, 0);
   });
 
   test("deleteOrphaned with no secrets defined still deletes orphans", async () => {
