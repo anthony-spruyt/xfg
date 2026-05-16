@@ -139,6 +139,7 @@ describe("SecretsProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.updated, 1);
+    assert.equal(result.created, 0);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls[0].args[0], "DEPLOY_TOKEN");
     assert.equal(upsertCalls[0].args[2], "key-1");

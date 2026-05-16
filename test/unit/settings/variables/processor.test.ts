@@ -79,6 +79,8 @@ describe("VariablesProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.changes?.create, 1);
+    assert.equal(result.changes?.update, 0);
+    assert.equal(result.changes?.delete, 0);
     const createCalls = strategy.calls.filter((c) => c.method === "create");
     assert.equal(createCalls.length, 1);
     assert.equal(createCalls[0].args[0], "NEW_VAR");
@@ -98,6 +100,8 @@ describe("VariablesProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.changes?.update, 1);
+    assert.equal(result.changes?.create, 0);
+    assert.equal(result.changes?.delete, 0);
     const updateCalls = strategy.calls.filter((c) => c.method === "update");
     assert.equal(updateCalls.length, 1);
     assert.equal(updateCalls[0].args[0], "MY_VAR");
