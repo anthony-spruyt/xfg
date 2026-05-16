@@ -67,7 +67,7 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables/${encodeURIComponent(name)}`;
     await this.api.call("PATCH", endpoint, {
-      payload: { name, value },
+      payload: { value },
       options,
     });
   }

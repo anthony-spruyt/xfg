@@ -6116,6 +6116,38 @@ describe("mergeRawSettings variables", () => {
     assert.equal(config.repos[0].settings?.variables?.SHARED, "group");
   });
 
+  test("group-level variable: false removes inherited root variable", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: { KEEP: "yes", REMOVE: "no" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: Object.assign(
+              { REMOVE: false },
+              {}
+            ) as unknown as RawRepoSettings["variables"],
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.equal(config.repos[0].settings?.variables?.KEEP, "yes");
+    assert.equal(
+      (config.repos[0].settings?.variables as Record<string, unknown>)?.REMOVE,
+      undefined
+    );
+  });
+
   test("group-level inherit: false discards root variables", () => {
     const raw: RawConfig = {
       id: "test-config",

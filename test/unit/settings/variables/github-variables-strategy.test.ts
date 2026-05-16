@@ -103,6 +103,23 @@ describe("GitHubVariablesStrategy", () => {
     );
   });
 
+  test("update sends only value in payload (no name)", async () => {
+    const executor = new MockExecutorWithInput();
+    executor.response = "";
+    const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
+
+    await strategy.update(mockRepo, "MY_VAR", "updated-value");
+
+    assert.ok(executor.lastInput, "Should pass payload via input");
+    const payload = JSON.parse(executor.lastInput!);
+    assert.equal(payload.value, "updated-value");
+    assert.equal(
+      payload.name,
+      undefined,
+      "PATCH should not include name in payload"
+    );
+  });
+
   test("delete calls DELETE endpoint", async () => {
     const executor = new MockExecutor();
     executor.response = "";
