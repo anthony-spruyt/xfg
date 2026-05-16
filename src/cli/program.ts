@@ -100,7 +100,11 @@ const syncCommand = new Command("sync")
   .option("--delete-branch", "Delete source branch after merge")
   .action(async (opts) => {
     try {
-      await runSync(opts as SyncOptions);
+      const options = {
+        ...opts,
+        noDelete: opts.delete === false,
+      } as SyncOptions;
+      await runSync(options);
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);
@@ -131,7 +135,11 @@ const secretsSyncCommand = new Command("sync")
   )
   .action(async (opts) => {
     try {
-      await runSecretsSync(opts as SecretsSyncOptions);
+      const options = {
+        ...opts,
+        noDelete: opts.delete === false,
+      } as SecretsSyncOptions;
+      await runSecretsSync(options);
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);

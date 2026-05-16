@@ -18,7 +18,7 @@ import { toErrorMessage } from "../shared/type-guards.js";
 export interface SecretsSyncOptions {
   config: string;
   dryRun?: boolean;
-  delete?: boolean;
+  noDelete?: boolean;
   workDir?: string;
   retries?: number;
 }
@@ -27,8 +27,7 @@ export async function runSecretsSync(
   options: SecretsSyncOptions
 ): Promise<void> {
   const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
-  const { config: configPath, dryRun, workDir, retries } = options;
-  const noDelete = options.delete === false;
+  const { config: configPath, dryRun, workDir, retries, noDelete } = options;
   const cwd = workDir ?? process.cwd();
 
   const rawConfig = loadRawConfig(configPath);
