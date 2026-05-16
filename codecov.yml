@@ -31,6 +31,8 @@ ignore:
   - "src/settings/repo-settings/types.ts"
   - "src/settings/code-scanning/types.ts"
   - "src/settings/labels/types.ts"
+  - "src/settings/variables/types.ts"
+  - "src/secrets/types.ts"
 
   # Re-export index files (no logic, just exports)
   - "src/cli/index.ts"
@@ -44,6 +46,8 @@ ignore:
   - "src/settings/rulesets/index.ts"
   - "src/settings/repo-settings/index.ts"
   - "src/settings/code-scanning/index.ts"
+  - "src/settings/variables/index.ts"
+  - "src/secrets/index.ts"
 
   # Test utilities
   - "test/mocks/**"
