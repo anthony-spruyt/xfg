@@ -37,7 +37,12 @@ function addSharedOptions(cmd: Command): Command {
     .option(
       "-r, --retries <number>",
       "Number of retries for network operations (0 to disable)",
-      (v) => parseInt(v, 10),
+      (v: string) => {
+        const n = parseInt(v, 10);
+        if (isNaN(n) || n < 0)
+          throw new InvalidArgumentError("Must be a non-negative number.");
+        return n;
+      },
       3
     )
     .option(
@@ -129,7 +134,8 @@ const secretsSyncCommand = new Command("sync")
     "Number of API retries",
     (value: string) => {
       const n = parseInt(value, 10);
-      if (isNaN(n)) throw new InvalidArgumentError("Must be a number.");
+      if (isNaN(n) || n < 0)
+        throw new InvalidArgumentError("Must be a non-negative number.");
       return n;
     }
   )
