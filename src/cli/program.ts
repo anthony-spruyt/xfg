@@ -128,7 +128,7 @@ const secretsSyncCommand = new Command("sync")
   .requiredOption("-c, --config <path>", "Path to xfg config file")
   .option("-d, --dry-run", "Show what would change without applying")
   .option("--no-delete", "Skip deletion of orphaned secrets")
-  .option("-w, --work-dir <path>", "Working directory")
+  .option("-w, --work-dir <path>", "Temporary directory for cloning", "./tmp")
   .option(
     "-r, --retries <number>",
     "Number of API retries",
@@ -137,7 +137,8 @@ const secretsSyncCommand = new Command("sync")
       if (isNaN(n) || n < 0)
         throw new InvalidArgumentError("Must be a non-negative number.");
       return n;
-    }
+    },
+    3
   )
   .action(async (opts) => {
     try {

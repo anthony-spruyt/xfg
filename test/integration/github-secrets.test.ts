@@ -127,9 +127,14 @@ secrets:
 
     await runSecretsSync(configPath);
 
-    const secrets = await getSecrets();
-    const found = secrets.find((s) => s.name === "XFG_TEST_SECRET");
-    assert.ok(found, "Secret XFG_TEST_SECRET should still exist");
+    await withTestRetry(
+      async () => {
+        const secrets = await getSecrets();
+        const found = secrets.find((s) => s.name === "XFG_TEST_SECRET");
+        assert.ok(found, "Secret XFG_TEST_SECRET should still exist");
+      },
+      { description: "secret upsert visible" }
+    );
   });
 
   test("dry run does not create secret", async () => {

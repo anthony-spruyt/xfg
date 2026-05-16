@@ -149,6 +149,7 @@ xfg secrets sync --config <path> [options]
 | ------------- | ----- | ----------------------------------------------------------------- | ------------ |
 | `--config`    | `-c`  | Path to YAML config file                                          | **Required** |
 | `--dry-run`   | `-d`  | Show what would be done without making changes                    | `false`      |
+| `--work-dir`  | `-w`  | Temporary directory for cloning                                   | `./tmp`      |
 | `--retries`   | `-r`  | Number of retries for network operations                          | `3`          |
 | `--no-delete` |       | Skip deletion of orphaned secrets even if `deleteOrphaned` is set | `false`      |
 

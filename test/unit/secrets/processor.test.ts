@@ -288,6 +288,43 @@ describe("SecretsProcessor", () => {
     assert.equal(deleteCalls.length, 2);
   });
 
+  test("handles mixed create, update, and delete in one call", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [
+      { name: "EXISTING", created_at: "", updated_at: "" },
+      { name: "ORPHAN", created_at: "", updated_at: "" },
+    ];
+    const envResolver = new MockEnvResolver({
+      SRC_EXISTING: "updated-val",
+      SRC_NEW: "new-val",
+    });
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      envResolver
+    );
+    const result = await processor.process(
+      makeSecretsConfig(
+        {
+          EXISTING: { env: "SRC_EXISTING" },
+          BRAND_NEW: { env: "SRC_NEW" },
+        },
+        true
+      ),
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.created, 1);
+    assert.equal(result.updated, 1);
+    assert.equal(result.deleted, 1);
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls.length, 2);
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(deleteCalls.length, 1);
+    assert.equal(deleteCalls[0].args[0], "ORPHAN");
+  });
+
   test("skips non-GitHub repos", async () => {
     const strategy = new MockSecretsStrategy();
     const processor = new SecretsProcessor(

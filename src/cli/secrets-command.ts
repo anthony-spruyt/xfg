@@ -67,7 +67,7 @@ export async function runSecretsSync(
 ): Promise<void> {
   const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
   const { config: configPath, dryRun, workDir, retries, noDelete } = options;
-  const cwd = workDir ?? process.cwd();
+  const cwd = workDir ?? "./tmp";
 
   const rawConfig = loadRawConfig(configPath);
   validateRawConfig(rawConfig);

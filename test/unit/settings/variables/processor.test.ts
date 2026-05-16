@@ -203,6 +203,62 @@ describe("VariablesProcessor", () => {
     assert.equal(result.skipped, true);
   });
 
+  test("handles mixed create, update, and delete in one call", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [
+      { name: "EXISTING", value: "old", created_at: "", updated_at: "" },
+      { name: "ORPHAN", value: "val", created_at: "", updated_at: "" },
+    ];
+    const processor = new VariablesProcessor(strategy);
+    const result = await processor.process(
+      makeRepoConfig({ EXISTING: "new", BRAND_NEW: "fresh" }, true),
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.create, 1);
+    assert.equal(result.changes?.update, 1);
+    assert.equal(result.changes?.delete, 1);
+    const createCalls = strategy.calls.filter((c) => c.method === "create");
+    const updateCalls = strategy.calls.filter((c) => c.method === "update");
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(createCalls[0].args[0], "BRAND_NEW");
+    assert.equal(updateCalls[0].args[0], "EXISTING");
+    assert.equal(updateCalls[0].args[1], "new");
+    assert.equal(deleteCalls[0].args[0], "ORPHAN");
+  });
+
+  test("returns failure when strategy throws", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [];
+    strategy.create = async () => {
+      throw new Error("API failure");
+    };
+    const processor = new VariablesProcessor(strategy);
+    const result = await processor.process(
+      makeRepoConfig({ NEW_VAR: "value" }),
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.success, false);
+    assert.ok(result.message?.includes("API failure"));
+  });
+
+  test("handles empty string as valid variable value", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [];
+    const processor = new VariablesProcessor(strategy);
+    const result = await processor.process(
+      makeRepoConfig({ EMPTY_VAR: "" }),
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.changes?.create, 1);
+    const createCalls = strategy.calls.filter((c) => c.method === "create");
+    assert.equal(createCalls[0].args[1], "");
+  });
+
   test("deleteOrphaned only (no variable entries) still runs processor", async () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [
