@@ -24,4 +24,46 @@ describe("SodiumEncryptor", () => {
 
     assert.notEqual(result1, result2);
   });
+
+  test("encrypt throws on invalid public key", async () => {
+    const encryptor = new SodiumEncryptor();
+
+    await assert.rejects(
+      () => encryptor.encrypt("value", "not-valid-base64!!!"),
+      (err: Error) => {
+        assert.equal(err instanceof Error, true);
+        return true;
+      }
+    );
+  });
+
+  test("after a throwing call, subsequent call retries and can succeed", async () => {
+    const encryptor = new SodiumEncryptor();
+
+    // First call fails due to invalid key
+    await assert.rejects(() =>
+      encryptor.encrypt("value", "not-valid-base64!!!")
+    );
+
+    // Second call with valid key succeeds (init was not permanently broken)
+    const validKey = Buffer.from(new Uint8Array(32).fill(1)).toString("base64");
+    const result = await encryptor.encrypt("test-value", validKey);
+    assert.equal(typeof result, "string");
+  });
+
+  test("concurrent encrypt calls share initialization", async () => {
+    const encryptor = new SodiumEncryptor();
+    const testKey = Buffer.from(new Uint8Array(32).fill(1)).toString("base64");
+
+    // Launch two encryptions concurrently — both must succeed
+    const [result1, result2] = await Promise.all([
+      encryptor.encrypt("value-a", testKey),
+      encryptor.encrypt("value-b", testKey),
+    ]);
+
+    assert.equal(typeof result1, "string");
+    assert.equal(typeof result2, "string");
+    // Different plaintexts produce different ciphertexts
+    assert.notEqual(result1, result2);
+  });
 });

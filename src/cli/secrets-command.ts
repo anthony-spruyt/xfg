@@ -14,6 +14,29 @@ import { ProcessExecutor } from "../shared/command-executor.js";
 import { parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import type { SecretsProcessorResult } from "../secrets/processor.js";
+import type { SecretConfig, Config } from "../config/index.js";
+import type { RepoInfo } from "../repo/index.js";
+
+type SecretsConfig = Record<string, SecretConfig | boolean> & {
+  deleteOrphaned?: boolean;
+};
+
+export interface ISecretsProcessorAdapter {
+  process(
+    secretsConfig: SecretsConfig,
+    repoInfo: RepoInfo,
+    options: { dryRun?: boolean; token?: string; noDelete?: boolean }
+  ): Promise<SecretsProcessorResult>;
+}
+
+export interface SecretsSyncDependencies {
+  processorFactory?: (
+    config: Config,
+    cwd: string,
+    retries: number
+  ) => ISecretsProcessorAdapter;
+}
 
 export interface SecretsSyncOptions {
   config: string;
@@ -23,8 +46,24 @@ export interface SecretsSyncOptions {
   retries?: number;
 }
 
+function createDefaultProcessor(
+  _config: Config,
+  cwd: string,
+  retries: number
+): ISecretsProcessorAdapter {
+  const executor = new ProcessExecutor(process.env);
+  const encryptor = new SodiumEncryptor();
+  const envResolver = new EnvResolver(process.env);
+  const strategy = new GitHubSecretsStrategy(executor, {
+    cwd,
+    retries,
+  });
+  return new SecretsProcessor(strategy, encryptor, envResolver);
+}
+
 export async function runSecretsSync(
-  options: SecretsSyncOptions
+  options: SecretsSyncOptions,
+  deps: SecretsSyncDependencies = {}
 ): Promise<void> {
   const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
   const { config: configPath, dryRun, workDir, retries, noDelete } = options;
@@ -50,14 +89,8 @@ export async function runSecretsSync(
     return;
   }
 
-  const executor = new ProcessExecutor(process.env);
-  const encryptor = new SodiumEncryptor();
-  const envResolver = new EnvResolver(process.env);
-  const strategy = new GitHubSecretsStrategy(executor, {
-    cwd,
-    retries: retries ?? 3,
-  });
-  const processor = new SecretsProcessor(strategy, encryptor, envResolver);
+  const processorFactory = deps.processorFactory ?? createDefaultProcessor;
+  const processor = processorFactory(config, cwd, retries ?? 3);
 
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 

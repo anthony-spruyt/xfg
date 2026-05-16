@@ -442,6 +442,144 @@ describe("buildSettingsReport", () => {
     assert.equal(report.repos[0].settings[0].newValue, null);
   });
 
+  test("converts variablesResult with create/update/delete entries", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        variablesResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "NODE_ENV",
+                action: "create" as const,
+                newValue: "production",
+              },
+              {
+                name: "API_URL",
+                action: "update" as const,
+                oldValue: "http://old.example.com",
+                newValue: "http://new.example.com",
+              },
+              {
+                name: "DEPRECATED_VAR",
+                action: "delete" as const,
+                oldValue: "old-value",
+              },
+              {
+                name: "KEEP_ME",
+                action: "unchanged" as const,
+                oldValue: "same",
+                newValue: "same",
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    // Unchanged entries should be filtered out
+    assert.equal(report.repos[0].variables!.length, 3);
+
+    // Verify create entry
+    const createVar = report.repos[0].variables![0];
+    assert.equal(createVar.name, "NODE_ENV");
+    assert.equal(createVar.action, "create");
+    assert.equal(createVar.newValue, "production");
+
+    // Verify update entry
+    const updateVar = report.repos[0].variables![1];
+    assert.equal(updateVar.name, "API_URL");
+    assert.equal(updateVar.action, "update");
+    assert.equal(updateVar.oldValue, "http://old.example.com");
+    assert.equal(updateVar.newValue, "http://new.example.com");
+
+    // Verify delete entry
+    const deleteVar = report.repos[0].variables![2];
+    assert.equal(deleteVar.name, "DEPRECATED_VAR");
+    assert.equal(deleteVar.action, "delete");
+    assert.equal(deleteVar.oldValue, "old-value");
+
+    // Verify totals
+    assert.equal(report.totals.variables!.create, 1);
+    assert.equal(report.totals.variables!.update, 1);
+    assert.equal(report.totals.variables!.delete, 1);
+  });
+
+  test("aggregates variable totals across multiple repos", () => {
+    const results = [
+      {
+        repoName: "org/repo1",
+        variablesResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "VAR1",
+                action: "create" as const,
+                newValue: "val1",
+              },
+              {
+                name: "VAR2",
+                action: "create" as const,
+                newValue: "val2",
+              },
+            ],
+          },
+        },
+      },
+      {
+        repoName: "org/repo2",
+        variablesResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "VAR3",
+                action: "delete" as const,
+                oldValue: "val3",
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    assert.ok(report.totals.variables);
+    assert.equal(report.totals.variables!.create, 2);
+    assert.equal(report.totals.variables!.update, 0);
+    assert.equal(report.totals.variables!.delete, 1);
+  });
+
+  test("initializes variables as empty array when no variablesResult", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        settingsResult: {
+          planOutput: {
+            entries: [
+              {
+                property: "hasWiki",
+                action: "update" as const,
+                oldValue: true,
+                newValue: false,
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    assert.deepEqual(report.repos[0].variables, []);
+    assert.ok(report.totals.variables);
+    assert.equal(report.totals.variables!.create, 0);
+    assert.equal(report.totals.variables!.update, 0);
+    assert.equal(report.totals.variables!.delete, 0);
+  });
+
   test("skips settings where both oldValue and newValue are undefined", () => {
     const results = [
       {
