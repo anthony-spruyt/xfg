@@ -315,8 +315,11 @@ export function validateForSync(config: RawConfig): void {
 
     // Check root-level variables
     if (config.settings?.variables) {
-      const { deleteOrphaned: _rd, ...rootVarEntries } = config.settings
-        .variables as Record<string, unknown>;
+      const {
+        deleteOrphaned: _rd,
+        inherit: _ri,
+        ...rootVarEntries
+      } = config.settings.variables as Record<string, unknown>;
       const rootVariableNames = Object.keys(rootVarEntries).filter(
         (k) => typeof rootVarEntries[k] !== "boolean"
       );
