@@ -1,4 +1,4 @@
-import { program, Command } from "commander";
+import { program, Command, InvalidArgumentError } from "commander";
 import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -120,7 +120,15 @@ const secretsSyncCommand = new Command("sync")
   .option("-d, --dry-run", "Show what would change without applying")
   .option("--no-delete", "Skip deletion of orphaned secrets")
   .option("-w, --work-dir <path>", "Working directory")
-  .option("-r, --retries <number>", "Number of API retries", parseInt)
+  .option(
+    "-r, --retries <number>",
+    "Number of API retries",
+    (value: string) => {
+      const n = parseInt(value, 10);
+      if (isNaN(n)) throw new InvalidArgumentError("Must be a number.");
+      return n;
+    }
+  )
   .action(async (opts) => {
     try {
       await runSecretsSync(opts as SecretsSyncOptions);

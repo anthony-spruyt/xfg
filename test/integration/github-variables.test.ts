@@ -127,6 +127,30 @@ repos:
   });
 
   test("deletes orphaned variables with deleteOrphaned", async () => {
+    // Ensure variable exists before testing deletion (decouples from prior test ordering)
+    const setupConfigPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables-setup
+settings:
+  variables:
+    XFG_TEST_VAR: "pre-delete-value"
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+    await runSync(setupConfigPath);
+    await withTestRetry(
+      async () => {
+        const variables = await getVariables();
+        const found = variables.find((v) => v.name === "XFG_TEST_VAR");
+        assert.ok(
+          found,
+          "Setup: XFG_TEST_VAR should exist before deletion test"
+        );
+      },
+      { description: "variable setup for deletion test" }
+    );
+
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-variables

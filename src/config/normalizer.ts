@@ -552,6 +552,7 @@ function mergeRawSettings(
     const base = inherit ? { ...(result.variables ?? {}) } : {};
     for (const [name, entry] of Object.entries(overlay.variables)) {
       if (name === "inherit" || name === "deleteOrphaned") continue;
+      if (entry === false) continue;
       (base as Record<string, unknown>)[name] = entry;
     }
     const overlayDelete = overlayVars.deleteOrphaned;

@@ -306,6 +306,7 @@ export function validateForSync(config: RawConfig): void {
   // Cross-validate: no overlap between global secret names and variable names
   if (config.secrets) {
     const { deleteOrphaned: _, ...secretEntries } = config.secrets;
+    // GitHub treats secret/variable names case-insensitively for collision purposes
     const secretNames = new Set(
       Object.keys(secretEntries)
         .filter((k) => typeof secretEntries[k] !== "boolean")

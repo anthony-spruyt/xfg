@@ -29,9 +29,10 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
   ): Promise<GitHubVariable[]> {
     assertGitHubRepo(repoInfo, "GitHub Variables strategy");
 
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables?per_page=100`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables`;
     const result = await this.api.call("GET", endpoint, {
       options,
+      paginate: true,
     });
 
     const response = parseApiJson<GitHubVariablesListResponse>(

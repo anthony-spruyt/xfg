@@ -211,6 +211,75 @@ describe("SecretsProcessor", () => {
     );
   });
 
+  test("rejects empty env var value", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [];
+    const envResolver = new MockEnvResolver({ TOKEN_SOURCE: "" });
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      envResolver
+    );
+    await assert.rejects(
+      () =>
+        processor.process(
+          makeSecretsConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+          mockGitHubRepo,
+          {}
+        ),
+      /TOKEN_SOURCE/
+    );
+  });
+
+  test("case-differing secret names both get upserted", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [];
+    const envResolver = new MockEnvResolver({
+      SRC_UPPER: "val1",
+      SRC_LOWER: "val2",
+    });
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      envResolver
+    );
+    const result = await processor.process(
+      makeSecretsConfig({
+        MY_SECRET: { env: "SRC_UPPER" },
+        my_secret: { env: "SRC_LOWER" },
+      }),
+      mockGitHubRepo,
+      {}
+    );
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls.length, 2);
+    assert.equal(result.created, 2);
+  });
+
+  test("deleteOrphaned with no secrets defined still deletes orphans", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [
+      { name: "ORPHAN_A", created_at: "", updated_at: "" },
+      { name: "ORPHAN_B", created_at: "", updated_at: "" },
+    ];
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const result = await processor.process(
+      makeSecretsConfig({}, true),
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.deleted, 2);
+    assert.equal(result.created, 0);
+    assert.equal(result.updated, 0);
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(deleteCalls.length, 2);
+  });
+
   test("skips non-GitHub repos", async () => {
     const strategy = new MockSecretsStrategy();
     const processor = new SecretsProcessor(

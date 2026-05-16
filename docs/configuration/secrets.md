@@ -1,6 +1,6 @@
 # Secrets
 
-xfg can sync GitHub Actions secrets to your repositories using the `xfg secrets sync` command. Secrets are defined at the root level of your config file (not under `settings:`), and their values are read from environment variables at runtime.
+xfg can sync GitHub Actions secrets to your repositories using the `xfg secrets sync` command. Secrets are defined at the root level of your config file (not under `settings:`), and their values are read from environment variables at runtime. Secrets are configured at the root level only. Unlike variables, secrets cannot be defined per-repo or per-group.
 
 !!! note "GitHub-Only Feature"
     Secrets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg secrets sync`.

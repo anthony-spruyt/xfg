@@ -90,6 +90,30 @@ secrets:
   });
 
   test("upserts existing secret", async () => {
+    // Ensure secret exists before testing upsert (decouples from prior test ordering)
+    const setupConfigPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets-setup
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  XFG_TEST_SECRET:
+    env: XFG_TEST_SECRET_VALUE
+`
+    );
+    await runSecretsSync(setupConfigPath);
+    await withTestRetry(
+      async () => {
+        const secrets = await getSecrets();
+        const found = secrets.find((s) => s.name === "XFG_TEST_SECRET");
+        assert.ok(
+          found,
+          "Setup: XFG_TEST_SECRET should exist before upsert test"
+        );
+      },
+      { description: "secret setup for upsert test" }
+    );
+
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets
@@ -128,6 +152,30 @@ secrets:
   });
 
   test("deletes orphaned secret", async () => {
+    // Ensure secret exists before testing deletion (decouples from prior test ordering)
+    const setupConfigPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets-setup-delete
+repos:
+  - git: https://github.com/${testRepo}.git
+secrets:
+  XFG_TEST_SECRET:
+    env: XFG_TEST_SECRET_VALUE
+`
+    );
+    await runSecretsSync(setupConfigPath);
+    await withTestRetry(
+      async () => {
+        const secrets = await getSecrets();
+        const found = secrets.find((s) => s.name === "XFG_TEST_SECRET");
+        assert.ok(
+          found,
+          "Setup: XFG_TEST_SECRET should exist before deletion test"
+        );
+      },
+      { description: "secret setup for deletion test" }
+    );
+
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets

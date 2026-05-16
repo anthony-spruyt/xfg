@@ -29,8 +29,11 @@ export class GitHubSecretsStrategy implements ISecretsStrategy {
     options?: GhApiOptions
   ): Promise<GitHubSecret[]> {
     assertGitHubRepo(repoInfo, "GitHub Secrets strategy");
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets?per_page=100`;
-    const result = await this.api.call("GET", endpoint, { options });
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets`;
+    const result = await this.api.call("GET", endpoint, {
+      options,
+      paginate: true,
+    });
     const response = parseApiJson<GitHubSecretsListResponse>(
       result,
       "secrets response"
