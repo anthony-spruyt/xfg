@@ -83,6 +83,27 @@ repos:
   });
 
   test("updates variable value", async () => {
+    // Ensure variable exists before testing update (decouples from prior test ordering)
+    const setupConfigPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-variables-setup
+settings:
+  variables:
+    XFG_TEST_VAR: "initial-value"
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+    await runSync(setupConfigPath);
+    await withTestRetry(
+      async () => {
+        const variables = await getVariables();
+        const found = variables.find((v) => v.name === "XFG_TEST_VAR");
+        assert.ok(found, "Setup: XFG_TEST_VAR should exist before update test");
+      },
+      { description: "variable setup for update test" }
+    );
+
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-variables
