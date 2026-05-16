@@ -113,6 +113,12 @@ describe("SecretsProcessor", () => {
     assert.equal(result.created, 1);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls.length, 1);
+    assert.equal(upsertCalls[0].args[0], "DEPLOY_TOKEN");
+    assert.equal(
+      upsertCalls[0].args[1],
+      Buffer.from("encrypted:secret-value").toString("base64")
+    );
+    assert.equal(upsertCalls[0].args[2], "key-1");
   });
 
   test("detects existing secrets as updates", async () => {
@@ -133,6 +139,9 @@ describe("SecretsProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.updated, 1);
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls[0].args[0], "DEPLOY_TOKEN");
+    assert.equal(upsertCalls[0].args[2], "key-1");
   });
 
   test("deletes orphaned secrets when deleteOrphaned is true", async () => {
@@ -153,6 +162,7 @@ describe("SecretsProcessor", () => {
     assert.equal(result.deleted, 1);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
     assert.equal(deleteCalls.length, 1);
+    assert.equal(deleteCalls[0].args[0], "OLD_SECRET");
   });
 
   test("noDelete suppresses orphan deletion even with deleteOrphaned true", async () => {
@@ -249,6 +259,8 @@ describe("SecretsProcessor", () => {
     );
     assert.equal(result.updated, 1);
     assert.equal(result.created, 0);
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls[0].args[0], "MY_SECRET");
   });
 
   test("deleteOrphaned with no secrets defined still deletes orphans", async () => {

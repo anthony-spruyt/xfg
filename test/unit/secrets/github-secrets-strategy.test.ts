@@ -54,7 +54,7 @@ describe("GitHubSecretsStrategy", () => {
     );
   });
 
-  test("getPublicKey returns key and key_id", async () => {
+  test("getPublicKey calls correct endpoint and parses response", async () => {
     const executor = new MockExecutor();
     executor.response = JSON.stringify({
       key_id: "key-123",
@@ -64,6 +64,33 @@ describe("GitHubSecretsStrategy", () => {
     const result = await strategy.getPublicKey(mockRepo);
     assert.equal(result.key_id, "key-123");
     assert.equal(result.key, "base64pubkey==");
+    assert.ok(
+      executor.calls[0].args.some((a) =>
+        a.includes("/repos/test-org/test-repo/actions/secrets/public-key")
+      ),
+      "Should call public-key endpoint"
+    );
+  });
+
+  test("getPublicKey throws on malformed JSON", async () => {
+    const executor = new MockExecutor();
+    executor.response = "not-json";
+    const strategy = new GitHubSecretsStrategy(executor, { cwd: "/tmp" });
+    await assert.rejects(() => strategy.getPublicKey(mockRepo));
+  });
+
+  test("list throws on non-GitHub repo", async () => {
+    const executor = new MockExecutor();
+    const strategy = new GitHubSecretsStrategy(executor, { cwd: "/tmp" });
+    const adoRepo = {
+      type: "azure-devops" as const,
+      owner: "org",
+      repo: "repo",
+      organization: "org",
+      project: "proj",
+      gitUrl: "https://dev.azure.com/org/proj/_git/repo",
+    };
+    await assert.rejects(() => strategy.list(adoRepo));
   });
 
   test("upsert calls PUT with encrypted value and key_id", async () => {

@@ -22,6 +22,23 @@ class MockExecutor implements ICommandExecutor {
   }
 }
 
+class MockExecutorWithInput implements ICommandExecutor {
+  calls: { executable: string; args: string[] }[] = [];
+  response = "";
+  lastInput: string | undefined;
+
+  async exec(
+    executable: string,
+    args: string[],
+    _cwd: string,
+    options?: ExecOptions
+  ): Promise<string> {
+    this.calls.push({ executable, args });
+    this.lastInput = options?.input;
+    return this.response;
+  }
+}
+
 const mockRepo: GitHubRepoInfo = {
   type: "github",
   owner: "test-org",
@@ -101,5 +118,39 @@ describe("GitHubVariablesStrategy", () => {
         a.includes("/repos/test-org/test-repo/actions/variables/MY_VAR")
       )
     );
+  });
+
+  test("list throws on malformed JSON response", async () => {
+    const executor = new MockExecutor();
+    executor.response = "not-json";
+    const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
+    await assert.rejects(() => strategy.list(mockRepo));
+  });
+
+  test("list throws on non-GitHub repo", async () => {
+    const executor = new MockExecutor();
+    const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
+    const adoRepo = {
+      type: "azure-devops" as const,
+      owner: "org",
+      repo: "repo",
+      organization: "org",
+      project: "proj",
+      gitUrl: "https://dev.azure.com/org/proj/_git/repo",
+    };
+    await assert.rejects(() => strategy.list(adoRepo));
+  });
+
+  test("create sends payload via stdin", async () => {
+    const executor = new MockExecutorWithInput();
+    executor.response = "{}";
+    const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
+
+    await strategy.create(mockRepo, "NEW_VAR", "new-value");
+
+    assert.ok(executor.lastInput, "Should pass payload via input");
+    const payload = JSON.parse(executor.lastInput!);
+    assert.equal(payload.name, "NEW_VAR");
+    assert.equal(payload.value, "new-value");
   });
 });

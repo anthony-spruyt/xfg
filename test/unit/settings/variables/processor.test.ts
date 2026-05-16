@@ -81,6 +81,8 @@ describe("VariablesProcessor", () => {
     assert.equal(result.changes?.create, 1);
     const createCalls = strategy.calls.filter((c) => c.method === "create");
     assert.equal(createCalls.length, 1);
+    assert.equal(createCalls[0].args[0], "NEW_VAR");
+    assert.equal(createCalls[0].args[1], "value");
   });
 
   test("updates changed variables", async () => {
@@ -96,6 +98,10 @@ describe("VariablesProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.changes?.update, 1);
+    const updateCalls = strategy.calls.filter((c) => c.method === "update");
+    assert.equal(updateCalls.length, 1);
+    assert.equal(updateCalls[0].args[0], "MY_VAR");
+    assert.equal(updateCalls[0].args[1], "new");
   });
 
   test("skips unchanged variables", async () => {
@@ -127,6 +133,9 @@ describe("VariablesProcessor", () => {
     );
     assert.equal(result.success, true);
     assert.equal(result.changes?.delete, 1);
+    const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
+    assert.equal(deleteCalls.length, 1);
+    assert.equal(deleteCalls[0].args[0], "ORPHAN");
   });
 
   test("noDelete suppresses orphan deletion even with deleteOrphaned true", async () => {

@@ -11,7 +11,7 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
-const testDir = join(tmpdir(), "test-cli-tmp");
+const testDir = join(tmpdir(), `test-cli-tmp-${process.pid}-${Date.now()}`);
 const testConfigPath = join(testDir, "test-config.yaml");
 
 // Helper to run CLI and capture output

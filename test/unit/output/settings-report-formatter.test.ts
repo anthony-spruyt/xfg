@@ -8,55 +8,11 @@ import {
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
   renderRepoSettingsDiffLines,
+  formatCountEntry,
   type SettingsReport,
   type RepoChanges,
-  type SettingChange,
-  type RulesetChange,
 } from "../../../src/output/settings-report.js";
 import type { PropertyDiff } from "../../../src/settings/rulesets/diff-algorithm.js";
-
-describe("settings-report types", () => {
-  test("SettingsReport structure is correct", () => {
-    const report: SettingsReport = {
-      repos: [],
-      totals: {
-        settings: { create: 0, update: 0 },
-        rulesets: { create: 0, update: 0, delete: 0 },
-        labels: { create: 0, update: 0, delete: 0 },
-      },
-    };
-    assert.ok(report);
-  });
-
-  test("RepoChanges structure is correct", () => {
-    const repoChanges: RepoChanges = {
-      repoName: "org/repo",
-      settings: [],
-      rulesets: [],
-      labels: [],
-    };
-    assert.ok(repoChanges);
-  });
-
-  test("SettingChange structure is correct", () => {
-    const change: SettingChange = {
-      name: "deleteBranchOnMerge",
-      action: "update",
-      oldValue: false,
-      newValue: true,
-    };
-    assert.ok(change);
-  });
-
-  test("RulesetChange structure is correct", () => {
-    const change: RulesetChange = {
-      name: "branch-protection",
-      action: "update",
-      propertyDiffs: [],
-    };
-    assert.ok(change);
-  });
-});
 
 describe("formatSettingsReportCLI", () => {
   test("renders repo with settings changes only", () => {
@@ -1889,5 +1845,49 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
       !output.includes("[object Object]"),
       `Diff output contains [object Object]: ${output}`
     );
+  });
+});
+
+describe("formatCountEntry", () => {
+  test("returns null when all counts are zero", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 0 },
+      { label: "to update", value: 0 },
+    ]);
+    assert.equal(result, null);
+  });
+
+  test("uses singular noun when total is 1", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 1 },
+      { label: "to update", value: 0 },
+    ]);
+    assert.equal(result, "1 setting (1 to create)");
+  });
+
+  test("uses plural noun when total > 1", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 2 },
+      { label: "to update", value: 1 },
+    ]);
+    assert.equal(result, "3 settings (2 to create, 1 to update)");
+  });
+
+  test("filters out zero-value actions from parenthetical", () => {
+    const result = formatCountEntry("ruleset", "rulesets", [
+      { label: "to create", value: 0 },
+      { label: "to update", value: 2 },
+      { label: "to delete", value: 0 },
+    ]);
+    assert.equal(result, "2 rulesets (2 to update)");
+  });
+
+  test("includes all non-zero actions", () => {
+    const result = formatCountEntry("variable", "variables", [
+      { label: "to create", value: 1 },
+      { label: "to update", value: 2 },
+      { label: "to delete", value: 3 },
+    ]);
+    assert.equal(result, "6 variables (1 to create, 2 to update, 3 to delete)");
   });
 });
