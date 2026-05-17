@@ -3,6 +3,12 @@
   "configs": {
     "repo-operator": {
       "files": [
+        ".claude/hookify-plus/warn-code-scanning-ref.md",
+        ".claude/hookify-plus/warn-trivy-sarif.md",
+        ".claude/rules/github.md",
+        ".claude/rules/research.md",
+        ".claude/rules/tdd.md",
+        ".claude/settings.json",
         ".devcontainer/devcontainer.json",
         ".devcontainer/Dockerfile",
         ".devcontainer/initialize.sh",
