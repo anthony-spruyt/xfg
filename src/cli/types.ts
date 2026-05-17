@@ -7,6 +7,7 @@ import type {
   IRepoSettingsProcessor,
   ILabelsProcessor,
   ICodeScanningProcessor,
+  IVariablesProcessor,
   BaseProcessorResult,
 } from "../settings/index.js";
 import type { RepoInfo } from "../repo/index.js";
@@ -24,14 +25,22 @@ export type RepoSettingsProcessorFactory =
 export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
 export type CodeScanningProcessorFactory =
   SettingsProcessorFactory<ICodeScanningProcessor>;
+export type VariablesProcessorFactory =
+  SettingsProcessorFactory<IVariablesProcessor>;
 
-export type SettingsKind = "rulesets" | "labels" | "repo" | "codeScanning";
+export type SettingsKind =
+  | "rulesets"
+  | "labels"
+  | "repo"
+  | "codeScanning"
+  | "variables";
 
 export interface SettingsProcessorFactories {
   rulesets: RulesetProcessorFactory;
   labels: LabelsProcessorFactory;
   repo: RepoSettingsProcessorFactory;
   codeScanning: CodeScanningProcessorFactory;
+  variables: VariablesProcessorFactory;
 }
 
 /**

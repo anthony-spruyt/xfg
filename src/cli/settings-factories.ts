@@ -3,10 +3,12 @@ import {
   RepoSettingsProcessor,
   LabelsProcessor,
   CodeScanningProcessor,
+  VariablesProcessor,
   GitHubRulesetStrategy,
   GitHubRepoSettingsStrategy,
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
+  GitHubVariablesStrategy,
 } from "../settings/index.js";
 import { GitHubRepoMetadataProvider } from "../repo/index.js";
 import type { ProcessExecutor } from "../shared/command-executor.js";
@@ -15,6 +17,7 @@ import type {
   RepoSettingsProcessorFactory,
   LabelsProcessorFactory,
   CodeScanningProcessorFactory,
+  VariablesProcessorFactory,
   SettingsProcessorFactories,
 } from "./types.js";
 
@@ -55,6 +58,14 @@ export function createDefaultCodeScanningProcessorFactory(
     );
 }
 
+export function createDefaultVariablesProcessorFactory(
+  executor: ProcessExecutor
+): VariablesProcessorFactory {
+  const cwd = process.cwd();
+  return () =>
+    new VariablesProcessor(new GitHubVariablesStrategy(executor, { cwd }));
+}
+
 export function createDefaultFactories(
   executor: ProcessExecutor,
   overrides?: Partial<SettingsProcessorFactories>
@@ -68,5 +79,7 @@ export function createDefaultFactories(
     codeScanning:
       overrides?.codeScanning ??
       createDefaultCodeScanningProcessorFactory(executor),
+    variables:
+      overrides?.variables ?? createDefaultVariablesProcessorFactory(executor),
   };
 }

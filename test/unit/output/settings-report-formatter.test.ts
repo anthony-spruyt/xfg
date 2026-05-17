@@ -8,55 +8,11 @@ import {
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
   renderRepoSettingsDiffLines,
+  formatCountEntry,
   type SettingsReport,
   type RepoChanges,
-  type SettingChange,
-  type RulesetChange,
 } from "../../../src/output/settings-report.js";
 import type { PropertyDiff } from "../../../src/settings/rulesets/diff-algorithm.js";
-
-describe("settings-report types", () => {
-  test("SettingsReport structure is correct", () => {
-    const report: SettingsReport = {
-      repos: [],
-      totals: {
-        settings: { create: 0, update: 0 },
-        rulesets: { create: 0, update: 0, delete: 0 },
-        labels: { create: 0, update: 0, delete: 0 },
-      },
-    };
-    assert.ok(report);
-  });
-
-  test("RepoChanges structure is correct", () => {
-    const repoChanges: RepoChanges = {
-      repoName: "org/repo",
-      settings: [],
-      rulesets: [],
-      labels: [],
-    };
-    assert.ok(repoChanges);
-  });
-
-  test("SettingChange structure is correct", () => {
-    const change: SettingChange = {
-      name: "deleteBranchOnMerge",
-      action: "update",
-      oldValue: false,
-      newValue: true,
-    };
-    assert.ok(change);
-  });
-
-  test("RulesetChange structure is correct", () => {
-    const change: RulesetChange = {
-      name: "branch-protection",
-      action: "update",
-      propertyDiffs: [],
-    };
-    assert.ok(change);
-  });
-});
 
 describe("formatSettingsReportCLI", () => {
   test("renders repo with settings changes only", () => {
@@ -1410,6 +1366,363 @@ describe("writeSettingsReportSummary", () => {
   });
 });
 
+describe("formatSettingsReportCLI variables", () => {
+  test("renders variable create", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "NODE_ENV",
+              action: "create",
+              newValue: "production",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(output.includes("org/repo"), "should include repo name");
+    assert.ok(
+      output.includes('variable "NODE_ENV"'),
+      "should include variable name"
+    );
+    assert.ok(output.includes('"production"'), "should include new value");
+    assert.ok(output.includes("1 variable"), "should include singular summary");
+  });
+
+  test("renders variable update with old and new values", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "API_URL",
+              action: "update",
+              oldValue: "http://old.example.com",
+              newValue: "http://new.example.com",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('variable "API_URL"'),
+      "should include variable name"
+    );
+    assert.ok(
+      output.includes('"http://old.example.com"'),
+      "should include old value"
+    );
+    assert.ok(
+      output.includes('"http://new.example.com"'),
+      "should include new value"
+    );
+    assert.ok(output.includes("→"), "should include arrow between old and new");
+  });
+
+  test("renders variable delete", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "DEPRECATED_VAR",
+              action: "delete",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 1 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes('variable "DEPRECATED_VAR"'),
+      "should include variable name"
+    );
+  });
+
+  test("renders plural variables summary", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            { name: "VAR1", action: "create", newValue: "val1" },
+            { name: "VAR2", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 1, update: 0, delete: 1 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      output.includes("2 variables"),
+      "should use plural 'variables' for count of 2"
+    );
+  });
+
+  test("inserts blank line separator between labels and variables", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            { name: "bug", action: "create", config: { color: "d73a4a" } },
+          ],
+          variables: [
+            { name: "NODE_ENV", action: "create", newValue: "production" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(report.repos[0], diffLines);
+
+    const labelIdx = diffLines.findIndex((l) => l.includes("bug"));
+    const variableIdx = diffLines.findIndex((l) => l.includes("NODE_ENV"));
+    assert.ok(labelIdx >= 0, "should have label line");
+    assert.ok(variableIdx >= 0, "should have variable line");
+    // Blank line between labels and variables
+    assert.equal(
+      diffLines[variableIdx - 1],
+      "",
+      "should have blank line between labels and variables"
+    );
+  });
+
+  test("skips repo with no changes including empty variables", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/empty",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
+      },
+    };
+
+    const lines = formatSettingsReportCLI(report);
+    const output = lines.join("\n");
+
+    assert.ok(
+      !output.includes("org/empty"),
+      "should skip repo with no changes"
+    );
+    assert.ok(output.includes("No changes"), "should show no changes");
+  });
+});
+
+describe("formatSettingsReportMarkdown variables", () => {
+  test("renders variable create in markdown diff format", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "NODE_ENV",
+              action: "create",
+              newValue: "production",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("```diff"), "should have diff code block");
+    assert.ok(
+      markdown.includes('+ variable "NODE_ENV": "production"'),
+      "should include variable create line"
+    );
+  });
+
+  test("renders variable update in markdown diff format", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "API_URL",
+              action: "update",
+              oldValue: "http://old.example.com",
+              newValue: "http://new.example.com",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes(
+        '! variable "API_URL": "http://old.example.com" → "http://new.example.com"'
+      ),
+      "should include variable update line with arrow"
+    );
+  });
+
+  test("renders variable delete in markdown diff format", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            {
+              name: "DEPRECATED_VAR",
+              action: "delete",
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes('- variable "DEPRECATED_VAR"'),
+      "should include variable delete line"
+    );
+  });
+
+  test("renders variables summary in markdown", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            { name: "VAR1", action: "create", newValue: "val1" },
+            {
+              name: "VAR2",
+              action: "update",
+              oldValue: "old",
+              newValue: "new",
+            },
+            { name: "VAR3", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 1, update: 1, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(
+      markdown.includes("**Plan: 3 variables"),
+      "should include bold variables summary"
+    );
+    assert.ok(markdown.includes("1 to create"), "should include create count");
+    assert.ok(markdown.includes("1 to update"), "should include update count");
+    assert.ok(markdown.includes("1 to delete"), "should include delete count");
+  });
+});
+
 describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression", () => {
   test("renders bypass_actor objects fully instead of [object Object]", () => {
     const propertyDiffs: PropertyDiff[] = [
@@ -1532,5 +1845,49 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
       !output.includes("[object Object]"),
       `Diff output contains [object Object]: ${output}`
     );
+  });
+});
+
+describe("formatCountEntry", () => {
+  test("returns null when all counts are zero", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 0 },
+      { label: "to update", value: 0 },
+    ]);
+    assert.equal(result, null);
+  });
+
+  test("uses singular noun when total is 1", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 1 },
+      { label: "to update", value: 0 },
+    ]);
+    assert.equal(result, "1 setting (1 to create)");
+  });
+
+  test("uses plural noun when total > 1", () => {
+    const result = formatCountEntry("setting", "settings", [
+      { label: "to create", value: 2 },
+      { label: "to update", value: 1 },
+    ]);
+    assert.equal(result, "3 settings (2 to create, 1 to update)");
+  });
+
+  test("filters out zero-value actions from parenthetical", () => {
+    const result = formatCountEntry("ruleset", "rulesets", [
+      { label: "to create", value: 0 },
+      { label: "to update", value: 2 },
+      { label: "to delete", value: 0 },
+    ]);
+    assert.equal(result, "2 rulesets (2 to update)");
+  });
+
+  test("includes all non-zero actions", () => {
+    const result = formatCountEntry("variable", "variables", [
+      { label: "to create", value: 1 },
+      { label: "to update", value: 2 },
+      { label: "to delete", value: 3 },
+    ]);
+    assert.equal(result, "6 variables (1 to create, 2 to update, 3 to delete)");
   });
 });

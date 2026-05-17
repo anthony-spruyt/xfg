@@ -209,6 +209,28 @@ function mergeLabels(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+// GitHub treats variable names case-insensitively; overlay keys win over base keys with same name but different casing.
+function mergeVariablesCaseInsensitive(
+  base: Record<string, unknown>,
+  overlay: Record<string, unknown>
+): Record<string, unknown> {
+  const overlayUpper = new Map<string, string>();
+  for (const key of Object.keys(overlay)) {
+    overlayUpper.set(key.toUpperCase(), key);
+  }
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(base)) {
+    if (!overlayUpper.has(key.toUpperCase())) {
+      result[key] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(overlay)) {
+    result[key] = value;
+  }
+  return result;
+}
+
 /**
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
@@ -264,7 +286,10 @@ export function mergeSettings(
   }
 
   // deleteOrphaned: per-repo overrides root
-  const deleteOrphaned = perRepo?.deleteOrphaned ?? root?.deleteOrphaned;
+  const deleteOrphaned =
+    perRepo?.deleteOrphaned !== undefined
+      ? perRepo.deleteOrphaned
+      : root?.deleteOrphaned;
   if (deleteOrphaned !== undefined) {
     result.deleteOrphaned = deleteOrphaned;
   }
@@ -307,6 +332,54 @@ export function mergeSettings(
       if (typeof mergedCodeScanning === "object") {
         result.codeScanning = mergedCodeScanning;
       }
+    }
+  }
+
+  // Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
+  if (root?.variables || perRepo?.variables) {
+    const rootVars = root?.variables ?? {};
+    const repoVars = perRepo?.variables ?? {};
+
+    const rootDeleteOrphaned = (rootVars as Record<string, unknown>)
+      .deleteOrphaned;
+    const repoDeleteOrphaned = (repoVars as Record<string, unknown>)
+      .deleteOrphaned;
+    const effectiveDeleteOrphaned =
+      repoDeleteOrphaned !== undefined
+        ? repoDeleteOrphaned
+        : rootDeleteOrphaned;
+
+    const inherit = (repoVars as Record<string, unknown>).inherit;
+    if (inherit === false) {
+      const {
+        inherit: _,
+        deleteOrphaned: _d,
+        ...rest
+      } = repoVars as Record<string, unknown>;
+      result.variables = Object.fromEntries(
+        Object.entries(rest).filter(([, v]) => v !== false)
+      ) as Record<string, string>;
+    } else {
+      const combined = mergeVariablesCaseInsensitive(
+        rootVars as Record<string, unknown>,
+        repoVars as Record<string, unknown>
+      );
+      const { inherit: _, deleteOrphaned: _d, ...rest } = combined;
+      result.variables = Object.fromEntries(
+        Object.entries(rest).filter(([, v]) => v !== false)
+      ) as Record<string, string>;
+    }
+
+    if (effectiveDeleteOrphaned !== undefined) {
+      (result.variables as Record<string, unknown>).deleteOrphaned =
+        effectiveDeleteOrphaned;
+    }
+
+    // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
+    const { deleteOrphaned: _check, ...varEntries } =
+      result.variables as Record<string, unknown>;
+    if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
+      delete result.variables;
     }
   }
 
@@ -497,6 +570,44 @@ function mergeRawSettings(
     } else {
       result.codeScanning = structuredClone(overlay.codeScanning);
     }
+  }
+
+  // Variables: simple string values with false opt-outs (mergeNamedEntries won't work for strings)
+  if (overlay.variables) {
+    const overlayVars = overlay.variables as Record<string, unknown>;
+    const inherit = overlayVars.inherit !== false;
+    const baseVars = inherit
+      ? { ...(result.variables ?? {}) }
+      : ({} as Record<string, unknown>);
+
+    // Build overlay entries (excluding meta keys)
+    const overlayEntries: Record<string, unknown> = {};
+    for (const [name, entry] of Object.entries(overlay.variables)) {
+      if (name === "inherit" || name === "deleteOrphaned") continue;
+      overlayEntries[name] = entry;
+    }
+
+    // Case-insensitive merge: overlay keys replace base keys with same name
+    const merged = mergeVariablesCaseInsensitive(baseVars, overlayEntries);
+
+    // Apply false opt-outs
+    const cleaned: Record<string, unknown> = {};
+    for (const [name, value] of Object.entries(merged)) {
+      if (name === "inherit" || name === "deleteOrphaned") continue;
+      if (value !== false) {
+        cleaned[name] = value;
+      }
+    }
+
+    const baseDelete = (baseVars as Record<string, unknown>).deleteOrphaned;
+    const effectiveDelete =
+      overlayVars.deleteOrphaned !== undefined
+        ? overlayVars.deleteOrphaned
+        : baseDelete;
+    if (effectiveDelete !== undefined) {
+      cleaned.deleteOrphaned = effectiveDelete;
+    }
+    result.variables = cleaned as typeof result.variables;
   }
 
   // deleteOrphaned: overlay wins
@@ -786,5 +897,6 @@ export function normalizeConfig(
     githubHosts: raw.githubHosts,
     deleteOrphaned: raw.deleteOrphaned,
     settings: normalizedRootSettings,
+    secrets: raw.secrets,
   };
 }

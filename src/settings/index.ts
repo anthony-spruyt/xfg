@@ -40,3 +40,11 @@ export {
   type ICodeScanningProcessor,
   GitHubCodeScanningStrategy,
 } from "./code-scanning/index.js";
+
+// Variables
+export {
+  type VariablesPlanEntry,
+  VariablesProcessor,
+  type IVariablesProcessor,
+  GitHubVariablesStrategy,
+} from "./variables/index.js";

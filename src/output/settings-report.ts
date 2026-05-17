@@ -10,6 +10,7 @@ export interface SettingsReport {
     settings: { create: number; update: number };
     rulesets: { create: number; update: number; delete: number };
     labels: { create: number; update: number; delete: number };
+    variables?: { create: number; update: number; delete: number };
   };
 }
 
@@ -18,6 +19,12 @@ export interface RepoChanges {
   settings: SettingChange[];
   rulesets: RulesetChange[];
   labels: LabelChange[];
+  variables?: {
+    name: string;
+    action: ActiveAction;
+    oldValue?: string;
+    newValue?: string;
+  }[];
   error?: string;
 }
 
@@ -150,6 +157,13 @@ function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   ]);
   if (labelsEntry) parts.push(labelsEntry);
 
+  const variablesEntry = formatCountEntry("variable", "variables", [
+    { label: "to create", value: totals.variables?.create ?? 0 },
+    { label: "to update", value: totals.variables?.update ?? 0 },
+    { label: "to delete", value: totals.variables?.delete ?? 0 },
+  ]);
+  if (variablesEntry) parts.push(variablesEntry);
+
   if (parts.length === 0) {
     return "No changes";
   }
@@ -174,6 +188,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
       repo.labels.length === 0 &&
+      (repo.variables ?? []).length === 0 &&
       !repo.error
     ) {
       continue;
@@ -314,6 +329,25 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
+  // Blank line before variables if there was content above
+  if ((repo.variables ?? []).length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  for (const variable of repo.variables ?? []) {
+    if (variable.action === "create") {
+      diffLines.push(
+        `+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`
+      );
+    } else if (variable.action === "update") {
+      diffLines.push(
+        `! variable "${variable.name}": ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`
+      );
+    } else if (variable.action === "delete") {
+      diffLines.push(`- variable "${variable.name}"`);
+    }
+  }
+
   if (repo.error) {
     diffLines.push(`- Error: ${repo.error}`);
   }
@@ -343,6 +377,7 @@ export function formatSettingsReportMarkdown(
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
       repo.labels.length === 0 &&
+      (repo.variables ?? []).length === 0 &&
       !repo.error
     ) {
       continue;
