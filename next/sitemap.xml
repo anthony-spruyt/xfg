@@ -2,198 +2,206 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/ide-integration/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/migration-v4/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/migration-v5/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/troubleshooting/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/use-cases/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/ci-cd/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/ci-cd/azure-pipelines/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/ci-cd/github-actions/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/code-scanning/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/content-types/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/env-variables/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/file-references/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/groups/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/inheritance/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/labels/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/lifecycle/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/merge-strategies/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/multi-file/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/pr-options/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/pr-templates/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/repo-settings/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/rulesets/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://anthony-spruyt.github.io/xfg/next/configuration/secrets/</loc>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/configuration/templating/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
+    </url>
+    <url>
+         <loc>https://anthony-spruyt.github.io/xfg/next/configuration/variables/</loc>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/auto-merge/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/create-only/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/delete-orphaned/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/env-specific/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/executable-files/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/file-references/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/merge-strategies/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/multi-file-sync/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/shared-config/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/subdirectory-paths/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/text-files/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/examples/yaml-comments/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/getting-started/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/getting-started/prerequisites/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/platforms/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/platforms/azure-devops/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/platforms/github-app/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/platforms/github/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/platforms/gitlab/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/reference/cli-options/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/reference/config-schema/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/security/secret-rotation/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
     <url>
          <loc>https://anthony-spruyt.github.io/xfg/next/usage/</loc>
-         <lastmod>2026-05-11</lastmod>
+         <lastmod>2026-05-17</lastmod>
     </url>
 </urlset>

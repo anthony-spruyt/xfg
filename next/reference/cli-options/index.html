@@ -1084,6 +1084,52 @@
   
   
     <li class="md-nav__item">
+      <a href="../../configuration/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GitHub Variables
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/secrets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Secrets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/code-scanning/" class="md-nav__link">
         
   
@@ -1893,6 +1939,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#secrets-sync-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Sync Command
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secrets Sync Command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secrets-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Output
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#priority-order" class="md-nav__link">
     <span class="md-ellipsis">
       Priority Order
@@ -2235,6 +2323,48 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#secrets-sync-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Sync Command
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secrets Sync Command">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secrets-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Options
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Output
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#priority-order" class="md-nav__link">
     <span class="md-ellipsis">
       Priority Order
@@ -2272,9 +2402,9 @@
 
 
 <h1 id="cli-options-reference">CLI Options Reference<a class="headerlink" href="#cli-options-reference" title="Permanent link">&para;</a></h1>
-<p>xfg uses a single <code>sync</code> command to handle file synchronization, repository settings, rulesets, and labels.</p>
+<p>xfg uses a <code>sync</code> command to handle file synchronization, repository settings, rulesets, labels, and variables. A separate <code>secrets sync</code> command handles secret management.</p>
 <h2 id="sync-command">Sync Command<a class="headerlink" href="#sync-command" title="Permanent link">&para;</a></h2>
-<p>Sync configuration files, repository settings, rulesets, and labels across repositories.</p>
+<p>Sync configuration files, repository settings, rulesets, labels, and variables across repositories.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>&lt;path&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </span></code></pre></div>
 <h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
@@ -2339,14 +2469,14 @@
 <tr>
 <td><code>--no-delete</code></td>
 <td></td>
-<td>Skip deletion of orphaned files, rulesets, and labels</td>
+<td>Skip deletion of orphaned files, rulesets, labels, variables, and secrets</td>
 <td><code>false</code></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition note">
 <p class="admonition-title">GitHub-Only Settings</p>
-<p>Repository settings, rulesets, and labels management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.</p>
+<p>Repository settings, rulesets, labels, and variables management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.</p>
 </div>
 <h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Basic sync (files + settings)</span>
@@ -2381,6 +2511,82 @@
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>==================================================
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>Completed: 3 succeeded, 0 skipped, 0 failed
+</span></code></pre></div>
+<h2 id="secrets-sync-command">Secrets Sync Command<a class="headerlink" href="#secrets-sync-command" title="Permanent link">&para;</a></h2>
+<p>Sync GitHub Actions secrets to target repositories. Secret values are read from environment variables at runtime and encrypted with libsodium before upload.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>xfg<span class="w"> </span>secrets<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>&lt;path&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+</span></code></pre></div>
+<h3 id="secrets-options">Secrets Options<a class="headerlink" href="#secrets-options" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Alias</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--config</code></td>
+<td><code>-c</code></td>
+<td>Path to YAML config file</td>
+<td><strong>Required</strong></td>
+</tr>
+<tr>
+<td><code>--dry-run</code></td>
+<td><code>-d</code></td>
+<td>Show what would be done without making changes</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>--work-dir</code></td>
+<td><code>-w</code></td>
+<td>Temporary directory for cloning</td>
+<td><code>./tmp</code></td>
+</tr>
+<tr>
+<td><code>--retries</code></td>
+<td><code>-r</code></td>
+<td>Number of retries for network operations</td>
+<td><code>3</code></td>
+</tr>
+<tr>
+<td><code>--no-delete</code></td>
+<td></td>
+<td>Skip deletion of orphaned secrets even if <code>deleteOrphaned</code> is configured</td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">GitHub-Only</p>
+<p>Secrets management only works with GitHub repositories. Non-GitHub repos are skipped.</p>
+</div>
+<h3 id="secrets-examples">Secrets Examples<a class="headerlink" href="#secrets-examples" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Dry run (preview changes)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nv">MY_SECRET</span><span class="o">=</span>value<span class="w"> </span>xfg<span class="w"> </span>secrets<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--dry-run
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Apply secrets</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nv">MY_SECRET</span><span class="o">=</span>value<span class="w"> </span>xfg<span class="w"> </span>secrets<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Skip orphan deletion</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="nv">MY_SECRET</span><span class="o">=</span>value<span class="w"> </span>xfg<span class="w"> </span>secrets<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--no-delete
+</span></code></pre></div>
+<h3 id="secrets-output">Secrets Output<a class="headerlink" href="#secrets-output" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>[1/2] your-org/frontend: Secrets
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  + MY_API_KEY
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  + DATABASE_URL
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>[1/2] ✓ your-org/frontend: Secrets: 2 created, 0 updated, 0 deleted
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>[2/2] your-org/backend: Secrets
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  ~ DEPLOY_TOKEN (update)
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>[2/2] ✓ your-org/backend: Secrets: 0 created, 1 updated, 0 deleted
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>==================================================
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>Completed: 2 succeeded, 0 skipped, 0 failed
 </span></code></pre></div>
 <h2 id="priority-order">Priority Order<a class="headerlink" href="#priority-order" title="Permanent link">&para;</a></h2>
 <p>CLI flags override config file settings:</p>
