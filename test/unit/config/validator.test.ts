@@ -5,6 +5,7 @@ import {
   validateForSync,
   hasActionableSettings,
   validateSecretsConfig,
+  validateVariableSecretOverlaps,
 } from "../../../src/config/validator.js";
 import { ValidationError } from "../../../src/shared/errors.js";
 import type {
@@ -5363,6 +5364,40 @@ describe("group extends validation", () => {
         secrets: { DEPLOY_TOKEN: { env: "SRC" } },
       });
       assert.throws(() => validateForSync(config), /deploy_token.*overlap/i);
+    });
+  });
+
+  describe("validateVariableSecretOverlaps standalone", () => {
+    test("detects overlap when called independently", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { API_KEY: "value" },
+        },
+        secrets: { API_KEY: { env: "SRC" } },
+      });
+      assert.throws(
+        () => validateVariableSecretOverlaps(config),
+        /API_KEY.*overlap/i
+      );
+    });
+
+    test("passes when no overlap exists", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: "value" },
+        },
+        secrets: { MY_SECRET: { env: "SRC" } },
+      });
+      assert.doesNotThrow(() => validateVariableSecretOverlaps(config));
+    });
+
+    test("passes when no secrets defined", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: "value" },
+        },
+      });
+      assert.doesNotThrow(() => validateVariableSecretOverlaps(config));
     });
   });
 });

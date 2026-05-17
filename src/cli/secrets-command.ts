@@ -3,6 +3,7 @@ import { normalizeConfig } from "../config/normalizer.js";
 import {
   validateRawConfig,
   validateSecretsConfig,
+  validateVariableSecretOverlaps,
 } from "../config/validator.js";
 import {
   SecretsProcessor,
@@ -72,6 +73,7 @@ export async function runSecretsSync(
   const rawConfig = loadRawConfig(configPath);
   validateRawConfig(rawConfig);
   validateSecretsConfig(rawConfig);
+  validateVariableSecretOverlaps(rawConfig);
   const config = normalizeConfig(rawConfig, process.env);
 
   if (!config.secrets) {

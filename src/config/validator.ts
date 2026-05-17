@@ -304,102 +304,108 @@ export function validateForSync(config: RawConfig): void {
   validateSecretsConfig(config);
 
   // Cross-validate: no overlap between global secret names and variable names
-  if (config.secrets) {
-    const { deleteOrphaned: _, ...secretEntries } = config.secrets;
-    // GitHub treats secret/variable names case-insensitively for collision purposes
-    const secretNames = new Set(
-      Object.keys(secretEntries)
-        .filter((k) => typeof secretEntries[k] !== "boolean")
-        .map((n) => n.toUpperCase())
+  validateVariableSecretOverlaps(config);
+}
+
+export function validateVariableSecretOverlaps(config: RawConfig): void {
+  if (!config.secrets) return;
+
+  const { deleteOrphaned: _, ...secretEntries } = config.secrets;
+  // GitHub treats secret/variable names case-insensitively for collision purposes
+  const secretNames = new Set(
+    Object.keys(secretEntries)
+      .filter((k) => typeof secretEntries[k] !== "boolean")
+      .map((n) => n.toUpperCase())
+  );
+
+  if (secretNames.size === 0) return;
+
+  // Check root-level variables
+  if (config.settings?.variables) {
+    const {
+      deleteOrphaned: _rd,
+      inherit: _ri,
+      ...rootVarEntries
+    } = config.settings.variables as Record<string, unknown>;
+    const rootVariableNames = Object.keys(rootVarEntries).filter(
+      (k) => typeof rootVarEntries[k] !== "boolean"
     );
-
-    // Check root-level variables
-    if (config.settings?.variables) {
-      const {
-        deleteOrphaned: _rd,
-        inherit: _ri,
-        ...rootVarEntries
-      } = config.settings.variables as Record<string, unknown>;
-      const rootVariableNames = Object.keys(rootVarEntries).filter(
-        (k) => typeof rootVarEntries[k] !== "boolean"
+    const overlapping = rootVariableNames.filter((n) =>
+      secretNames.has(n.toUpperCase())
+    );
+    if (overlapping.length > 0) {
+      throw new ValidationError(
+        `${overlapping.join(", ")} overlap between root variables and secrets. ` +
+          "GitHub does not allow variables and secrets with the same name."
       );
-      const overlapping = rootVariableNames.filter((n) =>
+    }
+  }
+
+  for (const repo of config.repos) {
+    const {
+      deleteOrphaned: _d,
+      inherit: _i,
+      ...varEntries
+    } = (repo.settings?.variables ?? {}) as Record<string, unknown>;
+    const variableNames = Object.keys(varEntries).filter(
+      (k) => typeof varEntries[k] !== "boolean"
+    );
+    const overlapping = variableNames.filter((n) =>
+      secretNames.has(n.toUpperCase())
+    );
+    if (overlapping.length > 0) {
+      throw new ValidationError(
+        `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
+          "GitHub does not allow variables and secrets with the same name."
+      );
+    }
+  }
+
+  // Check group-level variables
+  if (isPlainObject(config.groups)) {
+    for (const [groupName, group] of Object.entries(config.groups)) {
+      if (!group.settings?.variables) continue;
+      const {
+        deleteOrphaned: _gd,
+        inherit: _gi,
+        ...groupVarEntries
+      } = group.settings.variables as Record<string, unknown>;
+      const groupVariableNames = Object.keys(groupVarEntries).filter(
+        (k) => typeof groupVarEntries[k] !== "boolean"
+      );
+      const overlapping = groupVariableNames.filter((n) =>
         secretNames.has(n.toUpperCase())
       );
       if (overlapping.length > 0) {
         throw new ValidationError(
-          `${overlapping.join(", ")} overlap between root variables and secrets. ` +
+          `Group '${groupName}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
             "GitHub does not allow variables and secrets with the same name."
         );
       }
     }
+  }
 
-    for (const repo of config.repos) {
+  // Check conditional group-level variables
+  if (Array.isArray(config.conditionalGroups)) {
+    for (let i = 0; i < config.conditionalGroups.length; i++) {
+      const cg = config.conditionalGroups[i];
+      if (!cg.settings?.variables) continue;
       const {
-        deleteOrphaned: _d,
-        inherit: _i,
-        ...varEntries
-      } = (repo.settings?.variables ?? {}) as Record<string, unknown>;
-      const variableNames = Object.keys(varEntries).filter(
-        (k) => typeof varEntries[k] !== "boolean"
+        deleteOrphaned: _cd,
+        inherit: _ci,
+        ...cgVarEntries
+      } = cg.settings.variables as Record<string, unknown>;
+      const cgVariableNames = Object.keys(cgVarEntries).filter(
+        (k) => typeof cgVarEntries[k] !== "boolean"
       );
-      const overlapping = variableNames.filter((n) =>
+      const overlapping = cgVariableNames.filter((n) =>
         secretNames.has(n.toUpperCase())
       );
       if (overlapping.length > 0) {
         throw new ValidationError(
-          `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
+          `Conditional group ${i}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
             "GitHub does not allow variables and secrets with the same name."
         );
-      }
-    }
-
-    // Check group-level variables
-    if (isPlainObject(config.groups)) {
-      for (const [groupName, group] of Object.entries(config.groups)) {
-        if (!group.settings?.variables) continue;
-        const {
-          deleteOrphaned: _gd,
-          inherit: _gi,
-          ...groupVarEntries
-        } = group.settings.variables as Record<string, unknown>;
-        const groupVariableNames = Object.keys(groupVarEntries).filter(
-          (k) => typeof groupVarEntries[k] !== "boolean"
-        );
-        const overlapping = groupVariableNames.filter((n) =>
-          secretNames.has(n.toUpperCase())
-        );
-        if (overlapping.length > 0) {
-          throw new ValidationError(
-            `Group '${groupName}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
-              "GitHub does not allow variables and secrets with the same name."
-          );
-        }
-      }
-    }
-
-    // Check conditional group-level variables
-    if (Array.isArray(config.conditionalGroups)) {
-      for (let i = 0; i < config.conditionalGroups.length; i++) {
-        const cg = config.conditionalGroups[i];
-        if (!cg.settings?.variables) continue;
-        const {
-          deleteOrphaned: _cd,
-          inherit: _ci,
-          ...cgVarEntries
-        } = cg.settings.variables as Record<string, unknown>;
-        const cgVariableNames = Object.keys(cgVarEntries).filter(
-          (k) => typeof cgVarEntries[k] !== "boolean"
-        );
-        const overlapping = cgVariableNames.filter((n) =>
-          secretNames.has(n.toUpperCase())
-        );
-        if (overlapping.length > 0) {
-          throw new ValidationError(
-            `Conditional group ${i}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
-              "GitHub does not allow variables and secrets with the same name."
-          );
-        }
       }
     }
   }
