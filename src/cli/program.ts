@@ -131,7 +131,7 @@ const secretsSyncCommand = new Command("sync")
   .option("-w, --work-dir <path>", "Temporary directory for cloning", "./tmp")
   .option(
     "-r, --retries <number>",
-    "Number of API retries",
+    "Number of retries for network operations (0 to disable)",
     (value: string) => {
       const n = parseInt(value, 10);
       if (isNaN(n) || n < 0)

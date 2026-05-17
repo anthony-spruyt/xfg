@@ -5259,6 +5259,65 @@ describe("group extends validation", () => {
       });
       assert.doesNotThrow(() => validateForSync(config));
     });
+
+    test("throws when 'inherit' is used at root-level variables", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { inherit: true, MY_VAR: "value" } as unknown as Record<
+            string,
+            string
+          >,
+        },
+      });
+      assert.throws(() => validateRawConfig(config), /inherit.*root/i);
+    });
+
+    test("throws when variables.deleteOrphaned is not a boolean", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: {
+            deleteOrphaned: "yes",
+            MY_VAR: "value",
+          } as unknown as Record<string, string>,
+        },
+      });
+      assert.throws(
+        () => validateForSync(config),
+        /variables\.deleteOrphaned must be a boolean/
+      );
+    });
+
+    test("throws when variables.inherit is not a boolean", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: ["https://github.com/org/repo"],
+            settings: {
+              variables: {
+                inherit: "yes",
+                MY_VAR: "value",
+              } as unknown as Record<string, string>,
+            },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateForSync(config),
+        /variables\.inherit must be a boolean/
+      );
+    });
+
+    test("accepts valid boolean deleteOrphaned in variables", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: {
+            deleteOrphaned: true,
+            MY_VAR: "value",
+          } as unknown as Record<string, string>,
+        },
+      });
+      assert.doesNotThrow(() => validateForSync(config));
+    });
   });
 
   describe("validateSecrets", () => {

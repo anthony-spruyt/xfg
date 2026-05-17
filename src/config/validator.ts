@@ -85,6 +85,12 @@ function validateRootSettings(config: RawConfig): void {
       "'inherit' is a reserved key and cannot be used as a label name"
     );
   }
+
+  if (config.settings.variables && "inherit" in config.settings.variables) {
+    throw new ValidationError(
+      "'inherit' is not allowed in root-level variables (nothing to inherit from)"
+    );
+  }
 }
 
 function validateGithubHosts(config: RawConfig): void {
@@ -296,6 +302,17 @@ export function validateForSync(config: RawConfig): void {
   for (const settings of allSettings) {
     if (!settings?.variables) continue;
     const vars = settings.variables as Record<string, unknown>;
+
+    if (
+      vars.deleteOrphaned !== undefined &&
+      typeof vars.deleteOrphaned !== "boolean"
+    ) {
+      throw new ValidationError("variables.deleteOrphaned must be a boolean");
+    }
+    if (vars.inherit !== undefined && typeof vars.inherit !== "boolean") {
+      throw new ValidationError("variables.inherit must be a boolean");
+    }
+
     for (const [name, value] of Object.entries(vars)) {
       if (VARIABLE_RESERVED_KEYS.has(name)) continue;
       validateVariableName(name);
