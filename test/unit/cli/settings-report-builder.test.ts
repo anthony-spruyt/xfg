@@ -580,37 +580,41 @@ describe("buildSettingsReport", () => {
     assert.equal(report.totals.variables!.delete, 0);
   });
 
-  test("skips settings where both oldValue and newValue are undefined", () => {
-    const results = [
-      {
-        repoName: "org/repo",
-        settingsResult: {
-          planOutput: {
-            entries: [
-              {
-                property: "has_issues",
-                action: "update" as const,
-                oldValue: undefined,
-                newValue: undefined,
-              },
-              {
-                property: "deleteBranchOnMerge",
-                action: "update" as const,
-                oldValue: false,
-                newValue: true,
-              },
-            ],
+  test("filters unchanged settings entries via isActiveAction", () => {
+    const results: import("../../../src/cli/settings-report-builder.js").ProcessorResults[] =
+      [
+        {
+          repoName: "org/repo",
+          settingsResult: {
+            planOutput: {
+              // Cast to exercise the isActiveAction guard; PlanEntry normally
+              // only allows "create"|"update", but the filter should be
+              // consistent with the other entry types.
+              entries: [
+                {
+                  property: "has_issues",
+                  action: "unchanged",
+                  oldValue: true,
+                  newValue: true,
+                },
+                {
+                  property: "deleteBranchOnMerge",
+                  action: "update",
+                  oldValue: false,
+                  newValue: true,
+                },
+              ] as any,
+            },
           },
         },
-      },
-    ];
+      ];
 
     const report = buildSettingsReport(results);
 
-    // Should only include the valid setting, not the undefined one
+    // Unchanged entry should be filtered out
     assert.equal(report.repos[0].settings.length, 1);
     assert.equal(report.repos[0].settings[0].name, "deleteBranchOnMerge");
-    // Totals should only count the valid setting
+    // Totals should only count the active setting
     assert.equal(report.totals.settings.update, 1);
   });
 });

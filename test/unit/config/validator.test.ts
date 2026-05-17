@@ -5226,6 +5226,18 @@ describe("group extends validation", () => {
       };
       assert.throws(() => validateForSync(config), /GITHUB_/);
     });
+
+    test("rejects case-insensitive duplicate variable names", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: "value1", my_var: "value2" },
+        },
+      });
+      assert.throws(
+        () => validateForSync(config),
+        /Duplicate variable name: 'my_var' and 'MY_VAR' collide/
+      );
+    });
   });
 
   describe("validateSecrets", () => {

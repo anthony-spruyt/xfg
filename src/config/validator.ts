@@ -299,6 +299,20 @@ export function validateForSync(config: RawConfig): void {
       if (VARIABLE_RESERVED_KEYS.has(name)) continue;
       validateVariableName(name);
     }
+
+    // Reject duplicate case-insensitive variable names
+    const seenVarNames = new Map<string, string>();
+    for (const name of Object.keys(settings.variables)) {
+      if (VARIABLE_RESERVED_KEYS.has(name)) continue;
+      const upper = name.toUpperCase();
+      const existing = seenVarNames.get(upper);
+      if (existing) {
+        throw new ValidationError(
+          `Duplicate variable name: '${name}' and '${existing}' collide (GitHub treats variable names case-insensitively).`
+        );
+      }
+      seenVarNames.set(upper, name);
+    }
   }
 
   // Validate secret names and configs

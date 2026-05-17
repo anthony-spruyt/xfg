@@ -65,9 +65,7 @@ export function buildSettingsReport(
 
     if (result.settingsResult?.planOutput?.entries) {
       for (const entry of result.settingsResult.planOutput.entries) {
-        if (entry.oldValue === undefined && entry.newValue === undefined) {
-          continue;
-        }
+        if (!isActiveAction(entry)) continue;
         repoChanges.settings.push({
           name: entry.property,
           action: entry.action,
