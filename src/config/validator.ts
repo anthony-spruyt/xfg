@@ -280,8 +280,9 @@ export function validateForSync(config: RawConfig): void {
     !hasCondGrpPR
   ) {
     throw new ValidationError(
-      "Config requires at least one of: 'files' or 'settings'. " +
-        "Use 'files' to sync configuration files, or 'settings' to manage repository settings."
+      "Config requires at least one of: 'files' or 'settings' (rulesets, labels, variables, repo config). " +
+        "Use 'files' to sync configuration files, or 'settings' to manage repository settings. " +
+        "For secrets, use 'xfg secrets sync'."
     );
   }
 

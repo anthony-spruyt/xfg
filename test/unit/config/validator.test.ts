@@ -5137,6 +5137,17 @@ describe("group extends validation", () => {
   });
 
   describe("validateVariables", () => {
+    test("passes validateForSync with variables-only config (no files)", () => {
+      const config: import("../../../src/config/index.js").RawConfig = {
+        id: "variables-only",
+        settings: {
+          variables: { MY_VAR: "value" },
+        },
+        repos: [{ git: "git@github.com:org/repo.git" }],
+      };
+      assert.doesNotThrow(() => validateForSync(config));
+    });
+
     test("accepts valid variable names", () => {
       const config = createValidConfig({
         settings: {

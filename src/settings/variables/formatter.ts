@@ -61,11 +61,13 @@ export function formatVariablesPlan(
     lines.push(chalk.bold("  Update:"));
     for (const change of grouped.update) {
       lines.push(chalk.yellow(`    ~ variable "${change.name}"`));
-      lines.push(
-        chalk.yellow(
-          `        value: "${change.oldValue}" → "${change.newValue}"`
-        )
-      );
+      if (change.oldValue !== undefined && change.newValue !== undefined) {
+        lines.push(
+          chalk.yellow(
+            `        value: "${change.oldValue}" → "${change.newValue}"`
+          )
+        );
+      }
       entries.push({
         name: change.name,
         action: "update",
