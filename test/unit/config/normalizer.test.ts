@@ -6225,6 +6225,38 @@ describe("mergeRawSettings variables", () => {
     assert.equal(vars.deleteOrphaned, true);
   });
 
+  test("group-level variables deleteOrphaned: false overrides root deleteOrphaned: true", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: Object.assign(
+          { ROOT_VAR: "value" },
+          { deleteOrphaned: true }
+        ) as RawRepoSettings["variables"],
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: Object.assign(
+              { GROUP_VAR: "gval" },
+              { deleteOrphaned: false }
+            ) as RawRepoSettings["variables"],
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    const vars = config.repos[0].settings?.variables as Record<string, unknown>;
+    assert.equal(vars.deleteOrphaned, false);
+  });
+
   test("group-level inherit: false discards root variables", () => {
     const raw: RawConfig = {
       id: "test-config",

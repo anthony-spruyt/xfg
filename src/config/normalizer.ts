@@ -286,7 +286,10 @@ export function mergeSettings(
   }
 
   // deleteOrphaned: per-repo overrides root
-  const deleteOrphaned = perRepo?.deleteOrphaned ?? root?.deleteOrphaned;
+  const deleteOrphaned =
+    perRepo?.deleteOrphaned !== undefined
+      ? perRepo.deleteOrphaned
+      : root?.deleteOrphaned;
   if (deleteOrphaned !== undefined) {
     result.deleteOrphaned = deleteOrphaned;
   }
@@ -341,7 +344,10 @@ export function mergeSettings(
       .deleteOrphaned;
     const repoDeleteOrphaned = (repoVars as Record<string, unknown>)
       .deleteOrphaned;
-    const effectiveDeleteOrphaned = repoDeleteOrphaned ?? rootDeleteOrphaned;
+    const effectiveDeleteOrphaned =
+      repoDeleteOrphaned !== undefined
+        ? repoDeleteOrphaned
+        : rootDeleteOrphaned;
 
     const inherit = (repoVars as Record<string, unknown>).inherit;
     if (inherit === false) {
@@ -594,7 +600,10 @@ function mergeRawSettings(
     }
 
     const baseDelete = (baseVars as Record<string, unknown>).deleteOrphaned;
-    const effectiveDelete = overlayVars.deleteOrphaned ?? baseDelete;
+    const effectiveDelete =
+      overlayVars.deleteOrphaned !== undefined
+        ? overlayVars.deleteOrphaned
+        : baseDelete;
     if (effectiveDelete !== undefined) {
       cleaned.deleteOrphaned = effectiveDelete;
     }
