@@ -24,7 +24,7 @@ describe("EnvResolver", () => {
     );
   });
 
-  test("resolveAll returns all values or throws with all missing", () => {
+  test("resolveAll throws when any env vars are missing", () => {
     const resolver = new EnvResolver({ A: "val-a" });
     assert.throws(
       () =>
