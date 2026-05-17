@@ -64,6 +64,22 @@ describe("diffVariables", () => {
     assert.equal(changes[0].action, "unchanged");
   });
 
+  test("preserves remote name casing for update and unchanged actions", () => {
+    const current = [
+      makeVariable("MY_VAR", "old-value"),
+      makeVariable("Keep_Me", "same"),
+    ];
+    const desired: Record<string, string> = {
+      my_var: "new-value",
+      keep_me: "same",
+    };
+    const changes = diffVariables(current, desired, false);
+    const update = changes.find((c) => c.action === "update")!;
+    const unchanged = changes.find((c) => c.action === "unchanged")!;
+    assert.equal(update.name, "MY_VAR");
+    assert.equal(unchanged.name, "Keep_Me");
+  });
+
   test("sorts changes: delete, update, create, unchanged", () => {
     const current = [
       makeVariable("DELETE_ME", "val"),

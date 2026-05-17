@@ -34,12 +34,12 @@ export function diffVariables(
     } else if (currentVar.value !== desiredValue) {
       changes.push({
         action: "update",
-        name,
+        name: currentVar.name,
         oldValue: currentVar.value,
         newValue: desiredValue,
       });
     } else {
-      changes.push({ action: "unchanged", name });
+      changes.push({ action: "unchanged", name: currentVar.name });
     }
   }
 
