@@ -204,6 +204,47 @@ describe("SecretsProcessor", () => {
     assert.equal(mutatingCalls.length, 0);
   });
 
+  test("dry run counts existing secrets as updates", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [
+      { name: "EXISTING", created_at: "", updated_at: "" },
+    ];
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const result = await processor.process(
+      makeSecretsConfig({ EXISTING: { env: "SRC" }, NEW_ONE: { env: "SRC2" } }),
+      mockGitHubRepo,
+      { dryRun: true }
+    );
+    assert.equal(result.dryRun, true);
+    assert.equal(result.updated, 1);
+    assert.equal(result.created, 1);
+  });
+
+  test("dry run counts orphans as deleted when deleteOrphaned is true", async () => {
+    const strategy = new MockSecretsStrategy();
+    strategy.listResponse = [
+      { name: "ORPHAN", created_at: "", updated_at: "" },
+    ];
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const result = await processor.process(
+      makeSecretsConfig({}, true),
+      mockGitHubRepo,
+      { dryRun: true }
+    );
+    assert.equal(result.dryRun, true);
+    assert.equal(result.deleted, 1);
+    const mutatingCalls = strategy.calls.filter((c) => c.method !== "list");
+    assert.equal(mutatingCalls.length, 0);
+  });
+
   test("fails fast when env vars are missing", async () => {
     const strategy = new MockSecretsStrategy();
     const processor = new SecretsProcessor(
