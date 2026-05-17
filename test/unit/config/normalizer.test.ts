@@ -6062,6 +6062,22 @@ describe("mergeSettings variables", () => {
     assert.equal(result?.variables?.ROOT_VAR, undefined);
     assert.equal(result?.variables?.KEEP, "yes");
   });
+
+  test("per-repo variable with different case replaces root variable", () => {
+    const root: RawRootSettings = {
+      variables: { MY_VAR: "root-value", OTHER: "keep" },
+    };
+    const perRepo: RawRepoSettings = {
+      variables: { my_var: "repo-value" },
+    };
+    const result = mergeSettings(root, perRepo);
+    const vars = result?.variables as Record<string, string>;
+    const keys = Object.keys(vars);
+    assert.equal(keys.filter((k) => k.toUpperCase() === "MY_VAR").length, 1);
+    assert.equal(vars.my_var, "repo-value");
+    assert.equal(vars.MY_VAR, undefined);
+    assert.equal(vars.OTHER, "keep");
+  });
 });
 
 describe("mergeRawSettings variables", () => {
@@ -6146,6 +6162,36 @@ describe("mergeRawSettings variables", () => {
       (config.repos[0].settings?.variables as Record<string, unknown>)?.REMOVE,
       undefined
     );
+  });
+
+  test("group-level variable with different case replaces root variable", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: { MY_VAR: "root-value", OTHER: "keep" },
+      },
+      groups: {
+        myGroup: {
+          settings: {
+            variables: { my_var: "group-value" },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["myGroup"],
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    const vars = config.repos[0].settings?.variables as Record<string, string>;
+    const keys = Object.keys(vars);
+    assert.equal(keys.filter((k) => k.toUpperCase() === "MY_VAR").length, 1);
+    assert.equal(vars.my_var, "group-value");
+    assert.equal(vars.MY_VAR, undefined);
+    assert.equal(vars.OTHER, "keep");
   });
 
   test("group-level inherit: false discards root variables", () => {

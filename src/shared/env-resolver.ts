@@ -22,20 +22,22 @@ export class EnvResolver implements IEnvResolver {
   }
 
   resolveAll(entries: { name: string; envVar: string }[]): Map<string, string> {
-    const missing: string[] = [];
+    const missing = new Set<string>();
     const result = new Map<string, string>();
 
     for (const { name, envVar } of entries) {
       const value = this.env[envVar];
       if (value === undefined || value === "") {
-        missing.push(envVar);
+        missing.add(envVar);
       } else {
         result.set(name, value);
       }
     }
 
-    if (missing.length > 0) {
-      throw new Error(`Missing environment variables: ${missing.join(", ")}`);
+    if (missing.size > 0) {
+      throw new Error(
+        `Missing environment variables: ${[...missing].join(", ")}`
+      );
     }
 
     return result;

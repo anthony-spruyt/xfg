@@ -209,6 +209,28 @@ function mergeLabels(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+// GitHub treats variable names case-insensitively; overlay keys win over base keys with same name but different casing.
+function mergeVariablesCaseInsensitive(
+  base: Record<string, unknown>,
+  overlay: Record<string, unknown>
+): Record<string, unknown> {
+  const overlayUpper = new Map<string, string>();
+  for (const key of Object.keys(overlay)) {
+    overlayUpper.set(key.toUpperCase(), key);
+  }
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(base)) {
+    if (!overlayUpper.has(key.toUpperCase())) {
+      result[key] = value;
+    }
+  }
+  for (const [key, value] of Object.entries(overlay)) {
+    result[key] = value;
+  }
+  return result;
+}
+
 /**
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
@@ -332,12 +354,11 @@ export function mergeSettings(
         Object.entries(rest).filter(([, v]) => v !== false)
       ) as Record<string, string>;
     } else {
-      const combined = { ...rootVars, ...repoVars };
-      const {
-        inherit: _,
-        deleteOrphaned: _d,
-        ...rest
-      } = combined as Record<string, unknown>;
+      const combined = mergeVariablesCaseInsensitive(
+        rootVars as Record<string, unknown>,
+        repoVars as Record<string, unknown>
+      );
+      const { inherit: _, deleteOrphaned: _d, ...rest } = combined;
       result.variables = Object.fromEntries(
         Object.entries(rest).filter(([, v]) => v !== false)
       ) as Record<string, string>;
@@ -549,20 +570,34 @@ function mergeRawSettings(
   if (overlay.variables) {
     const overlayVars = overlay.variables as Record<string, unknown>;
     const inherit = overlayVars.inherit !== false;
-    const base = inherit ? { ...(result.variables ?? {}) } : {};
+    const baseVars = inherit
+      ? { ...(result.variables ?? {}) }
+      : ({} as Record<string, unknown>);
+
+    // Build overlay entries (excluding meta keys)
+    const overlayEntries: Record<string, unknown> = {};
     for (const [name, entry] of Object.entries(overlay.variables)) {
       if (name === "inherit" || name === "deleteOrphaned") continue;
-      if (entry === false) {
-        delete (base as Record<string, unknown>)[name];
-        continue;
-      }
-      (base as Record<string, unknown>)[name] = entry;
+      overlayEntries[name] = entry;
     }
+
+    // Case-insensitive merge: overlay keys replace base keys with same name
+    const merged = mergeVariablesCaseInsensitive(baseVars, overlayEntries);
+
+    // Apply false opt-outs
+    const cleaned: Record<string, unknown> = {};
+    for (const [name, value] of Object.entries(merged)) {
+      if (name === "inherit" || name === "deleteOrphaned") continue;
+      if (value !== false) {
+        cleaned[name] = value;
+      }
+    }
+
     const overlayDelete = overlayVars.deleteOrphaned;
     if (overlayDelete !== undefined) {
-      (base as Record<string, unknown>).deleteOrphaned = overlayDelete;
+      cleaned.deleteOrphaned = overlayDelete;
     }
-    result.variables = base as typeof result.variables;
+    result.variables = cleaned as typeof result.variables;
   }
 
   // deleteOrphaned: overlay wins
