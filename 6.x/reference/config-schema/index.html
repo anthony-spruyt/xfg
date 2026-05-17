@@ -1084,6 +1084,52 @@
   
   
     <li class="md-nav__item">
+      <a href="../../configuration/variables/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    GitHub Variables
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/secrets/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Secrets
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/code-scanning/" class="md-nav__link">
         
   
@@ -1917,6 +1963,54 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#settings-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variables-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables Field
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secrets Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secretconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      SecretConfig
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#file-config" class="md-nav__link">
     <span class="md-ellipsis">
       File Config
@@ -2302,6 +2396,54 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#settings-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Settings Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Settings Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#variables-field" class="md-nav__link">
+    <span class="md-ellipsis">
+      Variables Field
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#secrets-object" class="md-nav__link">
+    <span class="md-ellipsis">
+      Secrets Object
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secrets Object">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#secretconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      SecretConfig
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#file-config" class="md-nav__link">
     <span class="md-ellipsis">
       File Config
@@ -2472,7 +2614,13 @@
 <td><code>settings</code></td>
 <td><code>object</code></td>
 <td>*</td>
-<td>Repository settings (rulesets, labels, etc.)</td>
+<td>Repository settings (rulesets, labels, variables, etc.)</td>
+</tr>
+<tr>
+<td><code>secrets</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>GitHub Actions secrets (root-level, synced via <code>xfg secrets sync</code>)</td>
 </tr>
 <tr>
 <td><code>prOptions</code></td>
@@ -2504,6 +2652,121 @@
 <p class="admonition-title">files/settings/groups requirement</p>
 <p>At least one of <code>files</code>, <code>settings</code>, <code>groups</code>, or <code>conditionalGroups</code> must be present. The <code>sync</code> command requires files defined in root <code>files</code>, in a group, or in a conditional group. The <code>settings</code> command requires <code>settings</code> at root, repo, group, or conditional group level.</p>
 </div>
+<h3 id="settings-object">Settings Object<a class="headerlink" href="#settings-object" title="Permanent link">&para;</a></h3>
+<p>The <code>settings</code> object (at root, group, or repo level) supports the following fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rulesets</code></td>
+<td><code>object</code></td>
+<td>GitHub rulesets keyed by name</td>
+</tr>
+<tr>
+<td><code>repo</code></td>
+<td><code>object</code></td>
+<td>GitHub repository settings</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td><code>object</code></td>
+<td>GitHub labels keyed by name</td>
+</tr>
+<tr>
+<td><code>codeScanning</code></td>
+<td><code>object</code></td>
+<td>GitHub code scanning default setup</td>
+</tr>
+<tr>
+<td><code>variables</code></td>
+<td><code>object</code></td>
+<td>GitHub Actions variables keyed by name (see below)</td>
+</tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>Default for orphan deletion across all settings sub-types</td>
+</tr>
+</tbody>
+</table>
+<h4 id="variables-field">Variables Field<a class="headerlink" href="#variables-field" title="Permanent link">&para;</a></h4>
+<p>The <code>variables</code> field in <code>settings</code> maps variable names to their string values. Two special keys control behavior:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>Delete variables removed from config (independent of settings-level <code>deleteOrphaned</code>)</td>
+</tr>
+<tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>Set to <code>false</code> to discard all inherited variables (per-repo/group only)</td>
+</tr>
+<tr>
+<td><code>VAR_NAME</code></td>
+<td><code>string \| false</code></td>
+<td>Variable value, or <code>false</code> to opt out of an inherited variable</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../configuration/variables/">GitHub Variables</a> for full details.</p>
+<h3 id="secrets-object">Secrets Object<a class="headerlink" href="#secrets-object" title="Permanent link">&para;</a></h3>
+<p>The <code>secrets</code> object is at the <strong>root level</strong> (not under <code>settings</code>) and is synced via <code>xfg secrets sync</code>, not <code>xfg sync</code>. It maps secret names to <code>SecretConfig</code> objects:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>Delete secrets removed from config</td>
+</tr>
+<tr>
+<td><code>SECRET_NAME</code></td>
+<td><code>object</code></td>
+<td><code>SecretConfig</code> with an <code>env</code> field (see below)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="secretconfig">SecretConfig<a class="headerlink" href="#secretconfig" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>env</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>Name of the environment variable holding the secret value</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../configuration/secrets/">Secrets</a> for full details.</p>
 <h3 id="file-config">File Config<a class="headerlink" href="#file-config" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
