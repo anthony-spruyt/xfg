@@ -30,6 +30,9 @@ if [[ "${1:-}" == "--ci" ]]; then
   docker_args=(
     -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR"
     -e SARIF_REPORTER=true
+    -e LOG_LEVEL=WARNING
+    -e PRINT_ALPACA=false
+    -e SHOW_SKIPPED_LINTERS=false
     -e GITHUB_TOKEN="${GITHUB_TOKEN:-}"
     -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}"
     -e DEFAULT_WORKSPACE=/tmp/lint
