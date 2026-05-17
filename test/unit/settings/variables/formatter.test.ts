@@ -17,7 +17,7 @@ describe("formatVariablesPlan", () => {
     assert.equal(result.deletes, 1);
     assert.equal(result.unchanged, 1);
     assert.equal(result.entries.length, 4);
-    assert.ok(result.lines.length > 0);
+    assert.equal(result.lines.length, 12);
   });
 
   test("returns empty output for no changes", () => {

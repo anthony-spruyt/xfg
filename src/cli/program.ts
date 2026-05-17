@@ -126,7 +126,7 @@ const secretsCommand = new Command("secrets").description(
 const secretsSyncCommand = new Command("sync")
   .description("Sync secrets to target repositories")
   .requiredOption("-c, --config <path>", "Path to xfg config file")
-  .option("-d, --dry-run", "Show what would change without applying")
+  .option("-d, --dry-run", "Show what would be done without making changes")
   .option("--no-delete", "Skip deletion of orphaned secrets")
   .option("-w, --work-dir <path>", "Temporary directory for cloning", "./tmp")
   .option(

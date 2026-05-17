@@ -95,30 +95,32 @@ export class SecretsProcessor {
     let deleted = 0;
 
     if (!dryRun) {
-      const publicKey = await this.strategy.getPublicKey(
-        githubRepo,
-        strategyOptions
-      );
-
-      for (const [name] of secretEntries) {
-        const value = resolvedValues.get(name);
-        if (value === undefined) {
-          throw new Error(
-            `Failed to resolve environment variable for secret "${name}"`
-          );
-        }
-        const encrypted = await this.encryptor.encrypt(value, publicKey.key);
-        await this.strategy.upsert(
+      if (secretEntries.length > 0) {
+        const publicKey = await this.strategy.getPublicKey(
           githubRepo,
-          name,
-          encrypted,
-          publicKey.key_id,
           strategyOptions
         );
-        if (currentByName.has(name.toUpperCase())) {
-          updated++;
-        } else {
-          created++;
+
+        for (const [name] of secretEntries) {
+          const value = resolvedValues.get(name);
+          if (value === undefined) {
+            throw new Error(
+              `Failed to resolve environment variable for secret "${name}"`
+            );
+          }
+          const encrypted = await this.encryptor.encrypt(value, publicKey.key);
+          await this.strategy.upsert(
+            githubRepo,
+            name,
+            encrypted,
+            publicKey.key_id,
+            strategyOptions
+          );
+          if (currentByName.has(name.toUpperCase())) {
+            updated++;
+          } else {
+            created++;
+          }
         }
       }
 

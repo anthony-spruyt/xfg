@@ -241,7 +241,7 @@ describe("VariablesProcessor", () => {
       {}
     );
     assert.equal(result.success, false);
-    assert.ok(result.message?.includes("API failure"));
+    assert.match(result.message, /API failure/);
   });
 
   test("handles empty string as valid variable value", async () => {

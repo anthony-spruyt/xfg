@@ -593,9 +593,10 @@ function mergeRawSettings(
       }
     }
 
-    const overlayDelete = overlayVars.deleteOrphaned;
-    if (overlayDelete !== undefined) {
-      cleaned.deleteOrphaned = overlayDelete;
+    const baseDelete = (baseVars as Record<string, unknown>).deleteOrphaned;
+    const effectiveDelete = overlayVars.deleteOrphaned ?? baseDelete;
+    if (effectiveDelete !== undefined) {
+      cleaned.deleteOrphaned = effectiveDelete;
     }
     result.variables = cleaned as typeof result.variables;
   }

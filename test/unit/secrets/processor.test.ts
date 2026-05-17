@@ -327,6 +327,10 @@ describe("SecretsProcessor", () => {
     assert.equal(result.updated, 0);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
     assert.equal(deleteCalls.length, 2);
+    const pubKeyCalls = strategy.calls.filter(
+      (c) => c.method === "getPublicKey"
+    );
+    assert.equal(pubKeyCalls.length, 0);
   });
 
   test("handles mixed create, update, and delete in one call", async () => {

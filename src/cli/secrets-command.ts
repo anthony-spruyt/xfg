@@ -118,6 +118,9 @@ export async function runSecretsSync(
         logger.skip(i + 1, repoName, result.message);
       } else if (result.success) {
         logger.success(i + 1, repoName, `Secrets: ${result.message}`);
+      } else {
+        logger.error(i + 1, repoName, `Secrets: ${result.message}`);
+        hasErrors = true;
       }
     } catch (error) {
       logger.error(i + 1, repoName, `Secrets: ${toErrorMessage(error)}`);

@@ -77,6 +77,7 @@ export function buildSettingsReport(
 
     if (result.codeScanningResult?.planOutput?.entries) {
       for (const entry of result.codeScanningResult.planOutput.entries) {
+        if (!isActiveAction(entry)) continue;
         repoChanges.settings.push({
           name: `codeScanning.${entry.property}`,
           action: entry.action,
