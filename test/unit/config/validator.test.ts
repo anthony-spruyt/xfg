@@ -5238,6 +5238,27 @@ describe("group extends validation", () => {
         /Duplicate variable name: 'my_var' and 'MY_VAR' collide/
       );
     });
+
+    test("rejects non-string variable values", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: 123 as unknown as string },
+        },
+      });
+      assert.throws(
+        () => validateForSync(config),
+        /Variable 'MY_VAR' must have a string value \(got number\)/
+      );
+    });
+
+    test("accepts false as variable value (opt-out)", () => {
+      const config = createValidConfig({
+        settings: {
+          variables: { MY_VAR: false as unknown as string },
+        },
+      });
+      assert.doesNotThrow(() => validateForSync(config));
+    });
   });
 
   describe("validateSecrets", () => {

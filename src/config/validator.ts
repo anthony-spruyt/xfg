@@ -295,9 +295,15 @@ export function validateForSync(config: RawConfig): void {
   ];
   for (const settings of allSettings) {
     if (!settings?.variables) continue;
-    for (const name of Object.keys(settings.variables)) {
+    const vars = settings.variables as Record<string, unknown>;
+    for (const [name, value] of Object.entries(vars)) {
       if (VARIABLE_RESERVED_KEYS.has(name)) continue;
       validateVariableName(name);
+      if (value !== false && typeof value !== "string") {
+        throw new ValidationError(
+          `Variable '${name}' must have a string value (got ${typeof value}). Quote numeric values in YAML: "${String(value)}".`
+        );
+      }
     }
 
     // Reject duplicate case-insensitive variable names
