@@ -12,6 +12,7 @@ describe("SodiumEncryptor", () => {
     assert.equal(typeof result, "string");
     assert.doesNotThrow(() => Buffer.from(result, "base64"));
     const decoded = Buffer.from(result, "base64");
+    // crypto_box_seal overhead: 32-byte ephemeral public key + 16-byte MAC = 48 bytes
     assert.equal(decoded.length, Buffer.byteLength("test-secret-value") + 48);
   });
 
@@ -32,6 +33,8 @@ describe("SodiumEncryptor", () => {
       () => encryptor.encrypt("value", "not-valid-base64!!!"),
       (err: Error) => {
         assert.equal(err instanceof Error, true);
+        assert.ok(err.message.length > 0, "error message should not be empty");
+        assert.match(err.message, /invalid input|base64/i);
         return true;
       }
     );

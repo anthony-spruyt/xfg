@@ -23,6 +23,10 @@ describe("formatVariablesPlan", () => {
   test("returns empty output for no changes", () => {
     const result = formatVariablesPlan([]);
     assert.equal(result.creates, 0);
+    assert.equal(result.updates, 0);
+    assert.equal(result.deletes, 0);
+    assert.equal(result.unchanged, 0);
     assert.equal(result.entries.length, 0);
+    assert.equal(result.lines.length, 0);
   });
 });

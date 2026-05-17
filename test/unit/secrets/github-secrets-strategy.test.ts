@@ -8,16 +8,16 @@ import type {
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
 class MockExecutor implements ICommandExecutor {
-  calls: { executable: string; args: string[] }[] = [];
+  calls: { executable: string; args: string[]; options?: ExecOptions }[] = [];
   response = "";
 
   async exec(
     executable: string,
     args: string[],
     _cwd: string,
-    _options?: ExecOptions
+    options?: ExecOptions
   ): Promise<string> {
-    this.calls.push({ executable, args });
+    this.calls.push({ executable, args, options });
     return this.response;
   }
 }
@@ -106,6 +106,9 @@ describe("GitHubSecretsStrategy", () => {
         a.includes("/repos/test-org/test-repo/actions/secrets/MY_SECRET")
       )
     );
+    const body = JSON.parse(call.options?.input ?? "{}");
+    assert.equal(body.encrypted_value, "encrypted-base64");
+    assert.equal(body.key_id, "key-123");
   });
 
   test("delete calls DELETE endpoint", async () => {
