@@ -6063,6 +6063,20 @@ describe("mergeSettings variables", () => {
     assert.equal(result?.variables?.KEEP, "yes");
   });
 
+  test("per-repo inherit false with no variables results in empty variables", () => {
+    const root: RawRootSettings = {
+      variables: { ROOT_VAR: "value", ANOTHER: "v2" },
+    };
+    const perRepo: RawRepoSettings = {
+      variables: Object.assign(
+        {},
+        { inherit: false }
+      ) as RawRepoSettings["variables"],
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.variables, undefined);
+  });
+
   test("per-repo variable with different case replaces root variable", () => {
     const root: RawRootSettings = {
       variables: { MY_VAR: "root-value", OTHER: "keep" },

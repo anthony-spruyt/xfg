@@ -1678,6 +1678,7 @@
       "properties": {
         "env": {
           "type": "string",
+          "minLength": 1,
           "description": "Name of the environment variable containing the secret value"
         }
       },
