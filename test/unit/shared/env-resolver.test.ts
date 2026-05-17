@@ -33,7 +33,7 @@ describe("EnvResolver", () => {
           { name: "SEC2", envVar: "B" },
           { name: "SEC3", envVar: "C" },
         ]),
-      /B.*C/
+      /Missing environment variables: B, C/
     );
   });
 
@@ -43,6 +43,7 @@ describe("EnvResolver", () => {
       { name: "SEC1", envVar: "A" },
       { name: "SEC2", envVar: "B" },
     ]);
+    assert.equal(result.size, 2);
     assert.equal(result.get("SEC1"), "val-a");
     assert.equal(result.get("SEC2"), "val-b");
   });
