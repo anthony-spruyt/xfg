@@ -39,7 +39,7 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
       result,
       "variables response"
     );
-    return response.variables;
+    return response.variables ?? [];
   }
 
   async create(

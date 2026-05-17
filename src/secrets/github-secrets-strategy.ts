@@ -38,7 +38,7 @@ export class GitHubSecretsStrategy implements ISecretsStrategy {
       result,
       "secrets response"
     );
-    return response.secrets;
+    return response.secrets ?? [];
   }
 
   async getPublicKey(

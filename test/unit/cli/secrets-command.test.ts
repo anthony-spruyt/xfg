@@ -96,6 +96,35 @@ repos:
       "processor.process should be called once"
     );
 
+    const callArgs = processMock.mock.calls[0].arguments;
+
+    const secretsConfig = callArgs[0] as Record<string, unknown>;
+    assert.ok(
+      "DEPLOY_TOKEN" in secretsConfig,
+      "secretsConfig should contain DEPLOY_TOKEN"
+    );
+    assert.deepEqual(
+      (secretsConfig.DEPLOY_TOKEN as { env: string }).env,
+      "TOKEN_SOURCE",
+      "DEPLOY_TOKEN should have env: TOKEN_SOURCE"
+    );
+
+    const repoInfo = callArgs[1] as { owner: string; repo: string };
+    assert.equal(
+      repoInfo.owner,
+      "test-org",
+      "repoInfo.owner should be test-org"
+    );
+    assert.equal(
+      repoInfo.repo,
+      "test-repo",
+      "repoInfo.repo should be test-repo"
+    );
+
+    const options = callArgs[2] as { dryRun?: boolean; noDelete?: boolean };
+    assert.equal(options.dryRun, undefined, "dryRun should be undefined");
+    assert.equal(options.noDelete, undefined, "noDelete should be undefined");
+
     const output = consoleOutput.join("\n");
     assert.ok(
       output.includes("1 created, 0 updated, 0 deleted"),
@@ -161,6 +190,15 @@ repos:
           { processorFactory: () => mockProcessor }
         ),
       /One or more repositories failed secrets sync/
+    );
+
+    const processMock = mockProcessor.process as unknown as ReturnType<
+      typeof mock.fn
+    >;
+    assert.equal(
+      processMock.mock.calls.length,
+      1,
+      "processor.process should be called once for the single repo"
     );
 
     const output = consoleOutput.join("\n");

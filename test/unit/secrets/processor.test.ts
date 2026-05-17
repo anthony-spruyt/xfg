@@ -36,11 +36,19 @@ class MockSecretsStrategy implements ISecretsStrategy {
     _r: RepoInfo,
     name: string,
     encrypted: string,
-    keyId: string
+    keyId: string,
+    options?: GhApiOptions
   ): Promise<void> {
-    this.calls.push({ method: "upsert", args: [name, encrypted, keyId] });
+    this.calls.push({
+      method: "upsert",
+      args: [name, encrypted, keyId, options],
+    });
   }
-  async delete(_r: RepoInfo, name: string): Promise<void> {
+  async delete(
+    _r: RepoInfo,
+    name: string,
+    _options?: GhApiOptions
+  ): Promise<void> {
     this.calls.push({ method: "delete", args: [name] });
   }
 }
@@ -119,6 +127,10 @@ describe("SecretsProcessor", () => {
       Buffer.from("encrypted:secret-value").toString("base64")
     );
     assert.equal(upsertCalls[0].args[2], "key-1");
+    assert.deepEqual(upsertCalls[0].args[3], {
+      token: undefined,
+      host: "github.com",
+    });
   });
 
   test("detects existing secrets as updates", async () => {
@@ -261,6 +273,8 @@ describe("SecretsProcessor", () => {
         ),
       /MISSING_VAR/
     );
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls.length, 0);
   });
 
   test("rejects empty env var value", async () => {
@@ -281,6 +295,8 @@ describe("SecretsProcessor", () => {
         ),
       /TOKEN_SOURCE/
     );
+    const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+    assert.equal(upsertCalls.length, 0);
   });
 
   test("matches existing secret case-insensitively against API response", async () => {

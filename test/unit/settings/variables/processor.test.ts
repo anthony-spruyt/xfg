@@ -231,7 +231,9 @@ describe("VariablesProcessor", () => {
   test("returns failure when strategy throws", async () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [];
+    let createCalled = false;
     strategy.create = async () => {
+      createCalled = true;
       throw new Error("API failure");
     };
     const processor = new VariablesProcessor(strategy);
@@ -239,6 +241,11 @@ describe("VariablesProcessor", () => {
       makeRepoConfig({ NEW_VAR: "value" }),
       mockGitHubRepo,
       {}
+    );
+    assert.equal(
+      createCalled,
+      true,
+      "strategy.create() should have been called"
     );
     assert.equal(result.success, false);
     assert.match(result.message, /API failure/);
@@ -256,6 +263,8 @@ describe("VariablesProcessor", () => {
     assert.equal(result.success, true);
     assert.equal(result.changes?.create, 1);
     const createCalls = strategy.calls.filter((c) => c.method === "create");
+    assert.equal(createCalls.length, 1);
+    assert.equal(createCalls[0].args[0], "EMPTY_VAR");
     assert.equal(createCalls[0].args[1], "");
   });
 

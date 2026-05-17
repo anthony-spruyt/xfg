@@ -102,12 +102,7 @@ export class SecretsProcessor {
         );
 
         for (const [name] of secretEntries) {
-          const value = resolvedValues.get(name);
-          if (value === undefined) {
-            throw new Error(
-              `Failed to resolve environment variable for secret "${name}"`
-            );
-          }
+          const value = resolvedValues.get(name)!;
           const encrypted = await this.encryptor.encrypt(value, publicKey.key);
           await this.strategy.upsert(
             githubRepo,
