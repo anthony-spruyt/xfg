@@ -9,7 +9,7 @@ import type { ResultsCollector } from "./results-collector.js";
 import type { ProcessorResults } from "./settings-report-builder.js";
 
 interface SettingsDescriptor {
-  key: "rulesets" | "labels" | "repo" | "codeScanning";
+  key: "rulesets" | "labels" | "repo" | "codeScanning" | "variables";
   label: string;
   run: () => Promise<SettingsResult>;
 }
@@ -132,6 +132,22 @@ function buildSettingsDescriptors(
           settingsCollector,
           (e, r) => {
             e.codeScanningResult = r;
+          }
+        ),
+    },
+    {
+      key: "variables" as const,
+      label: "Variables",
+      run: () =>
+        runAndStoreResult(
+          factories.variables,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.variablesResult = r;
           }
         ),
     },

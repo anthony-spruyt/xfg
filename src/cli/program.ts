@@ -1,4 +1,4 @@
-import { program, Command } from "commander";
+import { program, Command, InvalidArgumentError } from "commander";
 import { dirname, join } from "node:path";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -6,6 +6,7 @@ import { MergeMode, MergeStrategy } from "../config/index.js";
 import { ValidationError } from "../shared/errors.js";
 import { runSync } from "./sync-command.js";
 import type { SyncOptions } from "./sync-command.js";
+import { runSecretsSync, type SecretsSyncOptions } from "./secrets-command.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -36,7 +37,12 @@ function addSharedOptions(cmd: Command): Command {
     .option(
       "-r, --retries <number>",
       "Number of retries for network operations (0 to disable)",
-      (v) => parseInt(v, 10),
+      (v: string) => {
+        const n = parseInt(v, 10);
+        if (isNaN(n) || n < 0)
+          throw new InvalidArgumentError("Must be a non-negative number.");
+        return n;
+      },
       3
     )
     .option(
@@ -99,7 +105,11 @@ const syncCommand = new Command("sync")
   .option("--delete-branch", "Delete source branch after merge")
   .action(async (opts) => {
     try {
-      await runSync(opts as SyncOptions);
+      const options = {
+        ...opts,
+        noDelete: opts.delete === false,
+      } as SyncOptions;
+      await runSync(options);
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);
@@ -108,5 +118,42 @@ const syncCommand = new Command("sync")
 
 addSharedOptions(syncCommand);
 program.addCommand(syncCommand);
+
+const secretsCommand = new Command("secrets").description(
+  "Manage repository secrets"
+);
+
+const secretsSyncCommand = new Command("sync")
+  .description("Sync secrets to target repositories")
+  .requiredOption("-c, --config <path>", "Path to xfg config file")
+  .option("-d, --dry-run", "Show what would be done without making changes")
+  .option("--no-delete", "Skip deletion of orphaned secrets")
+  .option("-w, --work-dir <path>", "Temporary directory for cloning", "./tmp")
+  .option(
+    "-r, --retries <number>",
+    "Number of retries for network operations (0 to disable)",
+    (value: string) => {
+      const n = parseInt(value, 10);
+      if (isNaN(n) || n < 0)
+        throw new InvalidArgumentError("Must be a non-negative number.");
+      return n;
+    },
+    3
+  )
+  .action(async (opts) => {
+    try {
+      const options = {
+        ...opts,
+        noDelete: opts.delete === false,
+      } as SecretsSyncOptions;
+      await runSecretsSync(options);
+    } catch (error) {
+      console.error("Fatal error:", error);
+      return process.exit(1);
+    }
+  });
+
+secretsCommand.addCommand(secretsSyncCommand);
+program.addCommand(secretsCommand);
 
 export { program, getVersion };

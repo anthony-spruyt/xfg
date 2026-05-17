@@ -51,7 +51,7 @@ repos:
 `);
       assert.throws(
         () => loadConfig(path, process.env),
-        /Config requires at least one of: 'files' or 'settings'/
+        /Config requires at least one of:/
       );
     });
 

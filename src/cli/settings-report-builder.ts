@@ -4,6 +4,7 @@ import {
   type RulesetPlanEntry,
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
+  type VariablesPlanEntry,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
@@ -34,6 +35,11 @@ export interface ProcessorResults {
       entries?: CodeScanningPlanEntry[];
     };
   };
+  variablesResult?: {
+    planOutput?: {
+      entries?: VariablesPlanEntry[];
+    };
+  };
   error?: string;
 }
 
@@ -45,6 +51,7 @@ export function buildSettingsReport(
     settings: { create: 0, update: 0 },
     rulesets: { create: 0, update: 0, delete: 0 },
     labels: { create: 0, update: 0, delete: 0 },
+    variables: { create: 0, update: 0, delete: 0 },
   };
 
   for (const result of results) {
@@ -53,13 +60,12 @@ export function buildSettingsReport(
       settings: [],
       rulesets: [],
       labels: [],
+      variables: [],
     };
 
     if (result.settingsResult?.planOutput?.entries) {
       for (const entry of result.settingsResult.planOutput.entries) {
-        if (entry.oldValue === undefined && entry.newValue === undefined) {
-          continue;
-        }
+        if (!isActiveAction(entry)) continue;
         repoChanges.settings.push({
           name: entry.property,
           action: entry.action,
@@ -71,6 +77,7 @@ export function buildSettingsReport(
 
     if (result.codeScanningResult?.planOutput?.entries) {
       for (const entry of result.codeScanningResult.planOutput.entries) {
+        if (!isActiveAction(entry)) continue;
         repoChanges.settings.push({
           name: `codeScanning.${entry.property}`,
           action: entry.action,
@@ -117,6 +124,22 @@ export function buildSettingsReport(
       totals.labels.create += counts.create;
       totals.labels.update += counts.update;
       totals.labels.delete += counts.delete;
+    }
+
+    if (result.variablesResult?.planOutput?.entries) {
+      for (const entry of result.variablesResult.planOutput.entries) {
+        if (!isActiveAction(entry)) continue;
+        repoChanges.variables!.push({
+          name: entry.name,
+          action: entry.action,
+          oldValue: entry.oldValue,
+          newValue: entry.newValue,
+        });
+      }
+      const counts = countActions(repoChanges.variables!);
+      totals.variables.create += counts.create;
+      totals.variables.update += counts.update;
+      totals.variables.delete += counts.delete;
     }
 
     if (result.error) {
