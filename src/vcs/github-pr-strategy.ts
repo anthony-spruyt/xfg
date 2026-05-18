@@ -22,10 +22,10 @@ import { buildTokenEnv, buildHostnameArgs } from "../shared/gh-api-utils.js";
 import { SyncError } from "../shared/errors.js";
 
 /**
- * Get the repo flag value for gh CLI commands.
+ * Build the repo flag value for gh CLI commands.
  * Returns HOST/OWNER/REPO for GHE, OWNER/REPO for github.com.
  */
-function getRepoFlag(repoInfo: GitHubRepoInfo): string {
+function buildRepoFlag(repoInfo: GitHubRepoInfo): string {
   if (repoInfo.host !== "github.com") {
     return `${repoInfo.host}/${repoInfo.owner}/${repoInfo.repo}`;
   }
@@ -47,7 +47,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     assertGitHubRepo(repoInfo, "GitHub PR strategy");
 
-    const repoFlag = getRepoFlag(repoInfo);
+    const repoFlag = buildRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
     const args = [
       "pr",
@@ -118,7 +118,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       };
     }
 
-    const repoFlag = getRepoFlag(repoInfo);
+    const repoFlag = buildRepoFlag(repoInfo);
     const tokenEnv = buildTokenEnv(token);
     const args = [
       "pr",
@@ -254,7 +254,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
     }
   }
 
-  private getMergeStrategyFlag(strategy?: MergeStrategy): string {
+  private buildMergeStrategyFlag(strategy?: MergeStrategy): string {
     switch (strategy) {
       case "squash":
         return "--squash";
@@ -281,7 +281,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
       };
     }
 
-    const strategyFlag = this.getMergeStrategyFlag(config.strategy);
+    const strategyFlag = this.buildMergeStrategyFlag(config.strategy);
     const tokenEnv = buildTokenEnv(token);
 
     if (config.mode === "auto") {
@@ -299,7 +299,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
           `Auto-merge not enabled for '${repoInfo.owner}/${repoInfo.repo}'. PR left open for manual review.`
         );
         this.log?.info(
-          `To enable: gh repo edit ${getRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
+          `To enable: gh repo edit ${buildRepoFlag(repoInfo)} --enable-auto-merge (requires admin)`
         );
         return {
           success: true,

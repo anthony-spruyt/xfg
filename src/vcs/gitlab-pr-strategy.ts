@@ -23,7 +23,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
    * Build the repo flag for glab commands.
    * Format: namespace/repo (supports nested groups)
    */
-  private getRepoFlag(repoInfo: GitLabRepoInfo): string {
+  private buildRepoFlag(repoInfo: GitLabRepoInfo): string {
     return `${repoInfo.namespace}/${repoInfo.repo}`;
   }
 
@@ -66,7 +66,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
   /**
    * Build merge strategy flags for glab mr merge command.
    */
-  private getMergeStrategyFlag(strategy?: MergeStrategy): string {
+  private buildMergeStrategyFlag(strategy?: MergeStrategy): string {
     switch (strategy) {
       case "squash":
         return "--squash";
@@ -90,7 +90,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
-    const repoFlag = this.getRepoFlag(repoInfo);
+    const repoFlag = this.buildRepoFlag(repoInfo);
     try {
       const result = await withRetry(
         () =>
@@ -161,7 +161,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
       };
     }
 
-    const repoFlag = this.getRepoFlag(repoInfo);
+    const repoFlag = this.buildRepoFlag(repoInfo);
 
     try {
       await withRetry(
@@ -213,7 +213,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
 
     assertGitLabRepo(repoInfo, "GitLab PR strategy");
 
-    const repoFlag = this.getRepoFlag(repoInfo);
+    const repoFlag = this.buildRepoFlag(repoInfo);
 
     const args = [
       "mr",
@@ -282,7 +282,7 @@ export class GitLabPRStrategy extends BasePRStrategy {
     }
 
     const repoFlag = `${mrInfo.namespace}/${mrInfo.repo}`;
-    const strategyFlag = this.getMergeStrategyFlag(config.strategy);
+    const strategyFlag = this.buildMergeStrategyFlag(config.strategy);
 
     if (config.mode === "auto") {
       const args = [

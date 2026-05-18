@@ -24,7 +24,7 @@ import { getStderr } from "../shared/command-executor.js";
 export class AdoPRStrategy extends BasePRStrategy {
   private readonly bodyFilePath = ".pr-description.md";
 
-  private getOrgUrl(repoInfo: AzureDevOpsRepoInfo): string {
+  private buildOrgUrl(repoInfo: AzureDevOpsRepoInfo): string {
     return `https://dev.azure.com/${encodeURIComponent(repoInfo.organization)}`;
   }
 
@@ -43,7 +43,7 @@ export class AdoPRStrategy extends BasePRStrategy {
     workDir: string,
     retries: number
   ): Promise<string | null> {
-    const orgUrl = this.getOrgUrl(azureRepoInfo);
+    const orgUrl = this.buildOrgUrl(azureRepoInfo);
     const args = [
       "repos",
       "pr",
@@ -111,7 +111,7 @@ export class AdoPRStrategy extends BasePRStrategy {
 
     assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
-    const orgUrl = this.getOrgUrl(azureRepoInfo);
+    const orgUrl = this.buildOrgUrl(azureRepoInfo);
 
     const prId = await this.findExistingPRId(
       azureRepoInfo,
@@ -214,7 +214,7 @@ export class AdoPRStrategy extends BasePRStrategy {
 
     assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
-    const orgUrl = this.getOrgUrl(azureRepoInfo);
+    const orgUrl = this.buildOrgUrl(azureRepoInfo);
 
     const descFile = join(workDir, this.bodyFilePath);
     try {
