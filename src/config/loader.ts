@@ -90,9 +90,9 @@ function collectYamlFiles(
   try {
     entries = readdirSync(currentDir, { withFileTypes: true });
   } catch (error) {
-    const rel = relative(rootDir, currentDir) || ".";
+    const rel = relative(rootDir, currentDir);
     throw new ValidationError(
-      `Failed to read config directory ${rel}: ${toErrorMessage(error)}`,
+      `Failed to read config directory ${rel || currentDir}: ${toErrorMessage(error)}`,
       { cause: error }
     );
   }
@@ -108,12 +108,7 @@ function collectYamlFiles(
     const ext = extname(entry.name).toLowerCase();
     const isYaml = ext === ".yaml" || ext === ".yml";
 
-    if (entry.isFile() && isYaml) {
-      files.push({
-        relativePath: relative(rootDir, join(currentDir, entry.name)),
-        absolutePath: join(currentDir, entry.name),
-      });
-    } else if (entry.isSymbolicLink() && isYaml) {
+    if ((entry.isFile() || entry.isSymbolicLink()) && isYaml) {
       files.push({
         relativePath: relative(rootDir, join(currentDir, entry.name)),
         absolutePath: join(currentDir, entry.name),
