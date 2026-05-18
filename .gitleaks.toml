@@ -10,15 +10,8 @@ useDefault = true
 # Repo-specific paths consolidated here for central management.
 [allowlist]
 paths = [
-  # spruyt-labs: ExternalSecret CRDs contain key references, not secret values
-  '''external-secret\.yaml$''',
-  # xfg: Test fixture files with non-sensitive test RSA keys
   '''test/fixtures/test-fixtures\.ts$''',
   '''fixtures/test-fixtures\.ts$''',
-  # Hookify rules contain example IPs in documentation
-  '''\.claude/hookify\..*\.local\.md$''',
-  # Hookify test cases contain example IPs for testing
-  '''tests/hooks/hookify_test_cases\.yaml$''',
 ]
 
 # --- IP/CIDR Leakage Prevention ---
@@ -30,32 +23,14 @@ description = "RFC1918 private IP address (10.x.x.x)"
 regex = '''(?:^|[^0-9])10\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(?:/[0-9]{1,2})?(?:[^0-9]|$)'''
 tags = ["ip-leakage"]
 
-  [rules.allowlist]
-  paths = [
-    '''talos/''',
-    '''\.sops\.yaml$''',
-  ]
-
 [[rules]]
 id = "private-ip-rfc1918-172"
 description = "RFC1918 private IP address (172.16-31.x.x)"
 regex = '''(?:^|[^0-9])172\.(?:1[6-9]|2[0-9]|3[01])\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(?:/[0-9]{1,2})?(?:[^0-9]|$)'''
 tags = ["ip-leakage"]
 
-  [rules.allowlist]
-  paths = [
-    '''talos/''',
-    '''\.sops\.yaml$''',
-  ]
-
 [[rules]]
 id = "private-ip-rfc1918-192"
 description = "RFC1918 private IP address (192.168.x.x)"
 regex = '''(?:^|[^0-9])192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(?:/[0-9]{1,2})?(?:[^0-9]|$)'''
 tags = ["ip-leakage"]
-
-  [rules.allowlist]
-  paths = [
-    '''talos/''',
-    '''\.sops\.yaml$''',
-  ]
