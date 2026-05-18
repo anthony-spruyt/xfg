@@ -211,14 +211,25 @@ export interface PRMergeOptions {
 }
 ```
 
-- [ ] **Step 3: Run type check**
+- [ ] **Step 3: Add `branch` to `config-schema.json`**
+
+In `config-schema.json`, add `branch` to the `prOptions` properties (near the existing `labels`, `bypassReason`, etc.):
+
+```json
+"branch": {
+  "type": "string",
+  "description": "Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI --branch flag overrides all."
+}
+```
+
+- [ ] **Step 4: Run type check**
 
 Run: `npx tsc --noEmit` Expected: PASS — `branch` is optional, no breaking changes.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add src/config/types.ts
+git add src/config/types.ts config-schema.json
 git commit -m "feat: add branch field to PRMergeOptions interface"
 ```
 
@@ -650,7 +661,10 @@ repos:
     writeFileSync(
       testConfigPath,
       `id: test-config
-${MINIMAL_FILES}
+files:
+  test-file.json:
+    content:
+      key: value
 repos:
   - git: https://github.com/test/repo
 `
@@ -669,7 +683,7 @@ repos:
     const processMock = mockProcessor.process as MockFn;
     const callArgs = processMock.mock.calls[0].arguments;
     const options = callArgs[2] as { branchName: string };
-    assert.equal(options.branchName, "chore/sync-placeholder");
+    assert.equal(options.branchName, "chore/sync-test-file");
   });
 ```
 
@@ -840,25 +854,39 @@ ______________________________________________________________________
 
 **Files:**
 
-- Modify: `docs/configuration.md` (or equivalent config reference page)
+- Modify: `docs/configuration/pr-options.md`
 
-- [ ] **Step 1: Find the config documentation file**
+- Modify: `docs/reference/config-schema.md`
 
-Run: `grep -rn "prOptions" docs/ | head -20`
+- [ ] **Step 1: Update `docs/configuration/pr-options.md`**
 
-Look for where `prOptions` is documented.
+Add `branch` to the PR Options fields table (after the existing `labels` row):
 
-- [ ] **Step 2: Add `branch` to the prOptions documentation**
+| Field    | Type     | Description                                                                                                                  |
+| -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `branch` | `string` | Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI `--branch` flag overrides all config values. |
 
-Add `branch` to the prOptions table/section wherever labels, merge, mergeStrategy, deleteBranch, and bypassReason are documented. Document:
+Add a usage example showing global and per-repo usage:
 
-- Field name: `branch`
+```yaml
+# Global branch name
+prOptions:
+  branch: chore/sync-config
 
-- Type: `string`
+# Per-repo override
+repos:
+  - git: https://github.com/org/repo.git
+    prOptions:
+      branch: chore/sync-repo-specific
+```
 
-- Description: Branch name for sync PRs. Supports global, group, and per-repo levels. Per-repo overrides group, group overrides global. CLI `--branch` flag overrides all config values.
+- [ ] **Step 2: Update `docs/reference/config-schema.md`**
 
-- Example showing global and per-repo usage
+Add `branch` to the PR Options schema table (after `labels`):
+
+| Field    | Type     | Description              |
+| -------- | -------- | ------------------------ |
+| `branch` | `string` | Branch name for sync PRs |
 
 - [ ] **Step 3: Commit**
 
