@@ -9,7 +9,7 @@ import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
 import type { SecretConfig } from "../config/index.js";
 
-type SecretsConfig = Record<string, SecretConfig | boolean> & {
+export type SecretsConfig = Record<string, SecretConfig | boolean> & {
   deleteOrphaned?: boolean;
 };
 

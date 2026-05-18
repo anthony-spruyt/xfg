@@ -34,6 +34,7 @@ function emptySettings(): SettingsReport {
       settings: { create: 0, update: 0 },
       rulesets: { create: 0, update: 0, delete: 0 },
       labels: { create: 0, update: 0, delete: 0 },
+      variables: { create: 0, update: 0, delete: 0 },
     },
   };
 }
@@ -441,12 +442,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -475,12 +478,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -510,12 +515,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -548,12 +555,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -573,12 +582,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           settings: [],
           rulesets: [{ name: "old-ruleset", action: "delete" }],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -598,6 +609,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
           settings: [],
           rulesets: [],
           labels: [],
+          variables: [],
           error: "API rate limited",
         },
       ],
@@ -605,6 +617,7 @@ describe("formatUnifiedSummaryMarkdown", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -653,12 +666,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -712,12 +727,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -756,12 +773,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -788,12 +807,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
             { name: "old-rule", action: "delete" },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -827,12 +848,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
               config: { color: "d73a4a", description: "Something is broken" },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -861,12 +884,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
               newName: "new-name",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -891,12 +916,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
               action: "update",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -916,12 +943,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           settings: [],
           rulesets: [],
           labels: [{ name: "stale", action: "delete" }],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -948,12 +977,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
             { name: "old", action: "delete" },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -981,12 +1012,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
             },
             { name: "old", action: "update", newName: "legacy" },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -1013,12 +1046,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
               config: { color: "d73a4a" },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -1050,12 +1085,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
               config: { color: "0075ca" },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({
@@ -1077,12 +1114,14 @@ describe("formatUnifiedSummaryMarkdown", () => {
           labels: [
             { name: "bug", action: "create", config: { color: "d73a4a" } },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
     const markdown = formatUnifiedSummaryMarkdown({

@@ -9,6 +9,7 @@ import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
+  type SecretsConfig,
 } from "../secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
@@ -16,12 +17,8 @@ import { parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { SecretsProcessorResult } from "../secrets/processor.js";
-import type { SecretConfig, Config } from "../config/index.js";
+import type { Config } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
-
-type SecretsConfig = Record<string, SecretConfig | boolean> & {
-  deleteOrphaned?: boolean;
-};
 
 export interface ISecretsProcessorAdapter {
   process(

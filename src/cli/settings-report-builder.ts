@@ -129,14 +129,14 @@ export function buildSettingsReport(
     if (result.variablesResult?.planOutput?.entries) {
       for (const entry of result.variablesResult.planOutput.entries) {
         if (!isActiveAction(entry)) continue;
-        repoChanges.variables!.push({
+        repoChanges.variables.push({
           name: entry.name,
           action: entry.action,
           oldValue: entry.oldValue,
           newValue: entry.newValue,
         });
       }
-      const counts = countActions(repoChanges.variables!);
+      const counts = countActions(repoChanges.variables);
       totals.variables.create += counts.create;
       totals.variables.update += counts.update;
       totals.variables.delete += counts.delete;
