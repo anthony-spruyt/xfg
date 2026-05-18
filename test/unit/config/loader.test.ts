@@ -481,28 +481,40 @@ describe("loadRawConfig", () => {
       mkdirSync(configDir);
       mkdirSync(join(configDir, "empty"));
       mkdirSync(join(configDir, "no-yaml"));
+      mkdirSync(join(configDir, "has-yaml"));
 
       writeFileSync(
         join(configDir, "base.yaml"),
         `id: empty-sub-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
       );
       writeFileSync(join(configDir, "no-yaml", "readme.txt"), "not yaml");
+      writeFileSync(
+        join(configDir, "has-yaml", "extra.yaml"),
+        `repos:\n  - git: git@github.com:owner/from-subdir.git\n`
+      );
 
       const result = loadRawConfig(configDir);
 
       assert.equal(result.id, "empty-sub-test");
-      assert.equal(result.repos.length, 1);
+      assert.equal(result.repos.length, 2);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo.git");
+      assert.equal(result.repos[1].git, "git@github.com:owner/from-subdir.git");
     });
 
     test("skips symlinked directories", () => {
       const configDir = join(tempDir, "symlink-dir-test");
       mkdirSync(configDir);
+      mkdirSync(join(configDir, "real-subdir"));
       const realDir = join(tempDir, "real-target");
       mkdirSync(realDir);
 
       writeFileSync(
         join(configDir, "base.yaml"),
         `id: symlink-dir-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(
+        join(configDir, "real-subdir", "extra.yaml"),
+        `repos:\n  - git: git@github.com:owner/from-real-subdir.git\n`
       );
       writeFileSync(
         join(realDir, "extra.yaml"),
@@ -513,8 +525,12 @@ describe("loadRawConfig", () => {
       const result = loadRawConfig(configDir);
 
       assert.equal(result.id, "symlink-dir-test");
-      assert.equal(result.repos.length, 1);
+      assert.equal(result.repos.length, 2);
       assert.equal(result.repos[0].git, "git@github.com:owner/repo.git");
+      assert.equal(
+        result.repos[1].git,
+        "git@github.com:owner/from-real-subdir.git"
+      );
     });
 
     test("follows symlinked YAML files via isSymbolicLink fallback", () => {
