@@ -1,6 +1,5 @@
-import chalk from "chalk";
 import type { VariableChange, VariableAction } from "./diff.js";
-import { countActions, formatPlanSummary } from "../base-processor.js";
+import { formatGroupedPlan } from "../base-processor.js";
 
 export interface VariablesPlanEntry {
   name: string;
@@ -21,80 +20,51 @@ export interface VariablesPlanResult {
 export function formatVariablesPlan(
   changes: VariableChange[]
 ): VariablesPlanResult {
-  const lines: string[] = [];
-  const entries: VariablesPlanEntry[] = [];
+  return formatGroupedPlan<VariableChange, VariablesPlanEntry>(
+    "variable",
+    "variables",
+    changes,
+    {
+      renderCreate(change) {
+        const extraLines: string[] = [];
+        if (change.newValue !== undefined) {
+          extraLines.push(`        value: "${change.newValue}"`);
+        }
+        return {
+          extraLines,
+          entry: {
+            name: change.name,
+            action: "create",
+            newValue: change.newValue,
+          },
+        };
+      },
 
-  const {
-    create: creates,
-    update: updates,
-    delete: deletes,
-    unchanged,
-  } = countActions(changes);
-
-  const grouped: Record<VariableAction, VariableChange[]> = {
-    create: [],
-    update: [],
-    delete: [],
-    unchanged: [],
-  };
-  for (const c of changes) {
-    grouped[c.action].push(c);
-  }
-
-  if (grouped.create.length > 0) {
-    lines.push(chalk.bold("  Create:"));
-    for (const change of grouped.create) {
-      lines.push(chalk.green(`    + variable "${change.name}"`));
-      if (change.newValue !== undefined) {
-        lines.push(chalk.green(`        value: "${change.newValue}"`));
-      }
-      entries.push({
-        name: change.name,
-        action: "create",
-        newValue: change.newValue,
-      });
-      lines.push("");
-    }
-  }
-
-  if (grouped.update.length > 0) {
-    lines.push(chalk.bold("  Update:"));
-    for (const change of grouped.update) {
-      lines.push(chalk.yellow(`    ~ variable "${change.name}"`));
-      if (change.oldValue !== undefined && change.newValue !== undefined) {
-        lines.push(
-          chalk.yellow(
+      renderUpdate(change) {
+        const extraLines: string[] = [];
+        if (change.oldValue !== undefined && change.newValue !== undefined) {
+          extraLines.push(
             `        value: "${change.oldValue}" → "${change.newValue}"`
-          )
-        );
-      }
-      entries.push({
-        name: change.name,
-        action: "update",
-        oldValue: change.oldValue,
-        newValue: change.newValue,
-      });
-      lines.push("");
+          );
+        }
+        return {
+          extraLines,
+          entry: {
+            name: change.name,
+            action: "update",
+            oldValue: change.oldValue,
+            newValue: change.newValue,
+          },
+        };
+      },
+
+      renderDelete(change) {
+        return { name: change.name, action: "delete" };
+      },
+
+      renderUnchanged(change) {
+        return { name: change.name, action: "unchanged" };
+      },
     }
-  }
-
-  if (grouped.delete.length > 0) {
-    lines.push(chalk.bold("  Delete:"));
-    for (const change of grouped.delete) {
-      lines.push(chalk.red(`    - variable "${change.name}"`));
-      entries.push({ name: change.name, action: "delete" });
-    }
-    lines.push("");
-  }
-
-  for (const change of grouped.unchanged) {
-    entries.push({ name: change.name, action: "unchanged" });
-  }
-
-  const summary = formatPlanSummary("variables", creates, updates, deletes);
-  if (summary) {
-    lines.push(summary);
-  }
-
-  return { lines, creates, updates, deletes, unchanged, entries };
+  );
 }

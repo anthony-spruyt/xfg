@@ -276,3 +276,136 @@ export function buildApplyResult<
   };
   return Object.assign(base, extra) as typeof base & E;
 }
+
+/**
+ * Callback interface for rendering a single change item within a grouped plan.
+ * Returns extra lines to display and the entry to record.
+ */
+export interface GroupedPlanCallbacks<
+  TChange extends { action: SettingsAction; name: string },
+  TEntry,
+> {
+  /** Render a "create" change. Return extra lines (after the header line) and the plan entry. */
+  renderCreate(change: TChange): { extraLines: string[]; entry: TEntry };
+  /**
+   * Render an "update" change. Return extra lines (after the header line) and the plan entry.
+   * Optionally return `headerOverride` to replace the default `~ entityName "name"` header.
+   */
+  renderUpdate(change: TChange): {
+    extraLines: string[];
+    entry: TEntry;
+    headerOverride?: string;
+  };
+  /** Render a "delete" change. Return the plan entry. */
+  renderDelete(change: TChange): TEntry;
+  /** Render an "unchanged" change. Return the plan entry. */
+  renderUnchanged(change: TChange): TEntry;
+}
+
+/**
+ * Result of formatGroupedPlan.
+ */
+export interface GroupedPlanResult<TEntry> {
+  lines: string[];
+  creates: number;
+  updates: number;
+  deletes: number;
+  unchanged: number;
+  entries: TEntry[];
+}
+
+/**
+ * Shared scaffolding for formatting a grouped plan from changes.
+ *
+ * Groups changes by action (create/update/delete/unchanged), renders
+ * chalk-colored output for each group, and collects plan entries via
+ * the provided callbacks.
+ *
+ * @param entityName - The entity type label used in section lines (e.g. "label", "variable")
+ * @param summaryName - The plural entity name for the summary line (e.g. "labels", "variables")
+ * @param changes - The array of change objects with action and name
+ * @param callbacks - Render callbacks for each action type
+ */
+export function formatGroupedPlan<
+  TChange extends { action: SettingsAction; name: string },
+  TEntry,
+>(
+  entityName: string,
+  summaryName: string,
+  changes: TChange[],
+  callbacks: GroupedPlanCallbacks<TChange, TEntry>
+): GroupedPlanResult<TEntry> {
+  const lines: string[] = [];
+  const entries: TEntry[] = [];
+
+  const {
+    create: creates,
+    update: updates,
+    delete: deletes,
+    unchanged,
+  } = countActions(changes);
+
+  const grouped: Record<SettingsAction, TChange[]> = {
+    create: [],
+    update: [],
+    delete: [],
+    unchanged: [],
+  };
+  for (const c of changes) {
+    grouped[c.action].push(c);
+  }
+
+  // Format creates
+  if (grouped.create.length > 0) {
+    lines.push(chalk.bold("  Create:"));
+    for (const change of grouped.create) {
+      lines.push(chalk.green(`    + ${entityName} "${change.name}"`));
+      const { extraLines, entry } = callbacks.renderCreate(change);
+      for (const line of extraLines) {
+        lines.push(chalk.green(line));
+      }
+      entries.push(entry);
+      lines.push("");
+    }
+  }
+
+  // Format updates
+  if (grouped.update.length > 0) {
+    lines.push(chalk.bold("  Update:"));
+    for (const change of grouped.update) {
+      const { extraLines, entry, headerOverride } =
+        callbacks.renderUpdate(change);
+      lines.push(
+        chalk.yellow(headerOverride ?? `    ~ ${entityName} "${change.name}"`)
+      );
+      for (const line of extraLines) {
+        lines.push(chalk.yellow(line));
+      }
+      entries.push(entry);
+      lines.push("");
+    }
+  }
+
+  // Format deletes
+  if (grouped.delete.length > 0) {
+    lines.push(chalk.bold("  Delete:"));
+    for (const change of grouped.delete) {
+      lines.push(chalk.red(`    - ${entityName} "${change.name}"`));
+      entries.push(callbacks.renderDelete(change));
+    }
+    lines.push("");
+  }
+
+  // Unchanged (entries only, no output lines)
+  for (const change of grouped.unchanged) {
+    entries.push(callbacks.renderUnchanged(change));
+  }
+
+  // Summary line
+  const summary = formatPlanSummary(summaryName, creates, updates, deletes);
+  if (summary) {
+    lines.push(summary);
+  }
+
+  return { lines, creates, updates, deletes, unchanged, entries };
+}

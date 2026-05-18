@@ -1,7 +1,6 @@
-import chalk from "chalk";
 import type { LabelChange, LabelAction } from "./diff.js";
 import type { Label } from "../../config/index.js";
-import { countActions, formatPlanSummary } from "../base-processor.js";
+import { formatGroupedPlan } from "../base-processor.js";
 
 export interface LabelsPlanEntry {
   name: string;
@@ -28,107 +27,67 @@ export interface LabelsPlanResult {
  * Format label changes as a Terraform-style plan.
  */
 export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
-  const lines: string[] = [];
-  const entries: LabelsPlanEntry[] = [];
-
-  const {
-    create: creates,
-    update: updates,
-    delete: deletes,
-    unchanged,
-  } = countActions(changes);
-
-  const grouped: Record<LabelAction, LabelChange[]> = {
-    create: [],
-    update: [],
-    delete: [],
-    unchanged: [],
-  };
-  for (const c of changes) {
-    grouped[c.action].push(c);
-  }
-
-  // Format creates
-  if (grouped.create.length > 0) {
-    lines.push(chalk.bold("  Create:"));
-    for (const change of grouped.create) {
-      lines.push(chalk.green(`    + label "${change.name}"`));
-      if (change.desired) {
-        lines.push(chalk.green(`        color: "${change.desired.color}"`));
-        if (change.desired.description !== undefined) {
-          lines.push(
-            chalk.green(`        description: "${change.desired.description}"`)
-          );
-        }
-      }
-      entries.push({
-        name: change.name,
-        action: "create",
-        config: change.desired,
-      });
-      lines.push("");
-    }
-  }
-
-  // Format updates
-  if (grouped.update.length > 0) {
-    lines.push(chalk.bold("  Update:"));
-    for (const change of grouped.update) {
-      if (change.newName) {
-        lines.push(
-          chalk.yellow(
-            `    ~ label "${change.name}" \u2192 "${change.newName}"`
-          )
-        );
-      } else {
-        lines.push(chalk.yellow(`    ~ label "${change.name}"`));
-      }
-      if (change.propertyChanges) {
-        for (const prop of change.propertyChanges) {
-          if (prop.property === "new_name") continue; // shown in header
-          if (prop.oldValue !== undefined) {
-            lines.push(
-              chalk.yellow(
-                `        ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
-              )
-            );
-          } else {
-            lines.push(
-              chalk.yellow(`        ${prop.property}: "${prop.newValue}"`)
+  return formatGroupedPlan<LabelChange, LabelsPlanEntry>(
+    "label",
+    "labels",
+    changes,
+    {
+      renderCreate(change) {
+        const extraLines: string[] = [];
+        if (change.desired) {
+          extraLines.push(`        color: "${change.desired.color}"`);
+          if (change.desired.description !== undefined) {
+            extraLines.push(
+              `        description: "${change.desired.description}"`
             );
           }
         }
-      }
-      entries.push({
-        name: change.name,
-        action: "update",
-        newName: change.newName,
-        propertyChanges: change.propertyChanges,
-      });
-      lines.push("");
+        return {
+          extraLines,
+          entry: {
+            name: change.name,
+            action: "create",
+            config: change.desired,
+          },
+        };
+      },
+
+      renderUpdate(change) {
+        const extraLines: string[] = [];
+        const headerOverride = change.newName
+          ? `    ~ label "${change.name}" → "${change.newName}"`
+          : undefined;
+        if (change.propertyChanges) {
+          for (const prop of change.propertyChanges) {
+            if (prop.property === "new_name") continue; // shown in header
+            if (prop.oldValue !== undefined) {
+              extraLines.push(
+                `        ${prop.property}: "${prop.oldValue}" → "${prop.newValue}"`
+              );
+            } else {
+              extraLines.push(`        ${prop.property}: "${prop.newValue}"`);
+            }
+          }
+        }
+        return {
+          extraLines,
+          entry: {
+            name: change.name,
+            action: "update",
+            newName: change.newName,
+            propertyChanges: change.propertyChanges,
+          },
+          headerOverride,
+        };
+      },
+
+      renderDelete(change) {
+        return { name: change.name, action: "delete" };
+      },
+
+      renderUnchanged(change) {
+        return { name: change.name, action: "unchanged" };
+      },
     }
-  }
-
-  // Format deletes
-  if (grouped.delete.length > 0) {
-    lines.push(chalk.bold("  Delete:"));
-    for (const change of grouped.delete) {
-      lines.push(chalk.red(`    - label "${change.name}"`));
-      entries.push({ name: change.name, action: "delete" });
-    }
-    lines.push("");
-  }
-
-  // Unchanged (entries only, no output lines)
-  for (const change of grouped.unchanged) {
-    entries.push({ name: change.name, action: "unchanged" });
-  }
-
-  // Summary line
-  const summary = formatPlanSummary("labels", creates, updates, deletes);
-  if (summary) {
-    lines.push(summary);
-  }
-
-  return { lines, creates, updates, deletes, unchanged, entries };
+  );
 }
