@@ -3,7 +3,7 @@ import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 import type {
   CodeScanningState,
   CodeScanningQuerySuite,
-} from "../../config/types.js";
+} from "../../config/index.js";
 
 /**
  * Current code scanning default setup state from GitHub API.

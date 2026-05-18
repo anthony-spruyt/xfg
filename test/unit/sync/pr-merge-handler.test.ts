@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { PRMergeHandler } from "../../../src/sync/pr-merge-handler.js";
 import { createMockLogger, createMockExecutor } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
-import type { FileAction } from "../../../src/vcs/pr-creator.js";
+import type { FileAction } from "../../../src/vcs/pr/pr-creator.js";
 
 const testDir = join(tmpdir(), "pr-merge-handler-test-" + Date.now());
 

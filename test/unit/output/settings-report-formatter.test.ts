@@ -30,12 +30,14 @@ describe("formatSettingsReportCLI", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -66,12 +68,14 @@ describe("formatSettingsReportCLI", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -89,6 +93,7 @@ describe("formatSettingsReportCLI", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -106,6 +111,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [{ name: "hasWiki", action: "create", newValue: true }],
           rulesets: [],
           labels: [],
+          variables: [],
         },
         {
           repoName: "org/repo2",
@@ -119,12 +125,14 @@ describe("formatSettingsReportCLI", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 1, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -150,6 +158,7 @@ describe("formatSettingsReportCLI", () => {
           settings: [],
           rulesets: [],
           labels: [],
+          variables: [],
           error: "Connection refused",
         },
       ],
@@ -157,6 +166,7 @@ describe("formatSettingsReportCLI", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -194,12 +204,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -242,12 +254,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -279,12 +293,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -325,12 +341,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 1, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -362,12 +380,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -399,12 +419,14 @@ describe("formatSettingsReportCLI", () => {
           labels: [
             { name: "bug", action: "create", config: { color: "d73a4a" } },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 1 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -434,12 +456,14 @@ describe("formatSettingsReportCLI", () => {
             { name: "ruleset-b", action: "delete" },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 2 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -479,12 +503,14 @@ describe("formatSettingsReportCLI", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -526,12 +552,14 @@ describe("formatSettingsReportCLI", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -573,12 +601,14 @@ describe("formatSettingsReportCLI", () => {
               },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -609,12 +639,14 @@ describe("formatSettingsReportCLI", () => {
               },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -647,12 +679,14 @@ describe("formatSettingsReportCLI", () => {
               ],
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -692,12 +726,14 @@ describe("formatSettingsReportCLI", () => {
               ],
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -731,12 +767,14 @@ describe("formatSettingsReportCLI", () => {
               action: "delete",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -756,12 +794,14 @@ describe("formatSettingsReportCLI", () => {
           labels: [
             { name: "bug", action: "create", config: { color: "d73a4a" } },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -789,12 +829,14 @@ describe("formatSettingsReportCLI", () => {
             { name: "bug", action: "create", config: { color: "d73a4a" } },
             { name: "wontfix", action: "delete" },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -824,12 +866,14 @@ describe("formatSettingsReportMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -864,12 +908,14 @@ describe("formatSettingsReportMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -898,12 +944,14 @@ describe("formatSettingsReportMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -919,6 +967,7 @@ describe("formatSettingsReportMarkdown", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -949,12 +998,14 @@ describe("formatSettingsReportMarkdown", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 2 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -995,12 +1046,14 @@ describe("formatSettingsReportMarkdown", () => {
             },
           ],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 1, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1036,12 +1089,14 @@ describe("formatSettingsReportMarkdown", () => {
               },
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1077,12 +1132,14 @@ describe("formatSettingsReportMarkdown", () => {
               ],
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1115,12 +1172,14 @@ describe("formatSettingsReportMarkdown", () => {
               action: "delete",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1148,12 +1207,14 @@ describe("formatSettingsReportMarkdown", () => {
               ],
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1189,12 +1250,14 @@ describe("formatSettingsReportMarkdown", () => {
               ],
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 1, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1223,12 +1286,14 @@ describe("formatSettingsReportMarkdown", () => {
               action: "create",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1257,12 +1322,14 @@ describe("formatSettingsReportMarkdown", () => {
               action: "create",
             },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1287,12 +1354,14 @@ describe("formatSettingsReportMarkdown", () => {
             { name: "bug", action: "create", config: { color: "d73a4a" } },
             { name: "old", action: "delete" },
           ],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 1, update: 0, delete: 1 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1334,12 +1403,14 @@ describe("writeSettingsReportSummary", () => {
           ],
           rulesets: [],
           labels: [],
+          variables: [],
         },
       ],
       totals: {
         settings: { create: 0, update: 1 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1357,6 +1428,7 @@ describe("writeSettingsReportSummary", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
+        variables: { create: 0, update: 0, delete: 0 },
       },
     };
 
@@ -1748,6 +1820,7 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
         },
       ],
       labels: [],
+      variables: [],
     };
 
     const diffLines: string[] = [];
@@ -1792,6 +1865,7 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
         },
       ],
       labels: [],
+      variables: [],
     };
 
     const diffLines: string[] = [];
@@ -1835,6 +1909,7 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
         },
       ],
       labels: [],
+      variables: [],
     };
 
     const diffLines: string[] = [];

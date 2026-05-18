@@ -3,6 +3,10 @@ import type { PropertyDiff, ActiveAction } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatScalarValue } from "../shared/string-utils.js";
+import {
+  settingsSummaryDescriptors,
+  actionLabels,
+} from "./settings-summary-descriptors.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -10,7 +14,7 @@ export interface SettingsReport {
     settings: { create: number; update: number };
     rulesets: { create: number; update: number; delete: number };
     labels: { create: number; update: number; delete: number };
-    variables?: { create: number; update: number; delete: number };
+    variables: { create: number; update: number; delete: number };
   };
 }
 
@@ -19,7 +23,7 @@ export interface RepoChanges {
   settings: SettingChange[];
   rulesets: RulesetChange[];
   labels: LabelChange[];
-  variables?: {
+  variables: {
     name: string;
     action: ActiveAction;
     oldValue?: string;
@@ -137,32 +141,18 @@ export function formatCountEntry(
 function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
 
-  const settingsEntry = formatCountEntry("setting", "settings", [
-    { label: "to create", value: totals.settings.create },
-    { label: "to update", value: totals.settings.update },
-  ]);
-  if (settingsEntry) parts.push(settingsEntry);
-
-  const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-    { label: "to create", value: totals.rulesets.create },
-    { label: "to update", value: totals.rulesets.update },
-    { label: "to delete", value: totals.rulesets.delete },
-  ]);
-  if (rulesetsEntry) parts.push(rulesetsEntry);
-
-  const labelsEntry = formatCountEntry("label", "labels", [
-    { label: "to create", value: totals.labels.create },
-    { label: "to update", value: totals.labels.update },
-    { label: "to delete", value: totals.labels.delete },
-  ]);
-  if (labelsEntry) parts.push(labelsEntry);
-
-  const variablesEntry = formatCountEntry("variable", "variables", [
-    { label: "to create", value: totals.variables?.create ?? 0 },
-    { label: "to update", value: totals.variables?.update ?? 0 },
-    { label: "to delete", value: totals.variables?.delete ?? 0 },
-  ]);
-  if (variablesEntry) parts.push(variablesEntry);
+  for (const desc of settingsSummaryDescriptors) {
+    const counts = totals[desc.key] as Record<string, number>;
+    const entry = formatCountEntry(
+      desc.noun,
+      desc.plural,
+      desc.actions.map((action) => ({
+        label: actionLabels[action].future,
+        value: counts[action] ?? 0,
+      }))
+    );
+    if (entry) parts.push(entry);
+  }
 
   if (parts.length === 0) {
     return "No changes";
@@ -188,7 +178,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
       repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
+      repo.variables.length === 0 &&
       !repo.error
     ) {
       continue;
@@ -330,11 +320,11 @@ export function renderRepoSettingsDiffLines(
   }
 
   // Blank line before variables if there was content above
-  if ((repo.variables ?? []).length > 0 && diffLines.length > startLength) {
+  if (repo.variables.length > 0 && diffLines.length > startLength) {
     diffLines.push("");
   }
 
-  for (const variable of repo.variables ?? []) {
+  for (const variable of repo.variables) {
     if (variable.action === "create") {
       diffLines.push(
         `+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`
@@ -377,7 +367,7 @@ export function formatSettingsReportMarkdown(
       repo.settings.length === 0 &&
       repo.rulesets.length === 0 &&
       repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
+      repo.variables.length === 0 &&
       !repo.error
     ) {
       continue;

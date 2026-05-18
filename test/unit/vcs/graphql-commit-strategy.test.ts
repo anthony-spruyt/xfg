@@ -8,7 +8,7 @@ import {
   MAX_PAYLOAD_SIZE,
   SAFE_BRANCH_NAME_PATTERN,
   validateSafeBranchName,
-} from "../../../src/vcs/graphql-commit-strategy.js";
+} from "../../../src/vcs/commit/graphql-commit-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,

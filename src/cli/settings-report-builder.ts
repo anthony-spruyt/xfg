@@ -1,10 +1,17 @@
-import type { SettingsReport, RepoChanges } from "../output/index.js";
+import type {
+  SettingsReport,
+  RepoChanges,
+  RulesetChange,
+  LabelChange,
+} from "../output/index.js";
 import {
   type RepoSettingsPlanEntry,
   type RulesetPlanEntry,
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
   type VariablesPlanEntry,
+  type SettingsAction,
+  type ActiveAction,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
@@ -43,6 +50,99 @@ export interface ProcessorResults {
   error?: string;
 }
 
+/**
+ * An entity collector encapsulates the collect-filter-count-accumulate
+ * logic for one entity type (rulesets, labels, or variables).
+ */
+interface EntityCollector {
+  collect: (
+    result: ProcessorResults,
+    repoChanges: RepoChanges,
+    totals: SettingsReport["totals"]
+  ) => void;
+}
+
+/**
+ * Creates a type-safe entity collector that filters active entries,
+ * maps them to the target array, and accumulates totals.
+ */
+function makeEntityCollector<
+  TEntry extends { action: SettingsAction },
+  TChange extends { action: ActiveAction },
+>(config: {
+  getEntries: (result: ProcessorResults) => TEntry[] | undefined;
+  mapEntry: (entry: TEntry & { action: ActiveAction }) => TChange;
+  getTarget: (repoChanges: RepoChanges) => TChange[];
+  addToTotals: (
+    totals: SettingsReport["totals"],
+    counts: { create: number; update: number; delete: number }
+  ) => void;
+}): EntityCollector {
+  return {
+    collect(result, repoChanges, totals) {
+      const entries = config.getEntries(result);
+      if (!entries) return;
+
+      const target = config.getTarget(repoChanges);
+      for (const entry of entries) {
+        if (!isActiveAction(entry)) continue;
+        target.push(config.mapEntry(entry));
+      }
+      const counts = countActions(target);
+      config.addToTotals(totals, counts);
+    },
+  };
+}
+
+const entityCollectors: EntityCollector[] = [
+  makeEntityCollector<RulesetPlanEntry, RulesetChange>({
+    getEntries: (r) => r.rulesetResult?.planOutput?.entries,
+    mapEntry: (entry) => ({
+      name: entry.name,
+      action: entry.action,
+      propertyDiffs: entry.propertyDiffs,
+      config: entry.config,
+    }),
+    getTarget: (rc) => rc.rulesets,
+    addToTotals: (totals, counts) => {
+      totals.rulesets.create += counts.create;
+      totals.rulesets.update += counts.update;
+      totals.rulesets.delete += counts.delete;
+    },
+  }),
+  makeEntityCollector<LabelsPlanEntry, LabelChange>({
+    getEntries: (r) => r.labelsResult?.planOutput?.entries,
+    mapEntry: (entry) => ({
+      name: entry.name,
+      action: entry.action,
+      newName: entry.newName,
+      propertyChanges: entry.propertyChanges,
+      config: entry.config,
+    }),
+    getTarget: (rc) => rc.labels,
+    addToTotals: (totals, counts) => {
+      totals.labels.create += counts.create;
+      totals.labels.update += counts.update;
+      totals.labels.delete += counts.delete;
+    },
+  }),
+  makeEntityCollector<VariablesPlanEntry, RepoChanges["variables"][number]>({
+    getEntries: (r) => r.variablesResult?.planOutput?.entries,
+    mapEntry: (entry) => ({
+      name: entry.name,
+      action: entry.action,
+      oldValue: entry.oldValue,
+      newValue: entry.newValue,
+    }),
+    getTarget: (rc) => rc.variables,
+    addToTotals: (totals, counts) => {
+      totals.variables.create += counts.create;
+      totals.variables.update += counts.update;
+      totals.variables.delete += counts.delete;
+    },
+  }),
+];
+
 export function buildSettingsReport(
   results: ProcessorResults[]
 ): SettingsReport {
@@ -63,6 +163,7 @@ export function buildSettingsReport(
       variables: [],
     };
 
+    // Settings and code scanning both map into repoChanges.settings
     if (result.settingsResult?.planOutput?.entries) {
       for (const entry of result.settingsResult.planOutput.entries) {
         if (!isActiveAction(entry)) continue;
@@ -93,53 +194,9 @@ export function buildSettingsReport(
       totals.settings.update += counts.update;
     }
 
-    if (result.rulesetResult?.planOutput?.entries) {
-      for (const entry of result.rulesetResult.planOutput.entries) {
-        if (!isActiveAction(entry)) continue;
-        repoChanges.rulesets.push({
-          name: entry.name,
-          action: entry.action,
-          propertyDiffs: entry.propertyDiffs,
-          config: entry.config,
-        });
-      }
-      const counts = countActions(repoChanges.rulesets);
-      totals.rulesets.create += counts.create;
-      totals.rulesets.update += counts.update;
-      totals.rulesets.delete += counts.delete;
-    }
-
-    if (result.labelsResult?.planOutput?.entries) {
-      for (const entry of result.labelsResult.planOutput.entries) {
-        if (!isActiveAction(entry)) continue;
-        repoChanges.labels.push({
-          name: entry.name,
-          action: entry.action,
-          newName: entry.newName,
-          propertyChanges: entry.propertyChanges,
-          config: entry.config,
-        });
-      }
-      const counts = countActions(repoChanges.labels);
-      totals.labels.create += counts.create;
-      totals.labels.update += counts.update;
-      totals.labels.delete += counts.delete;
-    }
-
-    if (result.variablesResult?.planOutput?.entries) {
-      for (const entry of result.variablesResult.planOutput.entries) {
-        if (!isActiveAction(entry)) continue;
-        repoChanges.variables!.push({
-          name: entry.name,
-          action: entry.action,
-          oldValue: entry.oldValue,
-          newValue: entry.newValue,
-        });
-      }
-      const counts = countActions(repoChanges.variables!);
-      totals.variables.create += counts.create;
-      totals.variables.update += counts.update;
-      totals.variables.delete += counts.delete;
+    // Rulesets, labels, and variables follow the same collect-filter-count pattern
+    for (const collector of entityCollectors) {
+      collector.collect(result, repoChanges, totals);
     }
 
     if (result.error) {

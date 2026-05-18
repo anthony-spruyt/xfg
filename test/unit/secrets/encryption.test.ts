@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { SodiumEncryptor } from "../../../src/secrets/encryption.js";
+import { SodiumEncryptor } from "../../../src/settings/secrets/encryption.js";
 
 describe("SodiumEncryptor", () => {
   test("encrypt returns base64 string", async () => {

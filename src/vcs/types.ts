@@ -62,6 +62,10 @@ export interface PRResult {
   url?: string;
   success: boolean;
   message: string;
+  /** When success is false, indicates whether the failure is retryable.
+   *  `true` for transient errors (network, rate limit), `false` for permanent
+   *  errors (auth, not found, validation). Undefined when success is true. */
+  retryable?: boolean;
 }
 
 export interface PRMergeConfig {

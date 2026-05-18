@@ -96,12 +96,11 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
     if (!hasRepoSettingsChanges(changes)) {
-      return {
-        success: true,
+      return buildApplyResult(
         repoName,
-        message: "No changes needed",
-        changes: { create: 0, update: 0, delete: 0, unchanged: 0 },
-      };
+        { create: 0, update: 0, delete: 0, unchanged: 0 },
+        0
+      );
     }
 
     // Validate defaultBranch target exists before attempting to apply

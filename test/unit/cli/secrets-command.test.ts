@@ -7,7 +7,7 @@ import {
   runSecretsSync,
   type ISecretsProcessorAdapter,
 } from "../../../src/cli/secrets-command.js";
-import type { SecretsProcessorResult } from "../../../src/secrets/processor.js";
+import type { SecretsProcessorResult } from "../../../src/settings/secrets/processor.js";
 
 const testDir = join(tmpdir(), "test-secrets-cmd-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");
@@ -19,9 +19,6 @@ function createMockProcessor(
     success: true,
     repoName: "test-org/test-repo",
     message: "1 created, 0 updated, 0 deleted",
-    created: 1,
-    updated: 0,
-    deleted: 0,
     ...overrides,
   };
   return {
@@ -98,15 +95,11 @@ repos:
 
     const callArgs = processMock.mock.calls[0].arguments;
 
-    const secretsConfig = callArgs[0] as Record<string, unknown>;
-    assert.ok(
-      "DEPLOY_TOKEN" in secretsConfig,
-      "secretsConfig should contain DEPLOY_TOKEN"
-    );
-    assert.deepEqual(
-      (secretsConfig.DEPLOY_TOKEN as { env: string }).env,
-      "TOKEN_SOURCE",
-      "DEPLOY_TOKEN should have env: TOKEN_SOURCE"
+    const repoConfig = callArgs[0] as { git: string };
+    assert.equal(
+      repoConfig.git,
+      "https://github.com/test-org/test-repo",
+      "repoConfig.git should match the repo URL"
     );
 
     const repoInfo = callArgs[1] as { owner: string; repo: string };
@@ -328,9 +321,6 @@ repos:
           success: true,
           repoName: "test-org/repo2",
           message: "1 created, 0 updated, 0 deleted",
-          created: 1,
-          updated: 0,
-          deleted: 0,
         };
       }),
     };
@@ -352,6 +342,99 @@ repos:
       2,
       "processor.process should be called for both repos"
     );
+  });
+
+  test("processor returns success: false logs error and throws", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  MY_SECRET:
+    env: SECRET_VAR
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor({
+      success: false,
+      message: "Permission denied",
+    });
+
+    await assert.rejects(
+      async () =>
+        runSecretsSync(
+          { config: testConfigPath, workDir: testDir },
+          { processorFactory: () => mockProcessor }
+        ),
+      /One or more repositories failed secrets sync/
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("Permission denied"),
+      "Should log the error message from processor"
+    );
+  });
+
+  test("non-GitHub repo passes token as undefined", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  MY_SECRET:
+    env: SECRET_VAR
+repos:
+  - git: https://dev.azure.com/test-org/test-project/_git/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor();
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { processorFactory: () => mockProcessor }
+    );
+
+    const processMock = mockProcessor.process as unknown as ReturnType<
+      typeof mock.fn
+    >;
+    assert.equal(processMock.mock.calls.length, 1);
+    const callArgs = processMock.mock.calls[0].arguments;
+    const options = callArgs[2] as { token?: string };
+    assert.equal(
+      options.token,
+      undefined,
+      "token should be undefined for non-GitHub repos"
+    );
+  });
+
+  test("retries defaults to 3 when not specified", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  DEPLOY_TOKEN:
+    env: TOKEN_SOURCE
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    let receivedRetries: number | undefined;
+    const mockProcessor = createMockProcessor();
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      {
+        processorFactory: (_config, _cwd, retries) => {
+          receivedRetries = retries;
+          return mockProcessor;
+        },
+      }
+    );
+
+    assert.equal(receivedRetries, 3, "retries should default to 3");
   });
 
   test("skipped result logs skip message", async () => {

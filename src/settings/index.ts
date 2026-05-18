@@ -1,5 +1,6 @@
 // Base processor
 export {
+  type BaseProcessorOptions,
   type BaseProcessorResult,
   type ISettingsProcessor,
   type SettingsAction,
@@ -48,3 +49,22 @@ export {
   type IVariablesProcessor,
   GitHubVariablesStrategy,
 } from "./variables/index.js";
+
+// Secrets
+export {
+  diffSecrets,
+  type SecretChange,
+  type SecretAction,
+  SecretsProcessor,
+  type ISecretsProcessor,
+  type SecretsProcessorOptions,
+  type SecretsProcessorResult,
+  GitHubSecretsStrategy,
+  SodiumEncryptor,
+  type ISecretEncryptor,
+  type ISecretsStrategy,
+  type UpsertSecretParams,
+  type GitHubSecret,
+  type GitHubPublicKey,
+  type SecretsConfig,
+} from "./secrets/index.js";

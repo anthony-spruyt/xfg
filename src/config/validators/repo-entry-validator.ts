@@ -195,7 +195,7 @@ function validateRepoFiles(
 
     const fileOverride = repo.files[fileName];
 
-    if (fileOverride === false) {
+    if (typeof fileOverride === "boolean" || fileOverride === undefined) {
       continue;
     }
 

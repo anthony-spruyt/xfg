@@ -13,18 +13,26 @@ export interface GitHubVariablesListResponse {
   variables: GitHubVariable[];
 }
 
+export interface VariableCreateParams {
+  name: string;
+  value: string;
+}
+
+export interface VariableUpdateParams {
+  name: string;
+  value: string;
+}
+
 export interface IVariablesStrategy {
   list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubVariable[]>;
   create(
     repoInfo: RepoInfo,
-    name: string,
-    value: string,
+    params: VariableCreateParams,
     options?: GhApiOptions
   ): Promise<void>;
   update(
     repoInfo: RepoInfo,
-    name: string,
-    value: string,
+    params: VariableUpdateParams,
     options?: GhApiOptions
   ): Promise<void>;
   delete(

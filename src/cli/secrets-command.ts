@@ -1,31 +1,34 @@
-import { loadRawConfig } from "../config/index.js";
-import { normalizeConfig } from "../config/normalizer.js";
 import {
+  loadRawConfig,
+  normalizeConfig,
   validateRawConfig,
   validateSecretsConfig,
   validateVariableSecretOverlaps,
-} from "../config/validator.js";
+} from "../config/index.js";
+import { SyncError } from "../shared/errors.js";
 import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
-} from "../secrets/index.js";
+  type ISecretsProcessor,
+  type SecretsProcessorResult,
+} from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { parseGitUrl } from "../repo/index.js";
+import {
+  parseGitUrl,
+  isGitHubRepo,
+  type GitHubRepoInfo,
+} from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { SecretsProcessorResult } from "../secrets/processor.js";
-import type { SecretConfig, Config } from "../config/index.js";
+import { resolveGitHubToken } from "../shared/gh-token-utils.js";
+import type { Config, RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
-
-type SecretsConfig = Record<string, SecretConfig | boolean> & {
-  deleteOrphaned?: boolean;
-};
 
 export interface ISecretsProcessorAdapter {
   process(
-    secretsConfig: SecretsConfig,
+    repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: { dryRun?: boolean; token?: string; noDelete?: boolean }
   ): Promise<SecretsProcessorResult>;
@@ -48,10 +51,10 @@ export interface SecretsSyncOptions {
 }
 
 function createDefaultProcessor(
-  _config: Config,
+  config: Config,
   cwd: string,
   retries: number
-): ISecretsProcessorAdapter {
+): ISecretsProcessor {
   const executor = new ProcessExecutor(process.env);
   const encryptor = new SodiumEncryptor();
   const envResolver = new EnvResolver(process.env);
@@ -59,7 +62,12 @@ function createDefaultProcessor(
     cwd,
     retries,
   });
-  return new SecretsProcessor(strategy, encryptor, envResolver);
+  return new SecretsProcessor(
+    strategy,
+    encryptor,
+    envResolver,
+    config.secrets!
+  );
 }
 
 export async function runSecretsSync(
@@ -94,8 +102,6 @@ export async function runSecretsSync(
   const processorFactory = deps.processorFactory ?? createDefaultProcessor;
   const processor = processorFactory(config, cwd, retries ?? 3);
 
-  const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-
   let hasErrors = false;
   logger.setTotal(config.repos.length);
 
@@ -108,7 +114,19 @@ export async function runSecretsSync(
         githubHosts: config.githubHosts,
       });
 
-      const result = await processor.process(config.secrets, repoInfo, {
+      const token = isGitHubRepo(repoInfo)
+        ? (
+            await resolveGitHubToken({
+              repoInfo: repoInfo as GitHubRepoInfo,
+              tokenManager: null,
+              context: repoName,
+              log: logger,
+              envToken: process.env.GH_TOKEN,
+            })
+          ).token
+        : undefined;
+
+      const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
         token,
         noDelete,
@@ -129,6 +147,6 @@ export async function runSecretsSync(
   }
 
   if (hasErrors) {
-    throw new Error("One or more repositories failed secrets sync.");
+    throw new SyncError("One or more repositories failed secrets sync.");
   }
 }

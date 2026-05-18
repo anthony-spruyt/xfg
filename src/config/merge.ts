@@ -151,7 +151,8 @@ function mergeArrays(
   if (handler) {
     return handler(base, overlay, ctx);
   }
-  return overlay;
+  /* c8 ignore next 2 */
+  throw new Error(`Unexpected array merge strategy: ${strategy as string}`);
 }
 
 /**
@@ -186,14 +187,17 @@ export function deepMerge(
       const values = overlayValue.$values;
 
       if (
-        (strategy === "replace" ||
-          strategy === "append" ||
-          strategy === "prepend" ||
-          strategy === "merge") &&
+        typeof strategy === "string" &&
+        arrayMergeStrategies.has(strategy as ArrayMergeStrategy) &&
         Array.isArray(values) &&
         Array.isArray(resolvedBase)
       ) {
-        result[key] = mergeArrays(resolvedBase, values, strategy, ctx);
+        result[key] = mergeArrays(
+          resolvedBase,
+          values,
+          strategy as ArrayMergeStrategy,
+          ctx
+        );
         continue;
       }
     }
@@ -306,8 +310,12 @@ export function mergeTextContent(
       case "prepend":
         return [...overlay, ...base];
       case "replace":
-      default:
         return overlay;
+      /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected array merge strategy: ${_exhaustive}`);
+      }
     }
   }
   // Base is string, overlay is array - overlay replaces

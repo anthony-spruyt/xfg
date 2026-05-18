@@ -26,6 +26,7 @@ import type {
   Ruleset,
   Label,
   GitHubRepoSettings,
+  VariablesConfig,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
 
@@ -232,6 +233,76 @@ function mergeVariablesCaseInsensitive(
 }
 
 /**
+ * Variable map from config: each key is a variable name mapped to a string
+ * value or `false` to opt out. The special `inherit` and `deleteOrphaned`
+ * keys are meta-keys controlling merge behavior.
+ */
+interface VariableMap {
+  inherit?: boolean;
+  deleteOrphaned?: boolean;
+  [key: string]: string | boolean | undefined;
+}
+
+/**
+ * Merges two variable maps: handles `inherit`, `deleteOrphaned` meta-keys
+ * and case-insensitive variable name merging.
+ *
+ * Follows the same pattern as `mergeLabels`: extract meta-keys, merge data
+ * entries, filter opt-outs, and re-inject meta-keys into the result.
+ *
+ * Returns undefined when no variable entries or meta-keys remain.
+ */
+function mergeVariablesWithMeta(
+  rootVars: VariableMap | undefined,
+  repoVars: VariableMap | undefined
+): Record<string, unknown> | undefined {
+  if (!rootVars && !repoVars) return undefined;
+
+  const root: VariableMap = rootVars ?? {};
+  const repo: VariableMap = repoVars ?? {};
+  const inheritVars = shouldInherit(repo);
+
+  // Resolve deleteOrphaned: repo overrides root
+  const effectiveDeleteOrphaned =
+    repo.deleteOrphaned !== undefined
+      ? repo.deleteOrphaned
+      : root.deleteOrphaned;
+
+  // Separate data entries from meta-keys
+  const stripMeta = (vars: VariableMap): Record<string, unknown> => {
+    const entries: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(vars)) {
+      if (key === "inherit" || key === "deleteOrphaned") continue;
+      entries[key] = value;
+    }
+    return entries;
+  };
+
+  const rootEntries = stripMeta(root);
+  const repoEntries = stripMeta(repo);
+
+  // Merge: inherit:false uses only repo entries; otherwise case-insensitive merge
+  const merged = inheritVars
+    ? mergeVariablesCaseInsensitive(rootEntries, repoEntries)
+    : repoEntries;
+
+  // Filter out false opt-outs
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(merged)) {
+    if (value !== false) {
+      result[key] = value;
+    }
+  }
+
+  // Re-inject deleteOrphaned meta-key
+  if (effectiveDeleteOrphaned !== undefined) {
+    result.deleteOrphaned = effectiveDeleteOrphaned;
+  }
+
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/**
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
  */
@@ -336,50 +407,18 @@ export function mergeSettings(
   }
 
   // Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
-  if (root?.variables || perRepo?.variables) {
-    const rootVars = root?.variables ?? {};
-    const repoVars = perRepo?.variables ?? {};
-
-    const rootDeleteOrphaned = (rootVars as Record<string, unknown>)
-      .deleteOrphaned;
-    const repoDeleteOrphaned = (repoVars as Record<string, unknown>)
-      .deleteOrphaned;
-    const effectiveDeleteOrphaned =
-      repoDeleteOrphaned !== undefined
-        ? repoDeleteOrphaned
-        : rootDeleteOrphaned;
-
-    const inherit = (repoVars as Record<string, unknown>).inherit;
-    if (inherit === false) {
-      const {
-        inherit: _,
-        deleteOrphaned: _d,
-        ...rest
-      } = repoVars as Record<string, unknown>;
-      result.variables = Object.fromEntries(
-        Object.entries(rest).filter(([, v]) => v !== false)
-      ) as Record<string, string>;
-    } else {
-      const combined = mergeVariablesCaseInsensitive(
-        rootVars as Record<string, unknown>,
-        repoVars as Record<string, unknown>
-      );
-      const { inherit: _, deleteOrphaned: _d, ...rest } = combined;
-      result.variables = Object.fromEntries(
-        Object.entries(rest).filter(([, v]) => v !== false)
-      ) as Record<string, string>;
-    }
-
-    if (effectiveDeleteOrphaned !== undefined) {
-      (result.variables as Record<string, unknown>).deleteOrphaned =
-        effectiveDeleteOrphaned;
-    }
-
-    // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
-    const { deleteOrphaned: _check, ...varEntries } =
-      result.variables as Record<string, unknown>;
-    if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
-      delete result.variables;
+  const mergedVars = mergeVariablesWithMeta(
+    root?.variables,
+    perRepo?.variables
+  );
+  if (mergedVars) {
+    const { deleteOrphaned: varDeleteOrphaned, ...varEntries } = mergedVars;
+    // Only include if there are actual variable entries, or deleteOrphaned is actionable
+    if (Object.keys(varEntries).length > 0 || varDeleteOrphaned) {
+      result.variables = varEntries as VariablesConfig;
+      if (varDeleteOrphaned !== undefined) {
+        result.variables.deleteOrphaned = varDeleteOrphaned as boolean;
+      }
     }
   }
 
@@ -394,26 +433,26 @@ function applyFileLayer(
   accumulated: Record<string, RawFileConfig>,
   layerFiles: Record<
     string,
-    RawFileConfig | RawRepoFileOverride | false | undefined
+    RawFileConfig | RawRepoFileOverride | false | boolean | undefined
   >
 ): Record<string, RawFileConfig> {
   const inheritFiles = shouldInherit(layerFiles);
 
-  if (!inheritFiles) {
-    accumulated = {};
-  }
+  const result: Record<string, RawFileConfig> = inheritFiles
+    ? { ...accumulated }
+    : {};
 
   for (const [fileName, fileConfig] of Object.entries(layerFiles)) {
     if (fileName === "inherit") continue;
 
     if (fileConfig === false) {
-      delete accumulated[fileName];
+      delete result[fileName];
       continue;
     }
 
-    if (fileConfig === undefined) continue;
+    if (fileConfig === undefined || fileConfig === true) continue;
 
-    const existing = accumulated[fileName];
+    const existing = result[fileName];
     if (existing) {
       const overlay = fileConfig as RawRepoFileOverride;
       let mergedContent: ContentValue | undefined;
@@ -432,17 +471,17 @@ function applyFileLayer(
         string,
         unknown
       >;
-      accumulated[fileName] = {
+      result[fileName] = {
         ...existing,
         ...restFileConfig,
         content: mergedContent,
       } as RawFileConfig;
     } else {
-      accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
+      result[fileName] = structuredClone(fileConfig) as RawFileConfig;
     }
   }
 
-  return accumulated;
+  return result;
 }
 
 /**
@@ -574,40 +613,11 @@ function mergeRawSettings(
 
   // Variables: simple string values with false opt-outs (mergeNamedEntries won't work for strings)
   if (overlay.variables) {
-    const overlayVars = overlay.variables as Record<string, unknown>;
-    const inherit = overlayVars.inherit !== false;
-    const baseVars = inherit
-      ? { ...(result.variables ?? {}) }
-      : ({} as Record<string, unknown>);
-
-    // Build overlay entries (excluding meta keys)
-    const overlayEntries: Record<string, unknown> = {};
-    for (const [name, entry] of Object.entries(overlay.variables)) {
-      if (name === "inherit" || name === "deleteOrphaned") continue;
-      overlayEntries[name] = entry;
-    }
-
-    // Case-insensitive merge: overlay keys replace base keys with same name
-    const merged = mergeVariablesCaseInsensitive(baseVars, overlayEntries);
-
-    // Apply false opt-outs
-    const cleaned: Record<string, unknown> = {};
-    for (const [name, value] of Object.entries(merged)) {
-      if (name === "inherit" || name === "deleteOrphaned") continue;
-      if (value !== false) {
-        cleaned[name] = value;
-      }
-    }
-
-    const baseDelete = (baseVars as Record<string, unknown>).deleteOrphaned;
-    const effectiveDelete =
-      overlayVars.deleteOrphaned !== undefined
-        ? overlayVars.deleteOrphaned
-        : baseDelete;
-    if (effectiveDelete !== undefined) {
-      cleaned.deleteOrphaned = effectiveDelete;
-    }
-    result.variables = cleaned as typeof result.variables;
+    const mergedVars = mergeVariablesWithMeta(
+      result.variables as VariableMap | undefined,
+      overlay.variables as VariableMap | undefined
+    );
+    result.variables = (mergedVars ?? {}) as typeof result.variables;
   }
 
   // deleteOrphaned: overlay wins
@@ -708,12 +718,14 @@ function mergeConditionalGroups(
 function resolveFileEntry(
   fileName: string,
   fileConfig: RawFileConfig,
-  repoOverride: RawRepoFileOverride | false | undefined,
+  repoOverride: RawRepoFileOverride | false | boolean | undefined,
   inheritFiles: boolean,
   globalDeleteOrphaned: boolean | undefined,
   env: Record<string, string | undefined>
 ): FileContent | null {
   if (repoOverride === false) return null;
+  // true is only valid for the inherit meta-key, not for file entries
+  if (repoOverride === true) return null;
   if (!inheritFiles && !repoOverride) return null;
 
   const fileStrategy = fileConfig.mergeStrategy ?? "replace";

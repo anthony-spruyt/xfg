@@ -14,7 +14,7 @@ import { RepoConfig } from "../../../src/config/index.js";
 import { GitHubRepoInfo } from "../../../src/repo/index.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../../src/vcs/types.js";
-import { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../../../src/vcs/auth/github-app-token-manager.js";
 import type { AuthenticatedGitOpsMockConfig } from "../../mocks/index.js";
 import {
   createMockLogger,
@@ -2415,7 +2415,7 @@ describe("RepositoryProcessor", () => {
 
     test("createTokenManager returns token manager when credentials provided", async () => {
       const { createTokenManager } =
-        await import("../../../src/vcs/commit-strategy-selector.js");
+        await import("../../../src/vcs/commit/commit-strategy-selector.js");
 
       assert.equal(
         createTokenManager(),

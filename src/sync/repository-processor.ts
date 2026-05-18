@@ -6,15 +6,17 @@ import {
   AuthenticatedGitOps,
   type GitHubAppTokenManager,
 } from "../vcs/index.js";
-import { FileWriter } from "./file-writer.js";
-import { ManifestManager } from "./manifest-manager.js";
+import {
+  FileWriter,
+  FileSyncOrchestrator,
+  FileSyncStrategy,
+} from "./file/index.js";
+import { ManifestManager } from "./manifest/index.js";
 import { BranchManager } from "./branch-manager.js";
 import { AuthOptionsBuilder } from "./auth-options-builder.js";
 import { RepositorySession } from "./repository-session.js";
 import { CommitPushManager } from "./commit-push-manager.js";
-import { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
 import { PRMergeHandler } from "./pr-merge-handler.js";
-import { FileSyncStrategy } from "./file-sync-strategy.js";
 import { SyncWorkflow } from "./sync-workflow.js";
 import type {
   IFileWriter,

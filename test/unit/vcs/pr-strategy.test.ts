@@ -1,9 +1,9 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { createPRStrategy } from "../../../src/vcs/index.js";
-import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
-import { AdoPRStrategy } from "../../../src/vcs/ado-pr-strategy.js";
-import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
+import { GitHubPRStrategy } from "../../../src/vcs/pr/github-pr-strategy.js";
+import { AdoPRStrategy } from "../../../src/vcs/pr/ado-pr-strategy.js";
+import { GitLabPRStrategy } from "../../../src/vcs/pr/gitlab-pr-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
@@ -14,8 +14,8 @@ import type {
   IPRStrategy,
   CloseExistingPROptions,
 } from "../../../src/vcs/types.js";
-import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
-import { PRResult } from "../../../src/vcs/pr-creator.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr/pr-strategy.js";
+import { PRResult } from "../../../src/vcs/pr/pr-creator.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const mockExecutor: ICommandExecutor = { exec: async () => "" };

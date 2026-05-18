@@ -390,6 +390,16 @@ export interface SecretConfig {
   env: string;
 }
 
+/**
+ * GitHub Actions variables keyed by name, with an optional `deleteOrphaned`
+ * meta-key. Uses an index signature that accommodates both string values and
+ * the boolean meta-key to avoid a contradictory intersection type.
+ */
+export interface VariablesConfig {
+  deleteOrphaned?: boolean;
+  [name: string]: string | boolean | undefined;
+}
+
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -400,7 +410,7 @@ export interface RepoSettings {
   /** GitHub code scanning default setup */
   codeScanning?: CodeScanningSettings;
   /** GitHub Actions variables keyed by name */
-  variables?: Record<string, string> & { deleteOrphaned?: boolean };
+  variables?: VariablesConfig;
   deleteOrphaned?: boolean;
 }
 
@@ -433,6 +443,21 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
+/**
+ * File map with optional `inherit` meta-key for group/repo layers.
+ * Uses an index signature that accommodates file configs, opt-outs (false),
+ * and the boolean inherit flag to avoid contradictory intersection types.
+ */
+export interface RawGroupFileMap {
+  inherit?: boolean;
+  [fileName: string]:
+    | RawFileConfig
+    | RawRepoFileOverride
+    | false
+    | boolean
+    | undefined;
+}
+
 // Group configuration (shared config layer between root and per-repo)
 // Groups need the same file override capabilities as repos: file: false to remove,
 // inherit: false to discard accumulated files. So files uses the repo-style type.
@@ -440,9 +465,7 @@ export interface RawRepoFileOverride {
 // so settings uses RawRepoSettings (which has inherit on rulesets/labels).
 export interface RawGroupConfig {
   extends?: string | string[];
-  files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
-    inherit?: boolean;
-  };
+  files?: RawGroupFileMap;
   prOptions?: PRMergeOptions;
   settings?: RawRepoSettings;
 }
@@ -462,44 +485,77 @@ export interface RawConditionalGroupConfig {
   /** Condition that determines when this group activates */
   when: RawConditionalGroupWhen;
   /** File definitions or overrides (same capabilities as regular groups) */
-  files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
-    inherit?: boolean;
-  };
+  files?: RawGroupFileMap;
   /** PR merge options */
   prOptions?: PRMergeOptions;
   /** Repository settings (rulesets, labels, repo settings) */
   settings?: RawRepoSettings;
 }
 
-// Root-level settings (before normalization) - inherit not valid here
-export interface RawRootSettings {
-  rulesets?: Record<string, Ruleset | false>;
-  repo?: GitHubRepoSettings | false;
-  labels?: Record<string, Label | false>;
-  codeScanning?: CodeScanningSettings | false;
-  variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
+/**
+ * Raw variable map before normalization. Each key is a variable name mapped
+ * to a string value or `false` to opt out. Meta-keys `inherit` and
+ * `deleteOrphaned` control merge behavior.
+ */
+export interface RawVariablesMap {
+  inherit?: boolean;
   deleteOrphaned?: boolean;
+  [name: string]: string | false | boolean | undefined;
+}
+
+// Root-level settings (before normalization) - inherit not valid here
+// (validator enforces that inherit is not present at root level)
+export interface RawRootSettings {
+  rulesets?: RawRulesetsMap;
+  repo?: GitHubRepoSettings | false;
+  labels?: RawLabelsMap;
+  codeScanning?: CodeScanningSettings | false;
+  variables?: RawVariablesMap;
+  deleteOrphaned?: boolean;
+}
+
+/**
+ * Ruleset map with optional `inherit` meta-key for per-repo/group layers.
+ */
+export interface RawRulesetsMap {
+  inherit?: boolean;
+  [name: string]: Ruleset | false | boolean | undefined;
+}
+
+/**
+ * Label map with optional `inherit` meta-key for per-repo/group layers.
+ */
+export interface RawLabelsMap {
+  inherit?: boolean;
+  [name: string]: Label | false | boolean | undefined;
 }
 
 // Per-repo settings (before normalization) - inherit controls whether root settings are inherited
 export interface RawRepoSettings {
-  rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
+  rulesets?: RawRulesetsMap;
   repo?: GitHubRepoSettings | false;
-  labels?: Record<string, Label | false> & { inherit?: boolean };
+  labels?: RawLabelsMap;
   codeScanning?: CodeScanningSettings | false;
-  variables?: Record<string, string | false> & {
-    inherit?: boolean;
-    deleteOrphaned?: boolean;
-  };
+  variables?: RawVariablesMap;
   deleteOrphaned?: boolean;
 }
 
 // Repo configuration
 // files can map to false to exclude, or an object to override
 // inherit: false skips all root files
+/**
+ * File map with optional `inherit` meta-key for per-repo layers.
+ * Only allows RawRepoFileOverride (not RawFileConfig) since repos
+ * can only override, not define root-level file configs.
+ */
+export interface RawRepoFileMap {
+  inherit?: boolean;
+  [fileName: string]: RawRepoFileOverride | false | boolean | undefined;
+}
+
 export interface RawRepoConfig {
   git: string | string[];
-  files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
+  files?: RawRepoFileMap;
   groups?: string[];
   prOptions?: PRMergeOptions;
   settings?: RawRepoSettings;
@@ -521,9 +577,17 @@ export interface RawConfig {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RawRootSettings;
-  secrets?: Record<string, SecretConfig | boolean> & {
-    deleteOrphaned?: boolean;
-  };
+  secrets?: SecretsConfig;
+}
+
+/**
+ * Secrets map with an optional `deleteOrphaned` meta-key.
+ * Uses an index signature that accommodates both secret entries and
+ * the boolean meta-key.
+ */
+export interface SecretsConfig {
+  deleteOrphaned?: boolean;
+  [name: string]: SecretConfig | boolean | undefined;
 }
 
 // File content for a single file in a repo
@@ -559,7 +623,5 @@ export interface Config {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RepoSettings;
-  secrets?: Record<string, SecretConfig | boolean> & {
-    deleteOrphaned?: boolean;
-  };
+  secrets?: SecretsConfig;
 }

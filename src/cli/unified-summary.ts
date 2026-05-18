@@ -9,6 +9,10 @@ import {
   type SyncReport,
   type SettingsReport,
 } from "../output/index.js";
+import {
+  settingsSummaryDescriptors,
+  actionLabels,
+} from "../output/settings-summary-descriptors.js";
 
 // =============================================================================
 // Types
@@ -69,50 +73,22 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 
   if (input.settings) {
     const t = input.settings.totals;
-
-    const settingsEntry = formatCountEntry("setting", "settings", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.settings.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.settings.update,
-      },
-    ]);
-    if (settingsEntry) parts.push(settingsEntry);
-
-    const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.rulesets.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.rulesets.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.rulesets.delete,
-      },
-    ]);
-    if (rulesetsEntry) parts.push(rulesetsEntry);
-
-    const labelsEntry = formatCountEntry("label", "labels", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.labels.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.labels.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.labels.delete,
-      },
-    ]);
-    if (labelsEntry) parts.push(labelsEntry);
+    for (const desc of settingsSummaryDescriptors) {
+      const counts = t[desc.key] as Record<string, number>;
+      const entry = formatCountEntry(
+        desc.noun,
+        desc.plural,
+        desc.actions.map((action) => ({
+          label: selectLabel(
+            dry,
+            actionLabels[action].past,
+            actionLabels[action].future
+          ),
+          value: counts[action] ?? 0,
+        }))
+      );
+      if (entry) parts.push(entry);
+    }
   }
 
   if (parts.length === 0) {
@@ -124,19 +100,18 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 }
 
 function hasAnyChanges(input: UnifiedSummaryInput): boolean {
-  if (input.lifecycle && hasLifecycleChanges(input.lifecycle)) return true;
-  if (input.sync?.repos.some((r) => r.files.length > 0 || r.error)) return true;
-  if (
-    input.settings?.repos.some(
+  return (
+    (!!input.lifecycle && hasLifecycleChanges(input.lifecycle)) ||
+    !!input.sync?.repos.some((r) => r.files.length > 0 || r.error) ||
+    !!input.settings?.repos.some(
       (r) =>
         r.settings.length > 0 ||
         r.rulesets.length > 0 ||
         r.labels.length > 0 ||
+        r.variables.length > 0 ||
         r.error
     )
-  )
-    return true;
-  return false;
+  );
 }
 
 // =============================================================================
@@ -239,6 +214,7 @@ export function formatUnifiedSummaryMarkdown(
       (settingsRepo.settings.length > 0 ||
         settingsRepo.rulesets.length > 0 ||
         settingsRepo.labels.length > 0 ||
+        settingsRepo.variables.length > 0 ||
         settingsRepo.error);
 
     if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;

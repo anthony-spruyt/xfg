@@ -3,7 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   FileModeFixupCommitStrategy,
   type GhApiClientFactory,
-} from "../../../src/vcs/file-mode-fixup-commit-strategy.js";
+} from "../../../src/vcs/commit/file-mode-fixup-commit-strategy.js";
 import type { ICommitStrategy, CommitResult } from "../../../src/vcs/types.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";

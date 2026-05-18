@@ -4,6 +4,8 @@ import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
 import { parseApiJson } from "../../shared/json-utils.js";
 import type {
   IVariablesStrategy,
+  VariableCreateParams,
+  VariableUpdateParams,
   GitHubVariable,
   GitHubVariablesListResponse,
 } from "./types.js";
@@ -44,30 +46,28 @@ export class GitHubVariablesStrategy implements IVariablesStrategy {
 
   async create(
     repoInfo: RepoInfo,
-    name: string,
-    value: string,
+    params: VariableCreateParams,
     options?: GhApiOptions
   ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Variables strategy");
 
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables`;
     await this.api.call("POST", endpoint, {
-      payload: { name, value },
+      payload: { name: params.name, value: params.value },
       options,
     });
   }
 
   async update(
     repoInfo: RepoInfo,
-    name: string,
-    value: string,
+    params: VariableUpdateParams,
     options?: GhApiOptions
   ): Promise<void> {
     assertGitHubRepo(repoInfo, "GitHub Variables strategy");
 
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables/${encodeURIComponent(name)}`;
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/variables/${encodeURIComponent(params.name)}`;
     await this.api.call("PATCH", endpoint, {
-      payload: { value },
+      payload: { value: params.value },
       options,
     });
   }

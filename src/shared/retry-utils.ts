@@ -111,6 +111,9 @@ export function isRateLimitError(error: unknown): boolean {
 /** Default delay (seconds) for rate limit errors when no Retry-After header is available. */
 const RATE_LIMIT_FALLBACK_DELAY_SECONDS = 60;
 
+/** Milliseconds per second, used to convert delay values for setTimeout. */
+const MS_PER_SECOND = 1000;
+
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -217,7 +220,7 @@ export async function withRetry<T>(
           options?.log?.info(
             `Rate limited. Waiting ${retryAfterSeconds}s before retry...`
           );
-          await (options?._delay ?? delay)(retryAfterSeconds * 1000);
+          await (options?._delay ?? delay)(retryAfterSeconds * MS_PER_SECOND);
         }
 
         // Log the failure (existing behavior)

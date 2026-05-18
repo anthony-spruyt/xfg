@@ -162,24 +162,9 @@ function buildXfgConfig(
 }
 
 /**
- * Interpolate xfg template variables in content.
+ * Interpolate ${xfg:...} template variables in content (string, string[], or object).
  *
- * Supports these syntaxes:
- * - ${xfg:repo.name} - Repository name
- * - ${xfg:repo.owner} - Repository owner
- * - ${xfg:repo.fullName} - Full repository name (owner/repo)
- * - ${xfg:repo.url} - Git URL
- * - ${xfg:repo.platform} - Platform type (github, azure-devops, gitlab)
- * - ${xfg:repo.host} - Host domain
- * - ${xfg:file.name} - Current file name
- * - ${xfg:date} - Current date (YYYY-MM-DD)
- * - ${xfg:customVar} - Custom variable from vars config
- * - $${xfg:var} - Escape: outputs literal ${xfg:var}
- *
- * @param content - The content to process (object, string, or string[])
- * @param ctx - Template context with repo info and custom vars
- * @param options - Interpolation options (default: strict mode)
- * @returns Content with interpolated values
+ * @see getBuiltinVariable for the full list of supported variables.
  */
 export function interpolateXfgContent(
   content: string,
