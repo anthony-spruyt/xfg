@@ -38,20 +38,22 @@ export class SecretsProcessor implements ISecretsProcessor {
     private readonly secretsConfig: SecretsConfig
   ) {}
 
+  private getSecretEntries(): [string, SecretConfig][] {
+    const { deleteOrphaned: _, ...rawEntries } = this.secretsConfig;
+    return Object.entries(rawEntries).filter(
+      (entry): entry is [string, SecretConfig] => typeof entry[1] !== "boolean"
+    );
+  }
+
   async process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: SecretsProcessorOptions
   ): Promise<SecretsProcessorResult> {
     return withGitHubGuards(repoConfig, repoInfo, options, {
-      hasDesiredSettings: () => {
-        const { deleteOrphaned, ...rawEntries } = this.secretsConfig;
-        const secretEntries = Object.entries(rawEntries).filter(
-          (entry): entry is [string, SecretConfig] =>
-            typeof entry[1] !== "boolean"
-        );
-        return secretEntries.length > 0 || deleteOrphaned === true;
-      },
+      hasDesiredSettings: () =>
+        this.getSecretEntries().length > 0 ||
+        this.secretsConfig.deleteOrphaned === true,
       emptySettingsMessage: "No secrets configured",
       applySettings: (githubRepo, _rc, opts, token, repoName) =>
         this.applySettings(githubRepo, opts, token, repoName),
@@ -65,14 +67,10 @@ export class SecretsProcessor implements ISecretsProcessor {
     repoName: string
   ): Promise<SecretsProcessorResult> {
     const { dryRun, noDelete } = options;
-    const { deleteOrphaned: configDeleteOrphaned = false, ...rawEntries } =
-      this.secretsConfig;
-    const deleteOrphaned = configDeleteOrphaned && !(noDelete ?? false);
+    const deleteOrphaned =
+      (this.secretsConfig.deleteOrphaned ?? false) && !(noDelete ?? false);
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
-
-    const secretEntries = Object.entries(rawEntries).filter(
-      (entry): entry is [string, SecretConfig] => typeof entry[1] !== "boolean"
-    );
+    const secretEntries = this.getSecretEntries();
 
     let resolvedValues: Map<string, string>;
     if (!dryRun && secretEntries.length > 0) {
