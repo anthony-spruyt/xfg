@@ -9,6 +9,7 @@
         ".claude/rules/research.md",
         ".claude/rules/tdd.md",
         ".claude/settings.json",
+        ".devcontainer/.gitignore",
         ".devcontainer/devcontainer.json",
         ".devcontainer/Dockerfile",
         ".devcontainer/initialize.sh",
