@@ -9,7 +9,9 @@ xfg sync -c ./xfg-config/   # trailing slash is optional
 
 ## Directory Structure
 
-All `.yaml` and `.yml` files in the directory are loaded and merged. Files are processed in alphabetical order.
+All `.yaml` and `.yml` files in the directory are loaded and merged. Subdirectories are scanned recursively (depth-first, alphabetical per level). Files are processed in alphabetical order within each directory level before descending into subdirectories.
+
+**Flat layout:**
 
 ```text
 xfg-config/
@@ -17,6 +19,23 @@ xfg-config/
   team-alpha.yaml     # team-specific groups and repos
   team-beta.yaml      # team-specific groups and repos
 ```
+
+**Nested layout:**
+
+```text
+xfg-config/
+  base.yaml                 # id, prOptions (shared config)
+  platform/
+    github.yaml             # GitHub-specific settings
+    gitlab.yaml             # GitLab-specific settings
+  teams/
+    alpha/
+      repos.yaml            # alpha team repos
+    beta/
+      repos.yaml            # beta team repos
+```
+
+Processing order: `base.yaml` → `platform/github.yaml` → `platform/gitlab.yaml` → `teams/alpha/repos.yaml` → `teams/beta/repos.yaml`
 
 ## Merge Rules
 
@@ -75,16 +94,21 @@ repos:
 - Exactly one file must define `id`
 - At least one file must define `repos`
 - Group names must be unique across files — use [`extends`](groups.md#group-inheritance) for group composition
-- Only flat directory scanning (no subdirectories)
-- [`@path` file references](file-references.md) resolve relative to the fragment file that contains them
+- Subdirectories are scanned recursively (depth-first, alphabetical per level)
+- Hidden files and directories (names starting with `.`) are skipped
+- Symlinked YAML files are followed; symlinked directories are skipped (cycle safety)
+- Maximum nesting depth of 10 levels
+- [`@path` file references](file-references.md) resolve relative to the fragment file's own directory, not the root config directory
 
 ## Error Messages
 
 Common errors when using directory-based config:
 
-| Error                                                     | Cause                                       |
-| --------------------------------------------------------- | ------------------------------------------- |
-| `'id' is defined in both base.yaml and team.yaml`         | A single-file key appears in multiple files |
-| `group 'X' is defined in both base.yaml and team.yaml`    | Duplicate group name across files           |
-| `no 'id' found in any file in directory ./xfg-config/`    | No file defines `id`                        |
-| `no .yaml or .yml files found in directory ./xfg-config/` | Directory is empty or has no YAML files     |
+| Error                                                            | Cause                                       |
+| ---------------------------------------------------------------- | ------------------------------------------- |
+| `'id' is defined in both base.yaml and team.yaml`                | A single-file key appears in multiple files |
+| `group 'X' is defined in both base.yaml and team.yaml`           | Duplicate group name across files           |
+| `no 'id' found in any file in directory ./xfg-config/`           | No file defines `id`                        |
+| `no .yaml or .yml files found in directory ./xfg-config/`        | Directory is empty or has no YAML files     |
+| `Config directory nesting exceeds maximum depth of 10 at <path>` | Too many nested subdirectories              |
+| `Failed to read config directory <path>: <error>`                | Subdirectory is unreadable                  |
