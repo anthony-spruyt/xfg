@@ -16,6 +16,7 @@ export class SodiumEncryptor implements ISecretEncryptor {
           await sodium.default.ready;
           this.sodium = sodium.default;
         } catch (error) {
+          /* c8 ignore next 4 -- only fails when libsodium-wrappers is not installed */
           throw new Error(
             "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers",
             { cause: error }

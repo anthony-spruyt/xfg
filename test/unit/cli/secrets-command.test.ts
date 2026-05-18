@@ -344,6 +344,99 @@ repos:
     );
   });
 
+  test("processor returns success: false logs error and throws", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  MY_SECRET:
+    env: SECRET_VAR
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor({
+      success: false,
+      message: "Permission denied",
+    });
+
+    await assert.rejects(
+      async () =>
+        runSecretsSync(
+          { config: testConfigPath, workDir: testDir },
+          { processorFactory: () => mockProcessor }
+        ),
+      /One or more repositories failed secrets sync/
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("Permission denied"),
+      "Should log the error message from processor"
+    );
+  });
+
+  test("non-GitHub repo passes token as undefined", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  MY_SECRET:
+    env: SECRET_VAR
+repos:
+  - git: https://dev.azure.com/test-org/test-project/_git/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor();
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { processorFactory: () => mockProcessor }
+    );
+
+    const processMock = mockProcessor.process as unknown as ReturnType<
+      typeof mock.fn
+    >;
+    assert.equal(processMock.mock.calls.length, 1);
+    const callArgs = processMock.mock.calls[0].arguments;
+    const options = callArgs[2] as { token?: string };
+    assert.equal(
+      options.token,
+      undefined,
+      "token should be undefined for non-GitHub repos"
+    );
+  });
+
+  test("retries defaults to 3 when not specified", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+secrets:
+  DEPLOY_TOKEN:
+    env: TOKEN_SOURCE
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    let receivedRetries: number | undefined;
+    const mockProcessor = createMockProcessor();
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      {
+        processorFactory: (_config, _cwd, retries) => {
+          receivedRetries = retries;
+          return mockProcessor;
+        },
+      }
+    );
+
+    assert.equal(receivedRetries, 3, "retries should default to 3");
+  });
+
   test("skipped result logs skip message", async () => {
     writeFileSync(
       testConfigPath,

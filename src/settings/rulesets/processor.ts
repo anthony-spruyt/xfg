@@ -148,6 +148,7 @@ export class RulesetProcessor implements IRulesetProcessor {
         case "unchanged":
           break;
 
+        /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
         default: {
           const _exhaustive: never = change.action;
           throw new Error(`Unexpected ruleset action: ${String(_exhaustive)}`);

@@ -13,6 +13,7 @@ export function formatStatusBadge(status: FileStatus): string {
     case "DELETED":
       return chalk.red("[DELETED]");
 
+    /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
     default: {
       const _exhaustive: never = status;
       throw new Error(`Unexpected file status: ${String(_exhaustive)}`);

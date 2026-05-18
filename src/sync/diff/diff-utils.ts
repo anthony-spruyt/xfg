@@ -296,6 +296,7 @@ function groupIntoHunks(
           newCount++;
           break;
 
+        /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
         default: {
           const _exhaustive: never = op;
           throw new Error(`Unexpected diff op: ${String(_exhaustive)}`);
@@ -334,6 +335,7 @@ export function incrementDiffStats(stats: DiffStats, status: FileStatus): void {
     case "DELETED":
       stats.deletedCount++;
       break;
+    /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
     default: {
       const _: never = status;
       throw new Error(`Unknown FileStatus: ${String(_)}`);

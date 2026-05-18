@@ -311,6 +311,7 @@ export function mergeTextContent(
         return [...overlay, ...base];
       case "replace":
         return overlay;
+      /* c8 ignore next 3 -- exhaustive check, unreachable at runtime */
       default: {
         const _exhaustive: never = strategy;
         throw new Error(`Unexpected array merge strategy: ${_exhaustive}`);
