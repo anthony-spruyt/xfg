@@ -1,5 +1,5 @@
-import { assertGitLabRepo, type GitLabRepoInfo } from "../repo/index.js";
-import type { PRResult } from "./types.js";
+import { assertGitLabRepo, type GitLabRepoInfo } from "../../repo/index.js";
+import type { PRResult } from "../types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -7,14 +7,14 @@ import type {
   ClosePRResult,
   MergeOptions,
   MergeResult,
-} from "./types.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { getStderr } from "../shared/command-executor.js";
-import { parseApiJson } from "../shared/json-utils.js";
-import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
-import type { MergeStrategy } from "../config/index.js";
-import { SyncError } from "../shared/errors.js";
+} from "../types.js";
+import { withRetry, isPermanentError } from "../../shared/retry-utils.js";
+import { getStderr } from "../../shared/command-executor.js";
+import { parseApiJson } from "../../shared/json-utils.js";
+import { sanitizeCredentials } from "../../shared/sanitize-utils.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
+import type { MergeStrategy } from "../../config/index.js";
+import { SyncError } from "../../shared/errors.js";
 
 const MR_CREATED_MSG = "MR created successfully";
 

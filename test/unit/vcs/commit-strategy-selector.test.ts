@@ -3,9 +3,9 @@ import { strict as assert } from "node:assert";
 import {
   createCommitStrategy,
   createTokenManager,
-} from "../../../src/vcs/commit-strategy-selector.js";
-import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
-import { FileModeFixupCommitStrategy } from "../../../src/vcs/file-mode-fixup-commit-strategy.js";
+} from "../../../src/vcs/commit/commit-strategy-selector.js";
+import { GitCommitStrategy } from "../../../src/vcs/commit/git-commit-strategy.js";
+import { FileModeFixupCommitStrategy } from "../../../src/vcs/commit/file-mode-fixup-commit-strategy.js";
 import {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,

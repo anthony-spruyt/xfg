@@ -3,12 +3,12 @@ import type {
   CommitOptions,
   CommitResult,
   FileChange,
-} from "./types.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
-import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
-import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
-import { parseApiJson } from "../shared/json-utils.js";
-import { SyncError } from "../shared/errors.js";
+} from "../types.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
+import { isGitHubRepo, type GitHubRepoInfo } from "../../repo/index.js";
+import { GhApiClient, type GhApiOptions } from "../../shared/gh-api-utils.js";
+import { parseApiJson } from "../../shared/json-utils.js";
+import { SyncError } from "../../shared/errors.js";
 import { validateSafeBranchName } from "./graphql-commit-strategy.js";
 
 interface GitCommitResponse {

@@ -1,10 +1,10 @@
-import { type RepoInfo, isGitHubRepo } from "../repo/index.js";
-import type { ICommitStrategy } from "./types.js";
+import { type RepoInfo, isGitHubRepo } from "../../repo/index.js";
+import type { ICommitStrategy } from "../types.js";
 import { GitCommitStrategy } from "./git-commit-strategy.js";
 import { GraphQLCommitStrategy } from "./graphql-commit-strategy.js";
 import { FileModeFixupCommitStrategy } from "./file-mode-fixup-commit-strategy.js";
-import { GitHubAppTokenManager } from "./github-app-token-manager.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
+import { GitHubAppTokenManager } from "../auth/github-app-token-manager.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
 
 interface GitHubAppCredentials {
   clientId: string;

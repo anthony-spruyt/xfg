@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import { strict as assert } from "node:assert";
-import { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+import { GitHubAppTokenManager } from "../../../src/vcs/auth/github-app-token-manager.js";
 import {
   TEST_PRIVATE_KEY,
   TEST_CLIENT_ID,

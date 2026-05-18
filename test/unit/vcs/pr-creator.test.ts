@@ -9,7 +9,7 @@ import {
   createPR,
   mergePR,
   FileAction,
-} from "../../../src/vcs/pr-creator.js";
+} from "../../../src/vcs/pr/pr-creator.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 

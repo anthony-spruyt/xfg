@@ -3,8 +3,8 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
-import { PRWorkflowExecutor } from "../../../src/vcs/pr-strategy.js";
+import { GitLabPRStrategy } from "../../../src/vcs/pr/gitlab-pr-strategy.js";
+import { PRWorkflowExecutor } from "../../../src/vcs/pr/pr-strategy.js";
 import {
   GitLabRepoInfo,
   AzureDevOpsRepoInfo,

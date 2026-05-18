@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { RepoInfo } from "../repo/index.js";
+import type { RepoInfo } from "../../repo/index.js";
 import { createPRStrategy } from "./pr-strategy-factory.js";
 import { PRWorkflowExecutor } from "./pr-strategy.js";
 import type { IPRStrategyLogger } from "./pr-strategy.js";
@@ -11,9 +11,9 @@ import type {
   MergeResult,
   PRMergeConfig,
   PRResult,
-} from "./types.js";
-import { interpolateXfgContent } from "../shared/xfg-template.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
+} from "../types.js";
+import { interpolateXfgContent } from "../../shared/xfg-template.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
 
 export type { FileAction };
 
@@ -40,13 +40,13 @@ interface PROptions {
   strategy?: IPRStrategy;
 }
 
-export type { PRResult } from "./types.js";
+export type { PRResult } from "../types.js";
 
 function loadDefaultTemplate(): string {
   // Try to find PR.md in the project root
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  const templatePath = join(__dirname, "..", "PR.md");
+  const templatePath = join(__dirname, "..", "..", "PR.md");
 
   if (existsSync(templatePath)) {
     return readFileSync(templatePath, "utf-8");

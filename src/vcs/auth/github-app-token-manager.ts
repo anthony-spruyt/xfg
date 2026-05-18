@@ -1,7 +1,7 @@
 import { createSign } from "node:crypto";
-import { withRetry } from "../shared/retry-utils.js";
-import { SyncError } from "../shared/errors.js";
-import type { GitHubRepoInfo } from "../repo/index.js";
+import { withRetry } from "../../shared/retry-utils.js";
+import { SyncError } from "../../shared/errors.js";
+import type { GitHubRepoInfo } from "../../repo/index.js";
 
 /** Number of milliseconds per second */
 const MS_PER_SECOND = 1000;

@@ -1,8 +1,8 @@
-import { toErrorMessage } from "../shared/type-guards.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import type { DebugWarnLog } from "../shared/logger.js";
-import type { PRResult } from "./types.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
+import { withRetry, isPermanentError } from "../../shared/retry-utils.js";
+import type { DebugWarnLog } from "../../shared/logger.js";
+import type { PRResult } from "../types.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
 import type {
   MergeResult,
   PRStrategyOptions,
@@ -10,7 +10,7 @@ import type {
   CloseExistingPROptions,
   ClosePRResult,
   IPRStrategy,
-} from "./types.js";
+} from "../types.js";
 
 export interface IPRStrategyLogger {
   debug(msg: string): void;

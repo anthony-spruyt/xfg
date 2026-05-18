@@ -3,18 +3,18 @@ import type {
   CommitOptions,
   CommitResult,
   FileChange,
-} from "./types.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
-import { isGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
+} from "../types.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
+import { isGitHubRepo, type GitHubRepoInfo } from "../../repo/index.js";
 import {
   withRetry,
   CORE_PERMANENT_ERROR_PATTERNS,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
-} from "../shared/retry-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
-import { parseApiJson } from "../shared/json-utils.js";
-import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
-import { ValidationError, GraphQLApiError } from "../shared/errors.js";
+} from "../../shared/retry-utils.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
+import { parseApiJson } from "../../shared/json-utils.js";
+import { buildHostnameArgs, buildTokenEnv } from "../../shared/gh-api-utils.js";
+import { ValidationError, GraphQLApiError } from "../../shared/errors.js";
 
 /** Maximum length for GraphQL API error messages before truncation */
 const MAX_ERROR_MESSAGE_LENGTH = 2000;

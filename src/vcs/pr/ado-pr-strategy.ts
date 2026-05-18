@@ -3,9 +3,9 @@ import { join } from "node:path";
 import {
   type AzureDevOpsRepoInfo,
   assertAzureDevOpsRepo,
-} from "../repo/index.js";
-import type { PRResult } from "./types.js";
-import { SyncError } from "../shared/errors.js";
+} from "../../repo/index.js";
+import type { PRResult } from "../types.js";
+import { SyncError } from "../../shared/errors.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -13,13 +13,13 @@ import type {
   ClosePRResult,
   MergeOptions,
   MergeResult,
-} from "./types.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
-import { safeCleanup } from "../shared/cleanup-utils.js";
-import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
-import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { getStderr } from "../shared/command-executor.js";
+} from "../types.js";
+import { withRetry, isPermanentError } from "../../shared/retry-utils.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
+import { safeCleanup } from "../../shared/cleanup-utils.js";
+import { NO_OP_DEBUG_LOG } from "../../shared/logger.js";
+import { sanitizeCredentials } from "../../shared/sanitize-utils.js";
+import { getStderr } from "../../shared/command-executor.js";
 
 export class AdoPRStrategy extends BasePRStrategy {
   private readonly bodyFilePath = ".pr-description.md";

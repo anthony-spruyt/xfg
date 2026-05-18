@@ -1,6 +1,6 @@
-import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
-import type { ICommandExecutor } from "../shared/command-executor.js";
-import { withRetry } from "../shared/retry-utils.js";
+import type { ICommitStrategy, CommitOptions, CommitResult } from "../types.js";
+import type { ICommandExecutor } from "../../shared/command-executor.js";
+import { withRetry } from "../../shared/retry-utils.js";
 
 /**
  * Git-based commit strategy using standard git commands (add, commit, push).

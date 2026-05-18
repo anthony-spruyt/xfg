@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
-import { escapeRegExp } from "../shared/regex-utils.js";
-import { assertGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
-import type { PRResult } from "./types.js";
+import { escapeRegExp } from "../../shared/regex-utils.js";
+import { assertGitHubRepo, type GitHubRepoInfo } from "../../repo/index.js";
+import type { PRResult } from "../types.js";
 import { BasePRStrategy } from "./pr-strategy.js";
 import type {
   PRStrategyOptions,
@@ -10,16 +10,16 @@ import type {
   ClosePRResult,
   MergeOptions,
   MergeResult,
-} from "./types.js";
-import { withRetry, isPermanentError } from "../shared/retry-utils.js";
-import { sanitizeCredentials } from "../shared/sanitize-utils.js";
-import { toErrorMessage } from "../shared/type-guards.js";
-import { safeCleanup } from "../shared/cleanup-utils.js";
-import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
-import { getStderr } from "../shared/command-executor.js";
-import type { MergeStrategy } from "../config/index.js";
-import { buildTokenEnv, buildHostnameArgs } from "../shared/gh-api-utils.js";
-import { SyncError } from "../shared/errors.js";
+} from "../types.js";
+import { withRetry, isPermanentError } from "../../shared/retry-utils.js";
+import { sanitizeCredentials } from "../../shared/sanitize-utils.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
+import { safeCleanup } from "../../shared/cleanup-utils.js";
+import { NO_OP_DEBUG_LOG } from "../../shared/logger.js";
+import { getStderr } from "../../shared/command-executor.js";
+import type { MergeStrategy } from "../../config/index.js";
+import { buildTokenEnv, buildHostnameArgs } from "../../shared/gh-api-utils.js";
+import { SyncError } from "../../shared/errors.js";
 
 /**
  * Build the repo flag value for gh CLI commands.
