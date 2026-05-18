@@ -13,14 +13,20 @@ Add `branch` field to `PRMergeOptions`. Resolve via the existing prOptions merge
 ### Priority Chain
 
 ```text
-CLI --branch > per-repo prOptions.branch > global prOptions.branch > auto-generated from filenames
+CLI --branch > per-repo prOptions.branch > group prOptions.branch > global prOptions.branch > auto-generated from filenames
 ```
+
+The normalizer already resolves group layers via `mergePROptions()` spread semantics (per-repo overrides group, group overrides global). By the time `repoConfig.prOptions` reaches `runSingleRepo`, group merging is complete — no additional group handling needed at runtime.
 
 ### Config Syntax
 
 ```yaml
 prOptions:
   branch: chore/my-custom-branch
+groups:
+  team-a:
+    prOptions:
+      branch: chore/team-a-sync
 repos:
   - git: https://github.com/org/repo.git
     prOptions:
@@ -33,11 +39,21 @@ repos:
 
 Add `branch?: string` field.
 
-### 2. Config validator (`src/config/validator.ts`)
+### 2. Move `validateBranchName()` to shared (`src/shared/branch-validation.ts`)
 
-Validate `prOptions.branch` using existing `validateBranchName()` from `src/cli/branch-utils.ts`. Apply to both global and per-repo prOptions.
+`src/config/` must not depend on `src/cli/` (architecture rule). Move branch name validation logic to `src/shared/` so both config validator and CLI can import from the same shared location.
 
-### 3. `effectivePrOptions` merge (`src/cli/repo-sync-runner.ts:172-182`)
+### 3. Config validator (`src/config/validator.ts`)
+
+Validate `prOptions.branch` using `validateBranchName()` from `src/shared/branch-validation.ts`. Apply to:
+
+- Global `prOptions.branch`
+- Per-repo `prOptions.branch`
+- Group `prOptions.branch` (validated during group expansion in normalizer, or in a dedicated group validator if one exists)
+
+Note: Groups merge into per-repo config during normalization. Validation of the final merged `prOptions.branch` catches invalid values regardless of which layer introduced them.
+
+### 4. `effectivePrOptions` merge (`src/cli/repo-sync-runner.ts:172-182`)
 
 Add CLI `--branch` override to the effectivePrOptions conditional:
 
@@ -54,7 +70,7 @@ const effectivePrOptions =
     : repoConfig.prOptions;
 ```
 
-### 4. Branch resolution (`src/cli/repo-sync-runner.ts` — `runFileSyncPhase`)
+### 5. Branch resolution (`src/cli/repo-sync-runner.ts` — `runFileSyncPhase`)
 
 Replace `ctx.branchName` with per-repo resolution:
 
@@ -62,17 +78,13 @@ Replace `ctx.branchName` with per-repo resolution:
 const branchName = repo.repoConfig.prOptions?.branch ?? ctx.branchName;
 ```
 
-Where `ctx.branchName` remains the auto-generated fallback (set in `sync-command.ts` only when CLI `--branch` is absent).
+At this point `repo.repoConfig.prOptions` contains the fully-merged result: CLI override (from step 4) > per-repo > group > global. The `ctx.branchName` fallback is the auto-generated name from filenames.
 
-### 5. Validation in `sync-command.ts`
+### 6. Validation in `sync-command.ts`
 
-Remove early CLI branch validation from sync-command — branch validation now happens in config validator for YAML values, and in the effectivePrOptions merge for CLI values. Or keep CLI validation where it is (fail-fast for obvious typos) and add YAML validation in config validator.
+**Decision:** Keep CLI validation in sync-command (fail-fast). Add YAML validation in config validator. Both import `validateBranchName()` from `src/shared/branch-validation.ts`.
 
-**Decision:** Keep CLI validation in sync-command (fail-fast). Add YAML validation in config validator. Both use same `validateBranchName()`.
-
-### 6. Logging
-
-Update branch log line in `sync-command.ts:124` to indicate "per-repo" when global prOptions.branch is set but repos may override. Or keep as-is since per-repo resolution happens later.
+### 7. Logging
 
 **Decision:** Keep existing log as-is. Per-repo branch shows in per-repo progress output already.
 
@@ -83,11 +95,24 @@ Update branch log line in `sync-command.ts:124` to indicate "per-repo" when glob
 - `mergePROptions()` — already handles spread override, `branch` field merges automatically
 - `RepoIterationContext.branchName` — remains as global fallback
 
+## PR Reuse Behavior
+
+When two repos share the same `prOptions.branch` value, they will find and reuse each other's PRs (via `findExistingPRUrl(branchName)`). This is **existing behavior** — same thing happens today when CLI `--branch` is used with multiple repos. No change needed.
+
+Users wanting per-repo isolation must use distinct branch names per repo. The `${xfg:repo.name}` template can help:
+
+```yaml
+prOptions:
+  branch: chore/sync-${xfg:repo.name}
+```
+
 ## Testing
 
 - Unit test: `mergePROptions` merges `branch` correctly (global, per-repo, override)
 - Unit test: config validator rejects invalid branch names in `prOptions.branch`
 - Unit test: `effectivePrOptions` resolves CLI > per-repo > global > auto-generated
+- Unit test: group-layered `prOptions.branch` respects per-repo > group > global order
+- Unit test: `validateBranchName()` works from shared location (both CLI and validator import)
 - Integration test: YAML with `prOptions.branch` creates PR on correct branch
 - Integration test: per-repo override creates different branches per repo
 
@@ -97,3 +122,6 @@ Update branch log line in `sync-command.ts:124` to indicate "per-repo" when glob
 - Empty string — validator rejects
 - Branch name with invalid chars — validator rejects (same rules as CLI `--branch`)
 - CLI `--branch` + per-repo `prOptions.branch` — CLI wins for all repos (explicit override)
+- Two repos with same `prOptions.branch` — PR reuse (documented above, matches existing CLI behavior)
+- `${xfg:repo.name}` in branch name — interpolated during normalization (already supported in string fields)
+- Group sets branch, per-repo overrides — per-repo wins via `mergePROptions()` spread
