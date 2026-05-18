@@ -1350,6 +1350,41 @@ repos:
       assert.equal(options.branchName, "chore/cli-override");
     });
 
+    test("CLI --branch overrides per-repo prOptions.branch", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  branch: chore/global-branch
+repos:
+  - git: https://github.com/test/repo
+    prOptions:
+      branch: feature/repo-specific
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        {
+          config: testConfigPath,
+          dryRun: true,
+          workDir: testDir,
+          branch: "chore/cli-override",
+        },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/cli-override");
+    });
+
     test("auto-generated branch used when no prOptions.branch set", async () => {
       writeFileSync(
         testConfigPath,
@@ -1377,6 +1412,45 @@ repos:
       const callArgs = processMock.mock.calls[0].arguments;
       const options = callArgs[2] as { branchName: string };
       assert.equal(options.branchName, "chore/sync-test-file");
+    });
+
+    test("resolves different prOptions.branch per repo independently", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo-one
+    prOptions:
+      branch: chore/repo-one-sync
+  - git: https://github.com/test/repo-two
+    prOptions:
+      branch: chore/repo-two-sync
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      assert.equal(processMock.mock.calls.length, 2);
+
+      const optionsRepo1 = processMock.mock.calls[0].arguments[2] as {
+        branchName: string;
+      };
+      assert.equal(optionsRepo1.branchName, "chore/repo-one-sync");
+
+      const optionsRepo2 = processMock.mock.calls[1].arguments[2] as {
+        branchName: string;
+      };
+      assert.equal(optionsRepo2.branchName, "chore/repo-two-sync");
     });
   });
 

@@ -47,6 +47,25 @@ describe("shared/branch-validation", () => {
     );
   });
 
+  test("rejects branch with forbidden characters", () => {
+    const forbidden = [
+      "feat~1",
+      "feat^2",
+      "feat:name",
+      "feat?name",
+      "feat*name",
+      "feat[0]",
+      "feat\\name",
+    ];
+    for (const name of forbidden) {
+      assert.throws(
+        () => validateBranchName(name),
+        (err: unknown) => err instanceof ValidationError,
+        `Expected "${name}" to be rejected`
+      );
+    }
+  });
+
   test("rejects branch ending with .lock", () => {
     assert.throws(
       () => validateBranchName("branch.lock"),
