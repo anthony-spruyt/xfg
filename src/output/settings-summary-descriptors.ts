@@ -1,7 +1,5 @@
-import type { SettingsReport } from "./settings-report.js";
-
 export interface SettingsSummaryDescriptor {
-  key: keyof SettingsReport["totals"];
+  key: "settings" | "rulesets" | "labels" | "variables";
   noun: string;
   plural: string;
   actions: ("create" | "update" | "delete")[];
