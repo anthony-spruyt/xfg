@@ -755,6 +755,66 @@ repos:
     assert.ok(!labelNames.includes("enhancement"));
   });
 
+  test("prOptions.branch creates PR on configured branch", async () => {
+    const customBranch = "chore/custom-pr-branch";
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-pr-branch-github
+files:
+  pr-branch-test.json:
+    content:
+      prBranchTest: true
+prOptions:
+  branch: ${customBranch}
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
+    const pr = await waitForPrVisible(
+      testRepo,
+      customBranch,
+      "number,headRefName"
+    );
+    assert.equal(pr.headRefName, customBranch);
+  });
+
+  test("per-repo prOptions.branch creates PR on repo-specific branch", async () => {
+    const repoBranch = "chore/repo-pr-branch";
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-pr-branch-override-github
+files:
+  pr-branch-override-test.json:
+    content:
+      prBranchOverrideTest: true
+prOptions:
+  branch: chore/global-should-not-use
+repos:
+  - git: https://github.com/${testRepo}.git
+    prOptions:
+      branch: ${repoBranch}
+`
+    );
+
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
+    const pr = await waitForPrVisible(
+      testRepo,
+      repoBranch,
+      "number,headRefName"
+    );
+    assert.equal(pr.headRefName, repoBranch);
+  });
+
   test("conditional group applies only when condition is met", async () => {
     const condGroupConfig = [
       `id: integration-test-github`,

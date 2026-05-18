@@ -7,6 +7,7 @@ import type {
 import { validateFileName } from "./validators/file-validator.js";
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import { validateBranchName } from "../shared/branch-validation.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -123,6 +124,10 @@ function validateGithubHosts(config: RawConfig): void {
 }
 
 function validatePrOptions(config: RawConfig): void {
+  if (config.prOptions?.branch !== undefined) {
+    validateBranchName(config.prOptions.branch);
+  }
+
   if (config.prOptions?.labels === undefined) return;
 
   if (!Array.isArray(config.prOptions.labels)) {

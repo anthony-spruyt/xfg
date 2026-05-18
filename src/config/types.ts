@@ -9,6 +9,7 @@ export interface PRMergeOptions {
   deleteBranch?: boolean;
   bypassReason?: string;
   labels?: string[];
+  branch?: string;
 }
 
 export type RulesetTarget = "branch" | "tag";
