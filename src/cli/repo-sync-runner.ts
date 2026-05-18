@@ -52,7 +52,7 @@ interface RepoPhaseParams {
   token: string | undefined;
 }
 
-function pushFailure(
+function recordFailure(
   results: SyncResultEntry[],
   repoName: string,
   error: unknown
@@ -110,7 +110,7 @@ async function runLifecyclePhase(
       repo.repoName,
       `Lifecycle error: ${toErrorMessage(error)}`
     );
-    pushFailure(ctx.reportResults, repo.repoName, error);
+    recordFailure(ctx.reportResults, repo.repoName, error);
     return true;
   }
 }
@@ -158,7 +158,7 @@ async function runFileSyncPhase(
     }
   } catch (error) {
     ctx.logger.error(repoNumber, repo.repoName, toErrorMessage(error));
-    pushFailure(ctx.reportResults, repo.repoName, error);
+    recordFailure(ctx.reportResults, repo.repoName, error);
   }
 }
 
@@ -202,7 +202,7 @@ export async function runSingleRepo(
     });
   } catch (error) {
     logger.error(repoNumber, repoConfig.git, toErrorMessage(error));
-    pushFailure(ctx.reportResults, repoConfig.git, error);
+    recordFailure(ctx.reportResults, repoConfig.git, error);
     return;
   }
 

@@ -522,6 +522,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     // GraphQL create, the push fails with "Repository not found".
     const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
     const tokenEnv = buildTokenEnv(token);
+    const retryLog = this.log
+      ? { info: (m: string) => this.log!.info(m) }
+      : undefined;
     const createArgs: string[] = ["repo", "create", repoSlug];
     buildRepoCreateArgs(createArgs, settings);
 
@@ -531,9 +534,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         {
           retries: this.retries,
           permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
-          log: this.log
-            ? { info: (m: string) => this.log!.info(m) }
-            : undefined,
+          log: retryLog,
         }
       );
     } catch (error) {
@@ -563,7 +564,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       {
         retries: this.retries,
         permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
-        log: this.log ? { info: (m: string) => this.log!.info(m) } : undefined,
+        log: retryLog,
       }
     );
   }

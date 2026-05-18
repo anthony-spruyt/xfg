@@ -100,13 +100,13 @@ export class SecretsProcessor {
         for (const [name] of secretEntries) {
           const value = resolvedValues.get(name)!;
           const encrypted = await this.encryptor.encrypt(value, publicKey.key);
-          await this.strategy.upsert(
-            githubRepo,
+          await this.strategy.upsert({
+            repoInfo: githubRepo,
             name,
-            encrypted,
-            publicKey.key_id,
-            strategyOptions
-          );
+            encryptedValue: encrypted,
+            keyId: publicKey.key_id,
+            options: strategyOptions,
+          });
           if (currentByName.has(name.toUpperCase())) {
             updated++;
           } else {

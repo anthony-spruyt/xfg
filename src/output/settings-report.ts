@@ -134,35 +134,61 @@ export function formatCountEntry(
   return `${total} ${word} (${actions.join(", ")})`;
 }
 
+interface SettingsSummaryDescriptor {
+  key: keyof SettingsReport["totals"];
+  noun: string;
+  plural: string;
+  actions: ("create" | "update" | "delete")[];
+}
+
+const settingsSummaryDescriptors: SettingsSummaryDescriptor[] = [
+  {
+    key: "settings",
+    noun: "setting",
+    plural: "settings",
+    actions: ["create", "update"],
+  },
+  {
+    key: "rulesets",
+    noun: "ruleset",
+    plural: "rulesets",
+    actions: ["create", "update", "delete"],
+  },
+  {
+    key: "labels",
+    noun: "label",
+    plural: "labels",
+    actions: ["create", "update", "delete"],
+  },
+  {
+    key: "variables",
+    noun: "variable",
+    plural: "variables",
+    actions: ["create", "update", "delete"],
+  },
+];
+
+const actionFutureLabels: Record<"create" | "update" | "delete", string> = {
+  create: "to create",
+  update: "to update",
+  delete: "to delete",
+};
+
 function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
 
-  const settingsEntry = formatCountEntry("setting", "settings", [
-    { label: "to create", value: totals.settings.create },
-    { label: "to update", value: totals.settings.update },
-  ]);
-  if (settingsEntry) parts.push(settingsEntry);
-
-  const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-    { label: "to create", value: totals.rulesets.create },
-    { label: "to update", value: totals.rulesets.update },
-    { label: "to delete", value: totals.rulesets.delete },
-  ]);
-  if (rulesetsEntry) parts.push(rulesetsEntry);
-
-  const labelsEntry = formatCountEntry("label", "labels", [
-    { label: "to create", value: totals.labels.create },
-    { label: "to update", value: totals.labels.update },
-    { label: "to delete", value: totals.labels.delete },
-  ]);
-  if (labelsEntry) parts.push(labelsEntry);
-
-  const variablesEntry = formatCountEntry("variable", "variables", [
-    { label: "to create", value: totals.variables.create },
-    { label: "to update", value: totals.variables.update },
-    { label: "to delete", value: totals.variables.delete },
-  ]);
-  if (variablesEntry) parts.push(variablesEntry);
+  for (const desc of settingsSummaryDescriptors) {
+    const counts = totals[desc.key] as Record<string, number>;
+    const entry = formatCountEntry(
+      desc.noun,
+      desc.plural,
+      desc.actions.map((action) => ({
+        label: actionFutureLabels[action],
+        value: counts[action] ?? 0,
+      }))
+    );
+    if (entry) parts.push(entry);
+  }
 
   if (parts.length === 0) {
     return "No changes";

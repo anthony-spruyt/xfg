@@ -17,19 +17,21 @@ export interface GitHubPublicKey {
   key: string;
 }
 
+export interface UpsertSecretParams {
+  repoInfo: RepoInfo;
+  name: string;
+  encryptedValue: string;
+  keyId: string;
+  options?: GhApiOptions;
+}
+
 export interface ISecretsStrategy {
   list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubSecret[]>;
   getPublicKey(
     repoInfo: RepoInfo,
     options?: GhApiOptions
   ): Promise<GitHubPublicKey>;
-  upsert(
-    repoInfo: RepoInfo,
-    name: string,
-    encryptedValue: string,
-    keyId: string,
-    options?: GhApiOptions
-  ): Promise<void>;
+  upsert(params: UpsertSecretParams): Promise<void>;
   delete(
     repoInfo: RepoInfo,
     name: string,

@@ -438,21 +438,19 @@ function applyFileLayer(
 ): Record<string, RawFileConfig> {
   const inheritFiles = shouldInherit(layerFiles);
 
-  if (!inheritFiles) {
-    accumulated = {};
-  }
+  const result: Record<string, RawFileConfig> = inheritFiles ? accumulated : {};
 
   for (const [fileName, fileConfig] of Object.entries(layerFiles)) {
     if (fileName === "inherit") continue;
 
     if (fileConfig === false) {
-      delete accumulated[fileName];
+      delete result[fileName];
       continue;
     }
 
     if (fileConfig === undefined || fileConfig === true) continue;
 
-    const existing = accumulated[fileName];
+    const existing = result[fileName];
     if (existing) {
       const overlay = fileConfig as RawRepoFileOverride;
       let mergedContent: ContentValue | undefined;
@@ -471,17 +469,17 @@ function applyFileLayer(
         string,
         unknown
       >;
-      accumulated[fileName] = {
+      result[fileName] = {
         ...existing,
         ...restFileConfig,
         content: mergedContent,
       } as RawFileConfig;
     } else {
-      accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
+      result[fileName] = structuredClone(fileConfig) as RawFileConfig;
     }
   }
 
-  return accumulated;
+  return result;
 }
 
 /**

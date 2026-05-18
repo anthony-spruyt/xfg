@@ -97,7 +97,12 @@ describe("GitHubSecretsStrategy", () => {
     const executor = new MockExecutor();
     executor.response = "";
     const strategy = new GitHubSecretsStrategy(executor, { cwd: "/tmp" });
-    await strategy.upsert(mockRepo, "MY_SECRET", "encrypted-base64", "key-123");
+    await strategy.upsert({
+      repoInfo: mockRepo,
+      name: "MY_SECRET",
+      encryptedValue: "encrypted-base64",
+      keyId: "key-123",
+    });
     const call = executor.calls[0];
     assert.equal(call.args[1], "-X");
     assert.equal(call.args[2], "PUT");

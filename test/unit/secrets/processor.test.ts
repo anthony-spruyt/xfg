@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { SecretsProcessor } from "../../../src/secrets/processor.js";
 import type {
   ISecretsStrategy,
+  UpsertSecretParams,
   GitHubSecret,
   GitHubPublicKey,
 } from "../../../src/secrets/types.js";
@@ -32,16 +33,11 @@ class MockSecretsStrategy implements ISecretsStrategy {
     this.calls.push({ method: "getPublicKey", args: [] });
     return this.publicKey;
   }
-  async upsert(
-    _r: RepoInfo,
-    name: string,
-    encrypted: string,
-    keyId: string,
-    options?: GhApiOptions
-  ): Promise<void> {
+  async upsert(params: UpsertSecretParams): Promise<void> {
+    const { name, encryptedValue, keyId, options } = params;
     this.calls.push({
       method: "upsert",
-      args: [name, encrypted, keyId, options],
+      args: [name, encryptedValue, keyId, options],
     });
   }
   async delete(

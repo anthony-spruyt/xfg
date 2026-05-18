@@ -4,6 +4,7 @@ import { GhApiClient, type GhApiOptions } from "../shared/gh-api-utils.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import type {
   ISecretsStrategy,
+  UpsertSecretParams,
   GitHubSecret,
   GitHubSecretsListResponse,
   GitHubPublicKey,
@@ -51,13 +52,8 @@ export class GitHubSecretsStrategy implements ISecretsStrategy {
     return parseApiJson<GitHubPublicKey>(result, "public key response");
   }
 
-  async upsert(
-    repoInfo: RepoInfo,
-    name: string,
-    encryptedValue: string,
-    keyId: string,
-    options?: GhApiOptions
-  ): Promise<void> {
+  async upsert(params: UpsertSecretParams): Promise<void> {
+    const { repoInfo, name, encryptedValue, keyId, options } = params;
     assertGitHubRepo(repoInfo, "GitHub Secrets strategy");
     const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/actions/secrets/${encodeURIComponent(name)}`;
     await this.api.call("PUT", endpoint, {

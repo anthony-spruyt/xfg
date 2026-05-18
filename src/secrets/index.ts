@@ -8,6 +8,7 @@ export { GitHubSecretsStrategy } from "./github-secrets-strategy.js";
 export { SodiumEncryptor, type ISecretEncryptor } from "./encryption.js";
 export type {
   ISecretsStrategy,
+  UpsertSecretParams,
   GitHubSecret,
   GitHubPublicKey,
 } from "./types.js";
