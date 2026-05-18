@@ -94,8 +94,7 @@ export class VariablesProcessor implements IVariablesProcessor {
           if (change.newValue !== undefined) {
             await this.strategy.create(
               githubRepo,
-              change.name,
-              change.newValue,
+              { name: change.name, value: change.newValue },
               strategyOptions
             );
             appliedCount++;
@@ -105,8 +104,7 @@ export class VariablesProcessor implements IVariablesProcessor {
           if (change.newValue !== undefined) {
             await this.strategy.update(
               githubRepo,
-              change.name,
-              change.newValue,
+              { name: change.name, value: change.newValue },
               strategyOptions
             );
             appliedCount++;

@@ -12,7 +12,7 @@ import {
   SodiumEncryptor,
   type ISecretsProcessor,
   type SecretsProcessorResult,
-} from "../secrets/index.js";
+} from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import {

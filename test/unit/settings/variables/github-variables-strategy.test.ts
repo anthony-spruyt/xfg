@@ -79,7 +79,7 @@ describe("GitHubVariablesStrategy", () => {
     executor.response = "{}";
     const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
 
-    await strategy.create(mockRepo, "NEW_VAR", "new-value");
+    await strategy.create(mockRepo, { name: "NEW_VAR", value: "new-value" });
 
     const call = executor.calls[0];
     assert.equal(call.args[1], "-X");
@@ -92,7 +92,7 @@ describe("GitHubVariablesStrategy", () => {
     executor.response = "";
     const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
 
-    await strategy.update(mockRepo, "MY_VAR", "updated-value");
+    await strategy.update(mockRepo, { name: "MY_VAR", value: "updated-value" });
 
     const call = executor.calls[0];
     assert.equal(call.args[1], "-X");
@@ -108,7 +108,7 @@ describe("GitHubVariablesStrategy", () => {
     executor.response = "";
     const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
 
-    await strategy.update(mockRepo, "MY_VAR", "updated-value");
+    await strategy.update(mockRepo, { name: "MY_VAR", value: "updated-value" });
 
     assert.ok(executor.lastInput, "Should pass payload via input");
     const payload = JSON.parse(executor.lastInput!);
@@ -163,7 +163,7 @@ describe("GitHubVariablesStrategy", () => {
     executor.response = "{}";
     const strategy = new GitHubVariablesStrategy(executor, { cwd: "/tmp" });
 
-    await strategy.create(mockRepo, "NEW_VAR", "new-value");
+    await strategy.create(mockRepo, { name: "NEW_VAR", value: "new-value" });
 
     assert.ok(executor.lastInput, "Should pass payload via input");
     const payload = JSON.parse(executor.lastInput!);

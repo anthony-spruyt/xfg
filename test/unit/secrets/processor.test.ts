@@ -1,13 +1,13 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { SecretsProcessor } from "../../../src/secrets/processor.js";
+import { SecretsProcessor } from "../../../src/settings/secrets/processor.js";
 import type {
   ISecretsStrategy,
   UpsertSecretParams,
   GitHubSecret,
   GitHubPublicKey,
-} from "../../../src/secrets/types.js";
-import type { ISecretEncryptor } from "../../../src/secrets/encryption.js";
+} from "../../../src/settings/secrets/types.js";
+import type { ISecretEncryptor } from "../../../src/settings/secrets/encryption.js";
 import type { IEnvResolver } from "../../../src/shared/env-resolver.js";
 import type {
   GitHubRepoInfo,

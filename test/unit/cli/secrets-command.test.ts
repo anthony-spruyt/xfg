@@ -7,7 +7,7 @@ import {
   runSecretsSync,
   type ISecretsProcessorAdapter,
 } from "../../../src/cli/secrets-command.js";
-import type { SecretsProcessorResult } from "../../../src/secrets/processor.js";
+import type { SecretsProcessorResult } from "../../../src/settings/secrets/processor.js";
 
 const testDir = join(tmpdir(), "test-secrets-cmd-tmp");
 const testConfigPath = join(testDir, "test-config.yaml");

@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { GitHubSecretsStrategy } from "../../../src/secrets/github-secrets-strategy.js";
+import { GitHubSecretsStrategy } from "../../../src/settings/secrets/github-secrets-strategy.js";
 import type {
   ICommandExecutor,
   ExecOptions,

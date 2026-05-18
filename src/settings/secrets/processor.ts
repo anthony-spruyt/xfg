@@ -1,21 +1,23 @@
-import type { GitHubRepoInfo, RepoInfo } from "../repo/index.js";
+import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
-import type { IEnvResolver } from "../shared/env-resolver.js";
+import type { IEnvResolver } from "../../shared/env-resolver.js";
 import type {
   SecretConfig,
   SecretsConfig,
   RepoConfig,
-} from "../config/index.js";
+} from "../../config/index.js";
 import {
   withGitHubGuards,
+  countActions,
   type BaseProcessorOptions,
   type BaseProcessorResult,
   type ISettingsProcessor,
   type ChangeCounts,
   buildDryRunResult,
   buildApplyResult,
-} from "../settings/base-processor.js";
+} from "../base-processor.js";
+import { diffSecrets } from "./diff.js";
 
 export type ISecretsProcessor = ISettingsProcessor<
   SecretsProcessorOptions,
@@ -88,67 +90,44 @@ export class SecretsProcessor implements ISecretsProcessor {
       githubRepo,
       strategyOptions
     );
-    const currentByName = new Set(
-      currentSecrets.map((s) => s.name.toUpperCase())
-    );
-    const desiredNames = new Set(
-      secretEntries.map(([name]) => name.toUpperCase())
-    );
 
-    let created = 0;
-    let updated = 0;
-    let deleted = 0;
+    const desiredNames = secretEntries.map(([name]) => name);
+    const changes = diffSecrets(currentSecrets, desiredNames, deleteOrphaned);
+    const changeCounts = countActions(changes);
 
-    // Classify changes (same logic for dry-run and apply)
-    for (const [name] of secretEntries) {
-      if (currentByName.has(name.toUpperCase())) {
-        updated++;
-      } else {
-        created++;
-      }
+    if (dryRun) {
+      return buildDryRunResult(repoName, changeCounts);
     }
-    const orphans = deleteOrphaned
-      ? currentSecrets.filter((s) => !desiredNames.has(s.name.toUpperCase()))
-      : [];
-    deleted = orphans.length;
 
-    if (!dryRun) {
-      if (secretEntries.length > 0) {
-        const publicKey = await this.strategy.getPublicKey(
-          githubRepo,
-          strategyOptions
-        );
+    if (secretEntries.length > 0) {
+      const publicKey = await this.strategy.getPublicKey(
+        githubRepo,
+        strategyOptions
+      );
 
-        for (const [name] of secretEntries) {
-          const value = resolvedValues.get(name)!;
+      for (const change of changes) {
+        if (change.action === "create" || change.action === "update") {
+          const value = resolvedValues.get(change.name)!;
           const encrypted = await this.encryptor.encrypt(value, publicKey.key);
           await this.strategy.upsert({
             repoInfo: githubRepo,
-            name,
+            name: change.name,
             encryptedValue: encrypted,
             keyId: publicKey.key_id,
             options: strategyOptions,
           });
         }
       }
+    }
 
-      for (const orphan of orphans) {
-        await this.strategy.delete(githubRepo, orphan.name, strategyOptions);
+    for (const change of changes) {
+      if (change.action === "delete") {
+        await this.strategy.delete(githubRepo, change.name, strategyOptions);
       }
     }
 
-    const changeCounts: ChangeCounts = {
-      create: created,
-      update: updated,
-      delete: deleted,
-      unchanged: 0,
-    };
-
-    if (dryRun) {
-      return buildDryRunResult(repoName, changeCounts);
-    }
-
-    const appliedCount = created + updated + deleted;
+    const appliedCount =
+      changeCounts.create + changeCounts.update + changeCounts.delete;
     return buildApplyResult(repoName, changeCounts, appliedCount);
   }
 }

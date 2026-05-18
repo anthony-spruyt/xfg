@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { VariablesProcessor } from "../../../../src/settings/variables/processor.js";
 import type {
   IVariablesStrategy,
+  VariableCreateParams,
+  VariableUpdateParams,
   GitHubVariable,
 } from "../../../../src/settings/variables/types.js";
 import type { RepoConfig } from "../../../../src/config/index.js";
@@ -26,17 +28,15 @@ class MockVariablesStrategy implements IVariablesStrategy {
   }
   async create(
     _repoInfo: RepoInfo,
-    name: string,
-    value: string
+    params: VariableCreateParams
   ): Promise<void> {
-    this.calls.push({ method: "create", args: [name, value] });
+    this.calls.push({ method: "create", args: [params.name, params.value] });
   }
   async update(
     _repoInfo: RepoInfo,
-    name: string,
-    value: string
+    params: VariableUpdateParams
   ): Promise<void> {
-    this.calls.push({ method: "update", args: [name, value] });
+    this.calls.push({ method: "update", args: [params.name, params.value] });
   }
   async delete(_repoInfo: RepoInfo, name: string): Promise<void> {
     this.calls.push({ method: "delete", args: [name] });
@@ -232,7 +232,10 @@ describe("VariablesProcessor", () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [];
     let createCalled = false;
-    strategy.create = async () => {
+    strategy.create = async (
+      _repoInfo: RepoInfo,
+      _params: VariableCreateParams
+    ) => {
       createCalled = true;
       throw new Error("API failure");
     };
