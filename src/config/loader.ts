@@ -80,6 +80,7 @@ function collectYamlFiles(
   depth: number
 ): Array<{ relativePath: string; absolutePath: string }> {
   if (depth > MAX_CONFIG_DEPTH) {
+    /* c8 ignore next -- rootDir === currentDir impossible at depth > MAX_CONFIG_DEPTH */
     const rel = relative(rootDir, currentDir) || ".";
     throw new ValidationError(
       `Config directory nesting exceeds maximum depth of ${MAX_CONFIG_DEPTH} at ${rel}`
