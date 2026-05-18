@@ -151,7 +151,8 @@ function mergeArrays(
   if (handler) {
     return handler(base, overlay, ctx);
   }
-  return overlay;
+  /* c8 ignore next 2 */
+  throw new Error(`Unexpected array merge strategy: ${strategy as string}`);
 }
 
 /**
@@ -306,8 +307,11 @@ export function mergeTextContent(
       case "prepend":
         return [...overlay, ...base];
       case "replace":
-      default:
         return overlay;
+      default: {
+        const _exhaustive: never = strategy;
+        throw new Error(`Unexpected array merge strategy: ${_exhaustive}`);
+      }
     }
   }
   // Base is string, overlay is array - overlay replaces
