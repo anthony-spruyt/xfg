@@ -1,5 +1,6 @@
 import { ValidationError } from "./errors.js";
 
+/** Validates a user-provided branch name against git's naming rules. @throws ValidationError if the branch name is invalid */
 export function validateBranchName(branchName: string): void {
   if (!branchName || branchName.trim() === "") {
     throw new ValidationError("Branch name cannot be empty");
