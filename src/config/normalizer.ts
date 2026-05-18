@@ -438,7 +438,9 @@ function applyFileLayer(
 ): Record<string, RawFileConfig> {
   const inheritFiles = shouldInherit(layerFiles);
 
-  const result: Record<string, RawFileConfig> = inheritFiles ? accumulated : {};
+  const result: Record<string, RawFileConfig> = inheritFiles
+    ? { ...accumulated }
+    : {};
 
   for (const [fileName, fileConfig] of Object.entries(layerFiles)) {
     if (fileName === "inherit") continue;
