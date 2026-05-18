@@ -1,5 +1,6 @@
 // Base processor
 export {
+  type BaseProcessorOptions,
   type BaseProcessorResult,
   type ISettingsProcessor,
   type SettingsAction,

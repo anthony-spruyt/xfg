@@ -55,4 +55,12 @@ export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 export { convertContentToString } from "./formatter.js";
 
 // Config validation
-export { validateForSync, validateSecretsConfig } from "./validator.js";
+export {
+  validateForSync,
+  validateRawConfig,
+  validateSecretsConfig,
+  validateVariableSecretOverlaps,
+} from "./validator.js";
+
+// Config merging
+export { findMatchKey } from "./merge.js";

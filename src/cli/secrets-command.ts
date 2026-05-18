@@ -1,22 +1,22 @@
-import { loadRawConfig } from "../config/index.js";
-import { normalizeConfig } from "../config/normalizer.js";
 import {
+  loadRawConfig,
+  normalizeConfig,
   validateRawConfig,
   validateSecretsConfig,
   validateVariableSecretOverlaps,
-} from "../config/validator.js";
+} from "../config/index.js";
 import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
   type SecretsConfig,
+  type SecretsProcessorResult,
 } from "../secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { SecretsProcessorResult } from "../secrets/processor.js";
 import type { Config } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 

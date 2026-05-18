@@ -1,7 +1,9 @@
 import type { RepoConfig } from "../config/index.js";
 import { isGitHubRepo, type RepoInfo } from "../repo/index.js";
-import type { ISettingsProcessor } from "../settings/index.js";
-import type { BaseProcessorOptions } from "../settings/base-processor.js";
+import type {
+  ISettingsProcessor,
+  BaseProcessorOptions,
+} from "../settings/index.js";
 import type { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { SettingsResult, ApplyRepoSettingsContext } from "./types.js";
