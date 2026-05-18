@@ -123,8 +123,9 @@ async function runFileSyncPhase(
   try {
     ctx.logger.progress(repoNumber, repo.repoName, "Processing...");
 
+    const branchName = repo.repoConfig.prOptions?.branch ?? ctx.branchName;
     const result = await ctx.processor.process(repo.repoConfig, repo.repoInfo, {
-      branchName: ctx.branchName,
+      branchName,
       workDir: repo.workDir,
       configId: ctx.config.id,
       dryRun: ctx.options.dryRun,
@@ -170,7 +171,10 @@ export async function runSingleRepo(
   const repoNumber = index + 1;
 
   const effectivePrOptions =
-    options.merge || options.mergeStrategy || options.deleteBranch
+    options.merge ||
+    options.mergeStrategy ||
+    options.deleteBranch ||
+    options.branch
       ? {
           ...repoConfig.prOptions,
           merge: options.merge ?? repoConfig.prOptions?.merge,
@@ -178,6 +182,7 @@ export async function runSingleRepo(
             options.mergeStrategy ?? repoConfig.prOptions?.mergeStrategy,
           deleteBranch:
             options.deleteBranch ?? repoConfig.prOptions?.deleteBranch,
+          branch: options.branch ?? repoConfig.prOptions?.branch,
         }
       : repoConfig.prOptions;
 

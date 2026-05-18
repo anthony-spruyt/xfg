@@ -1258,6 +1258,128 @@ repos:
     });
   });
 
+  describe("prOptions.branch resolution", () => {
+    test("prOptions.branch in config sets branch name per-repo", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  branch: chore/custom-branch
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/custom-branch");
+    });
+
+    test("per-repo prOptions.branch overrides global", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  branch: chore/global-branch
+repos:
+  - git: https://github.com/test/repo
+    prOptions:
+      branch: chore/repo-specific
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/repo-specific");
+    });
+
+    test("CLI --branch overrides prOptions.branch in config", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  branch: chore/config-branch
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        {
+          config: testConfigPath,
+          dryRun: true,
+          workDir: testDir,
+          branch: "chore/cli-override",
+        },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/cli-override");
+    });
+
+    test("auto-generated branch used when no prOptions.branch set", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+files:
+  test-file.json:
+    content:
+      key: value
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/sync-test-file");
+    });
+  });
+
   describe("merge mode warnings", () => {
     test("warns when mergeStrategy is set with direct merge mode", async () => {
       writeFileSync(
