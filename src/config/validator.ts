@@ -195,6 +195,42 @@ function hasConditionalGroupPR(config: RawConfig): boolean {
   );
 }
 
+function hasGroupSettingsPresent(config: RawConfig): boolean {
+  return (
+    isPlainObject(config.groups) &&
+    Object.values(config.groups).some(
+      (g) => g.settings && isPlainObject(g.settings)
+    )
+  );
+}
+
+function hasGroupSettingsActionable(config: RawConfig): boolean {
+  return (
+    isPlainObject(config.groups) &&
+    Object.values(config.groups).some(
+      (g) => g.settings && hasActionableSettings(g.settings)
+    )
+  );
+}
+
+/** Flags shared by both structural and sync validation. */
+interface ContentPresenceFlags {
+  hasRootFiles: boolean;
+  hasGrpFiles: boolean;
+  hasCondGrpFiles: boolean;
+  hasCondGrpPR: boolean;
+}
+
+function computeContentPresenceFlags(config: RawConfig): ContentPresenceFlags {
+  return {
+    hasRootFiles:
+      isPlainObject(config.files) && Object.keys(config.files).length > 0,
+    hasGrpFiles: hasGroupFiles(config),
+    hasCondGrpFiles: hasConditionalGroupFiles(config),
+    hasCondGrpPR: hasConditionalGroupPR(config),
+  };
+}
+
 /**
  * Validates raw config structure before normalization.
  * @throws ValidationError if validation fails
@@ -202,23 +238,16 @@ function hasConditionalGroupPR(config: RawConfig): boolean {
 export function validateRawConfig(config: RawConfig): void {
   validateConfigId(config);
 
-  const hasFiles =
-    isPlainObject(config.files) && Object.keys(config.files).length > 0;
+  const { hasRootFiles, hasGrpFiles, hasCondGrpFiles, hasCondGrpPR } =
+    computeContentPresenceFlags(config);
   const hasSettings = isPlainObject(config.settings);
-  const hasGrpFiles = hasGroupFiles(config);
-  const hasGrpSettings =
-    isPlainObject(config.groups) &&
-    Object.values(config.groups).some(
-      (g) => g.settings && isPlainObject(g.settings)
-    );
-  const hasCondGrpFiles = hasConditionalGroupFiles(config);
+  const hasGrpSettings = hasGroupSettingsPresent(config);
   const hasCondGrpSettings = hasConditionalGroupSettingsPresent(config);
-  const hasCondGrpPR = hasConditionalGroupPR(config);
   const hasSecrets =
     isPlainObject(config.secrets) && Object.keys(config.secrets).length > 0;
 
   if (
-    !hasFiles &&
+    !hasRootFiles &&
     !hasSettings &&
     !hasGrpFiles &&
     !hasGrpSettings &&
@@ -265,20 +294,14 @@ export function validateRawConfig(config: RawConfig): void {
  * @throws ValidationError if neither files nor settings are present
  */
 export function validateForSync(config: RawConfig): void {
-  const hasRootFiles = config.files && Object.keys(config.files).length > 0;
-  const hasGrpFiles = hasGroupFiles(config);
+  const { hasRootFiles, hasGrpFiles, hasCondGrpFiles, hasCondGrpPR } =
+    computeContentPresenceFlags(config);
   const hasSettings = hasActionableSettings(config.settings);
   const hasRepoSettings = config.repos.some((repo) =>
     hasActionableSettings(repo.settings)
   );
-  const hasGroupSettings =
-    isPlainObject(config.groups) &&
-    Object.values(config.groups).some(
-      (g) => g.settings && hasActionableSettings(g.settings)
-    );
-  const hasCondGrpFiles = hasConditionalGroupFiles(config);
+  const hasGroupSettings = hasGroupSettingsActionable(config);
   const hasCondGrpSettings = hasConditionalGroupSettingsActionable(config);
-  const hasCondGrpPR = hasConditionalGroupPR(config);
 
   if (
     !hasRootFiles &&
