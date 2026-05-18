@@ -343,6 +343,26 @@ describe("loadRawConfig", () => {
         }
       );
     });
+
+    test("flat directory: recursive scan produces same results as before", () => {
+      const configDir = join(tempDir, "flat-recursive");
+      mkdirSync(configDir);
+      writeFileSync(
+        join(configDir, "01-base.yaml"),
+        `id: flat-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "02-repos.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-a.git\n  - git: git@github.com:owner/repo-b.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "flat-test");
+      assert.equal(result.repos.length, 2);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo-a.git");
+      assert.equal(result.repos[1].git, "git@github.com:owner/repo-b.git");
+    });
   });
 });
 
