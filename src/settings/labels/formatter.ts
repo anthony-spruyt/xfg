@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import type { LabelChange, LabelAction } from "./diff.js";
 import type { Label } from "../../config/index.js";
-import { countActions } from "../base-processor.js";
+import { countActions, formatPlanSummary } from "../base-processor.js";
 
 export interface LabelsPlanEntry {
   name: string;
@@ -125,13 +125,9 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   }
 
   // Summary line
-  const total = creates + updates + deletes;
-  if (total > 0) {
-    const parts: string[] = [];
-    if (creates > 0) parts.push(`${creates} to create`);
-    if (updates > 0) parts.push(`${updates} to update`);
-    if (deletes > 0) parts.push(`${deletes} to delete`);
-    lines.push(`  Plan: ${total} labels (${parts.join(", ")})`);
+  const summary = formatPlanSummary("labels", creates, updates, deletes);
+  if (summary) {
+    lines.push(summary);
   }
 
   return { lines, creates, updates, deletes, unchanged, entries };

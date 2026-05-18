@@ -77,12 +77,14 @@ export class PRWorkflowExecutor {
       return await this.strategy.create(options);
     } catch (error) {
       const message = toErrorMessage(error);
-      if (isPermanentError(error)) {
+      const permanent = isPermanentError(error);
+      if (permanent) {
         this.log?.warn(`PR creation failed (permanent): ${message}`);
       }
       return {
         success: false,
         message: `Failed to create PR: ${message}`,
+        retryable: !permanent,
       };
     }
   }

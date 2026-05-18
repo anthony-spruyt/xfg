@@ -156,6 +156,26 @@ export function formatChangeSummary(counts: ChangeCounts): string {
   return parts.length > 0 ? parts.join(", ") : "no changes";
 }
 
+/**
+ * Generate a summary line for a settings plan (e.g. "Plan: 3 labels (1 to create, 2 to update)").
+ * Returns undefined when there are no actionable changes (total === 0).
+ */
+export function formatPlanSummary(
+  entityName: string,
+  creates: number,
+  updates: number,
+  deletes: number
+): string | undefined {
+  const total = creates + updates + deletes;
+  if (total === 0) return undefined;
+
+  const parts: string[] = [];
+  if (creates > 0) parts.push(`${creates} to create`);
+  if (updates > 0) parts.push(`${updates} to update`);
+  if (deletes > 0) parts.push(`${deletes} to delete`);
+  return `  Plan: ${total} ${entityName} (${parts.join(", ")})`;
+}
+
 export interface PlanEntry {
   property: string;
   action: "create" | "update";

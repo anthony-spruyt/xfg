@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import type { VariableChange, VariableAction } from "./diff.js";
-import { countActions } from "../base-processor.js";
+import { countActions, formatPlanSummary } from "../base-processor.js";
 
 export interface VariablesPlanEntry {
   name: string;
@@ -91,13 +91,9 @@ export function formatVariablesPlan(
     entries.push({ name: change.name, action: "unchanged" });
   }
 
-  const total = creates + updates + deletes;
-  if (total > 0) {
-    const parts: string[] = [];
-    if (creates > 0) parts.push(`${creates} to create`);
-    if (updates > 0) parts.push(`${updates} to update`);
-    if (deletes > 0) parts.push(`${deletes} to delete`);
-    lines.push(`  Plan: ${total} variables (${parts.join(", ")})`);
+  const summary = formatPlanSummary("variables", creates, updates, deletes);
+  if (summary) {
+    lines.push(summary);
   }
 
   return { lines, creates, updates, deletes, unchanged, entries };
