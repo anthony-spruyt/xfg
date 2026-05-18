@@ -438,7 +438,7 @@ describe("loadRawConfig", () => {
             `Expected depth error, got: ${err.message}`
           );
           assert.ok(
-            err.message.includes("level-0"),
+            err.message.includes("level-10"),
             `Expected relative path in error, got: ${err.message}`
           );
           return true;

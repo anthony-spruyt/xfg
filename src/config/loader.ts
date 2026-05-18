@@ -92,7 +92,7 @@ function collectYamlFiles(
   } catch (error) {
     const rel = relative(rootDir, currentDir);
     throw new ValidationError(
-      `Failed to read config directory ${rel || currentDir}: ${toErrorMessage(error)}`,
+      `Failed to read config directory ${rel || "."}: ${toErrorMessage(error)}`,
       { cause: error }
     );
   }
