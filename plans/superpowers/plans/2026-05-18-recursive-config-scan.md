@@ -93,8 +93,9 @@ function collectYamlFiles(
   try {
     entries = readdirSync(currentDir, { withFileTypes: true });
   } catch (error) {
+    const rel = relative(rootDir, currentDir) || ".";
     throw new ValidationError(
-      `Failed to read config directory ${currentDir}: ${toErrorMessage(error)}`,
+      `Failed to read config directory ${rel}: ${toErrorMessage(error)}`,
       { cause: error }
     );
   }
@@ -158,7 +159,7 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
         content = readFileSync(absolutePath, "utf-8");
       } catch (error) {
         throw new ValidationError(
-          `Failed to read config file ${absolutePath}: ${toErrorMessage(error)}`,
+          `Failed to read config file ${relativePath}: ${toErrorMessage(error)}`,
           { cause: error }
         );
       }
@@ -170,7 +171,7 @@ function loadRawConfigFromDirectory(dirPath: string): RawConfig {
       } catch (error) {
         const message = toErrorMessage(error);
         throw new ValidationError(
-          `Failed to parse YAML config at ${absolutePath}: ${message}`,
+          `Failed to parse YAML config at ${relativePath}: ${message}`,
           { cause: error }
         );
       }
@@ -322,6 +323,10 @@ Add inside `describe("directory loading", ...)`:
           assert.ok(
             err.message.includes("exceeds maximum depth of 10"),
             `Expected depth error, got: ${err.message}`
+          );
+          assert.ok(
+            err.message.includes("level-0"),
+            `Expected relative path in error, got: ${err.message}`
           );
           return true;
         }
@@ -559,7 +564,54 @@ git commit -m "test: verify symlinked YAML files are followed"
 
 ______________________________________________________________________
 
-### Task 8: File reference resolution relative to fragment directory
+### Task 8: .yml extension files are discovered alongside .yaml
+
+Test that files with `.yml` extension are discovered and loaded just like `.yaml` files.
+
+**Files:**
+
+- Modify: `test/unit/config/loader.test.ts`
+
+- [ ] **Step 1: Write the test — .yml files discovered**
+
+Add inside `describe("directory loading", ...)`:
+
+```typescript
+    test("discovers .yml files alongside .yaml files", () => {
+      const configDir = join(tempDir, "yml-extension-test");
+      mkdirSync(configDir);
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: yml-ext-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "extra.yml"),
+        `repos:\n  - git: git@github.com:owner/yml-repo.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "yml-ext-test");
+      assert.equal(result.repos.length, 1);
+      assert.equal(result.repos[0].git, "git@github.com:owner/yml-repo.git");
+    });
+```
+
+- [ ] **Step 2: Run test to verify it passes**
+
+Run: `npm test -- --test-name-pattern "discovers .yml files" 2>&1 | tail -20` Expected: PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add test/unit/config/loader.test.ts
+git commit -m "test: verify .yml extension files are discovered"
+```
+
+______________________________________________________________________
+
+### Task 9: File reference resolution relative to fragment directory
 
 Test that `!file` / `@` references in nested fragments resolve relative to the fragment's own directory, not the config root.
 
@@ -611,7 +663,7 @@ git commit -m "test: verify file reference resolution in nested config fragments
 
 ______________________________________________________________________
 
-### Task 9: Relative path in fragment fileName for error messages
+### Task 10: Relative path in fragment fileName for error messages
 
 Test that merger error messages use relative paths (e.g., `teams/alpha.yaml`) when fragments from subdirectories conflict.
 
@@ -673,7 +725,7 @@ git commit -m "test: verify path-style fileName in merger error messages"
 
 ______________________________________________________________________
 
-### Task 10: Unreadable subdirectory fails entire load
+### Task 11: Unreadable subdirectory fails entire load
 
 Test that a permission-denied subdirectory throws `ValidationError` and fails the entire load (not silently skipped).
 
@@ -712,6 +764,10 @@ Add inside `describe("directory loading", ...)`:
             err.message.includes("Failed to read config directory"),
             `Expected 'Failed to read config directory', got: ${err.message}`
           );
+          assert.ok(
+            err.message.includes("blocked"),
+            `Expected relative path 'blocked' in error, got: ${err.message}`
+          );
           return true;
         }
       );
@@ -733,7 +789,7 @@ git commit -m "test: verify unreadable subdirectory fails entire config load"
 
 ______________________________________________________________________
 
-### Task 11: Full test suite, build, and lint verification
+### Task 12: Full test suite, build, and lint verification
 
 Run all checks to ensure no regressions and code quality.
 
