@@ -49,9 +49,9 @@ Validate `prOptions.branch` using `validateBranchName()` from `src/shared/branch
 
 - Global `prOptions.branch`
 - Per-repo `prOptions.branch`
-- Group `prOptions.branch` (validated during group expansion in normalizer, or in a dedicated group validator if one exists)
+- Group `prOptions.branch`
 
-Note: Groups merge into per-repo config during normalization. Validation of the final merged `prOptions.branch` catches invalid values regardless of which layer introduced them.
+Validation runs on raw config before normalization (same phase as existing `prOptions.labels` validation). Each layer is validated independently: global prOptions, each group's prOptions, and each repo's prOptions. This catches invalid branch names at the source layer rather than only after merge.
 
 ### 4. `effectivePrOptions` merge (`src/cli/repo-sync-runner.ts:172-182`)
 
@@ -99,12 +99,9 @@ At this point `repo.repoConfig.prOptions` contains the fully-merged result: CLI 
 
 When two repos share the same `prOptions.branch` value, they will find and reuse each other's PRs (via `findExistingPRUrl(branchName)`). This is **existing behavior** — same thing happens today when CLI `--branch` is used with multiple repos. No change needed.
 
-Users wanting per-repo isolation must use distinct branch names per repo. The `${xfg:repo.name}` template can help:
+Users wanting per-repo isolation must use distinct branch names per repo.
 
-```yaml
-prOptions:
-  branch: chore/sync-${xfg:repo.name}
-```
+Note: `${xfg:repo.name}` template interpolation is **not** currently applied to `prOptions` fields (only file content and PR body templates). Supporting xfg templates in `prOptions.branch` is a separate future enhancement, out of scope for this change.
 
 ## Testing
 
@@ -123,5 +120,8 @@ prOptions:
 - Branch name with invalid chars — validator rejects (same rules as CLI `--branch`)
 - CLI `--branch` + per-repo `prOptions.branch` — CLI wins for all repos (explicit override)
 - Two repos with same `prOptions.branch` — PR reuse (documented above, matches existing CLI behavior)
-- `${xfg:repo.name}` in branch name — interpolated during normalization (already supported in string fields)
 - Group sets branch, per-repo overrides — per-repo wins via `mergePROptions()` spread
+
+## Backward Compatibility
+
+Previously, `prOptions.branch` in config YAML was silently ignored (not a recognized field). Configs that had this field with an invalid branch name will now fail validation. This is correct behavior — the field was never functional, so no working configs will break. Invalid values should surface as errors rather than being silently accepted.
