@@ -1,5 +1,5 @@
 import { RULESET_COMPARABLE_FIELDS, type Ruleset } from "../../config/index.js";
-import { MATCH_KEY_CANDIDATES, findMatchKey } from "../../config/merge.js";
+import { findMatchKey } from "../../config/merge.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { camelToSnake } from "../../shared/string-utils.js";
 import { countActions, type SettingsAction } from "../base-processor.js";

@@ -124,19 +124,17 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 }
 
 function hasAnyChanges(input: UnifiedSummaryInput): boolean {
-  if (input.lifecycle && hasLifecycleChanges(input.lifecycle)) return true;
-  if (input.sync?.repos.some((r) => r.files.length > 0 || r.error)) return true;
-  if (
-    input.settings?.repos.some(
+  return (
+    (!!input.lifecycle && hasLifecycleChanges(input.lifecycle)) ||
+    !!input.sync?.repos.some((r) => r.files.length > 0 || r.error) ||
+    !!input.settings?.repos.some(
       (r) =>
         r.settings.length > 0 ||
         r.rulesets.length > 0 ||
         r.labels.length > 0 ||
         r.error
     )
-  )
-    return true;
-  return false;
+  );
 }
 
 // =============================================================================

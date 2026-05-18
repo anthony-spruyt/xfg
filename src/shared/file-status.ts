@@ -12,5 +12,10 @@ export function formatStatusBadge(status: FileStatus): string {
       return chalk.gray("[UNCHANGED]");
     case "DELETED":
       return chalk.red("[DELETED]");
+
+    default: {
+      const _exhaustive: never = status;
+      throw new Error(`Unexpected file status: ${String(_exhaustive)}`);
+    }
   }
 }

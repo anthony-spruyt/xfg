@@ -350,6 +350,26 @@ export function validateForSync(config: RawConfig): void {
   validateVariableSecretOverlaps(config);
 }
 
+function checkVariableSecretOverlap(
+  vars: Record<string, unknown>,
+  secretNames: Set<string>,
+  context: string
+): void {
+  const { deleteOrphaned: _d, inherit: _i, ...varEntries } = vars;
+  const variableNames = Object.keys(varEntries).filter(
+    (k) => typeof varEntries[k] !== "boolean"
+  );
+  const overlapping = variableNames.filter((n) =>
+    secretNames.has(n.toUpperCase())
+  );
+  if (overlapping.length > 0) {
+    throw new ValidationError(
+      `${context}${overlapping.join(", ")} overlap between variables and secrets. ` +
+        "GitHub does not allow variables and secrets with the same name."
+    );
+  }
+}
+
 export function validateVariableSecretOverlaps(config: RawConfig): void {
   if (!config.secrets) return;
 
@@ -365,66 +385,31 @@ export function validateVariableSecretOverlaps(config: RawConfig): void {
 
   // Check root-level variables
   if (config.settings?.variables) {
-    const {
-      deleteOrphaned: _rd,
-      inherit: _ri,
-      ...rootVarEntries
-    } = config.settings.variables as Record<string, unknown>;
-    const rootVariableNames = Object.keys(rootVarEntries).filter(
-      (k) => typeof rootVarEntries[k] !== "boolean"
+    checkVariableSecretOverlap(
+      config.settings.variables as Record<string, unknown>,
+      secretNames,
+      ""
     );
-    const overlapping = rootVariableNames.filter((n) =>
-      secretNames.has(n.toUpperCase())
-    );
-    if (overlapping.length > 0) {
-      throw new ValidationError(
-        `${overlapping.join(", ")} overlap between root variables and secrets. ` +
-          "GitHub does not allow variables and secrets with the same name."
-      );
-    }
   }
 
+  // Check repo-level variables
   for (const repo of config.repos) {
-    const {
-      deleteOrphaned: _d,
-      inherit: _i,
-      ...varEntries
-    } = (repo.settings?.variables ?? {}) as Record<string, unknown>;
-    const variableNames = Object.keys(varEntries).filter(
-      (k) => typeof varEntries[k] !== "boolean"
+    checkVariableSecretOverlap(
+      (repo.settings?.variables ?? {}) as Record<string, unknown>,
+      secretNames,
+      `Repo '${repo.git}': `
     );
-    const overlapping = variableNames.filter((n) =>
-      secretNames.has(n.toUpperCase())
-    );
-    if (overlapping.length > 0) {
-      throw new ValidationError(
-        `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
-          "GitHub does not allow variables and secrets with the same name."
-      );
-    }
   }
 
   // Check group-level variables
   if (isPlainObject(config.groups)) {
     for (const [groupName, group] of Object.entries(config.groups)) {
       if (!group.settings?.variables) continue;
-      const {
-        deleteOrphaned: _gd,
-        inherit: _gi,
-        ...groupVarEntries
-      } = group.settings.variables as Record<string, unknown>;
-      const groupVariableNames = Object.keys(groupVarEntries).filter(
-        (k) => typeof groupVarEntries[k] !== "boolean"
+      checkVariableSecretOverlap(
+        group.settings.variables as Record<string, unknown>,
+        secretNames,
+        `Group '${groupName}': `
       );
-      const overlapping = groupVariableNames.filter((n) =>
-        secretNames.has(n.toUpperCase())
-      );
-      if (overlapping.length > 0) {
-        throw new ValidationError(
-          `Group '${groupName}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
-            "GitHub does not allow variables and secrets with the same name."
-        );
-      }
     }
   }
 
@@ -433,23 +418,11 @@ export function validateVariableSecretOverlaps(config: RawConfig): void {
     for (let i = 0; i < config.conditionalGroups.length; i++) {
       const cg = config.conditionalGroups[i];
       if (!cg.settings?.variables) continue;
-      const {
-        deleteOrphaned: _cd,
-        inherit: _ci,
-        ...cgVarEntries
-      } = cg.settings.variables as Record<string, unknown>;
-      const cgVariableNames = Object.keys(cgVarEntries).filter(
-        (k) => typeof cgVarEntries[k] !== "boolean"
+      checkVariableSecretOverlap(
+        cg.settings.variables as Record<string, unknown>,
+        secretNames,
+        `Conditional group ${i}: `
       );
-      const overlapping = cgVariableNames.filter((n) =>
-        secretNames.has(n.toUpperCase())
-      );
-      if (overlapping.length > 0) {
-        throw new ValidationError(
-          `Conditional group ${i}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
-            "GitHub does not allow variables and secrets with the same name."
-        );
-      }
     }
   }
 }
@@ -495,30 +468,28 @@ export function hasActionableSettings(
   return false;
 }
 
-export function validateVariableName(name: string): void {
+function validateGitHubResourceName(
+  name: string,
+  kind: "Variable" | "Secret"
+): void {
   if (!VARIABLE_NAME_PATTERN.test(name)) {
     throw new ValidationError(
-      `Variable name '${name}' contains invalid characters. Only alphanumeric and underscore allowed.`
+      `${kind} name '${name}' contains invalid characters. Only alphanumeric and underscore allowed.`
     );
   }
   if (name.startsWith("GITHUB_")) {
     throw new ValidationError(
-      `Variable name '${name}' cannot start with 'GITHUB_' (reserved prefix).`
+      `${kind} name '${name}' cannot start with 'GITHUB_' (reserved prefix).`
     );
   }
 }
 
+export function validateVariableName(name: string): void {
+  validateGitHubResourceName(name, "Variable");
+}
+
 export function validateSecretName(name: string): void {
-  if (!VARIABLE_NAME_PATTERN.test(name)) {
-    throw new ValidationError(
-      `Secret name '${name}' contains invalid characters. Only alphanumeric and underscore allowed.`
-    );
-  }
-  if (name.startsWith("GITHUB_")) {
-    throw new ValidationError(
-      `Secret name '${name}' cannot start with 'GITHUB_' (reserved prefix).`
-    );
-  }
+  validateGitHubResourceName(name, "Secret");
 }
 
 function validateSecretEntry(name: string, config: SecretConfig): void {

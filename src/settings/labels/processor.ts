@@ -143,6 +143,11 @@ export class LabelsProcessor implements ILabelsProcessor {
 
         case "unchanged":
           break;
+
+        default: {
+          const _exhaustive: never = change.action;
+          throw new Error(`Unexpected label action: ${String(_exhaustive)}`);
+        }
       }
     }
 

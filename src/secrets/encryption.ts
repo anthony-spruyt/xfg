@@ -15,9 +15,10 @@ export class SodiumEncryptor implements ISecretEncryptor {
           const sodium = await import("libsodium-wrappers");
           await sodium.default.ready;
           this.sodium = sodium.default;
-        } catch {
+        } catch (error) {
           throw new Error(
-            "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers"
+            "Failed to load libsodium-wrappers. Install it: npm install libsodium-wrappers",
+            { cause: error }
           );
         }
       })().catch((err) => {

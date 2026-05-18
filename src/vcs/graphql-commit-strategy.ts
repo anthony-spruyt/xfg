@@ -16,6 +16,9 @@ import { parseApiJson } from "../shared/json-utils.js";
 import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
 
+/** Maximum length for GraphQL API error messages before truncation */
+const MAX_ERROR_MESSAGE_LENGTH = 2000;
+
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
  * Base64 encoding adds ~33% overhead, so raw content should be checked.
@@ -405,8 +408,9 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     }
 
     // Safety truncation for any remaining oversized messages
-    if (cleanMessage.length > 2000) {
-      cleanMessage = cleanMessage.substring(0, 2000) + "... (truncated)";
+    if (cleanMessage.length > MAX_ERROR_MESSAGE_LENGTH) {
+      cleanMessage =
+        cleanMessage.substring(0, MAX_ERROR_MESSAGE_LENGTH) + "... (truncated)";
     }
 
     return new GraphQLApiError(`Commit failed for ${repo}: ${cleanMessage}`, {

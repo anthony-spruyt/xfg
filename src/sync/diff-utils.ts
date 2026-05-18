@@ -295,6 +295,11 @@ function groupIntoHunks(
           lines.push(`+${newLines[op.newIdx]}`);
           newCount++;
           break;
+
+        default: {
+          const _exhaustive: never = op;
+          throw new Error(`Unexpected diff op: ${String(_exhaustive)}`);
+        }
       }
     }
 

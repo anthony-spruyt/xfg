@@ -3,8 +3,11 @@ import { withRetry } from "../shared/retry-utils.js";
 import { SyncError } from "../shared/errors.js";
 import type { GitHubRepoInfo } from "../repo/index.js";
 
+/** Number of milliseconds per second */
+const MS_PER_SECOND = 1000;
+
 /** Duration to cache tokens (45 minutes in milliseconds) */
-const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
+const TOKEN_CACHE_DURATION_MS = 45 * 60 * MS_PER_SECOND;
 
 interface Installation {
   id: number;
@@ -57,7 +60,7 @@ export class GitHubAppTokenManager {
    * The JWT is signed with RS256 and valid for 10 minutes.
    */
   generateJWT(): string {
-    const now = Math.floor(Date.now() / 1000);
+    const now = Math.floor(Date.now() / MS_PER_SECOND);
 
     const header = {
       alg: "RS256",

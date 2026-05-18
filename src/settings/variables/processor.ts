@@ -117,6 +117,11 @@ export class VariablesProcessor implements IVariablesProcessor {
           break;
         case "unchanged":
           break;
+
+        default: {
+          const _exhaustive: never = change.action;
+          throw new Error(`Unexpected variable action: ${String(_exhaustive)}`);
+        }
       }
     }
 
