@@ -14,9 +14,14 @@ import {
 } from "../secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { parseGitUrl } from "../repo/index.js";
+import {
+  parseGitUrl,
+  isGitHubRepo,
+  type GitHubRepoInfo,
+} from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { resolveGitHubToken } from "../shared/gh-token-utils.js";
 import type { Config } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 
@@ -91,8 +96,6 @@ export async function runSecretsSync(
   const processorFactory = deps.processorFactory ?? createDefaultProcessor;
   const processor = processorFactory(config, cwd, retries ?? 3);
 
-  const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-
   let hasErrors = false;
   logger.setTotal(config.repos.length);
 
@@ -104,6 +107,18 @@ export async function runSecretsSync(
       const repoInfo = parseGitUrl(repoConfig.git, {
         githubHosts: config.githubHosts,
       });
+
+      const token = isGitHubRepo(repoInfo)
+        ? (
+            await resolveGitHubToken({
+              repoInfo: repoInfo as GitHubRepoInfo,
+              tokenManager: null,
+              context: repoName,
+              log: logger,
+              envToken: process.env.GH_TOKEN,
+            })
+          ).token
+        : undefined;
 
       const result = await processor.process(config.secrets, repoInfo, {
         dryRun,
