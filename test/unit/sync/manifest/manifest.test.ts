@@ -12,7 +12,7 @@ import {
   getManagedFiles,
   parseManifestContent,
   updateManifest,
-} from "../../../src/sync/manifest.js";
+} from "../../../../src/sync/manifest/manifest.js";
 
 describe("manifest", () => {
   const testDir = join(tmpdir(), "tmp-manifest-test");

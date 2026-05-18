@@ -3,19 +3,22 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { FileSyncOrchestrator } from "../../../src/sync/file-sync-orchestrator.js";
+import { FileSyncOrchestrator } from "../../../../src/sync/file/file-sync-orchestrator.js";
 import {
   createMockAuthenticatedGitOps,
   createMockExecutor,
   createMockLogger,
-} from "../../mocks/index.js";
+} from "../../../mocks/index.js";
 import {
   createDiffStats,
   incrementDiffStats,
-} from "../../../src/sync/diff-utils.js";
-import type { IFileWriter, IManifestManager } from "../../../src/sync/types.js";
-import type { GitHubRepoInfo } from "../../../src/repo/index.js";
-import type { RepoConfig } from "../../../src/config/types.js";
+} from "../../../../src/sync/diff/diff-utils.js";
+import type {
+  IFileWriter,
+  IManifestManager,
+} from "../../../../src/sync/types.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
+import type { RepoConfig } from "../../../../src/config/types.js";
 
 const testDir = join(tmpdir(), "file-sync-orchestrator-test-" + Date.now());
 

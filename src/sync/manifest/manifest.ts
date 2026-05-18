@@ -1,8 +1,8 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
-import { SyncError } from "../shared/errors.js";
-import type { DebugWarnLog } from "../shared/logger.js";
+import { toErrorMessage, isPlainObject } from "../../shared/type-guards.js";
+import { SyncError } from "../../shared/errors.js";
+import type { DebugWarnLog } from "../../shared/logger.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 

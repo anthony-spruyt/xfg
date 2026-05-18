@@ -4,9 +4,9 @@ import {
   convertContentToString,
   type FileContent,
   type ContentValue,
-} from "../config/index.js";
-import { interpolateXfgContent } from "../shared/xfg-template.js";
-import { formatDiffLine } from "../shared/diff-format.js";
+} from "../../config/index.js";
+import { interpolateXfgContent } from "../../shared/xfg-template.js";
+import { formatDiffLine } from "../../shared/diff-format.js";
 import {
   createDiffStats,
   incrementDiffStats,
@@ -14,14 +14,14 @@ import {
   isBinaryFile,
   type FileStatus,
   type DiffStats,
-} from "./diff-utils.js";
+} from "../diff/index.js";
 import type {
   IFileWriter,
   FileWriteContext,
   FileWriterDeps,
   FileWriteAllResult,
   FileWriteResult,
-} from "./types.js";
+} from "../types.js";
 
 /**
  * Determines if a file should be marked as executable.

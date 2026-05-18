@@ -1,7 +1,7 @@
-import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../repo/index.js";
-import type { FileAction } from "../vcs/index.js";
-import type { ActiveAction } from "../settings/index.js";
+import type { RepoConfig } from "../../config/index.js";
+import type { RepoInfo } from "../../repo/index.js";
+import type { FileAction } from "../../vcs/index.js";
+import type { ActiveAction } from "../../settings/index.js";
 import { formatCommitMessage } from "./commit-message.js";
 import type {
   FileChangeDetail,
@@ -10,7 +10,7 @@ import type {
   SessionContext,
   ProcessorOptions,
   IFileSyncOrchestrator,
-} from "./types.js";
+} from "../types.js";
 
 /**
  * Strategy that performs full file synchronization.

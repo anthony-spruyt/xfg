@@ -1,8 +1,8 @@
-import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../repo/index.js";
-import type { ILogger } from "../shared/logger.js";
-import type { FileAction } from "../vcs/index.js";
-import { incrementDiffStats } from "./diff-utils.js";
+import type { RepoConfig } from "../../config/index.js";
+import type { RepoInfo } from "../../repo/index.js";
+import type { ILogger } from "../../shared/logger.js";
+import type { FileAction } from "../../vcs/index.js";
+import { incrementDiffStats } from "../diff/index.js";
 
 import type {
   IFileWriter,
@@ -11,7 +11,7 @@ import type {
   ProcessorOptions,
   FileSyncResult,
   IFileSyncOrchestrator,
-} from "./types.js";
+} from "../types.js";
 
 export class FileSyncOrchestrator implements IFileSyncOrchestrator {
   constructor(

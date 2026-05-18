@@ -1,7 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { formatCommitMessage } from "../../../src/sync/commit-message.js";
-import type { FileAction } from "../../../src/vcs/pr/pr-creator.js";
+import { formatCommitMessage } from "../../../../src/sync/file/commit-message.js";
+import type { FileAction } from "../../../../src/vcs/pr/pr-creator.js";
 
 describe("formatCommitMessage", () => {
   test("returns single file message for one changed file", () => {

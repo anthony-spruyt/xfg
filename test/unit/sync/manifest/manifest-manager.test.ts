@@ -3,13 +3,13 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { ManifestManager } from "../../../src/sync/manifest-manager.js";
+import { ManifestManager } from "../../../../src/sync/manifest/manifest-manager.js";
 import {
   createMockAuthenticatedGitOps,
   createMockLogger,
-} from "../../mocks/index.js";
-import type { FileWriteResult } from "../../../src/sync/types.js";
-import { MANIFEST_FILENAME } from "../../../src/sync/manifest.js";
+} from "../../../mocks/index.js";
+import type { FileWriteResult } from "../../../../src/sync/types.js";
+import { MANIFEST_FILENAME } from "../../../../src/sync/manifest/manifest.js";
 
 const testDir = join(tmpdir(), "manifest-manager-test-" + Date.now());
 

@@ -13,9 +13,9 @@ import type {
   FileAction,
   FileActionKind,
 } from "../vcs/index.js";
-import type { DiffStats } from "./diff-utils.js";
+import type { DiffStats } from "./diff/index.js";
 import type { ILogger } from "../shared/logger.js";
-import type { XfgManifest } from "./manifest.js";
+import type { XfgManifest } from "./manifest/index.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 
 export type GitOpsFactory = (

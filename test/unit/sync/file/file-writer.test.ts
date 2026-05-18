@@ -3,11 +3,11 @@ import { strict as assert } from "node:assert";
 import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { FileWriter } from "../../../src/sync/file-writer.js";
-import { createMockAuthenticatedGitOps } from "../../mocks/index.js";
-import { createMockLogger } from "../../mocks/index.js";
-import type { FileContent } from "../../../src/config/types.js";
-import type { GitHubRepoInfo } from "../../../src/repo/index.js";
+import { FileWriter } from "../../../../src/sync/file/file-writer.js";
+import { createMockAuthenticatedGitOps } from "../../../mocks/index.js";
+import { createMockLogger } from "../../../mocks/index.js";
+import type { FileContent } from "../../../../src/config/types.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 
 const testDir = join(tmpdir(), "file-writer-test-" + Date.now());
 

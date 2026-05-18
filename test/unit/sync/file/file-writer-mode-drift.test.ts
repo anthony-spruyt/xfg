@@ -1,9 +1,9 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { FileWriter } from "../../../src/sync/file-writer.js";
-import type { FileContent } from "../../../src/config/index.js";
-import type { ILocalGitOps } from "../../../src/vcs/index.js";
-import type { ILogger } from "../../../src/shared/logger.js";
+import { FileWriter } from "../../../../src/sync/file/file-writer.js";
+import type { FileContent } from "../../../../src/config/index.js";
+import type { ILocalGitOps } from "../../../../src/vcs/index.js";
+import type { ILogger } from "../../../../src/shared/logger.js";
 
 const silentLogger = {
   debug: () => {},

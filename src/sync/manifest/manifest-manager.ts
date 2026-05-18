@@ -7,14 +7,14 @@ import {
   MANIFEST_FILENAME,
   type XfgManifest,
 } from "./manifest.js";
-import { computeUnifiedDiff, isBinaryFile } from "./diff-utils.js";
+import { computeUnifiedDiff, isBinaryFile } from "../diff/index.js";
 import type {
   IManifestManager,
   OrphanProcessResult,
   OrphanDeleteOptions,
   OrphanDeleteDeps,
   FileWriteResult,
-} from "./types.js";
+} from "../types.js";
 
 /**
  * Handles manifest loading, saving, and orphan detection.

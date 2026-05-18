@@ -1,16 +1,16 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { FileSyncStrategy } from "../../../src/sync/file-sync-strategy.js";
+import { FileSyncStrategy } from "../../../../src/sync/file/file-sync-strategy.js";
 import type {
   IFileSyncOrchestrator,
   SessionContext,
-} from "../../../src/sync/index.js";
-import type { RepoConfig } from "../../../src/config/index.js";
-import type { GitHubRepoInfo } from "../../../src/repo/index.js";
+} from "../../../../src/sync/index.js";
+import type { RepoConfig } from "../../../../src/config/index.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 import {
   createMockAuthenticatedGitOps,
   createMockExecutor,
-} from "../../mocks/index.js";
+} from "../../../mocks/index.js";
 
 describe("FileSyncStrategy", () => {
   const mockRepoConfig: RepoConfig = {
