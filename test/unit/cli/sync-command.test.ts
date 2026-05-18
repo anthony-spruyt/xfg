@@ -8,7 +8,7 @@ import {
 } from "node:test";
 import { strict as assert } from "node:assert";
 type MockFn = Mock<(...args: unknown[]) => unknown>;
-import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import { writeFileSync, rmSync, mkdtempSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { runSync, type SyncOptions } from "../../../src/cli/sync-command.js";
@@ -33,8 +33,8 @@ import {
   creatingLifecycleManager,
 } from "../../mocks/index.js";
 
-const testDir = join(tmpdir(), "test-sync-cmd-tmp");
-const testConfigPath = join(testDir, "test-config.yaml");
+let testDir: string;
+let testConfigPath: string;
 
 // Minimal files section to satisfy validation
 const MINIMAL_FILES = `files:
@@ -66,10 +66,8 @@ describe("sync-command", () => {
   let consoleOutput: string[];
 
   beforeEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "test-sync-cmd-"));
+    testConfigPath = join(testDir, "test-config.yaml");
 
     originalExit = process.exit;
     exitCode = undefined;
@@ -94,9 +92,7 @@ describe("sync-command", () => {
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
 
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("lifecycle integration", () => {
@@ -1451,6 +1447,39 @@ repos:
         branchName: string;
       };
       assert.equal(optionsRepo2.branchName, "chore/repo-two-sync");
+    });
+
+    test("CLI --merge preserves config prOptions.branch when --branch not set", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  branch: chore/config-branch
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        {
+          config: testConfigPath,
+          dryRun: true,
+          workDir: testDir,
+          merge: "direct" as const,
+        },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const callArgs = processMock.mock.calls[0].arguments;
+      const options = callArgs[2] as { branchName: string };
+      assert.equal(options.branchName, "chore/config-branch");
     });
   });
 
