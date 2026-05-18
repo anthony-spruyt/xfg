@@ -12,18 +12,18 @@ Make `loadRawConfigFromDirectory` scan recursively. No new flags, no schema chan
 
 ## Design Decisions
 
-| Decision            | Choice                              | Rationale                                                 |
-| ------------------- | ----------------------------------- | --------------------------------------------------------- |
-| Opt-in vs default   | Always recursive                    | No breaking change — subdirs were silently ignored before |
-| Traversal order     | Depth-first, alphabetical per level | Predictable, matches `ls -R` mental model                 |
-| Max depth           | 10 levels                           | Safety net against runaway recursion                      |
-| Symlinked dirs      | Skip                                | Avoid loops                                               |
-| Symlinked files     | Follow                              | Users may symlink shared fragments                        |
-| Fragment fileName   | Relative path from config root      | Clear provenance in error messages                        |
-| Hidden files/dirs   | Skip (names starting with `.`)      | Avoid picking up `.git`, `.DS_Store`, editor temp files   |
-| File ref resolution | Relative to fragment's own dir      | Users co-locate referenced files next to their fragments  |
-| Unreadable subdir   | Fail entire load                    | Consistent with current behavior for unreadable root dir  |
-| Windows             | Not supported                       | xfg does not support Windows                              |
+| Decision            | Choice                                    | Rationale                                                 |
+| ------------------- | ----------------------------------------- | --------------------------------------------------------- |
+| Opt-in vs default   | Always recursive                          | No breaking change — subdirs were silently ignored before |
+| Traversal order     | Depth-first, alphabetical per level       | Predictable, matches `ls -R` mental model                 |
+| Max depth           | 10 levels                                 | Safety net against runaway recursion                      |
+| Symlinked dirs      | Skip (implicit via `isDirectory()=false`) | Avoid loops; no explicit check needed                     |
+| Symlinked files     | Follow via `isSymbolicLink()` fallback    | `isFile()=false` for symlinks; need explicit check        |
+| Fragment fileName   | Relative path from config root            | Clear provenance in error messages                        |
+| Hidden files/dirs   | Skip (names starting with `.`)            | Avoid picking up `.git`, `.DS_Store`, editor temp files   |
+| File ref resolution | Relative to fragment's own dir            | Users co-locate referenced files next to their fragments  |
+| Unreadable subdir   | Fail entire load                          | Consistent with current behavior for unreadable root dir  |
+| Windows             | Not supported                             | xfg does not support Windows                              |
 
 ## Ordering Specification
 
@@ -84,12 +84,13 @@ function collectYamlFiles(
 
 - `rootDir`: the original config directory (for computing relative paths via `path.relative`)
 - `currentDir`: the directory being scanned at this recursion level
-- `depth`: current depth (0 at root, error if > 10)
+- `depth`: current depth (0 at root). Check `depth > MAX_DEPTH` at function entry, before `readdirSync`. `MAX_DEPTH = 10`, allowing levels 0–10 (11 total levels)
 - Returns files in depth-first alphabetical order per the ordering specification
 - Skips hidden entries (names starting with `.`)
-- Skips symlinked directories, follows symlinked files
+- Skips symlinked directories (implicit: `entry.isDirectory()` returns `false` for symlinks with `withFileTypes`)
+- Follows symlinked files via explicit fallback: if `entry.isSymbolicLink()` and has `.yaml`/`.yml` extension, include it (`entry.isFile()` returns `false` for symlinks with `withFileTypes`)
 - Uses `readdirSync` with `withFileTypes: true`
-- Uses `entry.isSymbolicLink()` to detect symlinked directories (requires `lstat` behavior from `withFileTypes`)
+- Error paths use relative path from config root (consistent with fragment `fileName`)
 
 `loadRawConfigFromDirectory` calls `collectYamlFiles` then iterates over the result to build `ConfigFragment[]` using the relative path as `fileName`.
 
