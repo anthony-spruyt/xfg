@@ -8,6 +8,11 @@ export {
   type LifecycleAction,
 } from "./lifecycle-report.js";
 export {
+  settingsSummaryDescriptors,
+  actionLabels,
+  type SettingsSummaryDescriptor,
+} from "./settings-summary-descriptors.js";
+export {
   formatCountEntry,
   formatSettingsReportCLI,
   renderRepoSettingsDiffLines,

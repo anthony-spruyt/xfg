@@ -9,6 +9,10 @@ import {
   type SyncReport,
   type SettingsReport,
 } from "../output/index.js";
+import {
+  settingsSummaryDescriptors,
+  actionLabels,
+} from "../output/settings-summary-descriptors.js";
 
 // =============================================================================
 // Types
@@ -33,49 +37,6 @@ function selectLabel(
 ): string {
   return dry ? futureLabel : pastLabel;
 }
-
-interface SettingsSummaryDescriptor {
-  key: keyof SettingsReport["totals"];
-  noun: string;
-  plural: string;
-  actions: ("create" | "update" | "delete")[];
-}
-
-const settingsSummaryDescriptors: SettingsSummaryDescriptor[] = [
-  {
-    key: "settings",
-    noun: "setting",
-    plural: "settings",
-    actions: ["create", "update"],
-  },
-  {
-    key: "rulesets",
-    noun: "ruleset",
-    plural: "rulesets",
-    actions: ["create", "update", "delete"],
-  },
-  {
-    key: "labels",
-    noun: "label",
-    plural: "labels",
-    actions: ["create", "update", "delete"],
-  },
-  {
-    key: "variables",
-    noun: "variable",
-    plural: "variables",
-    actions: ["create", "update", "delete"],
-  },
-];
-
-const actionLabels: Record<
-  "create" | "update" | "delete",
-  { past: string; future: string }
-> = {
-  create: { past: "created", future: "to create" },
-  update: { past: "updated", future: "to update" },
-  delete: { past: "deleted", future: "to delete" },
-};
 
 function formatCombinedSummary(input: UnifiedSummaryInput): string {
   const parts: string[] = [];

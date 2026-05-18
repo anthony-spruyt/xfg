@@ -3,6 +3,10 @@ import type { PropertyDiff, ActiveAction } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatScalarValue } from "../shared/string-utils.js";
+import {
+  settingsSummaryDescriptors,
+  actionLabels,
+} from "./settings-summary-descriptors.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -134,46 +138,6 @@ export function formatCountEntry(
   return `${total} ${word} (${actions.join(", ")})`;
 }
 
-interface SettingsSummaryDescriptor {
-  key: keyof SettingsReport["totals"];
-  noun: string;
-  plural: string;
-  actions: ("create" | "update" | "delete")[];
-}
-
-const settingsSummaryDescriptors: SettingsSummaryDescriptor[] = [
-  {
-    key: "settings",
-    noun: "setting",
-    plural: "settings",
-    actions: ["create", "update"],
-  },
-  {
-    key: "rulesets",
-    noun: "ruleset",
-    plural: "rulesets",
-    actions: ["create", "update", "delete"],
-  },
-  {
-    key: "labels",
-    noun: "label",
-    plural: "labels",
-    actions: ["create", "update", "delete"],
-  },
-  {
-    key: "variables",
-    noun: "variable",
-    plural: "variables",
-    actions: ["create", "update", "delete"],
-  },
-];
-
-const actionFutureLabels: Record<"create" | "update" | "delete", string> = {
-  create: "to create",
-  update: "to update",
-  delete: "to delete",
-};
-
 function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   const parts: string[] = [];
 
@@ -183,7 +147,7 @@ function formatSettingsSummary(totals: SettingsReport["totals"]): string {
       desc.noun,
       desc.plural,
       desc.actions.map((action) => ({
-        label: actionFutureLabels[action],
+        label: actionLabels[action].future,
         value: counts[action] ?? 0,
       }))
     );
