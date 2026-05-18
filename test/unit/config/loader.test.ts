@@ -184,6 +184,10 @@ describe("loadRawConfig", () => {
             err.message.includes("Failed to read config directory"),
             `Expected 'Failed to read config directory', got: ${err.message}`
           );
+          assert.ok(
+            err.message.includes(configDir),
+            `Expected absolute path '${configDir}' in error, got: ${err.message}`
+          );
           return true;
         }
       );

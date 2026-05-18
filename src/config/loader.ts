@@ -91,9 +91,9 @@ function collectYamlFiles(
   try {
     entries = readdirSync(currentDir, { withFileTypes: true });
   } catch (error) {
-    const rel = relative(rootDir, currentDir);
+    const displayPath = relative(rootDir, currentDir) || currentDir;
     throw new ValidationError(
-      `Failed to read config directory ${rel || "."}: ${toErrorMessage(error)}`,
+      `Failed to read config directory ${displayPath}: ${toErrorMessage(error)}`,
       { cause: error }
     );
   }
@@ -120,7 +120,7 @@ function collectYamlFiles(
   }
 
   files.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
-  subdirs.sort();
+  subdirs.sort((a, b) => a.localeCompare(b));
 
   const result = [...files];
   for (const subdir of subdirs) {
