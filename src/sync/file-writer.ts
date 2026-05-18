@@ -6,8 +6,8 @@ import {
   type ContentValue,
 } from "../config/index.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
+import { formatDiffLine } from "../shared/diff-format.js";
 import {
-  generateDiff,
   createDiffStats,
   incrementDiffStats,
   computeUnifiedDiff,
@@ -111,66 +111,90 @@ export class FileWriter implements IFileWriter {
 
     log.info(`Writing ${file.fileName}...`);
 
+    // --- Phase 1: Compute what changed ---
     const fileContent = this.resolveContent(file, repoInfo);
     const fileExistsLocal = existsSync(join(workDir, file.fileName));
     const action: "create" | "update" = fileExistsLocal ? "update" : "create";
     const existingContent = gitOps.getFileContent(file.fileName);
-    const changed = gitOps.wouldChange(file.fileName, fileContent);
+    const contentChanged = gitOps.wouldChange(file.fileName, fileContent);
 
     const desiredMode: "100755" | "100644" = shouldBeExecutable(file)
       ? "100755"
       : "100644";
     const currentMode = await gitOps.getFileMode(file.fileName);
     modeCache.set(file.fileName, currentMode);
-    const modeDiffers = currentMode !== null && currentMode !== desiredMode;
+    const modeChanged = currentMode !== null && currentMode !== desiredMode;
 
-    if (changed) {
-      const writeResult: FileWriteResult = {
-        fileName: file.fileName,
-        content: fileContent,
-        action,
-        ...(desiredMode === "100755" || modeDiffers
-          ? { mode: desiredMode }
-          : {}),
-      };
+    if (!contentChanged && !modeChanged) {
+      return;
+    }
 
-      if (!isBinaryFile(file.fileName)) {
-        writeResult.diffLines = computeUnifiedDiff(
-          existingContent,
-          fileContent
-        );
+    // --- Phase 2: Build the write result ---
+    const writeResult = this.buildWriteResult(
+      file,
+      fileContent,
+      existingContent,
+      action,
+      contentChanged,
+      modeChanged,
+      desiredMode
+    );
+    fileChanges.set(file.fileName, writeResult);
+
+    // --- Phase 3: Track stats and apply or report ---
+    const status: FileStatus = contentChanged
+      ? action === "create"
+        ? "NEW"
+        : "MODIFIED"
+      : "MODIFIED"; // mode-only changes are always MODIFIED
+    incrementDiffStats(diffStats, status);
+
+    if (contentChanged) {
+      if (dryRun) {
+        const formattedDiff = (writeResult.diffLines ?? []).map(formatDiffLine);
+        log.fileDiff(file.fileName, status, formattedDiff);
+      } else {
+        gitOps.writeFile(file.fileName, fileContent);
       }
+    } else if (dryRun) {
+      log.info(
+        `Would change mode: ${file.fileName} ${currentMode} -> ${desiredMode}`
+      );
+    }
+  }
 
-      fileChanges.set(file.fileName, writeResult);
-    } else if (modeDiffers) {
-      fileChanges.set(file.fileName, {
+  private buildWriteResult(
+    file: FileContent,
+    fileContent: string,
+    existingContent: string | null,
+    action: "create" | "update",
+    contentChanged: boolean,
+    modeChanged: boolean,
+    desiredMode: "100755" | "100644"
+  ): FileWriteResult {
+    if (!contentChanged) {
+      // Mode-only change
+      return {
         fileName: file.fileName,
         content: null,
         action: "update",
         mode: desiredMode,
         modeOnly: true,
-      });
+      };
     }
 
-    if (dryRun) {
-      if (changed) {
-        const status: FileStatus =
-          existingContent !== null ? "MODIFIED" : "NEW";
-        incrementDiffStats(diffStats, status);
-        const diffLines = generateDiff(existingContent, fileContent);
-        log.fileDiff(file.fileName, status, diffLines);
-      } else if (modeDiffers) {
-        incrementDiffStats(diffStats, "MODIFIED");
-        log.info(
-          `Would change mode: ${file.fileName} ${currentMode} -> ${desiredMode}`
-        );
-      }
-    } else if (changed) {
-      incrementDiffStats(diffStats, action === "create" ? "NEW" : "MODIFIED");
-      gitOps.writeFile(file.fileName, fileContent);
-    } else if (modeDiffers) {
-      incrementDiffStats(diffStats, "MODIFIED");
+    const result: FileWriteResult = {
+      fileName: file.fileName,
+      content: fileContent,
+      action,
+      ...(desiredMode === "100755" || modeChanged ? { mode: desiredMode } : {}),
+    };
+
+    if (!isBinaryFile(file.fileName)) {
+      result.diffLines = computeUnifiedDiff(existingContent, fileContent);
     }
+
+    return result;
   }
 
   private resolveContent(
