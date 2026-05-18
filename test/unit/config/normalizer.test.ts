@@ -3323,6 +3323,92 @@ describe("group configuration", () => {
     assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-group"]);
   });
 
+  test("global prOptions.branch propagates to repo", () => {
+    const raw: RawConfig = {
+      id: "test",
+      files: { "f.json": { content: {} } },
+      prOptions: { branch: "chore/global-sync" },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.branch, "chore/global-sync");
+  });
+
+  test("per-repo prOptions.branch overrides global", () => {
+    const raw: RawConfig = {
+      id: "test",
+      files: { "f.json": { content: {} } },
+      prOptions: { branch: "chore/global-sync" },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          prOptions: { branch: "chore/repo-specific" },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.branch, "chore/repo-specific");
+  });
+
+  test("group prOptions.branch merges into chain", () => {
+    const raw: RawConfig = {
+      id: "test",
+      files: { "f.json": { content: {} } },
+      groups: {
+        mygroup: {
+          prOptions: { branch: "chore/group-sync" },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.branch, "chore/group-sync");
+  });
+
+  test("per-repo prOptions.branch overrides group prOptions.branch", () => {
+    const raw: RawConfig = {
+      id: "test",
+      files: { "f.json": { content: {} } },
+      groups: {
+        mygroup: {
+          prOptions: { branch: "chore/group-sync" },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          prOptions: { branch: "chore/repo-override" },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.branch, "chore/repo-override");
+  });
+
+  test("global prOptions.branch merges with per-repo other prOptions fields", () => {
+    const raw: RawConfig = {
+      id: "test",
+      files: { "f.json": { content: {} } },
+      prOptions: { branch: "chore/global-sync", merge: "auto" },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          prOptions: { labels: ["config"] },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].prOptions?.branch, "chore/global-sync");
+    assert.equal(result.repos[0].prOptions?.merge, "auto");
+    assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["config"]);
+  });
+
   test("group with no files is skipped in mergeGroupFiles", () => {
     const raw: RawConfig = {
       id: "test-config",
