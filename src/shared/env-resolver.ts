@@ -1,3 +1,5 @@
+import { ValidationError } from "./errors.js";
+
 export interface IEnvResolver {
   resolve(envName: string): string;
   resolveAll(entries: { name: string; envVar: string }[]): Map<string, string>;
@@ -13,10 +15,12 @@ export class EnvResolver implements IEnvResolver {
   resolve(envName: string): string {
     const value = this.env[envName];
     if (value === undefined) {
-      throw new Error(`Environment variable '${envName}' is not set.`);
+      throw new ValidationError(
+        `Environment variable '${envName}' is not set.`
+      );
     }
     if (value === "") {
-      throw new Error(`Environment variable '${envName}' is empty.`);
+      throw new ValidationError(`Environment variable '${envName}' is empty.`);
     }
     return value;
   }
@@ -35,7 +39,7 @@ export class EnvResolver implements IEnvResolver {
     }
 
     if (missing.size > 0) {
-      throw new Error(
+      throw new ValidationError(
         `Missing environment variables: ${[...missing].join(", ")}`
       );
     }

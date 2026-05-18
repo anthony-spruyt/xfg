@@ -5,6 +5,7 @@ import {
   validateSecretsConfig,
   validateVariableSecretOverlaps,
 } from "../config/index.js";
+import { SyncError } from "../shared/errors.js";
 import {
   SecretsProcessor,
   GitHubSecretsStrategy,
@@ -146,6 +147,6 @@ export async function runSecretsSync(
   }
 
   if (hasErrors) {
-    throw new Error("One or more repositories failed secrets sync.");
+    throw new SyncError("One or more repositories failed secrets sync.");
   }
 }
