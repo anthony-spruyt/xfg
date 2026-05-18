@@ -98,12 +98,7 @@ export class CodeScanningProcessor implements ICodeScanningProcessor {
     const changeCounts = countActions(changes);
 
     if (!hasCodeScanningChanges(changes)) {
-      return {
-        success: true,
-        repoName,
-        message: "No changes needed",
-        changes: changeCounts,
-      };
+      return buildApplyResult(repoName, changeCounts, 0);
     }
 
     // Format plan output
