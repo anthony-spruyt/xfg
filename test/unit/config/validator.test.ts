@@ -4508,6 +4508,93 @@ describe("labels validation", () => {
       );
     });
   });
+
+  describe("prOptions.branch validation", () => {
+    const createValidConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
+      id: "test-config",
+      files: { "config.json": { content: { key: "value" } } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+      ...overrides,
+    });
+
+    test("accepts valid branch name in global prOptions", () => {
+      const config = createValidConfig({
+        prOptions: { branch: "chore/custom-sync" },
+      });
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("rejects invalid branch name in global prOptions", () => {
+      const config = createValidConfig({
+        prOptions: { branch: ".invalid-branch" },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Branch name cannot start with/
+      );
+    });
+
+    test("rejects empty branch name in global prOptions", () => {
+      const config = createValidConfig({
+        prOptions: { branch: "" },
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Branch name cannot be empty/
+      );
+    });
+
+    test("rejects invalid branch name in per-repo prOptions", () => {
+      const config = createValidConfig({
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: { branch: "branch with spaces" },
+          },
+        ],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Branch name contains invalid characters/
+      );
+    });
+
+    test("rejects invalid branch name in group prOptions", () => {
+      const config = createValidConfig({
+        files: { "f.json": { content: {} } },
+        groups: {
+          mygroup: {
+            prOptions: { branch: "branch.lock" },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Branch name has invalid ending/
+      );
+    });
+
+    test("rejects invalid branch name in conditional group prOptions", () => {
+      const config = createValidConfig({
+        files: { "f.json": { content: {} } },
+        groups: {
+          "group-a": { files: { "f.json": { content: {} } } },
+        },
+        conditionalGroups: [
+          {
+            when: { allOf: ["group-a"] },
+            prOptions: { branch: "..bad" },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["group-a"] }],
+      });
+      assert.throws(
+        () => validateRawConfig(config),
+        /Branch name cannot start with/
+      );
+    });
+  });
 });
 
 describe("group validation - extended coverage", () => {

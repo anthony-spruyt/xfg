@@ -4,6 +4,7 @@ import { validateFileName } from "./file-validator.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { escapeRegExp } from "../../shared/regex-utils.js";
 import { ValidationError } from "../../shared/errors.js";
+import { validateBranchName } from "../../shared/branch-validation.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -237,6 +238,12 @@ function validateRepoSettingsEntry(
   validateSettings(repo.settings, `Repo ${repoLabel}`, rootCtx);
 }
 
+function validateRepoPrOptions(repo: RawConfig["repos"][number]): void {
+  if (repo.prOptions?.branch !== undefined) {
+    validateBranchName(repo.prOptions.branch);
+  }
+}
+
 export function validateRepoEntry(
   config: RawConfig,
   repo: RawConfig["repos"][number],
@@ -247,4 +254,5 @@ export function validateRepoEntry(
   validateRepoGroups(config, repo, index);
   validateRepoFiles(config, repo, index, repoLabel);
   validateRepoSettingsEntry(config, repo, repoLabel);
+  validateRepoPrOptions(repo);
 }

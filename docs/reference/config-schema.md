@@ -180,6 +180,7 @@ At least one of `allOf` or `anyOf` is required. When both are specified, both co
 | `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                    |
 | `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)        |
 | `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only) |
+| `branch`        | `string`   | -        | Branch name for sync PRs                     |
 
 ## Validation
 

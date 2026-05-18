@@ -6,6 +6,7 @@ import type {
 import { resolveExtendsChain } from "../extends-resolver.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
+import { validateBranchName } from "../../shared/branch-validation.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -166,6 +167,10 @@ export function validateGroups(config: RawConfig): void {
     if (group.settings !== undefined) {
       validateSettings(group.settings, `groups.${groupName}`, rootCtx);
     }
+
+    if (group.prOptions?.branch !== undefined) {
+      validateBranchName(group.prOptions.branch);
+    }
   }
 
   validateNoCircularExtends(config.groups);
@@ -248,6 +253,10 @@ export function validateConditionalGroups(config: RawConfig): void {
 
     if (entry.settings !== undefined) {
       validateSettings(entry.settings, ctx, rootCtx);
+    }
+
+    if (entry.prOptions?.branch !== undefined) {
+      validateBranchName(entry.prOptions.branch);
     }
   }
 }
