@@ -1,63 +1,74 @@
-import {
-  isGitHubRepo,
-  getRepoDisplayName,
-  type GitHubRepoInfo,
-  type RepoInfo,
-} from "../repo/index.js";
+import type { GitHubRepoInfo, RepoInfo } from "../repo/index.js";
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
-import type { SecretConfig, SecretsConfig } from "../config/index.js";
+import type {
+  SecretConfig,
+  SecretsConfig,
+  RepoConfig,
+} from "../config/index.js";
+import {
+  withGitHubGuards,
+  type BaseProcessorOptions,
+  type BaseProcessorResult,
+  type ISettingsProcessor,
+  type ChangeCounts,
+  buildDryRunResult,
+  buildApplyResult,
+} from "../settings/base-processor.js";
 
-export interface SecretsProcessorOptions {
-  dryRun?: boolean;
-  token?: string;
+export type ISecretsProcessor = ISettingsProcessor<
+  SecretsProcessorOptions,
+  SecretsProcessorResult
+>;
+
+export interface SecretsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
 }
 
-export interface SecretsProcessorResult {
-  success: boolean;
-  repoName: string;
-  message: string;
-  skipped?: boolean;
-  dryRun?: boolean;
-  created: number;
-  updated: number;
-  deleted: number;
+export interface SecretsProcessorResult extends BaseProcessorResult {
+  changes?: ChangeCounts;
 }
 
-export class SecretsProcessor {
+export class SecretsProcessor implements ISecretsProcessor {
   constructor(
     private readonly strategy: ISecretsStrategy,
     private readonly encryptor: ISecretEncryptor,
-    private readonly envResolver: IEnvResolver
+    private readonly envResolver: IEnvResolver,
+    private readonly secretsConfig: SecretsConfig
   ) {}
 
   async process(
-    secretsConfig: SecretsConfig,
+    repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: SecretsProcessorOptions
   ): Promise<SecretsProcessorResult> {
-    const repoName = getRepoDisplayName(repoInfo);
+    return withGitHubGuards(repoConfig, repoInfo, options, {
+      hasDesiredSettings: () => {
+        const { deleteOrphaned, ...rawEntries } = this.secretsConfig;
+        const secretEntries = Object.entries(rawEntries).filter(
+          (entry): entry is [string, SecretConfig] =>
+            typeof entry[1] !== "boolean"
+        );
+        return secretEntries.length > 0 || deleteOrphaned === true;
+      },
+      emptySettingsMessage: "No secrets configured",
+      applySettings: (githubRepo, _rc, opts, token, repoName) =>
+        this.applySettings(githubRepo, opts, token, repoName),
+    });
+  }
 
-    if (!isGitHubRepo(repoInfo)) {
-      return {
-        success: true,
-        repoName,
-        message: "Skipped: not a GitHub repository",
-        skipped: true,
-        created: 0,
-        updated: 0,
-        deleted: 0,
-      };
-    }
-
-    const githubRepo = repoInfo as GitHubRepoInfo;
+  private async applySettings(
+    githubRepo: GitHubRepoInfo,
+    options: SecretsProcessorOptions,
+    effectiveToken: string | undefined,
+    repoName: string
+  ): Promise<SecretsProcessorResult> {
+    const { dryRun, noDelete } = options;
     const { deleteOrphaned: configDeleteOrphaned = false, ...rawEntries } =
-      secretsConfig;
-    const { dryRun, token, noDelete } = options;
+      this.secretsConfig;
     const deleteOrphaned = configDeleteOrphaned && !(noDelete ?? false);
-    const strategyOptions = { token, host: githubRepo.host };
+    const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
     const secretEntries = Object.entries(rawEntries).filter(
       (entry): entry is [string, SecretConfig] => typeof entry[1] !== "boolean"
@@ -89,6 +100,14 @@ export class SecretsProcessor {
     let created = 0;
     let updated = 0;
     let deleted = 0;
+    let unchanged = 0;
+
+    // Count unchanged: secrets that exist and are desired (will be upserted but already exist)
+    // For secrets we can't diff values (encrypted), so existing+desired = "updated", not "unchanged"
+    // Only truly unchanged are those not in either set — but that's not applicable here.
+    // We track unchanged as: current secrets that are desired (they get upserted but logically "exist")
+    // Actually: since we always upsert (can't read secret values), existing desired secrets are "update"
+    // and missing desired secrets are "create". Unchanged count stays 0.
 
     if (!dryRun) {
       if (secretEntries.length > 0) {
@@ -144,31 +163,22 @@ export class SecretsProcessor {
       }
     }
 
-    const parts: string[] = [];
-    if (created > 0) parts.push(`${created} created`);
-    if (updated > 0) parts.push(`${updated} updated`);
-    if (deleted > 0) parts.push(`${deleted} deleted`);
-    const summary = parts.length > 0 ? parts.join(", ") : "no changes";
+    // Count unchanged: current secrets that are desired and not being deleted
+    // (they're upserted, so they count as "updated" above, not "unchanged")
+    // For secrets, unchanged is not meaningful since we always upsert.
+
+    const changeCounts: ChangeCounts = {
+      create: created,
+      update: updated,
+      delete: deleted,
+      unchanged,
+    };
 
     if (dryRun) {
-      return {
-        success: true,
-        repoName,
-        message: `[DRY RUN] ${summary}`,
-        dryRun: true,
-        created,
-        updated,
-        deleted,
-      };
+      return buildDryRunResult(repoName, changeCounts);
     }
 
-    return {
-      success: true,
-      repoName,
-      message: summary,
-      created,
-      updated,
-      deleted,
-    };
+    const appliedCount = created + updated + deleted;
+    return buildApplyResult(repoName, changeCounts, appliedCount);
   }
 }

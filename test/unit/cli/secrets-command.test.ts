@@ -19,9 +19,6 @@ function createMockProcessor(
     success: true,
     repoName: "test-org/test-repo",
     message: "1 created, 0 updated, 0 deleted",
-    created: 1,
-    updated: 0,
-    deleted: 0,
     ...overrides,
   };
   return {
@@ -98,15 +95,11 @@ repos:
 
     const callArgs = processMock.mock.calls[0].arguments;
 
-    const secretsConfig = callArgs[0] as Record<string, unknown>;
-    assert.ok(
-      "DEPLOY_TOKEN" in secretsConfig,
-      "secretsConfig should contain DEPLOY_TOKEN"
-    );
-    assert.deepEqual(
-      (secretsConfig.DEPLOY_TOKEN as { env: string }).env,
-      "TOKEN_SOURCE",
-      "DEPLOY_TOKEN should have env: TOKEN_SOURCE"
+    const repoConfig = callArgs[0] as { git: string };
+    assert.equal(
+      repoConfig.git,
+      "https://github.com/test-org/test-repo",
+      "repoConfig.git should match the repo URL"
     );
 
     const repoInfo = callArgs[1] as { owner: string; repo: string };
@@ -328,9 +321,6 @@ repos:
           success: true,
           repoName: "test-org/repo2",
           message: "1 created, 0 updated, 0 deleted",
-          created: 1,
-          updated: 0,
-          deleted: 0,
         };
       }),
     };

@@ -1,5 +1,6 @@
 export { SecretsProcessor } from "./processor.js";
 export type {
+  ISecretsProcessor,
   SecretsProcessorOptions,
   SecretsProcessorResult,
 } from "./processor.js";

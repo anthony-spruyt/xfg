@@ -9,7 +9,7 @@ import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
-  type SecretsConfig,
+  type ISecretsProcessor,
   type SecretsProcessorResult,
 } from "../secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
@@ -22,12 +22,12 @@ import {
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { resolveGitHubToken } from "../shared/gh-token-utils.js";
-import type { Config } from "../config/index.js";
+import type { Config, RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 
 export interface ISecretsProcessorAdapter {
   process(
-    secretsConfig: SecretsConfig,
+    repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: { dryRun?: boolean; token?: string; noDelete?: boolean }
   ): Promise<SecretsProcessorResult>;
@@ -50,10 +50,10 @@ export interface SecretsSyncOptions {
 }
 
 function createDefaultProcessor(
-  _config: Config,
+  config: Config,
   cwd: string,
   retries: number
-): ISecretsProcessorAdapter {
+): ISecretsProcessor {
   const executor = new ProcessExecutor(process.env);
   const encryptor = new SodiumEncryptor();
   const envResolver = new EnvResolver(process.env);
@@ -61,7 +61,12 @@ function createDefaultProcessor(
     cwd,
     retries,
   });
-  return new SecretsProcessor(strategy, encryptor, envResolver);
+  return new SecretsProcessor(
+    strategy,
+    encryptor,
+    envResolver,
+    config.secrets!
+  );
 }
 
 export async function runSecretsSync(
@@ -120,7 +125,7 @@ export async function runSecretsSync(
           ).token
         : undefined;
 
-      const result = await processor.process(config.secrets, repoInfo, {
+      const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
         token,
         noDelete,
