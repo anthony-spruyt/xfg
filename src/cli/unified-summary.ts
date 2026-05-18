@@ -34,6 +34,49 @@ function selectLabel(
   return dry ? futureLabel : pastLabel;
 }
 
+interface SettingsSummaryDescriptor {
+  key: keyof SettingsReport["totals"];
+  noun: string;
+  plural: string;
+  actions: ("create" | "update" | "delete")[];
+}
+
+const settingsSummaryDescriptors: SettingsSummaryDescriptor[] = [
+  {
+    key: "settings",
+    noun: "setting",
+    plural: "settings",
+    actions: ["create", "update"],
+  },
+  {
+    key: "rulesets",
+    noun: "ruleset",
+    plural: "rulesets",
+    actions: ["create", "update", "delete"],
+  },
+  {
+    key: "labels",
+    noun: "label",
+    plural: "labels",
+    actions: ["create", "update", "delete"],
+  },
+  {
+    key: "variables",
+    noun: "variable",
+    plural: "variables",
+    actions: ["create", "update", "delete"],
+  },
+];
+
+const actionLabels: Record<
+  "create" | "update" | "delete",
+  { past: string; future: string }
+> = {
+  create: { past: "created", future: "to create" },
+  update: { past: "updated", future: "to update" },
+  delete: { past: "deleted", future: "to delete" },
+};
+
 function formatCombinedSummary(input: UnifiedSummaryInput): string {
   const parts: string[] = [];
   const dry = input.dryRun;
@@ -69,50 +112,22 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 
   if (input.settings) {
     const t = input.settings.totals;
-
-    const settingsEntry = formatCountEntry("setting", "settings", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.settings.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.settings.update,
-      },
-    ]);
-    if (settingsEntry) parts.push(settingsEntry);
-
-    const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.rulesets.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.rulesets.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.rulesets.delete,
-      },
-    ]);
-    if (rulesetsEntry) parts.push(rulesetsEntry);
-
-    const labelsEntry = formatCountEntry("label", "labels", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.labels.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.labels.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.labels.delete,
-      },
-    ]);
-    if (labelsEntry) parts.push(labelsEntry);
+    for (const desc of settingsSummaryDescriptors) {
+      const counts = t[desc.key] as Record<string, number>;
+      const entry = formatCountEntry(
+        desc.noun,
+        desc.plural,
+        desc.actions.map((action) => ({
+          label: selectLabel(
+            dry,
+            actionLabels[action].past,
+            actionLabels[action].future
+          ),
+          value: counts[action] ?? 0,
+        }))
+      );
+      if (entry) parts.push(entry);
+    }
   }
 
   if (parts.length === 0) {
@@ -132,6 +147,7 @@ function hasAnyChanges(input: UnifiedSummaryInput): boolean {
         r.settings.length > 0 ||
         r.rulesets.length > 0 ||
         r.labels.length > 0 ||
+        r.variables.length > 0 ||
         r.error
     )
   );
@@ -237,6 +253,7 @@ export function formatUnifiedSummaryMarkdown(
       (settingsRepo.settings.length > 0 ||
         settingsRepo.rulesets.length > 0 ||
         settingsRepo.labels.length > 0 ||
+        settingsRepo.variables.length > 0 ||
         settingsRepo.error);
 
     if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;
