@@ -181,7 +181,6 @@ export function createPR(options: PROptions): Promise<PRResult> {
     });
   }
 
-  // Get the appropriate strategy and execute via workflow executor
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
   const workflow = new PRWorkflowExecutor(resolvedStrategy, log);
@@ -242,7 +241,6 @@ export function mergePR(options: MergePROptions): Promise<MergeResult> {
     });
   }
 
-  // Get the appropriate strategy and execute merge
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
   return resolvedStrategy.merge({

@@ -187,14 +187,17 @@ export function deepMerge(
       const values = overlayValue.$values;
 
       if (
-        (strategy === "replace" ||
-          strategy === "append" ||
-          strategy === "prepend" ||
-          strategy === "merge") &&
+        typeof strategy === "string" &&
+        arrayMergeStrategies.has(strategy as ArrayMergeStrategy) &&
         Array.isArray(values) &&
         Array.isArray(resolvedBase)
       ) {
-        result[key] = mergeArrays(resolvedBase, values, strategy, ctx);
+        result[key] = mergeArrays(
+          resolvedBase,
+          values,
+          strategy as ArrayMergeStrategy,
+          ctx
+        );
         continue;
       }
     }
