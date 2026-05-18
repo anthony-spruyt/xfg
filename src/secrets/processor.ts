@@ -100,14 +100,19 @@ export class SecretsProcessor implements ISecretsProcessor {
     let created = 0;
     let updated = 0;
     let deleted = 0;
-    let unchanged = 0;
 
-    // Count unchanged: secrets that exist and are desired (will be upserted but already exist)
-    // For secrets we can't diff values (encrypted), so existing+desired = "updated", not "unchanged"
-    // Only truly unchanged are those not in either set — but that's not applicable here.
-    // We track unchanged as: current secrets that are desired (they get upserted but logically "exist")
-    // Actually: since we always upsert (can't read secret values), existing desired secrets are "update"
-    // and missing desired secrets are "create". Unchanged count stays 0.
+    // Classify changes (same logic for dry-run and apply)
+    for (const [name] of secretEntries) {
+      if (currentByName.has(name.toUpperCase())) {
+        updated++;
+      } else {
+        created++;
+      }
+    }
+    const orphans = deleteOrphaned
+      ? currentSecrets.filter((s) => !desiredNames.has(s.name.toUpperCase()))
+      : [];
+    deleted = orphans.length;
 
     if (!dryRun) {
       if (secretEntries.length > 0) {
@@ -126,52 +131,19 @@ export class SecretsProcessor implements ISecretsProcessor {
             keyId: publicKey.key_id,
             options: strategyOptions,
           });
-          if (currentByName.has(name.toUpperCase())) {
-            updated++;
-          } else {
-            created++;
-          }
         }
       }
 
-      if (deleteOrphaned) {
-        for (const current of currentSecrets) {
-          if (!desiredNames.has(current.name.toUpperCase())) {
-            await this.strategy.delete(
-              githubRepo,
-              current.name,
-              strategyOptions
-            );
-            deleted++;
-          }
-        }
-      }
-    } else {
-      for (const [name] of secretEntries) {
-        if (currentByName.has(name.toUpperCase())) {
-          updated++;
-        } else {
-          created++;
-        }
-      }
-      if (deleteOrphaned) {
-        for (const current of currentSecrets) {
-          if (!desiredNames.has(current.name.toUpperCase())) {
-            deleted++;
-          }
-        }
+      for (const orphan of orphans) {
+        await this.strategy.delete(githubRepo, orphan.name, strategyOptions);
       }
     }
-
-    // Count unchanged: current secrets that are desired and not being deleted
-    // (they're upserted, so they count as "updated" above, not "unchanged")
-    // For secrets, unchanged is not meaningful since we always upsert.
 
     const changeCounts: ChangeCounts = {
       create: created,
       update: updated,
       delete: deleted,
-      unchanged,
+      unchanged: 0,
     };
 
     if (dryRun) {
