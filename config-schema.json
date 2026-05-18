@@ -36,7 +36,7 @@
     },
     "repos": {
       "type": "array",
-      "description": "List of repository configurations. When using directory-based config, repos can be split across multiple files.",
+      "description": "List of repository configurations. When using directory-based config, repos can be split across multiple files. Directory-based config recursively scans subdirectories.",
       "items": {
         "$ref": "#/definitions/repo"
       }

@@ -6,6 +6,7 @@ import {
   writeFileSync,
   rmSync,
   chmodSync,
+  symlinkSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -183,6 +184,10 @@ describe("loadRawConfig", () => {
             err.message.includes("Failed to read config directory"),
             `Expected 'Failed to read config directory', got: ${err.message}`
           );
+          assert.ok(
+            err.message.includes(configDir),
+            `Expected absolute path '${configDir}' in error, got: ${err.message}`
+          );
           return true;
         }
       );
@@ -342,6 +347,301 @@ describe("loadRawConfig", () => {
           return true;
         }
       );
+    });
+
+    test("flat directory: recursive scan produces same results as before", () => {
+      const configDir = join(tempDir, "flat-recursive");
+      mkdirSync(configDir);
+      writeFileSync(
+        join(configDir, "01-base.yaml"),
+        `id: flat-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "02-repos.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-a.git\n  - git: git@github.com:owner/repo-b.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "flat-test");
+      assert.equal(result.repos.length, 2);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo-a.git");
+      assert.equal(result.repos[1].git, "git@github.com:owner/repo-b.git");
+    });
+
+    test("recursive: discovers nested YAML files in depth-first alphabetical order", () => {
+      const configDir = join(tempDir, "recursive-order");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, "infra"));
+      mkdirSync(join(configDir, "teams"));
+      mkdirSync(join(configDir, "teams", "beta"));
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: recursive-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "shared.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-1.git\n`
+      );
+      writeFileSync(
+        join(configDir, "infra", "shared.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-2.git\n`
+      );
+      writeFileSync(
+        join(configDir, "teams", "alpha.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-3.git\n`
+      );
+      writeFileSync(
+        join(configDir, "teams", "beta.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-4.git\n`
+      );
+      writeFileSync(
+        join(configDir, "teams", "beta", "overrides.yaml"),
+        `repos:\n  - git: git@github.com:owner/repo-5.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "recursive-test");
+      assert.equal(result.repos.length, 5);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo-1.git");
+      assert.equal(result.repos[1].git, "git@github.com:owner/repo-2.git");
+      assert.equal(result.repos[2].git, "git@github.com:owner/repo-3.git");
+      assert.equal(result.repos[3].git, "git@github.com:owner/repo-4.git");
+      assert.equal(result.repos[4].git, "git@github.com:owner/repo-5.git");
+    });
+
+    test("throws ValidationError when directory nesting exceeds maximum depth", () => {
+      const configDir = join(tempDir, "deep-nest");
+      mkdirSync(configDir);
+
+      let current = configDir;
+      for (let i = 0; i < 12; i++) {
+        current = join(current, `level-${i}`);
+        mkdirSync(current);
+      }
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: deep-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(
+        join(current, "deep.yaml"),
+        `repos:\n  - git: git@github.com:owner/deep.git\n`
+      );
+
+      assert.throws(
+        () => loadRawConfig(configDir),
+        (err: unknown) => {
+          assert.ok(
+            err instanceof ValidationError,
+            `Expected ValidationError, got ${String(err)}`
+          );
+          assert.ok(
+            err.message.includes("exceeds maximum depth of 10"),
+            `Expected depth error, got: ${err.message}`
+          );
+          assert.ok(
+            err.message.includes("level-10"),
+            `Expected relative path in error, got: ${err.message}`
+          );
+          return true;
+        }
+      );
+    });
+
+    test("skips hidden files and directories (names starting with dot)", () => {
+      const configDir = join(tempDir, "hidden-test");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, ".git"));
+      mkdirSync(join(configDir, "visible"));
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: hidden-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "visible", "repos.yaml"),
+        `repos:\n  - git: git@github.com:owner/visible.git\n`
+      );
+      writeFileSync(
+        join(configDir, ".hidden.yaml"),
+        `repos:\n  - git: git@github.com:owner/hidden-file.git\n`
+      );
+      writeFileSync(
+        join(configDir, ".git", "config.yaml"),
+        `repos:\n  - git: git@github.com:owner/hidden-dir.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "hidden-test");
+      assert.equal(result.repos.length, 1);
+      assert.equal(result.repos[0].git, "git@github.com:owner/visible.git");
+    });
+
+    test("empty subdirectories and subdirs with no YAML files are skipped without error", () => {
+      const configDir = join(tempDir, "empty-subdirs");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, "empty"));
+      mkdirSync(join(configDir, "no-yaml"));
+      mkdirSync(join(configDir, "has-yaml"));
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: empty-sub-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(join(configDir, "no-yaml", "readme.txt"), "not yaml");
+      writeFileSync(
+        join(configDir, "has-yaml", "extra.yaml"),
+        `repos:\n  - git: git@github.com:owner/from-subdir.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "empty-sub-test");
+      assert.equal(result.repos.length, 2);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo.git");
+      assert.equal(result.repos[1].git, "git@github.com:owner/from-subdir.git");
+    });
+
+    test("skips symlinked directories", () => {
+      const configDir = join(tempDir, "symlink-dir-test");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, "real-subdir"));
+      const realDir = join(tempDir, "real-target");
+      mkdirSync(realDir);
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: symlink-dir-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(
+        join(configDir, "real-subdir", "extra.yaml"),
+        `repos:\n  - git: git@github.com:owner/from-real-subdir.git\n`
+      );
+      writeFileSync(
+        join(realDir, "extra.yaml"),
+        `repos:\n  - git: git@github.com:owner/symlinked.git\n`
+      );
+      symlinkSync(realDir, join(configDir, "linked-dir"));
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "symlink-dir-test");
+      assert.equal(result.repos.length, 2);
+      assert.equal(result.repos[0].git, "git@github.com:owner/repo.git");
+      assert.equal(
+        result.repos[1].git,
+        "git@github.com:owner/from-real-subdir.git"
+      );
+    });
+
+    test("follows symlinked YAML files via isSymbolicLink fallback", () => {
+      const configDir = join(tempDir, "symlink-file-test");
+      mkdirSync(configDir);
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: symlink-file-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      const realFile = join(tempDir, "real-repos.yaml");
+      writeFileSync(
+        realFile,
+        `repos:\n  - git: git@github.com:owner/symlinked-file.git\n`
+      );
+      symlinkSync(realFile, join(configDir, "linked.yaml"));
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "symlink-file-test");
+      assert.equal(result.repos.length, 1);
+      assert.equal(
+        result.repos[0].git,
+        "git@github.com:owner/symlinked-file.git"
+      );
+    });
+
+    test("discovers .yml files alongside .yaml files", () => {
+      const configDir = join(tempDir, "yml-extension-test");
+      mkdirSync(configDir);
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: yml-ext-test\nfiles:\n  .gitkeep:\n    content: ""\n`
+      );
+      writeFileSync(
+        join(configDir, "extra.yml"),
+        `repos:\n  - git: git@github.com:owner/yml-repo.git\n`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "yml-ext-test");
+      assert.equal(result.repos.length, 1);
+      assert.equal(result.repos[0].git, "git@github.com:owner/yml-repo.git");
+    });
+
+    test("file references in nested fragments resolve relative to fragment directory", () => {
+      const configDir = join(tempDir, "fileref-test");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, "teams"));
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: fileref-test\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(
+        join(configDir, "teams", "fragment.yaml"),
+        `files:\n  config.json:\n    content: "@config-data.json"\n`
+      );
+      writeFileSync(
+        join(configDir, "teams", "config-data.json"),
+        `{"key": "value"}`
+      );
+
+      const result = loadRawConfig(configDir);
+
+      assert.equal(result.id, "fileref-test");
+      assert.ok(result.files);
+      assert.deepEqual(result.files["config.json"].content, { key: "value" });
+    });
+
+    test("throws ValidationError when a subdirectory cannot be read (permission denied)", () => {
+      const configDir = join(tempDir, "unreadable-subdir");
+      mkdirSync(configDir);
+      mkdirSync(join(configDir, "blocked"));
+
+      writeFileSync(
+        join(configDir, "base.yaml"),
+        `id: unreadable-sub-test\nfiles:\n  .gitkeep:\n    content: ""\nrepos:\n  - git: git@github.com:owner/repo.git\n`
+      );
+      writeFileSync(
+        join(configDir, "blocked", "fragment.yaml"),
+        `repos:\n  - git: git@github.com:owner/blocked.git\n`
+      );
+      chmodSync(join(configDir, "blocked"), 0o000);
+
+      assert.throws(
+        () => loadRawConfig(configDir),
+        (err: unknown) => {
+          assert.ok(
+            err instanceof ValidationError,
+            `Expected ValidationError, got ${String(err)}`
+          );
+          assert.ok(
+            err.message.includes("Failed to read config directory"),
+            `Expected 'Failed to read config directory', got: ${err.message}`
+          );
+          assert.ok(
+            err.message.includes("blocked"),
+            `Expected relative path 'blocked' in error, got: ${err.message}`
+          );
+          return true;
+        }
+      );
+
+      chmodSync(join(configDir, "blocked"), 0o755);
     });
   });
 });

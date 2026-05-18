@@ -1276,15 +1276,15 @@ repos:
       );
     });
 
-    test("does not recurse into subdirectories", () => {
-      const configDir = join(testDir, "config-norecurse-" + Date.now());
+    test("recurses into subdirectories", () => {
+      const configDir = join(testDir, "config-recurse-" + Date.now());
       const subDir = join(configDir, "subdir");
       mkdirSync(subDir, { recursive: true });
 
       writeFileSync(
         join(configDir, "base.yaml"),
         `
-id: test-norecurse
+id: test-recurse
 files:
   base.json:
     content:
@@ -1305,7 +1305,7 @@ repos:
       );
 
       const config = loadConfig(configDir, {});
-      assert.equal(config.repos.length, 1);
+      assert.equal(config.repos.length, 2);
     });
 
     test("resolves @path file references relative to each fragment file", () => {
