@@ -303,6 +303,7 @@
         },
         "branch": {
           "type": "string",
+          "minLength": 1,
           "description": "Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI --branch flag overrides all."
         }
       }
