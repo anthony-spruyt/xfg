@@ -300,6 +300,10 @@
             "minLength": 1
           },
           "description": "Labels to apply to created PRs/MRs. Labels must exist on the target repository."
+        },
+        "branch": {
+          "type": "string",
+          "description": "Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI --branch flag overrides all."
         }
       }
     },
