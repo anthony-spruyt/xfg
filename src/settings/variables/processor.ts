@@ -43,7 +43,7 @@ export class VariablesProcessor implements IVariablesProcessor {
     return withGitHubGuards(repoConfig, repoInfo, options, {
       hasDesiredSettings: (rc) => {
         const vars = rc.settings?.variables ?? {};
-        const { deleteOrphaned, ...entries } = vars as Record<string, unknown>;
+        const { deleteOrphaned, ...entries } = vars;
         return Object.keys(entries).length > 0 || deleteOrphaned === true;
       },
       emptySettingsMessage: "No variables configured",
@@ -62,9 +62,10 @@ export class VariablesProcessor implements IVariablesProcessor {
     const { dryRun, noDelete } = options;
     const settings = repoConfig.settings;
     const { deleteOrphaned: varDeleteOrphaned = false, ...desiredVariables } =
-      (settings?.variables ?? {}) as Record<string, string> & {
-        deleteOrphaned?: boolean;
-      };
+      settings?.variables ?? {};
+    // After normalization, variable entries are strings (false opt-outs and
+    // meta-keys have been stripped by the normalizer). Cast to the expected type.
+    const typedVariables = desiredVariables as Record<string, string>;
     const deleteOrphaned = varDeleteOrphaned && !(noDelete ?? false);
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
@@ -75,7 +76,7 @@ export class VariablesProcessor implements IVariablesProcessor {
 
     const changes = diffVariables(
       currentVariables,
-      desiredVariables,
+      typedVariables,
       deleteOrphaned
     );
     const changeCounts = countActions(changes);

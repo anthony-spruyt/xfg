@@ -1599,7 +1599,7 @@ describe("validateRawConfig", () => {
       const config = createValidConfig({
         settings: {
           rulesets: {
-            inherit: { target: "branch" },
+            inherit: { target: "branch" } as never,
           },
         },
       });

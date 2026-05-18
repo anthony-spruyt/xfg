@@ -7,11 +7,7 @@ import {
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../shared/env-resolver.js";
-import type { SecretConfig } from "../config/index.js";
-
-export type SecretsConfig = Record<string, SecretConfig | boolean> & {
-  deleteOrphaned?: boolean;
-};
+import type { SecretConfig, SecretsConfig } from "../config/index.js";
 
 export interface SecretsProcessorOptions {
   dryRun?: boolean;

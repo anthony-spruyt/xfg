@@ -26,6 +26,7 @@ import type {
   Ruleset,
   Label,
   GitHubRepoSettings,
+  VariablesConfig,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
 
@@ -407,17 +408,16 @@ export function mergeSettings(
 
   // Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
   const mergedVars = mergeVariablesWithMeta(
-    root?.variables as VariableMap | undefined,
-    perRepo?.variables as VariableMap | undefined
+    root?.variables,
+    perRepo?.variables
   );
   if (mergedVars) {
     const { deleteOrphaned: varDeleteOrphaned, ...varEntries } = mergedVars;
     // Only include if there are actual variable entries, or deleteOrphaned is actionable
     if (Object.keys(varEntries).length > 0 || varDeleteOrphaned) {
-      result.variables = varEntries as Record<string, string>;
+      result.variables = varEntries as VariablesConfig;
       if (varDeleteOrphaned !== undefined) {
-        (result.variables as Record<string, unknown>).deleteOrphaned =
-          varDeleteOrphaned;
+        result.variables.deleteOrphaned = varDeleteOrphaned as boolean;
       }
     }
   }
@@ -433,7 +433,7 @@ function applyFileLayer(
   accumulated: Record<string, RawFileConfig>,
   layerFiles: Record<
     string,
-    RawFileConfig | RawRepoFileOverride | false | undefined
+    RawFileConfig | RawRepoFileOverride | false | boolean | undefined
   >
 ): Record<string, RawFileConfig> {
   const inheritFiles = shouldInherit(layerFiles);
@@ -450,7 +450,7 @@ function applyFileLayer(
       continue;
     }
 
-    if (fileConfig === undefined) continue;
+    if (fileConfig === undefined || fileConfig === true) continue;
 
     const existing = accumulated[fileName];
     if (existing) {
@@ -718,12 +718,14 @@ function mergeConditionalGroups(
 function resolveFileEntry(
   fileName: string,
   fileConfig: RawFileConfig,
-  repoOverride: RawRepoFileOverride | false | undefined,
+  repoOverride: RawRepoFileOverride | false | boolean | undefined,
   inheritFiles: boolean,
   globalDeleteOrphaned: boolean | undefined,
   env: Record<string, string | undefined>
 ): FileContent | null {
   if (repoOverride === false) return null;
+  // true is only valid for the inherit meta-key, not for file entries
+  if (repoOverride === true) return null;
   if (!inheritFiles && !repoOverride) return null;
 
   const fileStrategy = fileConfig.mergeStrategy ?? "replace";
