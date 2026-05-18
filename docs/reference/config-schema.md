@@ -54,6 +54,9 @@ Or configure in `.vscode/settings.json`:
 !!! note "files/settings/groups requirement"
     At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
 
+!!! tip "Multi-file directory config"
+    When passing a directory to `-c`, xfg recursively scans subdirectories for `.yaml` and `.yml` files. See [Multi-File Configuration](../configuration/multi-file.md) for ordering rules and constraints.
+
 ### Settings Object
 
 The `settings` object (at root, group, or repo level) supports the following fields:

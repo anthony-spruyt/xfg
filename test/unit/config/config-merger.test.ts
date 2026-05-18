@@ -282,4 +282,39 @@ describe("mergeConfigFragments", () => {
     assert.ok(result.conditionalGroups);
     assert.equal(result.conditionalGroups.length, 2);
   });
+
+  test("error messages include path-style fileName for nested fragments", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "base.yaml",
+        config: {
+          id: "test",
+          files: { "a.json": { content: {} } },
+          repos: [],
+        },
+      },
+      {
+        fileName: "teams/alpha.yaml",
+        config: {
+          files: { "b.json": { content: {} } },
+          repos: [],
+        },
+      },
+    ];
+
+    assert.throws(
+      () => mergeConfigFragments(fragments),
+      (err: Error) => {
+        assert.ok(
+          err.message.includes("base.yaml"),
+          `Expected 'base.yaml' in message, got: ${err.message}`
+        );
+        assert.ok(
+          err.message.includes("teams/alpha.yaml"),
+          `Expected 'teams/alpha.yaml' in message, got: ${err.message}`
+        );
+        return true;
+      }
+    );
+  });
 });

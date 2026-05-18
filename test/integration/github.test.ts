@@ -933,4 +933,63 @@ files:
       }
     );
   });
+
+  test("sync with recursive directory-based multi-file config", async () => {
+    const configDir = join(tmpDir, "recursive-config");
+    const teamsDir = join(configDir, "teams");
+    mkdirSync(teamsDir, { recursive: true });
+
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `id: integration-test-recursive
+files:
+  ${TARGET_FILE}:
+    content:
+      fromBase: true
+      shared: base-value
+`,
+      "utf-8"
+    );
+
+    writeFileSync(
+      join(teamsDir, "repos.yaml"),
+      `repos:
+  - git: https://github.com/${testRepo}.git
+    files:
+      ${TARGET_FILE}:
+        content:
+          fromNestedDir: true
+`,
+      "utf-8"
+    );
+
+    const output = await exec(`node dist/cli.js sync --config ${configDir}`, {
+      cwd: projectRoot,
+    });
+    console.log(output);
+
+    const pr = await waitForPrVisible(testRepo, BRANCH_NAME);
+    assert.ok(pr.number);
+
+    await withTestRetry(
+      async () => {
+        const raw = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${TARGET_FILE}?ref=${BRANCH_NAME} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(raw);
+        assert.equal(json.fromBase, true, "content from root base.yaml");
+        assert.equal(json.shared, "base-value", "shared content from root");
+        assert.equal(
+          json.fromNestedDir,
+          true,
+          "content from teams/repos.yaml subdirectory"
+        );
+      },
+      {
+        description: "verify recursive multi-file config content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
+    );
+  });
 });
