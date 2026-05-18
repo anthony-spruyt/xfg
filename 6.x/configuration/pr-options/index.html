@@ -1035,6 +1035,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pr-branch-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      PR Branch Name
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cli-override" class="md-nav__link">
     <span class="md-ellipsis">
       CLI Override
@@ -2287,6 +2296,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#pr-branch-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      PR Branch Name
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cli-override" class="md-nav__link">
     <span class="md-ellipsis">
       CLI Override
@@ -2378,6 +2396,11 @@
 <td>Labels to apply to created PRs (GitHub only, more platforms coming)</td>
 <td>-</td>
 </tr>
+<tr>
+<td><code>branch</code></td>
+<td>Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI <code>--branch</code> flag overrides all.</td>
+<td>-</td>
+</tr>
 </tbody>
 </table>
 <h2 id="merge-modes">Merge Modes<a class="headerlink" href="#merge-modes" title="Permanent link">&para;</a></h2>
@@ -2463,16 +2486,32 @@
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </span></code></pre></div>
 <p><strong>Note:</strong> Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. Currently supported on GitHub only.</p>
+<h2 id="pr-branch-name">PR Branch Name<a class="headerlink" href="#pr-branch-name" title="Permanent link">&para;</a></h2>
+<p>Set a custom branch name for sync PRs:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Global branch name</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chore/sync-config</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="c1"># Uses global branch name</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/frontend.git</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">  </span><span class="c1"># Per-repo override</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/special.git</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">      </span><span class="nt">branch</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chore/sync-repo-specific</span>
+</span></code></pre></div>
+<p>When <code>branch</code> is not set, the branch name is auto-generated from the synced file names (e.g., <code>chore/sync-prettierrc</code>). The CLI <code>--branch</code> flag overrides all config values.</p>
 <h2 id="cli-override">CLI Override<a class="headerlink" href="#cli-override" title="Permanent link">&para;</a></h2>
 <p>CLI flags take highest priority:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Disable auto-merge, leave PRs open for review</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>manual
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Force merge all PRs (useful for urgent updates)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>force
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Push directly to default branch without creating PRs</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>direct
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Disable auto-merge, leave PRs open for review</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>manual
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Force merge all PRs (useful for urgent updates)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>force
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="c1"># Push directly to default branch without creating PRs</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--merge<span class="w"> </span>direct
 </span></code></pre></div>
 <h2 id="direct-push-mode">Direct Push Mode<a class="headerlink" href="#direct-push-mode" title="Permanent link">&para;</a></h2>
 <p>The <code>direct</code> mode pushes changes directly to the default branch without creating a PR. This is useful for:</p>
@@ -2481,17 +2520,17 @@
 <li>Internal tools where PR review isn't required</li>
 <li>Quick config updates where you have direct push permissions</li>
 </ul>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">prOptions</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nt">repos</span><span class="p">:</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/internal-tool.git</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">direct</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/internal-tool.git</span>
 </span></code></pre></div>
 <p><strong>Note:</strong> If the target branch has branch protection enabled, the push will fail with a helpful error message suggesting to use <code>merge: force</code> instead.</p>
 <h2 id="github-auto-merge-note">GitHub Auto-Merge Note<a class="headerlink" href="#github-auto-merge-note" title="Permanent link">&para;</a></h2>
 <p>The <code>auto</code> mode requires auto-merge to be enabled in the repository settings. If not enabled, the tool will warn and leave the PR open for manual review.</p>
 <p>Enable it with:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>gh<span class="w"> </span>repo<span class="w"> </span>edit<span class="w"> </span>org/repo<span class="w"> </span>--enable-auto-merge
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>gh<span class="w"> </span>repo<span class="w"> </span>edit<span class="w"> </span>org/repo<span class="w"> </span>--enable-auto-merge
 </span></code></pre></div>
 <h2 id="priority-order">Priority Order<a class="headerlink" href="#priority-order" title="Permanent link">&para;</a></h2>
 <ol>
