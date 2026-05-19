@@ -136,9 +136,9 @@ Replace lines 94-109 of `src/sync/file-writer.ts` (the entire `if (file.createOn
 Key differences from original:
 
 1. Computes `desiredMode`, `currentMode`, populates `modeCache` before deciding action
-1. If mode drifted → emits `{ action: "update", modeOnly: true }` instead of `{ action: "skip" }`
-1. If mode correct → emits `{ action: "skip" }` as before
-1. Mirrors the existing mode-drift pattern at lines 145-152 and 162-172
+2. If mode drifted → emits `{ action: "update", modeOnly: true }` instead of `{ action: "skip" }`
+3. If mode correct → emits `{ action: "skip" }` as before
+4. Mirrors the existing mode-drift pattern at lines 145-152 and 162-172
 
 - [ ] **Step 4: Run test to verify it passes**
 

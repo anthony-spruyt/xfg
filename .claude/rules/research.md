@@ -1,7 +1,6 @@
 # Research Priority
 
-> **NEVER skip steps. NEVER use WebSearch before exhausting other options.**
-> **USE YOUR MCP TOOLS** - Check what tools/plugins are available before falling back to web search.
+> **NEVER skip steps. NEVER use WebSearch before exhausting other options.** **USE YOUR MCP TOOLS** - Check what tools/plugins are available before falling back to web search.
 
 | Step | Tool          | Use For            | Example                                                        |
 | ---- | ------------- | ------------------ | -------------------------------------------------------------- |

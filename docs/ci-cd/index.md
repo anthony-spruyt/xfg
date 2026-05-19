@@ -10,9 +10,9 @@ Run xfg automatically when your config file changes.
 ## General Pattern
 
 1. Trigger on changes to your config file
-1. Install Node.js and xfg
-1. Authenticate with the target platform
-1. Run xfg
+2. Install Node.js and xfg
+3. Authenticate with the target platform
+4. Run xfg
 
 ## Environment Variables
 

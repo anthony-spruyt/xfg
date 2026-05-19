@@ -67,8 +67,8 @@ This mirrors the existing mode-drift-only path at lines 145-153 and 162-173.
 Three new test cases in `file-writer-mode-drift.test.ts`:
 
 1. **createOnly + exists + mode drifted (100644 → 100755)**: `.sh` file with `createOnly: true`, exists on base, current mode `100644`. Should emit `{ action: "update", modeOnly: true, mode: "100755" }` and call `setExecutable`.
-1. **createOnly + exists + mode correct**: `.sh` file with `createOnly: true`, exists on base, current mode `100755`. Should emit explicit `{ action: "skip" }` entry (not absent — createOnly always records a skip entry for logging), no `modeOnly` field, no mode change.
-1. **createOnly + exists + mode drifted + dryRun**: Same as #1 but dryRun. Should log "Would change mode" and increment diffStats, no `setExecutable` call.
+2. **createOnly + exists + mode correct**: `.sh` file with `createOnly: true`, exists on base, current mode `100755`. Should emit explicit `{ action: "skip" }` entry (not absent — createOnly always records a skip entry for logging), no `modeOnly` field, no mode change.
+3. **createOnly + exists + mode drifted + dryRun**: Same as #1 but dryRun. Should log "Would change mode" and increment diffStats, no `setExecutable` call.
 
 Existing createOnly skip test in `file-writer.test.ts` needs minor update: add `getFileMode` mock returning `"100755"` (matching mode) so the new code path computes mode before emitting `skip`. Test assertion unchanged.
 

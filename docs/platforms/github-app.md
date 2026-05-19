@@ -15,22 +15,22 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 ### 1. Create a GitHub App
 
 1. Go to your organization's settings > Developer settings > GitHub Apps
-1. Click "New GitHub App"
-1. Configure permissions:
+2. Click "New GitHub App"
+3. Configure permissions:
    - **Repository permissions:**
      - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc.)_
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
    - **Where can this GitHub App be installed?** Any account
-1. Create the app and note the **Client ID** (starts with `Iv23`)
-1. Generate a **private key** (downloads a .pem file)
+4. Create the app and note the **Client ID** (starts with `Iv23`)
+5. Generate a **private key** (downloads a .pem file)
 
 ### 2. Install the App
 
 1. Go to your app's settings > Install App
-1. Install the app in each organization where xfg will sync configs
-1. Select the repositories the app can access (all or specific repos)
+2. Install the app in each organization where xfg will sync configs
+3. Select the repositories the app can access (all or specific repos)
 
 ### 3. Store Credentials
 
@@ -67,9 +67,9 @@ This approach:
 When GitHub App credentials are provided, xfg:
 
 1. **Generates a JWT** using your Client ID and private key
-1. **Discovers installations** by calling GitHub's API to list all installations
-1. **Generates installation tokens** per-installation (tokens are cached for 55 minutes)
-1. **Uses GraphQL API** for commits with the installation token, creating verified commits
+2. **Discovers installations** by calling GitHub's API to list all installations
+3. **Generates installation tokens** per-installation (tokens are cached for 55 minutes)
+4. **Uses GraphQL API** for commits with the installation token, creating verified commits
 
 This uses GitHub's `createCommitOnBranch` mutation instead of git commands, which:
 
@@ -92,9 +92,9 @@ When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses G
 ## Limitations
 
 1. **Commit author** - Commits appear as the GitHub App, not a custom user
-1. **File size** - Large files (>50MB) should use PAT flow instead
-1. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
-1. **Atomic commits** - All file changes in a single commit (executable file mode changes use a follow-up commit)
+2. **File size** - Large files (>50MB) should use PAT flow instead
+3. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
+4. **Atomic commits** - All file changes in a single commit (executable file mode changes use a follow-up commit)
 
 ## Troubleshooting
 
