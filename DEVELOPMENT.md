@@ -134,8 +134,7 @@ Create a classic `GH_TOKEN` at [GitHub Settings > Developer settings > Personal 
 
 ## SSH Agent Setup
 
-The devcontainer uses SSH agent forwarding via socket mount. Your private keys stay on
-the host and are never copied into the container. Follow the instructions for your platform below.
+The devcontainer uses SSH agent forwarding via socket mount. Your private keys stay on the host and are never copied into the container. Follow the instructions for your platform below.
 
 ### macOS
 
@@ -284,6 +283,7 @@ If the symlink is missing or broken after reboot, ensure `keychain` is installed
    ```
 
 2. Open the folder in VS Code
+
 3. When prompted, click "Reopen in Container" (or run `Dev Containers: Reopen in Container` from the command palette)
 
 Setup is verified automatically when the container is created. The `post-create.sh` script installs dependencies, builds the project, and runs verification tests for Docker-in-Docker, pre-commit hooks, safe-chain, GitHub CLI, SSH agent forwarding, and Claude Code CLI.
