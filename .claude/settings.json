@@ -77,7 +77,7 @@
     "superpowers@claude-plugins-official": true,
     "caveman@caveman": true,
     "agentmemory@agentmemory": true,
-    "context7@claude-plugins-official": true,
+    "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
     "code-review@claude-plugins-official": false,

@@ -28,6 +28,7 @@
         ".lycheeignore",
         ".markdownlint.json",
         ".markdownlintignore",
+        ".mcp.json",
         ".mdformat.toml",
         ".mega-linter-base.yml",
         ".mega-linter.yml",
