@@ -1,3 +1,32 @@
+# GitHub rate-limits unauthenticated requests (429 Too Many Requests)
+https://github.com/.*
+https://raw.githubusercontent.com/.*
+
+# GitHub API URLs require authentication and can't be validated
+https://api.github.com/.*
+
+# VS Code site returns 403 to automated link checkers
+https://code.visualstudio.com/.*
+
+# VS Code Marketplace (intermittent 503s)
+https://marketplace.visualstudio.com/
+
+
+# LAN server URLs use private .lan domains with shell variable substitution
+.*\.lan/.*
+
+# Internal MCP server hostname (not publicly accessible)
+https://litellm/
+
+# Localhost URLs are not reachable in CI/lint environments
+http://localhost.*
+https://localhost.*
+http://127\.0\.0\.1.*
+https://127\.0\.0\.1.*
+
+# Schema store times out intermittently in CI
+https://json\.schemastore\.org/.*
+
 # NPM package page (returns 403 to bots)
 https://www.npmjs.com/package/@aspruyt/xfg
 
@@ -14,9 +43,6 @@ https://host/owner/repo.git
 https://dev.azure.com/myorg/myproject/_git/legacy-app
 https://dev.azure.com/myorg/legacy/_git/old-api
 
-# Internal/LAN URLs
-.*\.lan.*
-
 # Git URL prefixes (not valid HTTP URLs)
 git+https://github.com/anthony-spruyt/xfg.git
 
@@ -32,9 +58,3 @@ https://codecov.io/gh/anthony-spruyt/xfg/graph/badge.svg
 
 # Azure DevOps (intermittent 503s)
 https://dev.azure.com/
-
-# VS Code Marketplace (intermittent 503s)
-https://marketplace.visualstudio.com/
-
-# Internal MCP server hostname (not publicly accessible)
-https://litellm/

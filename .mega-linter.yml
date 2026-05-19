@@ -25,7 +25,11 @@ EXCLUDED_DIRECTORIES:
   - "test-settings-cmd-tmp"
   - "tmp"
   - ".desloppify"
-  - ".claude/worktrees"
+  - "worktrees"
+  - "coverage"
+  - ".output"
+  - "node_modules"
+  - ".git"
 
 # Exclude intentionally invalid test fixtures from JSON linting
 JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "test/fixtures/templates/invalid\\.json"
