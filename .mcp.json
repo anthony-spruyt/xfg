@@ -1,20 +1,17 @@
 {
   "mcpServers": {
-    "agentmemory": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@agentmemory/mcp"],
-      "env": {
-        "AGENTMEMORY_URL": "${AGENTMEMORY_URL}",
-        "AGENTMEMORY_SECRET": "${AGENTMEMORY_SECRET}",
-        "SAFE_CHAIN_LOGGING": "silent"
-      }
-    },
     "bravesearch": {
       "type": "http",
-      "url": "https://brave-search-mcp.lan.${EXTERNAL_DOMAIN}/mcp",
+      "url": "https://litellm.${EXTERNAL_DOMAIN}/bravesearch/mcp",
       "headers": {
-        "X-API-KEY": "${BRAVE_SEARCH_MCP_API_KEY}"
+        "Authorization": "Bearer ${ANTHROPIC_AUTH_TOKEN}"
+      }
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://litellm.${EXTERNAL_DOMAIN}/context7/mcp",
+      "headers": {
+        "Authorization": "Bearer ${ANTHROPIC_AUTH_TOKEN}"
       }
     },
     "cclsp": {

@@ -25,13 +25,13 @@ Repo-operator syncs a thin layer on top.
 ## What `devcontainer-post-create` does at runtime
 
 1. Git safe.directory config
-1. safe-chain shell setup (shims)
-1. pre-commit hook installation
-1. Claude Code CLI install
-1. Podman storage config (auto-detects Kata vs WSL2)
-1. Registry allow-list (enforcing short-name mode)
-1. Calls `setup-devcontainer.sh` for repo-specific setup
-1. Runs verification tests
+2. safe-chain shell setup (shims)
+3. pre-commit hook installation
+4. Claude Code CLI install
+5. Podman storage config (auto-detects Kata vs WSL2)
+6. Registry allow-list (enforcing short-name mode)
+7. Calls `setup-devcontainer.sh` for repo-specific setup
+8. Runs verification tests
 
 ## Security posture
 
