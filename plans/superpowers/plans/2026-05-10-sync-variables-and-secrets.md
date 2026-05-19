@@ -3512,13 +3512,13 @@ Read `src/output/settings-report.ts` and follow the exact pattern used for label
    variables: { name: string; action: ActiveAction; oldValue?: string; newValue?: string }[];
    ```
 
-1. In the `totals` property of the `SettingsReport` interface, add:
+2. In the `totals` property of the `SettingsReport` interface, add:
 
    ```typescript
    variables: { create: number; update: number; delete: number };
    ```
 
-1. In `buildSettingsReport`:
+3. In `buildSettingsReport`:
 
    - Add `variables: { create: 0, update: 0, delete: 0 }` to the `totals` initializer
    - Add `variables: []` to the `repoChanges` initializer (required field, initialized as empty array)
@@ -3573,7 +3573,7 @@ In `src/output/settings-report.ts`, update the following functions to include va
    }
    ```
 
-1. **`formatSettingsReportCLI`** — Update the skip-check to include variables emptiness:
+2. **`formatSettingsReportCLI`** — Update the skip-check to include variables emptiness:
 
    ```typescript
    if (
@@ -3587,7 +3587,7 @@ In `src/output/settings-report.ts`, update the following functions to include va
    }
    ```
 
-1. **`formatSettingsReportMarkdown`** — Update the same skip-check:
+3. **`formatSettingsReportMarkdown`** — Update the same skip-check:
 
    ```typescript
    if (
@@ -3601,7 +3601,7 @@ In `src/output/settings-report.ts`, update the following functions to include va
    }
    ```
 
-1. **`formatSettingsSummary`** — Add a variables entry after the labels entry:
+4. **`formatSettingsSummary`** — Add a variables entry after the labels entry:
 
    ```typescript
    const variablesEntry = formatCountEntry("variable", "variables", [

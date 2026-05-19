@@ -102,8 +102,8 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 Secret values are encrypted using **libsodium sealed box encryption** before being sent to the GitHub API. xfg:
 
 1. Fetches the repository's public key from GitHub
-1. Encrypts the secret value using that public key (libsodium sealed box)
-1. Uploads the encrypted value — GitHub decrypts it server-side
+2. Encrypts the secret value using that public key (libsodium sealed box)
+3. Uploads the encrypted value — GitHub decrypts it server-side
 
 The plaintext value never leaves your environment unencrypted.
 

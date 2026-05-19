@@ -125,9 +125,9 @@ When running with `--dry-run`, xfg shows a plan of changes without applying them
 The `xfg sync` command:
 
 1. Fetches current variables from the GitHub API
-1. Compares them against the desired state in config (case-insensitive matching)
-1. Shows a plan of changes
-1. Creates, updates, or deletes variables to reach the desired state
+2. Compares them against the desired state in config (case-insensitive matching)
+3. Shows a plan of changes
+4. Creates, updates, or deletes variables to reach the desired state
 
 ## GitHub API Reference
 

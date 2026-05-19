@@ -45,7 +45,7 @@ repos:
 xfg uses the `az repos pr` CLI commands to:
 
 1. Create the PR
-1. Enable auto-complete or bypass policies as configured
+2. Enable auto-complete or bypass policies as configured
 
 ## Direct Push Mode
 

@@ -40,8 +40,8 @@ When running blind subjective reviews (subagent reviewers), ALWAYS instruct them
 **NEVER launch more than 3 subagents at a time.** Launching 20 parallel review agents burned the user's entire 5-hour token budget in minutes. Follow this process:
 
 1. Launch 2-3 subagents max in the first batch
-1. Wait for them to complete and verify they produced valid output
-1. Only then launch the next batch of 2-3
-1. Continue until all batches are done
+2. Wait for them to complete and verify they produced valid output
+3. Only then launch the next batch of 2-3
+4. Continue until all batches are done
 
 This applies to ALL subagent work, not just desloppify reviews.

@@ -112,8 +112,8 @@ If auto-merge is not enabled, xfg will warn and leave the PR open for manual rev
 xfg uses the `gh` CLI to:
 
 1. Create the PR with `gh pr create`
-1. Enable auto-merge with `gh pr merge --auto` (if configured)
-1. Force merge with `gh pr merge --admin` (if `merge: force`)
+2. Enable auto-merge with `gh pr merge --auto` (if configured)
+3. Force merge with `gh pr merge --admin` (if `merge: force`)
 
 ## Direct Push Mode
 
