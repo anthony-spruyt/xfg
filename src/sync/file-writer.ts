@@ -97,14 +97,37 @@ export class FileWriter implements IFileWriter {
         baseBranch
       );
       if (existsOnBase) {
-        log.info(
-          `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`
-        );
-        fileChanges.set(file.fileName, {
-          fileName: file.fileName,
-          content: null,
-          action: "skip",
-        });
+        const desiredMode: "100755" | "100644" = shouldBeExecutable(file)
+          ? "100755"
+          : "100644";
+        const currentMode = await gitOps.getFileMode(file.fileName);
+        modeCache.set(file.fileName, currentMode);
+        const modeDiffers = currentMode !== null && currentMode !== desiredMode;
+
+        if (modeDiffers) {
+          fileChanges.set(file.fileName, {
+            fileName: file.fileName,
+            content: null,
+            action: "update",
+            mode: desiredMode,
+            modeOnly: true,
+          });
+          incrementDiffStats(diffStats, "MODIFIED");
+          if (dryRun) {
+            log.info(
+              `Would change mode: ${file.fileName} ${currentMode} -> ${desiredMode}`
+            );
+          }
+        } else {
+          log.info(
+            `Skipping ${file.fileName} (createOnly: exists on ${baseBranch})`
+          );
+          fileChanges.set(file.fileName, {
+            fileName: file.fileName,
+            content: null,
+            action: "skip",
+          });
+        }
         return;
       }
     }

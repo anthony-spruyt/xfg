@@ -144,8 +144,8 @@ gh repo edit org/repo --enable-auto-merge
 ## Priority Order
 
 1. CLI flags (highest)
-1. Per-repo `prOptions`
-1. Conditional group `prOptions` (applied in array order)
-1. Group `prOptions` (applied in order, later groups override earlier ones)
-1. Global `prOptions`
-1. Built-in defaults (lowest)
+2. Per-repo `prOptions`
+3. Conditional group `prOptions` (applied in array order)
+4. Group `prOptions` (applied in order, later groups override earlier ones)
+5. Global `prOptions`
+6. Built-in defaults (lowest)

@@ -1,11 +1,5 @@
 ---
-paths:
-  [
-    test/integration/**/*,
-    test/fixtures/integration-*,
-    .github/workflows/ci.yaml,
-    .github/scripts/*,
-  ]
+paths: [test/integration/**/*, test/fixtures/integration-*, .github/workflows/ci.yaml, .github/scripts/*]
 ---
 
 # Integration Test Guidelines

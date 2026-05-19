@@ -54,8 +54,8 @@ Groups support the same override capabilities as repos:
 When a repo references groups, the merge chain is:
 
 1. **Root files** — base layer
-1. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
-1. **Repo overrides** — final layer
+2. **Group layers** — applied left-to-right in array order (when groups use `extends`, parent groups are automatically included before the child)
+3. **Repo overrides** — final layer
 
 Each layer deep-merges onto the previous. Later values win for conflicting keys.
 
@@ -410,9 +410,9 @@ This matches repos that have `pre-commit` but **not** `pre-commit-custom-exclude
 Conditional groups merge **after** explicit groups and **before** repo overrides:
 
 1. **Root files/settings** — base layer
-1. **Explicit group layers** — applied left-to-right
-1. **Conditional group layers** — applied in array order
-1. **Repo overrides** — final layer
+2. **Explicit group layers** — applied left-to-right
+3. **Conditional group layers** — applied in array order
+4. **Repo overrides** — final layer
 
 Later conditional groups override earlier ones when they conflict.
 

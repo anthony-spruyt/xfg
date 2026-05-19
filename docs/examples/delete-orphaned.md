@@ -28,8 +28,8 @@ When you remove `.prettierrc.json` from this config and run xfg again, the file 
 `deleteOrphaned` follows the standard inheritance pattern:
 
 1. **Global default** - Set at root level applies to all files
-1. **Per-file** - Overrides global default for specific files
-1. **Per-repo** - Overrides both global and per-file for specific repos
+2. **Per-file** - Overrides global default for specific files
+3. **Per-repo** - Overrides both global and per-file for specific repos
 
 ### Global Default
 
