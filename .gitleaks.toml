@@ -12,6 +12,9 @@ useDefault = true
 paths = [
   '''test/fixtures/test-fixtures\.ts$''',
   '''fixtures/test-fixtures\.ts$''',
+  '''.desloppify/''',
+  '''.claude/worktrees/''',
+  '''coverage/''',
 ]
 
 # --- IP/CIDR Leakage Prevention ---
