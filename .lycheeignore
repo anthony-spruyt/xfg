@@ -35,3 +35,6 @@ https://dev.azure.com/
 
 # VS Code Marketplace (intermittent 503s)
 https://marketplace.visualstudio.com/
+
+# Internal MCP server hostname (not publicly accessible)
+https://litellm/
