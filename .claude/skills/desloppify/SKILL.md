@@ -1,6 +1,6 @@
 ---
 name: desloppify
-description: >
+description: >-
   Codebase health scanner and technical debt tracker. Use when the user asks
   about code quality, technical debt, dead code, large files, god classes,
   duplicate functions, code smells, naming issues, import cycles, or coupling
@@ -9,6 +9,7 @@ description: >
 ---
 
 <!-- desloppify-begin -->
+
 <!-- desloppify-skill-version: 6 -->
 
 # Desloppify
@@ -92,8 +93,7 @@ git push -u origin desloppify/code-health
 # 6. Repeat until the queue is empty
 ```
 
-Score may temporarily drop after fixes — cascade effects are normal, keep going.
-If `next` suggests an auto-fixer, run `desloppify autofix <fixer> --dry-run` to preview, then apply.
+Score may temporarily drop after fixes — cascade effects are normal, keep going. If `next` suggests an auto-fixer, run `desloppify autofix <fixer> --dry-run` to preview, then apply.
 
 **When the queue is clear, go back to Phase 1.** New issues will surface, cascades will have resolved, priorities will have shifted. This is the cycle.
 
@@ -327,4 +327,5 @@ Orchestrate triage with per-stage subagents:
 3. Complete: `desloppify plan triage --complete --strategy "..." --attestation "..."`
 
 <!-- desloppify-overlay: claude -->
+
 <!-- desloppify-end -->

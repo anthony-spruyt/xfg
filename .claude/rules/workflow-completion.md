@@ -13,6 +13,7 @@ When you complete code changes and verification passes (build/test/lint), **comm
 The workflow is: fix → verify → commit → push → report done. All one motion.
 
 **Only pause for confirmation on:**
+
 - Force push
 - Destructive git operations
 

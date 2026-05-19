@@ -160,9 +160,9 @@ jobs:
 ## Creating a PAT
 
 1. Go to **Settings** > **Developer settings** > **Personal access tokens** > **Tokens (classic)**
-1. Click **Generate new token (classic)**
-1. Select the `repo` scope
-1. Copy the token and add it as a repository secret named `GH_PAT`
+2. Click **Generate new token (classic)**
+3. Select the `repo` scope
+4. Copy the token and add it as a repository secret named `GH_PAT`
 
 ## Multiple Config Files
 

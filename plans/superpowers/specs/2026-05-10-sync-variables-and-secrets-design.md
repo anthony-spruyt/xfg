@@ -11,7 +11,7 @@ xfg syncs files, labels, rulesets, and repo settings — but not CI variables or
 Two features with different sync lifecycles:
 
 1. **Variables** — part of normal `xfg sync` settings flow
-1. **Secrets** — separate `xfg secrets sync` command
+2. **Secrets** — separate `xfg secrets sync` command
 
 ### Why separate commands?
 

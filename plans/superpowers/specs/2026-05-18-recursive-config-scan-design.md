@@ -30,9 +30,9 @@ Make `loadRawConfigFromDirectory` scan recursively. No new flags, no schema chan
 At each directory level:
 
 1. Collect non-hidden `.yaml`/`.yml` files, sort alphabetically
-1. Collect non-hidden, non-symlinked subdirectories, sort alphabetically
-1. Add files to result list
-1. Recurse into each subdirectory in order
+2. Collect non-hidden, non-symlinked subdirectories, sort alphabetically
+3. Add files to result list
+4. Recurse into each subdirectory in order
 
 Files at a given level always appear before files from subdirectories of that level. Subdirectories are processed in alphabetical order, and the same rule applies recursively within each subdirectory.
 

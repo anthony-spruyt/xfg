@@ -7,9 +7,9 @@ xfg can automatically create, fork, or migrate repositories before syncing files
 Before processing each repo, xfg checks if the target repository exists:
 
 1. **Exists** - Proceed normally with sync/settings
-1. **Missing** - Create an empty repo
-1. **Missing + `upstream`** - Fork from the upstream repo
-1. **Missing + `source`** - Clone source with `--mirror` and push to new target
+2. **Missing** - Create an empty repo
+3. **Missing + `upstream`** - Fork from the upstream repo
+4. **Missing + `source`** - Clone source with `--mirror` and push to new target
 
 ## Fields
 
@@ -50,8 +50,8 @@ repos:
 When the target repo doesn't exist, xfg will:
 
 1. Detect whether the target owner is an organization or user
-1. Fork the upstream repo accordingly
-1. Continue with normal sync/settings
+2. Fork the upstream repo accordingly
+3. Continue with normal sync/settings
 
 If the repo already exists, the `upstream` field is ignored.
 
@@ -92,10 +92,10 @@ repos:
 When `my-org/migrated-app` doesn't exist, xfg will:
 
 1. Clone `legacy-app` from Azure DevOps with `--mirror` (all branches and tags)
-1. Create `migrated-app` on GitHub
-1. Push the mirrored content to the new repo
-1. Clean up the temporary clone
-1. Continue with normal sync/settings
+2. Create `migrated-app` on GitHub
+3. Push the mirrored content to the new repo
+4. Clean up the temporary clone
+5. Continue with normal sync/settings
 
 If the repo already exists, the `source` field is ignored.
 

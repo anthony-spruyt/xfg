@@ -199,4 +199,80 @@ describe("FileWriter mode drift", () => {
     );
     assert.equal(fileDiffs.length, 0);
   });
+
+  test("createOnly file with mode drift emits modeOnly update and calls setExecutable", async () => {
+    const execCalls: string[] = [];
+    const files: FileContent[] = [
+      {
+        fileName: "scripts/setup.sh",
+        content: "same content\n",
+        createOnly: true,
+      },
+    ];
+    const result = await new FileWriter().writeFiles(files, ctx, {
+      gitOps: makeGitOpsStub({
+        setExecutable: async (name: string) => {
+          execCalls.push(name);
+        },
+      }),
+      log: silentLogger,
+    });
+    const change = result.fileChanges.get("scripts/setup.sh");
+    assert.ok(change, "expected modeOnly fileChange for createOnly .sh file");
+    assert.equal(change!.action, "update");
+    assert.equal(change!.modeOnly, true);
+    assert.equal(change!.mode, "100755");
+    assert.equal(change!.content, null);
+    assert.deepEqual(execCalls, ["scripts/setup.sh"]);
+  });
+
+  test("createOnly file with correct mode emits skip", async () => {
+    const files: FileContent[] = [
+      {
+        fileName: "scripts/setup.sh",
+        content: "same content\n",
+        createOnly: true,
+      },
+    ];
+    const result = await new FileWriter().writeFiles(files, ctx, {
+      gitOps: makeGitOpsStub({
+        getFileMode: async () => "100755",
+      }),
+      log: silentLogger,
+    });
+    const change = result.fileChanges.get("scripts/setup.sh");
+    assert.ok(change, "expected skip entry for createOnly file");
+    assert.equal(change!.action, "skip");
+    assert.equal(change!.modeOnly, undefined);
+  });
+
+  test("createOnly file with mode drift in dry-run reports MODIFIED", async () => {
+    const infos: string[] = [];
+    const files: FileContent[] = [
+      {
+        fileName: "scripts/setup.sh",
+        content: "same content\n",
+        createOnly: true,
+      },
+    ];
+    const result = await new FileWriter().writeFiles(
+      files,
+      { ...ctx, dryRun: true },
+      {
+        gitOps: makeGitOpsStub(),
+        log: {
+          ...silentLogger,
+          info: (m: string) => {
+            infos.push(m);
+          },
+        } as unknown as ILogger,
+      }
+    );
+    assert.equal(result.diffStats.modifiedCount, 1);
+    assert.ok(
+      infos.some((m) =>
+        /Would change mode.*scripts\/setup\.sh.*100644.*100755/.test(m)
+      )
+    );
+  });
 });

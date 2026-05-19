@@ -26,9 +26,9 @@ npm run dev      # Run CLI via ts-node
 **MUST pass before any PR:**
 
 1. `npm test` - Unit tests
-1. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
-1. `./lint.sh` - Linting
-1. Integration tests (for ALL behavioral changes that integration tests can cover):
+2. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
+3. `./lint.sh` - Linting
+4. Integration tests (for ALL behavioral changes that integration tests can cover):
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`

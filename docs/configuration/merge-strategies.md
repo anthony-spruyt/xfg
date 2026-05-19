@@ -132,10 +132,10 @@ The `merge` strategy matches array items by an identity key and deep-merges matc
 **How it works:**
 
 1. xfg auto-detects the identity key by checking candidates in order: `type`, `actor_id`
-1. The first candidate key present in every item of both arrays wins
-1. For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended
-1. Unmatched base items are preserved in their original position
-1. Nested `$arrayMerge` directives inside matched items are honored (deep-merge recurses)
+2. The first candidate key present in every item of both arrays wins
+3. For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended
+4. Unmatched base items are preserved in their original position
+5. Nested `$arrayMerge` directives inside matched items are honored (deep-merge recurses)
 
 **When no match key is found** (e.g. primitive arrays or objects without `type`/`actor_id`), the strategy falls back to `append` behavior.
 
