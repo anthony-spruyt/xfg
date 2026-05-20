@@ -9,6 +9,7 @@
         ".claude/rules/research.md",
         ".claude/rules/tdd.md",
         ".claude/settings.json",
+        ".claude/statusline.sh",
         ".devcontainer/.gitignore",
         ".devcontainer/devcontainer.json",
         ".devcontainer/Dockerfile",
@@ -47,7 +48,6 @@
         "LICENSE",
         "lint-config.sh",
         "lint.sh",
-        "statusline.sh",
         "trivy.yaml"
       ]
     }
