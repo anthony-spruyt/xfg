@@ -2,20 +2,29 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "alwaysThinkingEnabled": true,
   "fastMode": false,
-  "model": "claude-opus-4-6[1m]",
   "autoUpdatesChannel": "latest",
+  "cleanupPeriodDays": 20,
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "channelsEnabled": false,
+  "includeCoAuthoredBy": false,
+  "respectGitignore": true,
+  "feedbackSurveyRate": 0,
+  "showClearContextOnPlanAccept": true,
+  "showThinkingSummaries": true,
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'input=$(cat); project_dir=$(echo \"$input\" | jq -r \".workspace.project_dir\"); bash \"$project_dir/.claude/statusline.sh\" <<< \"$input\"'"
+  },
   "effortLevel": "xhigh",
-  "viewMode": "verbose",
+  "viewMode": "default",
   "autoMemoryEnabled": false,
   "skipDangerousModePermissionPrompt": true,
   "permissions": {
     "defaultMode": "bypassPermissions",
     "deny": [
-      "mcp__bravesearch__brave_local_search",
-      "mcp__bravesearch__brave_video_search",
-      "mcp__bravesearch__brave_image_search",
-      "mcp__bravesearch__brave_news_search",
-      "mcp__bravesearch__brave_summarizer",
       "Read(./**/*id_rsa*)",
       "Read(./**/*id_ed25519*)",
       "Read(./**/*id_ecdsa*)",
@@ -87,6 +96,13 @@
     "security-guidance@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
+    "agentmemory": {
+      "autoUpdate": true,
+      "source": {
+        "source": "github",
+        "repo": "rohitg00/agentmemory"
+      }
+    },
     "aspruyt-plugins": {
       "autoUpdate": true,
       "source": {
@@ -99,13 +115,6 @@
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
-      }
-    },
-    "agentmemory": {
-      "autoUpdate": true,
-      "source": {
-        "source": "github",
-        "repo": "rohitg00/agentmemory"
       }
     }
   }
