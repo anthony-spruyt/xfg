@@ -13,6 +13,7 @@
   },
   "search.exclude": {
     "**/node_modules": true,
+    ".output/updated_sources": true,
     "coverage": true,
     ".output": true
   },

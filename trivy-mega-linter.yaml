@@ -8,6 +8,6 @@ exit-code: 1
 exit-on-eol: 2
 scan:
   scanners:
-    - "vuln"
+    - "license"
     - "secret"
 ignorefile: ".trivyignore.yaml"

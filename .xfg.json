@@ -48,7 +48,7 @@
         "LICENSE",
         "lint-config.sh",
         "lint.sh",
-        "trivy.yaml"
+        "trivy-mega-linter.yaml"
       ]
     }
   }

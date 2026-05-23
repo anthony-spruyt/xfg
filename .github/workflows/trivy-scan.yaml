@@ -11,7 +11,7 @@ permissions:
   security-events: "write"
   packages: "read"
 jobs:
-  fs-scan:
+  scan-fs:
     uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-fs.yaml@main"
-  image-scan:
+  scan-image:
     uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-img.yaml@main"

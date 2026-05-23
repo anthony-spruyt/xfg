@@ -28,3 +28,6 @@ REPOSITORY_SECRETLINT_ARGUMENTS:
   - "--secretlintignore"
   - ".secretlintignore"
 SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
+REPOSITORY_TRIVY_ARGUMENTS:
+  - "--config"
+  - "trivy-mega-linter.yaml"
