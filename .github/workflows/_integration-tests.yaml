@@ -21,6 +21,11 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -49,6 +54,11 @@ jobs:
       cancel-in-progress: false
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -74,6 +84,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -91,6 +106,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -113,6 +133,11 @@ jobs:
     needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -131,6 +156,11 @@ jobs:
     needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -149,6 +179,11 @@ jobs:
     needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
         with:
@@ -226,6 +261,11 @@ jobs:
     needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
         with:
@@ -305,6 +345,11 @@ jobs:
     needs: [integration-test-cli-lifecycle-github-app, integration-test-action-sync-pat, integration-test-action-sync-app]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
         with:
@@ -352,6 +397,11 @@ jobs:
     needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -374,6 +424,11 @@ jobs:
     needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -397,6 +452,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
 
@@ -418,6 +478,11 @@ jobs:
       OWNER: spruyt-labs
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
         with:
@@ -466,6 +531,11 @@ jobs:
       OWNER: spruyt-labs
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/integration-test-setup
         with:
