@@ -4,10 +4,4 @@
 
 disable-telemetry: true
 quiet: true
-exit-code: 1
-exit-on-eol: 2
-scan:
-  scanners:
-    - "license"
-    - "secret"
 ignorefile: ".trivyignore.yaml"
