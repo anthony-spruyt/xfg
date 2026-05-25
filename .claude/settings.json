@@ -1,5 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "respectGitignore": true,
+  "cleanupPeriodDays": 20,
   "env": {
     "ANTHROPIC_API_KEY": "",
     "ENABLE_TOOL_SEARCH": "true",
@@ -16,29 +18,12 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
   },
-  "alwaysThinkingEnabled": true,
-  "fastMode": false,
-  "autoUpdatesChannel": "latest",
-  "cleanupPeriodDays": 20,
   "attribution": {
     "commit": "",
     "pr": ""
   },
-  "channelsEnabled": false,
   "includeCoAuthoredBy": false,
-  "respectGitignore": true,
-  "feedbackSurveyRate": 0,
-  "showClearContextOnPlanAccept": true,
-  "showThinkingSummaries": true,
-  "statusLine": {
-    "type": "command",
-    "command": "bash -c 'input=$(cat); project_dir=$(echo \"$input\" | jq -r \".workspace.project_dir\"); bash \"$project_dir/.claude/statusline.sh\" <<< \"$input\"'"
-  },
-  "effortLevel": "xhigh",
-  "viewMode": "default",
-  "skipDangerousModePermissionPrompt": true,
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "deny": [
       "Read(./**/*id_rsa*)",
       "Read(./**/*id_ed25519*)",
@@ -79,7 +64,8 @@
       "Read(~/.gnupg/**/*)",
       "Read(~/.password-store/*)",
       "Read(~/.password-store/**/*)"
-    ]
+    ],
+    "defaultMode": "bypassPermissions"
   },
   "hooks": {
     "PostToolUse": [
@@ -94,13 +80,17 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash -c 'input=$(cat); project_dir=$(echo \"$input\" | jq -r \".workspace.project_dir\"); bash \"$project_dir/.claude/statusline.sh\" <<< \"$input\"'"
+  },
   "enabledPlugins": {
     "hookify-plus@aspruyt-plugins": true,
     "security-hooks@aspruyt-plugins": true,
     "best-practices@aspruyt-plugins": true,
-    "superpowers@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": false,
     "caveman@caveman": true,
-    "agentmemory@agentmemory": true,
+    "agentmemory@agentmemory": false,
     "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
@@ -112,25 +102,35 @@
   },
   "extraKnownMarketplaces": {
     "agentmemory": {
-      "autoUpdate": true,
       "source": {
         "source": "github",
         "repo": "rohitg00/agentmemory"
-      }
+      },
+      "autoUpdate": true
     },
     "aspruyt-plugins": {
-      "autoUpdate": true,
       "source": {
         "source": "github",
         "repo": "anthony-spruyt/claude-plugins"
-      }
+      },
+      "autoUpdate": true
     },
     "caveman": {
-      "autoUpdate": true,
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
-      }
+      },
+      "autoUpdate": true
     }
-  }
+  },
+  "viewMode": "default",
+  "feedbackSurveyRate": 0,
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "fastMode": false,
+  "showClearContextOnPlanAccept": true,
+  "autoUpdatesChannel": "latest",
+  "channelsEnabled": false,
+  "showThinkingSummaries": true,
+  "skipDangerousModePermissionPrompt": true
 }
