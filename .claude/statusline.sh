@@ -1,7 +1,7 @@
 #!/bin/bash
 # Source: https://github.com/daniel3303/ClaudeCodeStatusLine
 # Single line: Model | tokens | %used | %remain | think | 5h bar @reset | 7d bar @reset | extra
-
+# shellcheck disable=all
 set -f # disable globbing
 VERSION="1.4.3"
 
