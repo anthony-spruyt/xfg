@@ -79,7 +79,6 @@
     "yaml": "^2.4.5"
   },
   "devDependencies": {
-    "@types/libsodium-wrappers": "^0.8.0",
     "@types/node": "^24.12.2",
     "bottleneck": "^2.19.5",
     "c8": "^11.0.0",
