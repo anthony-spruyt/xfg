@@ -11,8 +11,6 @@
   "containerUser": "vscode",
   "remoteUser": "vscode",
   "runArgs": [
-    "--env-file",
-    "${localEnv:HOME}/.secrets/.env",
     "--security-opt",
     "seccomp=${localWorkspaceFolder}/.devcontainer/podman-seccomp.json",
     "--device",
@@ -21,6 +19,7 @@
   "mounts": [
     "source=${localEnv:HOME}/.ssh/agent.sock,target=/ssh-agent,type=bind",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
+    "source=${localEnv:HOME}/.secrets/.env,target=/home/vscode/.secrets/.env,type=bind",
     "source=${localWorkspaceFolderBasename}-containers,target=/var/lib/containers,type=volume"
   ],
   "containerEnv": {
