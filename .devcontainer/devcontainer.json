@@ -16,17 +16,16 @@
     "--device",
     "/dev/fuse",
     "--env-file",
-    "${localEnv:HOME}/.secrets/.env"
+    "${localEnv:HOME}/.secrets/.env.common",
+    "--env-file",
+    "${localEnv:HOME}/.secrets/.env.xfg"
   ],
   "mounts": [
+    "source=${localEnv:HOME}/.secrets/.gitignore,target=/home/vscode/.secrets/.gitignore,type=bind,readonly",
     "source=${localEnv:HOME}/.ssh/agent.sock,target=/ssh-agent,type=bind",
     "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude,type=bind",
     "source=${localWorkspaceFolderBasename}-containers,target=/var/lib/containers,type=volume"
   ],
-  "containerEnv": {
-    "SSH_AUTH_SOCK": "/ssh-agent",
-    "NEXUS_DOCKER_URL": "${localEnv:NEXUS_DOCKER_URL}"
-  },
   "features": {
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
       "version": "43.122.0"
