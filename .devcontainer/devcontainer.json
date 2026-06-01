@@ -28,9 +28,11 @@
   ],
   "features": {
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
-      "version": "43.122.0"
+      "version": "43.205.3"
     },
-    "ghcr.io/devcontainers/features/azure-cli": {}
+    "ghcr.io/devcontainers/features/azure-cli": {
+      "version": "2.86.0"
+    }
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
   "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && devcontainer-post-create\"",
