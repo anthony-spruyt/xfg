@@ -91,7 +91,6 @@
     "best-practices@aspruyt-plugins": true,
     "superpowers@claude-plugins-official": false,
     "caveman@caveman": true,
-    "agentmemory@agentmemory": false,
     "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
@@ -102,13 +101,6 @@
     "security-guidance@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
-    "agentmemory": {
-      "source": {
-        "source": "github",
-        "repo": "rohitg00/agentmemory"
-      },
-      "autoUpdate": true
-    },
     "aspruyt-plugins": {
       "source": {
         "source": "github",
