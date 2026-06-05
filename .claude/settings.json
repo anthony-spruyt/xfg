@@ -17,7 +17,8 @@
     "CLAUDE_CODE_MAX_RETRIES": "100",
     "CLAUDE_CODE_SYNC_PLUGIN_INSTALL": "1",
     "CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS": "120000",
-    "ENABLE_TOOL_SEARCH": "true"
+    "ENABLE_TOOL_SEARCH": "true",
+    "ANTHROPIC_CUSTOM_HEADERS": "x-hindsight-bank: xfg"
   },
   "attribution": {
     "commit": "",
