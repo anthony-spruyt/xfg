@@ -71,7 +71,7 @@
     "url": "https://github.com/sponsors/anthony-spruyt"
   },
   "dependencies": {
-    "chalk": "^5.3.0",
+    "chalk": "^6.0.0",
     "commander": "^15.0.0",
     "json5": "^2.2.3",
     "libsodium-wrappers": "^0.8.4",
