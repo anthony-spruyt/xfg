@@ -17,8 +17,7 @@
     "CLAUDE_CODE_MAX_RETRIES": "100",
     "CLAUDE_CODE_SYNC_PLUGIN_INSTALL": "1",
     "CLAUDE_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS": "120000",
-    "ENABLE_TOOL_SEARCH": "true",
-    "ANTHROPIC_CUSTOM_HEADERS": "x-hindsight-bank: xfg"
+    "ENABLE_TOOL_SEARCH": "true"
   },
   "attribution": {
     "commit": "",
@@ -91,7 +90,6 @@
     "security-hooks@aspruyt-plugins": true,
     "best-practices@aspruyt-plugins": true,
     "superpowers@claude-plugins-official": false,
-    "caveman@caveman": true,
     "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
@@ -106,13 +104,6 @@
       "source": {
         "source": "github",
         "repo": "anthony-spruyt/claude-plugins"
-      },
-      "autoUpdate": true
-    },
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
       },
       "autoUpdate": true
     }
