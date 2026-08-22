@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://litellm.${EXTERNAL_DOMAIN}/mcp",
       "headers": {
-        "x-litellm-api-key": "Bearer ${ANTHROPIC_AUTH_TOKEN}"
+        "x-litellm-api-key": "Bearer ${LITELLM_API_KEY}"
       }
     },
     "cclsp": {
