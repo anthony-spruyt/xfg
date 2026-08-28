@@ -4,15 +4,13 @@ queue_rules:
     batch_size: 1
     max_checks_retries: 3
     merge_conditions:
-      - "#approved-reviews-by >= 1"
       - "-draft"
       - "check-success = summary / Check Results"
-  - name: "release-please"
-    merge_method: "squash"
-    batch_size: 1
-    max_checks_retries: 3
-    merge_conditions:
-      - "-draft"
+      - or:
+          - "#approved-reviews-by >= 1"
+          - and:
+              - "label=autorelease: pending"
+              - "author = repo-operator-release-bot[bot]"
 priority_rules:
   - name: "revert PRs"
     conditions:
@@ -51,8 +49,7 @@ pull_request_rules:
       - "-draft"
       - "-merged"
     actions:
-      queue:
-        name: "release-please"
+      queue: {}
   - name: "emergency merge (break glass)"
     conditions:
       - "label = emergency/merge"
