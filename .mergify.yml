@@ -44,7 +44,7 @@ pull_request_rules:
   - name: "auto-merge release-please PRs"
     conditions:
       - "label=autorelease: pending"
-      - "author = github-actions[bot]"
+      - "author = repo-operator-release-bot[bot]"
       - "head~=^release-please--branches--"
       - "files~=^\\.release-please-manifest\\.json$"
       - "-label = blocked"
@@ -87,7 +87,7 @@ merge_protections:
       - "base = main"
       - "label=autorelease: pending"
     success_conditions:
-      - "author = github-actions[bot]"
+      - "author = repo-operator-release-bot[bot]"
       - "head~=^release-please--branches--"
       - "files~=^\\.release-please-manifest\\.json$"
   - name: "revert-approved"
