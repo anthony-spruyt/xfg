@@ -108,6 +108,7 @@
       "autoUpdate": true
     }
   },
+  "outputStyle": "ELI5",
   "viewMode": "default",
   "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": true,
