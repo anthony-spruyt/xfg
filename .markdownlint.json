@@ -9,6 +9,9 @@
     "line_length": 400,
     "code_block_line_length": 1000
   },
+  "MD024": {
+    "siblings_only": true
+  },
   "MD026": {
     "punctuation": ".,;:!。，；:"
   },
