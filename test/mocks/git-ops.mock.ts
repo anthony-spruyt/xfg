@@ -13,8 +13,7 @@ export interface GitOpsMockConfig {
   defaultBranch?: { branch: string; method: string };
   commitResult?: boolean;
   fileExistsOnBranch?:
-    | boolean
-    | ((fileName: string, branch: string) => boolean);
+    boolean | ((fileName: string, branch: string) => boolean);
 
   // Error simulation
   cloneError?: Error;

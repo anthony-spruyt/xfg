@@ -27,11 +27,7 @@ export type MergeMethod = "merge" | "squash" | "rebase";
 export type AlertsThreshold = "none" | "errors" | "errors_and_warnings" | "all";
 
 export type SecurityAlertsThreshold =
-  | "none"
-  | "critical"
-  | "high_or_higher"
-  | "medium_or_higher"
-  | "all";
+  "none" | "critical" | "high_or_higher" | "medium_or_higher" | "all";
 
 export interface BypassActor {
   actorId: number;

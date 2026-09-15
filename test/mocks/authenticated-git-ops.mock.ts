@@ -11,8 +11,7 @@ export interface AuthenticatedGitOpsMockConfig {
   defaultBranch?: { branch: string; method: string };
   commitResult?: boolean;
   fileExistsOnBranch?:
-    | boolean
-    | ((fileName: string, branch: string) => boolean);
+    boolean | ((fileName: string, branch: string) => boolean);
   lsRemoteResult?: string;
 
   // Error simulation

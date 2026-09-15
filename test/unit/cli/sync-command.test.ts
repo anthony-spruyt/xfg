@@ -429,16 +429,14 @@ repos:
       overrides: Partial<RulesetProcessorResult> = {}
     ): IRulesetProcessor {
       return {
-        process: mock.fn(
-          async (): Promise<RulesetProcessorResult> => ({
-            success: true,
-            repoName: "test/repo",
-            message: "Rulesets synced",
-            skipped: false,
-            planOutput: emptyRulesetPlanOutput(),
-            ...overrides,
-          })
-        ),
+        process: mock.fn(async (): Promise<RulesetProcessorResult> => ({
+          success: true,
+          repoName: "test/repo",
+          message: "Rulesets synced",
+          skipped: false,
+          planOutput: emptyRulesetPlanOutput(),
+          ...overrides,
+        })),
       };
     }
 
@@ -446,16 +444,14 @@ repos:
       overrides: Partial<LabelsProcessorResult> = {}
     ): ILabelsProcessor {
       return {
-        process: mock.fn(
-          async (): Promise<LabelsProcessorResult> => ({
-            success: true,
-            repoName: "test/repo",
-            message: "Labels synced",
-            skipped: false,
-            planOutput: emptyLabelsPlanOutput(),
-            ...overrides,
-          })
-        ),
+        process: mock.fn(async (): Promise<LabelsProcessorResult> => ({
+          success: true,
+          repoName: "test/repo",
+          message: "Labels synced",
+          skipped: false,
+          planOutput: emptyLabelsPlanOutput(),
+          ...overrides,
+        })),
       };
     }
 
@@ -463,16 +459,14 @@ repos:
       overrides: Partial<RepoSettingsProcessorResult> = {}
     ): IRepoSettingsProcessor {
       return {
-        process: mock.fn(
-          async (): Promise<RepoSettingsProcessorResult> => ({
-            success: true,
-            repoName: "test/repo",
-            message: "Repo settings synced",
-            skipped: false,
-            planOutput: emptyRepoSettingsPlanOutput(),
-            ...overrides,
-          })
-        ),
+        process: mock.fn(async (): Promise<RepoSettingsProcessorResult> => ({
+          success: true,
+          repoName: "test/repo",
+          message: "Repo settings synced",
+          skipped: false,
+          planOutput: emptyRepoSettingsPlanOutput(),
+          ...overrides,
+        })),
       };
     }
 

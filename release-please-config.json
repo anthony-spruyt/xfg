@@ -42,6 +42,18 @@
     ".": {
       "release-type": "node",
       "component": "xfg",
+      "exclude-paths": [
+        ".claude",
+        ".desloppify",
+        ".devcontainer",
+        ".github",
+        ".vscode",
+        "assets",
+        "docs",
+        "plans",
+        "scripts",
+        "test"
+      ],
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "extra-files": [

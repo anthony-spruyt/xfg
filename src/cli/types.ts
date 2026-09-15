@@ -29,11 +29,7 @@ export type VariablesProcessorFactory =
   SettingsProcessorFactory<IVariablesProcessor>;
 
 export type SettingsKind =
-  | "rulesets"
-  | "labels"
-  | "repo"
-  | "codeScanning"
-  | "variables";
+  "rulesets" | "labels" | "repo" | "codeScanning" | "variables";
 
 export interface SettingsProcessorFactories {
   rulesets: RulesetProcessorFactory;

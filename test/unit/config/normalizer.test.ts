@@ -1754,8 +1754,7 @@ describe("normalizeConfig", () => {
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0];
       assert.equal(prRule?.type, "pull_request");
       const params = prRule?.parameters as
-        | PullRequestRuleParameters
-        | undefined;
+        PullRequestRuleParameters | undefined;
       assert.equal(params?.requiredApprovingReviewCount, 3);
     });
 

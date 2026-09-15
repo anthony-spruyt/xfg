@@ -705,8 +705,7 @@ describe("RulesetProcessor", () => {
       assert.equal(listCalls.length, 1);
 
       const listOptions = listCalls[0].options as
-        | { token?: string; host?: string }
-        | undefined;
+        { token?: string; host?: string } | undefined;
       assert.equal(
         listOptions?.token,
         "pre-resolved-token",
@@ -743,8 +742,7 @@ describe("RulesetProcessor", () => {
 
       const listCalls = freshStrategy.calls.filter((c) => c.method === "list");
       const listOptions = listCalls[0].options as
-        | { token?: string; host?: string }
-        | undefined;
+        { token?: string; host?: string } | undefined;
       assert.equal(
         listOptions?.token,
         undefined,
