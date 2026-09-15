@@ -1,5 +1,8 @@
 ---
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+# Do not rename this file — npm Trusted Publishing authenticates by matching
+# the workflow filename, and that setting cannot be edited in place. A rename
+# fails the publish with ENEEDAUTH after the tag has already been cut.
 name: Release Please
 
 on:

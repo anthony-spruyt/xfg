@@ -470,10 +470,6 @@ Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` enumera
 
 The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6.
 
-### Do not rename `.github/workflows/release.yaml`
-
-npm Trusted Publishing authenticates the publish by matching the workflow filename, and that setting cannot be edited — changing it means deleting the trusted publisher connection and creating a new one. The file runs release-please despite the generic name. Renaming it fails the publish with `ENEEDAUTH`, after the tag has already been cut.
-
 ### Do not remove `last-release-sha`
 
 `release-please-config.json` pins `last-release-sha` to the `v6.4.3` commit. There are 120+ existing tags; without the pin release-please gives up paging tag history, walks all the way back, finds ancient `feat:` commits, and inflates a patch into a minor.
