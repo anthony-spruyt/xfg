@@ -35,9 +35,11 @@ npm run dev      # Run CLI via ts-node
 
 ## Release
 
-```bash
-gh workflow run release.yaml -f version=patch  # or minor/major
-```
+Versions are owned by release-please — never bump `package.json` by hand.
+
+Conventional commits on `main` keep an open release PR labelled `autorelease: pending`. **Merging that PR cuts the release** (tag, floating `vN` tag, npm publish, GitHub Release). It is not auto-merged; a human merges it.
+
+See `DEVELOPMENT.md` → Releases.
 
 ## External Dependencies
 

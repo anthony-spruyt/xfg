@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "always-update": true,
+  "draft": true,
+  "force-tag-creation": true,
+  "last-release-sha": "efe46ac6c4776690185e2975ad9cf42a37ed9ccf",
+  "changelog-sections": [
+    {
+      "type": "feat",
+      "section": "Features"
+    },
+    {
+      "type": "fix",
+      "section": "Bug Fixes"
+    },
+    {
+      "type": "perf",
+      "section": "Performance Improvements"
+    },
+    {
+      "type": "refactor",
+      "section": "Code Refactoring",
+      "hidden": false
+    },
+    {
+      "type": "chore",
+      "section": "Dependencies",
+      "hidden": false
+    },
+    {
+      "type": "docs",
+      "section": "Documentation",
+      "hidden": false
+    },
+    {
+      "type": "ci",
+      "section": "Continuous Integration",
+      "hidden": false
+    }
+  ],
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "component": "xfg",
+      "include-component-in-tag": false,
+      "include-v-in-tag": true,
+      "extra-files": [
+        "README.md",
+        "docs/index.md",
+        "docs/ci-cd/github-actions.md",
+        "docs/platforms/github-app.md"
+      ]
+    }
+  }
+}

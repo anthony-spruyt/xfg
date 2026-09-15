@@ -61,8 +61,8 @@ jobs:
 
       - name: Build released majors from floating tags
         # Source of truth is the `v{N}` floating tags maintained by
-        # release.yaml. The highest one also gets the `latest` alias.
-        # Adding a new major (v6+) needs no changes here — release.yaml
+        # release-please.yaml. The highest one also gets the `latest` alias.
+        # Adding a new major (v7+) needs no changes here — release-please.yaml
         # creates the floating tag and this loop picks it up automatically.
         run: |
           set -euo pipefail

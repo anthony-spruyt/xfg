@@ -435,6 +435,69 @@ For CONTEXT7_API_KEY and other MCP server API keys:
 
 3. Rebuild the devcontainer to pick up the new value.
 
+## Releases
+
+Versions are owned by [release-please](https://github.com/googleapis/release-please). Nobody picks a bump by hand.
+
+### How a release happens
+
+1. You merge conventional-commit PRs to `main`.
+2. The `Release Please` workflow opens (or updates) a release PR labelled `autorelease: pending`. It shows the exact next version and the changelog entry.
+3. **You merge that release PR when you want a release.** That merge is the trigger.
+4. Merging cuts the `vX.Y.Z` tag, moves the floating `vN` tag, publishes `@aspruyt/xfg` to npm with provenance, and publishes the GitHub Release.
+
+Unlike `spruyt-labs` and `container-images`, this repo does **not** auto-merge its release PR. Mergify's auto-merge rule is scoped to `repo-operator-release-bot[bot]`; xfg releases as `xfg-release-bot[bot]`, so the rule never matches and the PR sits open until a human merges it. That is intentional — it is how releases stay manually triggered. Do not "fix" it.
+
+### What bump you get
+
+| Commit prefix                                          | Bump  |
+| ------------------------------------------------------ | ----- |
+| `feat:`                                                | minor |
+| `fix:`, `chore:`, `docs:`, `ci:`, `refactor:`, `perf:` | patch |
+| `feat!:` / any `!` / `BREAKING CHANGE:` footer         | major |
+
+To force a specific version, add a `Release-As:` footer to a commit body:
+
+```text
+chore: bump for 7.0.0
+
+Release-As: 7.0.0
+```
+
+### The floating `vN` tag
+
+Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` enumerates `v[0-9]` tags to publish versioned docs. The publish job moves that tag on every release. If you remove that step, action consumers freeze and versioned docs silently stop updating.
+
+The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6.
+
+### Do not remove `last-release-sha`
+
+`release-please-config.json` pins `last-release-sha` to the `v6.4.3` commit. There are 120+ existing tags; without the pin release-please gives up paging tag history, walks all the way back, finds ancient `feat:` commits, and inflates a patch into a minor.
+
+### Stuck draft release
+
+Releases are created as drafts and published only after npm succeeds. If npm publish fails, you are left with a tag and a draft release:
+
+1. Fix the cause and re-run the failed `Release Please` workflow run.
+
+2. If the version already reached npm, publish the draft by hand:
+
+   ```bash
+   gh release edit vX.Y.Z --draft=false
+   ```
+
+### Dry run
+
+Preview the next release PR without touching anything:
+
+```bash
+npx --yes release-please@latest release-pr --dry-run \
+  --repo-url=anthony-spruyt/xfg \
+  --config-file=release-please-config.json \
+  --manifest-file=.release-please-manifest.json \
+  --token="$(gh auth token)"
+```
+
 ## Development Commands
 
 ```bash

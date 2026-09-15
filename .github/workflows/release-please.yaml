@@ -1,0 +1,121 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Release please
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      version: ${{ steps.release.outputs.version }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
+      # GITHUB_TOKEN cannot open pull requests here, and its pull requests would
+      # not trigger the status checks that pr-rules requires. The app also holds
+      # the tag-rules bypass needed to create tags.
+      - name: Mint app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.RELEASE_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish:
+    name: Publish
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
+      - name: Mint app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.RELEASE_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Update floating major version tag
+        # docs.yaml enumerates these `v{N}` tags to publish versioned docs, and
+        # consumers pin `anthony-spruyt/xfg@v6` — dropping this breaks both.
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          VERSION: ${{ needs.release-please.outputs.version }}
+          TAG_NAME: ${{ needs.release-please.outputs.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          MAJOR=$(echo "${VERSION}" | cut -d. -f1)
+          COMMIT_SHA=$(gh api "repos/$REPO/git/ref/tags/${TAG_NAME}" --jq '.object.sha')
+
+          # Delete and recreate the major version tag (e.g., v3)
+          # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
+          if gh api "repos/$REPO/git/ref/tags/v${MAJOR}" &>/dev/null; then
+            gh api --method DELETE "repos/$REPO/git/refs/tags/v${MAJOR}"
+            echo "Deleted existing v${MAJOR} tag"
+          fi
+          gh api "repos/$REPO/git/refs" \
+            -f ref="refs/tags/v${MAJOR}" \
+            -f sha="$COMMIT_SHA"
+          echo "Updated v${MAJOR} tag to ${COMMIT_SHA}"
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+
+      # Last, so a failed npm publish leaves the release a draft rather than
+      # announcing a version that has no package behind it.
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          draft: false
+          token: ${{ steps.app-token.outputs.token }}
