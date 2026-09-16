@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.5](https://github.com/anthony-spruyt/xfg/compare/v6.4.4...v6.4.5) (2026-09-16)
+
+
+### Bug Fixes
+
+* **release:** trigger publish from the tag instead of release-please output ([#978](https://github.com/anthony-spruyt/xfg/issues/978)) ([4f1803f](https://github.com/anthony-spruyt/xfg/commit/4f1803f60fd603e23f035fae01c47b06336bb006))
+
 ## [6.4.4](https://github.com/anthony-spruyt/xfg/compare/v6.4.3...v6.4.4) (2026-09-15)
 
 
