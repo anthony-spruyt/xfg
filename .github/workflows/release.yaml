@@ -9,12 +9,11 @@ on:
   push:
     branches:
       - main
+    tags:
+      # Three-part only, so the floating `vN` tag this workflow pushes does not
+      # re-enter it. Matching `v*` would make every release publish twice.
+      - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      publish_tag:
-        description: "Re-publish an already-tagged release (e.g. v6.4.4), for when npm failed after the tag was cut"
-        required: false
-        type: string
 
 concurrency:
   group: release-please-${{ github.ref }}
@@ -23,15 +22,11 @@ concurrency:
 jobs:
   release-please:
     name: Release please
-    if: ${{ !inputs.publish_tag }}
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      version: ${{ steps.release.outputs.version }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -58,16 +53,17 @@ jobs:
 
   publish:
     name: Publish
-    needs: release-please
-    # always() so a publish_tag re-run proceeds despite release-please being skipped
-    if: ${{ always() && (needs.release-please.outputs.release_created == 'true' || inputs.publish_tag) }}
+    # Keyed off the tag, not off release-please's output. The tag is the state:
+    # it either exists or it does not, so re-running this job against an already
+    # -tagged release is the ordinary retry path rather than a special mode.
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     environment: npm
     permissions:
       contents: write
       id-token: write
     env:
-      TAG_NAME: ${{ inputs.publish_tag || needs.release-please.outputs.tag_name }}
+      TAG_NAME: ${{ github.ref_name }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -126,14 +122,27 @@ jobs:
             echo "Created v${MAJOR} tag at ${COMMIT_SHA}"
           fi
 
+      - name: Check whether this version is already on npm
+        id: npm-check
+        # Re-running against an existing tag must not fail on the second publish
+        # attempt; npm rejects a duplicate version with E403.
+        run: |
+          VERSION="${TAG_NAME#v}"
+          if npm view "@aspruyt/xfg@${VERSION}" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "@aspruyt/xfg@${VERSION} is already on npm"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to npm
+        if: ${{ steps.npm-check.outputs.published == 'false' }}
         run: npm publish --provenance --access public
 
       # Last, so a failed npm publish leaves the release a draft rather than
       # announcing a version that has no package behind it.
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          draft: false
-          token: ${{ steps.app-token.outputs.token }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+        run: gh release edit "$TAG_NAME" --repo "$REPO" --draft=false

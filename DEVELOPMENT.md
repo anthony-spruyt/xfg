@@ -474,17 +474,17 @@ The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers
 
 `release-please-config.json` pins `last-release-sha` to the `v6.4.3` commit. There are 120+ existing tags; without the pin release-please gives up paging tag history, walks all the way back, finds ancient `feat:` commits, and inflates a patch into a minor.
 
-### Stuck draft release
+### Re-running a publish
 
-Releases are created as drafts and published only after npm succeeds. If npm publish fails, you are left with a tag and a draft release:
+The publish job triggers on the `vX.Y.Z` tag, not on release-please's output, so a release that got as far as a tag can always be published again:
 
-1. Fix the cause and re-run the failed `Release Please` workflow run.
+```bash
+gh workflow run release.yaml --ref vX.Y.Z
+```
 
-2. If the version already reached npm, publish the draft by hand:
+Every step is idempotent — the floating tag move is skipped when it already points at the right commit, npm publish is skipped when the version is already on the registry, and publishing an already-published release is a no-op. Fix whatever failed, re-dispatch against the tag, and the run picks up where it left off.
 
-   ```bash
-   gh release edit vX.Y.Z --draft=false
-   ```
+Releases are created as drafts and published only after npm succeeds, so a failed run never announces a version with no package behind it.
 
 ### Dry run
 
