@@ -1,7 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { exec, execWithRetry, projectRoot } from "./test-helpers.js";
+import { exec, execWithRetry, projectRoot, repoRoot } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -137,7 +137,7 @@ async function getMRByBranch(sourceBranch: string): Promise<{
 }
 
 const RESET_SCRIPT = join(
-  projectRoot,
+  repoRoot,
   ".github/scripts/reset-test-repo-gitlab.sh"
 );
 

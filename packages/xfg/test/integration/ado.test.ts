@@ -1,7 +1,7 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { exec, execWithRetry, projectRoot } from "./test-helpers.js";
+import { exec, execWithRetry, projectRoot, repoRoot } from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -120,10 +120,7 @@ async function pushFileChange(
   await adoApi("POST", uri, JSON.stringify(pushBody));
 }
 
-const RESET_SCRIPT = join(
-  projectRoot,
-  ".github/scripts/reset-test-repo-ado.sh"
-);
+const RESET_SCRIPT = join(repoRoot, ".github/scripts/reset-test-repo-ado.sh");
 
 async function resetTestRepo(): Promise<void> {
   console.log("\n=== Resetting ADO test repo to clean state ===\n");

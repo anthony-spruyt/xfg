@@ -17,6 +17,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 export const projectRoot = join(__dirname, "../..");
 
+// The npm package sits at packages/xfg, but .github/ stays at the repo root.
+export const repoRoot = join(projectRoot, "../..");
+
 /**
  * Execute a shell command and return output.
  * This helper is only used in integration tests with hardcoded commands.
