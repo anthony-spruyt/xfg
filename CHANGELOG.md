@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.6](https://github.com/anthony-spruyt/xfg/compare/v6.4.5...v6.4.6) (2026-09-16)
+
+
+### Dependencies
+
+* move build inputs under packages/xfg ([#980](https://github.com/anthony-spruyt/xfg/issues/980)) ([aff36a2](https://github.com/anthony-spruyt/xfg/commit/aff36a26a42ffeac66bfdb6d0eca8bad7210128d))
+
 ## [6.4.5](https://github.com/anthony-spruyt/xfg/compare/v6.4.4...v6.4.5) (2026-09-16)
 
 
