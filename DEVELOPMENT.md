@@ -500,9 +500,14 @@ npx --yes release-please@latest release-pr --dry-run \
 
 ## Development Commands
 
+The npm package lives in `packages/xfg/`, so npm commands run from there. Only `./lint.sh` runs from the repository root.
+
 ```bash
+cd packages/xfg
 npm run build    # Compile TypeScript
 npm test         # Run unit tests
 npm run dev      # Run CLI via ts-node
+
+cd -
 ./lint.sh        # Run linting (MegaLinter)
 ```

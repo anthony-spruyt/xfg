@@ -16,16 +16,18 @@ runs:
       with:
         node-version: "24"
         cache: "npm"
+        cache-dependency-path: packages/xfg/package-lock.json
 
     - name: Install dependencies
       shell: bash
+      working-directory: packages/xfg
       run: npm ci
 
     - name: Download build artifact
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
       with:
         name: dist
-        path: dist/
+        path: packages/xfg/dist/
 
     - name: Download package artifact
       if: inputs.download-package == 'true'

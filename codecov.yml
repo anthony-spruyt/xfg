@@ -12,45 +12,45 @@ coverage:
 
 ignore:
   # Entry point (just calls parse)
-  - "src/cli.ts"
+  - "packages/xfg/src/cli.ts"
 
   # Re-export only
-  - "src/index.ts"
+  - "packages/xfg/src/index.ts"
 
   # CLI configuration (declarative, tested via integration)
-  - "src/cli/program.ts"
+  - "packages/xfg/src/cli/program.ts"
 
   # Type-only files (no executable code)
-  - "src/cli/types.ts"
-  - "src/config/types.ts"
-  - "src/lifecycle/types.ts"
-  - "src/output/types.ts"
-  - "src/sync/types.ts"
-  - "src/vcs/types.ts"
-  - "src/settings/rulesets/types.ts"
-  - "src/settings/repo-settings/types.ts"
-  - "src/settings/code-scanning/types.ts"
-  - "src/settings/labels/types.ts"
-  - "src/settings/variables/types.ts"
-  - "src/secrets/types.ts"
+  - "packages/xfg/src/cli/types.ts"
+  - "packages/xfg/src/config/types.ts"
+  - "packages/xfg/src/lifecycle/types.ts"
+  - "packages/xfg/src/output/types.ts"
+  - "packages/xfg/src/sync/types.ts"
+  - "packages/xfg/src/vcs/types.ts"
+  - "packages/xfg/src/settings/rulesets/types.ts"
+  - "packages/xfg/src/settings/repo-settings/types.ts"
+  - "packages/xfg/src/settings/code-scanning/types.ts"
+  - "packages/xfg/src/settings/labels/types.ts"
+  - "packages/xfg/src/settings/variables/types.ts"
+  - "packages/xfg/src/secrets/types.ts"
 
   # Re-export index files (no logic, just exports)
-  - "src/cli/index.ts"
-  - "src/config/index.ts"
-  - "src/lifecycle/index.ts"
-  - "src/sync/index.ts"
-  - "src/vcs/index.ts"
-  - "src/shared/index.ts"
-  - "src/output/index.ts"
-  - "src/settings/index.ts"
-  - "src/settings/rulesets/index.ts"
-  - "src/settings/repo-settings/index.ts"
-  - "src/settings/code-scanning/index.ts"
-  - "src/settings/variables/index.ts"
-  - "src/secrets/index.ts"
+  - "packages/xfg/src/cli/index.ts"
+  - "packages/xfg/src/config/index.ts"
+  - "packages/xfg/src/lifecycle/index.ts"
+  - "packages/xfg/src/sync/index.ts"
+  - "packages/xfg/src/vcs/index.ts"
+  - "packages/xfg/src/shared/index.ts"
+  - "packages/xfg/src/output/index.ts"
+  - "packages/xfg/src/settings/index.ts"
+  - "packages/xfg/src/settings/rulesets/index.ts"
+  - "packages/xfg/src/settings/repo-settings/index.ts"
+  - "packages/xfg/src/settings/code-scanning/index.ts"
+  - "packages/xfg/src/settings/variables/index.ts"
+  - "packages/xfg/src/secrets/index.ts"
 
   # Test utilities
-  - "test/mocks/**"
+  - "packages/xfg/test/mocks/**"
 
 comment:
   layout: "reach,diff,flags,files"

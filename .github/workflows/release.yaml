@@ -64,6 +64,9 @@ jobs:
       id-token: write
     env:
       TAG_NAME: ${{ github.ref_name }}
+    defaults:
+      run:
+        working-directory: packages/xfg
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -86,6 +89,7 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
+          cache-dependency-path: packages/xfg/package-lock.json
 
       - name: Install dependencies
         run: npm ci

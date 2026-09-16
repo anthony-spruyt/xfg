@@ -15,7 +15,10 @@ Full docs: <https://anthony-spruyt.github.io/xfg/>
 
 ## Development
 
+The npm package lives in `packages/xfg/` — run npm commands from there. `./lint.sh` runs from the repository root.
+
 ```bash
+cd packages/xfg
 npm run build    # Compile TypeScript
 npm test         # Run unit tests
 npm run dev      # Run CLI via ts-node
@@ -23,7 +26,7 @@ npm run dev      # Run CLI via ts-node
 
 ## Pre-PR Checklist
 
-**MUST pass before any PR:**
+**MUST pass before any PR** (npm commands from `packages/xfg/`, `./lint.sh` from the root):
 
 1. `npm test` - Unit tests
 2. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
@@ -54,9 +57,11 @@ This codebase follows SOLID principles strictly. Do NOT violate these:
 - **Interfaces for testability**: Every collaborator is injected via an interface. Single-impl interfaces are correct and intentional — do NOT inline them or couple to concrete classes.
 - **Composition over inheritance**: Use strategy pattern, delegation, and interface-based injection. Do NOT flatten abstractions or suggest inheritance.
 - **Interface Segregation**: Keep interfaces focused. A class needing only `{ debug(msg: string): void }` should accept that, not the full `ILogger`.
-- **No static coupling in libraries**: `src/shared/` and `src/sync/` modules must not import global singletons. Pass them in.
+- **No static coupling in libraries**: `packages/xfg/src/shared/` and `packages/xfg/src/sync/` modules must not import global singletons. Pass them in.
 
 ## Key Modules
+
+Paths are relative to `packages/xfg/`.
 
 | Module                                    | Purpose                                                                  |
 | ----------------------------------------- | ------------------------------------------------------------------------ |

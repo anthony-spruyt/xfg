@@ -117,7 +117,7 @@ runs:
           echo "Installing xfg from: ${{ inputs.xfg-package }}"
           npm install -g "${{ inputs.xfg-package }}"
         else
-          VERSION=$(node -p "require('${{ github.action_path }}/package.json').version")
+          VERSION=$(node -p "require('${{ github.action_path }}/packages/xfg/package.json').version")
           echo "Installing xfg@${VERSION} (from action release)"
           npm install -g "@aspruyt/xfg@${VERSION}"
         fi

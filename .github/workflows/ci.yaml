@@ -52,7 +52,7 @@ jobs:
             CHANGED=$(git diff --name-only HEAD~1)
           fi
 
-          if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
+          if echo "$CHANGED" | grep -qE '^packages/xfg/(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
             echo "build-needed=true" >> "$GITHUB_OUTPUT"
             echo "Code changes detected"
           else
@@ -66,7 +66,7 @@ jobs:
             if [ "$HAS_LABEL" = "true" ]; then
               echo "integration-needed=true" >> "$GITHUB_OUTPUT"
               echo "PR has 'run-integration' label — integration tests enabled"
-            elif echo "$CHANGED" | grep -qE '^test/integration/'; then
+            elif echo "$CHANGED" | grep -qE '^packages/xfg/test/integration/'; then
               echo "integration-needed=true" >> "$GITHUB_OUTPUT"
               echo "Integration test files changed — integration tests enabled"
             else
@@ -74,7 +74,7 @@ jobs:
               echo "PR without integration label — skipping integration tests"
             fi
           else
-            if echo "$CHANGED" | grep -qE '^(src/|test/|scripts/)'; then
+            if echo "$CHANGED" | grep -qE '^packages/xfg/(src/|test/|scripts/)'; then
               echo "integration-needed=true" >> "$GITHUB_OUTPUT"
               echo "Source changes detected — integration tests needed"
             else
@@ -102,6 +102,10 @@ jobs:
       group: ci-${{ github.ref }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+    defaults:
+      run:
+        working-directory: packages/xfg
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -115,6 +119,7 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
+          cache-dependency-path: packages/xfg/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -129,14 +134,14 @@ jobs:
         uses: codecov/codecov-action@0b35c9ecc4f0529d0eb674914510c22f85b196b4 # v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/lcov.info
+          files: packages/xfg/coverage/lcov.info
           fail_ci_if_error: true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: dist
-          path: dist/
+          path: packages/xfg/dist/
           retention-days: 1
 
       - name: Create package for action tests
@@ -146,7 +151,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: package
-          path: "*.tgz"
+          path: "packages/xfg/*.tgz"
           retention-days: 1
 
   integration-tests:

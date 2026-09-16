@@ -44,6 +44,7 @@ jobs:
       - name: Run Azure DevOps integration tests
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        working-directory: packages/xfg
         run: npm run test:integration:ado
 
   integration-test-cli-sync-gitlab-pat:
@@ -78,6 +79,7 @@ jobs:
       - name: Run GitLab integration tests
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        working-directory: packages/xfg
         run: npm run test:integration:gitlab
 
   integration-test-cli-sync-github-pat:
@@ -100,6 +102,7 @@ jobs:
       - name: Run GitHub integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
         run: npm run test:integration:github
 
   integration-test-cli-sync-github-app:
@@ -126,6 +129,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-app
 
   integration-test-cli-sync-rulesets-pat:
@@ -149,6 +153,7 @@ jobs:
       - name: Run GitHub rulesets integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-rulesets
 
   integration-test-cli-sync-repo-settings-pat:
@@ -172,6 +177,7 @@ jobs:
       - name: Run GitHub repo settings integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-repo-settings
 
   integration-test-action-sync-pat:
@@ -198,7 +204,7 @@ jobs:
           .github/scripts/create-ephemeral-repo-config.sh \
             --fixture "action-pat" "spruyt-labs" \
             "${{ runner.temp }}/config.yaml" \
-            "test/fixtures/integration-test-action-github-pat.yaml"
+            "packages/xfg/test/fixtures/integration-test-action-github-pat.yaml"
 
       # Arrange — seed manifest and configure git identity
       - name: Arrange — seed manifest
@@ -280,7 +286,7 @@ jobs:
           .github/scripts/create-ephemeral-repo-config.sh \
             --fixture "action-app" "spruyt-labs" \
             "${{ runner.temp }}/config.yaml" \
-            "test/fixtures/integration-test-action-github-app.yaml"
+            "packages/xfg/test/fixtures/integration-test-action-github-app.yaml"
 
       # Arrange — seed manifest
       - name: Arrange — seed manifest
@@ -364,7 +370,7 @@ jobs:
           .github/scripts/create-ephemeral-repo-config.sh \
             --fixture "action-settings" "spruyt-labs" \
             "${{ runner.temp }}/config.yaml" \
-            "test/fixtures/integration-test-action-settings-app.yaml"
+            "packages/xfg/test/fixtures/integration-test-action-settings-app.yaml"
 
       # Act — run xfg action (sync handles settings)
       - name: Act — run xfg action
@@ -417,6 +423,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-lifecycle
 
   integration-test-cli-lifecycle-github-app:
@@ -446,6 +453,7 @@ jobs:
           XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-lifecycle-app
 
   integration-test-cli-sync-labels-pat:
@@ -468,6 +476,7 @@ jobs:
       - name: Run GitHub labels integration tests
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
         run: npm run test:integration:github-labels
 
   integration-test-action-lifecycle-pat:

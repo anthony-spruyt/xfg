@@ -39,28 +39,17 @@
     }
   ],
   "packages": {
-    ".": {
+    "packages/xfg": {
       "release-type": "node",
       "component": "xfg",
-      "exclude-paths": [
-        ".claude",
-        ".desloppify",
-        ".devcontainer",
-        ".github",
-        ".vscode",
-        "assets",
-        "docs",
-        "plans",
-        "scripts",
-        "test"
-      ],
+      "changelog-path": "/CHANGELOG.md",
       "include-component-in-tag": false,
       "include-v-in-tag": true,
       "extra-files": [
-        "README.md",
-        "docs/index.md",
-        "docs/ci-cd/github-actions.md",
-        "docs/platforms/github-app.md"
+        "/README.md",
+        "/docs/index.md",
+        "/docs/ci-cd/github-actions.md",
+        "/docs/platforms/github-app.md"
       ]
     }
   }
