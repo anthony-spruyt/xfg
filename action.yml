@@ -110,14 +110,20 @@ runs:
 
     - name: Install xfg
       shell: bash
+      # Values reach the script as env vars, never interpolated into its body:
+      # `${{ }}` inside `run:` is substituted before bash sees it, so a value
+      # containing shell metacharacters would execute.
+      env:
+        XFG_PACKAGE_INPUT: ${{ inputs.xfg-package }}
+        ACTION_PATH: ${{ github.action_path }}
       run: |
-        if [ "${{ inputs.xfg-package }}" = "skip" ]; then
+        if [ "${XFG_PACKAGE_INPUT}" = "skip" ]; then
           echo "Skipping xfg installation (using pre-installed)"
-        elif [ -n "${{ inputs.xfg-package }}" ]; then
-          echo "Installing xfg from: ${{ inputs.xfg-package }}"
-          npm install -g "${{ inputs.xfg-package }}"
+        elif [ -n "${XFG_PACKAGE_INPUT}" ]; then
+          echo "Installing xfg from: ${XFG_PACKAGE_INPUT}"
+          npm install -g "${XFG_PACKAGE_INPUT}"
         else
-          VERSION=$(node -p "require('${{ github.action_path }}/packages/xfg/package.json').version")
+          VERSION=$(ACTION_PATH="$ACTION_PATH" node -p 'require(process.env.ACTION_PATH + "/packages/xfg/package.json").version')
           echo "Installing xfg@${VERSION} (from action release)"
           npm install -g "@aspruyt/xfg@${VERSION}"
         fi
