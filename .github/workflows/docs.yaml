@@ -11,7 +11,11 @@ on:
       - "!docs/superpowers/**"
       - "mkdocs.yml"
     tags:
-      - "v*"
+      # Floating `vN` tags only. release.yaml moves `vN` *after* pushing the
+      # three-part tag, so a `v*.*.*` trigger checks out before `vN` has moved
+      # and builds the previous release's docs. Matching `v*` fired both and
+      # the `vN` run silently corrected the stale one.
+      - "v[0-9]"
   workflow_dispatch:
 
 permissions:
