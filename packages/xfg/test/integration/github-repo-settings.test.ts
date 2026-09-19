@@ -72,7 +72,7 @@ async function getSecuritySettings(): Promise<{
   automatedSecurityFixes: boolean;
   privateVulnerabilityReporting: boolean;
 }> {
-  let vulnerabilityAlerts = false;
+  let vulnerabilityAlerts: boolean;
   try {
     await execWithRetry(`gh api repos/${testRepo}/vulnerability-alerts`);
     vulnerabilityAlerts = true;
@@ -80,7 +80,7 @@ async function getSecuritySettings(): Promise<{
     vulnerabilityAlerts = false;
   }
 
-  let automatedSecurityFixes = false;
+  let automatedSecurityFixes: boolean;
   try {
     const r = await execWithRetry(
       `gh api repos/${testRepo}/automated-security-fixes`

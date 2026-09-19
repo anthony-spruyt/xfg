@@ -82,14 +82,12 @@ export class FileModeFixupCommitStrategy implements ICommitStrategy {
       return this.inner.commit(options);
     }
 
-    let parentSha: string;
     let baseResult: CommitResult;
 
     if (hasContentChanges) {
       baseResult = await this.inner.commit(options);
-      parentSha = baseResult.sha;
     } else {
-      parentSha = await this.resolveBranchHeadSha(
+      const parentSha = await this.resolveBranchHeadSha(
         options.repoInfo,
         options.branchName,
         options.baseBranch,
