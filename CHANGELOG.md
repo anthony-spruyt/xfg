@@ -1,5 +1,13 @@
 # Changelog
 
+## [6.4.7](https://github.com/anthony-spruyt/xfg/compare/v6.4.6...v6.4.7) (2026-09-19)
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.13.4 ([#984](https://github.com/anthony-spruyt/xfg/issues/984)) ([689c792](https://github.com/anthony-spruyt/xfg/commit/689c79243243c2ff3b89ea4c721a2c632482541d))
+* **deps:** update dependency yaml to v2.9.1 ([#990](https://github.com/anthony-spruyt/xfg/issues/990)) ([cb07c8b](https://github.com/anthony-spruyt/xfg/commit/cb07c8bc715605b3ff86feb2e157846a44d3029c))
+
 ## [6.4.6](https://github.com/anthony-spruyt/xfg/compare/v6.4.5...v6.4.6) (2026-09-16)
 
 
