@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.8](https://github.com/anthony-spruyt/xfg/compare/v6.4.7...v6.4.8) (2026-09-19)
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.13.6 ([#997](https://github.com/anthony-spruyt/xfg/issues/997)) ([3e7d376](https://github.com/anthony-spruyt/xfg/commit/3e7d376fe4f8c25fd14c90e531e50e29b544622a))
+
 ## [6.4.7](https://github.com/anthony-spruyt/xfg/compare/v6.4.6...v6.4.7) (2026-09-19)
 
 
