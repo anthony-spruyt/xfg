@@ -29,7 +29,7 @@ npm install -g "cclsp@${CCLSP_VERSION}"
 
 # Install and build the project
 echo "Installing project dependencies..."
-cd "/workspaces/xfg"
+cd "/workspaces/xfg/packages/xfg"
 npm install
 
 echo "Building project..."
