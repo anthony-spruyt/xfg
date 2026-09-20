@@ -65,8 +65,7 @@
       "Read(~/.gnupg/**/*)",
       "Read(~/.password-store/*)",
       "Read(~/.password-store/**/*)"
-    ],
-    "defaultMode": "bypassPermissions"
+    ]
   },
   "hooks": {
     "PostToolUse": [

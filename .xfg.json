@@ -4,6 +4,7 @@
     "repo-operator": {
       "files": [
         ".claude/hookify-plus/warn-code-scanning-ref.md",
+        ".claude/hookify-plus/warn-comment-density.md",
         ".claude/hookify-plus/warn-trivy-sarif.md",
         ".claude/output-styles/eli5.md",
         ".claude/rules/comments.md",

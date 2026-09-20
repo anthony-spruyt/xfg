@@ -1,13 +1,8 @@
-// Not ESM imports: MegaLinter's packages live on NODE_PATH, which ESM ignores
-import { createRequire } from "node:module";
-
-const require = createRequire(import.meta.url);
-
-const js = require("@eslint/js");
-const tseslint = require("typescript-eslint");
-const prettier = require("eslint-config-prettier");
-const globals = require("globals");
-const { globalIgnores } = require("eslint/config");
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import prettier from "eslint-config-prettier";
+import globals from "globals";
+import { globalIgnores } from "eslint/config";
 
 export default tseslint.config(
   globalIgnores(["dist/", "coverage/", "node_modules/"]),
