@@ -30,6 +30,9 @@ https://json\.schemastore\.org/.*
 # NPM package page (returns 403 to bots)
 https://www.npmjs.com/package/@aspruyt/xfg
 
+# Socket.dev package page (returns 403 to bots)
+https://socket.dev/npm/package/@aspruyt/xfg
+
 # GitLab test repos (403 for unauthenticated requests)
 https://gitlab.com/anthony-spruyt1/xfg-test.git
 
