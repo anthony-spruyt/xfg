@@ -16,6 +16,10 @@ queue_rules:
           - and:
               - "label=autorelease: pending"
               - "author = repo-operator-release-bot[bot]"
+          - and:
+              - "author = repo-operator-release-bot[bot]"
+              - "head~=^chore/megalinter-refresh-"
+              - "-files~=^(?!megalinter-[^/]+/\\.rebuild-stamp$)"
 priority_rules:
   - name: "revert PRs"
     conditions:
@@ -55,6 +59,16 @@ pull_request_rules:
       - "-merged"
     actions:
       queue: {}
+  - name: "auto-merge megalinter refresh PRs"
+    conditions:
+      - "author = repo-operator-release-bot[bot]"
+      - "head~=^chore/megalinter-refresh-"
+      - "-files~=^(?!megalinter-[^/]+/\\.rebuild-stamp$)"
+      - "-label = blocked"
+      - "-draft"
+      - "-merged"
+    actions:
+      queue: {}
   - name: "emergency merge (break glass)"
     conditions:
       - "label = emergency/merge"
@@ -82,8 +96,16 @@ merge_protections:
       - "-label = agent/revert"
       - "-label = emergency/merge"
       - "-label=autorelease: pending"
+      - "-head~=^chore/megalinter-refresh-"
     success_conditions:
       - "#approved-reviews-by >= 1"
+  - name: "megalinter-refresh"
+    if:
+      - "base = main"
+      - "head~=^chore/megalinter-refresh-"
+    success_conditions:
+      - "author = repo-operator-release-bot[bot]"
+      - "-files~=^(?!megalinter-[^/]+/\\.rebuild-stamp$)"
   - name: "release-please"
     if:
       - "base = main"
