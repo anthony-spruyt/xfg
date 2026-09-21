@@ -386,6 +386,11 @@ export interface SecretConfig {
   env: string;
 }
 
+/** Raw secrets map: entries keyed by name, plus the `deleteOrphaned` peer key. */
+export type SecretsConfig = Record<string, SecretConfig | boolean> & {
+  deleteOrphaned?: boolean;
+};
+
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -397,6 +402,8 @@ export interface RepoSettings {
   codeScanning?: CodeScanningSettings;
   /** GitHub Actions variables keyed by name */
   variables?: Record<string, string> & { deleteOrphaned?: boolean };
+  /** GitHub Actions secrets keyed by name */
+  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
   deleteOrphaned?: boolean;
 }
 
@@ -474,6 +481,7 @@ export interface RawRootSettings {
   labels?: Record<string, Label | false>;
   codeScanning?: CodeScanningSettings | false;
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
+  secrets?: SecretsConfig;
   deleteOrphaned?: boolean;
 }
 
@@ -487,6 +495,7 @@ export interface RawRepoSettings {
     inherit?: boolean;
     deleteOrphaned?: boolean;
   };
+  secrets?: SecretsConfig & { inherit?: boolean };
   deleteOrphaned?: boolean;
 }
 
@@ -517,9 +526,8 @@ export interface RawConfig {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RawRootSettings;
-  secrets?: Record<string, SecretConfig | boolean> & {
-    deleteOrphaned?: boolean;
-  };
+  /** @deprecated Root-level secrets moved under `settings.secrets`. Removed in a later step of this change. */
+  secrets?: SecretsConfig;
 }
 
 // File content for a single file in a repo
@@ -555,7 +563,6 @@ export interface Config {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RepoSettings;
-  secrets?: Record<string, SecretConfig | boolean> & {
-    deleteOrphaned?: boolean;
-  };
+  /** @deprecated Secrets are now per-repo under `RepoConfig.settings.secrets`. Removed in a later step of this change. */
+  secrets?: SecretsConfig;
 }

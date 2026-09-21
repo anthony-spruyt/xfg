@@ -6386,26 +6386,40 @@ describe("mergeRawSettings variables", () => {
   });
 });
 
-describe("normalizeConfig secrets", () => {
-  test("passes secrets config through to normalized config", () => {
+describe("mergeRawSettings secrets", () => {
+  test("group-level secrets merge into a repo in that group", () => {
     const raw: RawConfig = {
       id: "test-config",
       files: { "f.json": { content: {} } },
-      repos: [{ git: "git@github.com:org/repo.git" }],
-      secrets: {
-        MY_SECRET: { env: "SOURCE_VAR" },
-        deleteOrphaned: true,
+      settings: {
+        secrets: { ROOT_SECRET: { env: "ROOT_ENV" } },
       },
+      groups: {
+        frontend: {
+          settings: {
+            secrets: { GROUP_SECRET: { env: "GROUP_ENV" } },
+          },
+        },
+      },
+      repos: [
+        { git: "https://github.com/o/web.git", groups: ["frontend"] },
+        { git: "https://github.com/o/api.git" },
+      ],
     };
     const config = normalizeConfig(raw, {});
 
-    assert.deepStrictEqual(
-      (config.secrets as Record<string, unknown>)["MY_SECRET"],
-      { env: "SOURCE_VAR" }
-    );
-    assert.equal(
-      (config.secrets as Record<string, unknown>)["deleteOrphaned"],
-      true
-    );
+    const webSecrets = config.repos[0].settings?.secrets as Record<
+      string,
+      unknown
+    >;
+    assert.deepStrictEqual(webSecrets.ROOT_SECRET, { env: "ROOT_ENV" });
+    assert.deepStrictEqual(webSecrets.GROUP_SECRET, { env: "GROUP_ENV" });
+
+    const apiSecrets = config.repos[1].settings?.secrets as Record<
+      string,
+      unknown
+    >;
+    assert.deepStrictEqual(apiSecrets.ROOT_SECRET, { env: "ROOT_ENV" });
+    assert.equal(apiSecrets.GROUP_SECRET, undefined);
   });
 });

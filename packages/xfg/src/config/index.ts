@@ -31,6 +31,7 @@ export type {
   RawRepoFileOverride,
   RawGroupConfig,
   SecretConfig,
+  SecretsConfig,
   RawRootSettings,
   RawRepoSettings,
   RawRepoConfig,
