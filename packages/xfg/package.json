@@ -42,6 +42,7 @@
     "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",
     "test:integration:github-app": "npm run build && node --import tsx --test test/integration/github-app.test.ts",
     "test:integration:github-rulesets": "npm run build && node --import tsx --test test/integration/github-rulesets.test.ts",
+    "test:integration:github-secrets": "npm run build && node --import tsx --test test/integration/github-secrets.test.ts",
     "test:integration:github-repo-settings": "npm run build && node --import tsx --test test/integration/github-repo-settings.test.ts",
     "test:integration:github-labels": "npm run build && node --import tsx --test test/integration/github-labels.test.ts",
     "test:integration:github-code-scanning": "npm run build && node --import tsx --test test/integration/github-code-scanning.test.ts",
