@@ -6422,4 +6422,63 @@ describe("mergeRawSettings secrets", () => {
     assert.deepStrictEqual(apiSecrets.ROOT_SECRET, { env: "ROOT_ENV" });
     assert.equal(apiSecrets.GROUP_SECRET, undefined);
   });
+
+  test("group-level inherit: false discards root secrets", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        secrets: { ROOT_SECRET: { env: "ROOT_ENV" } },
+      },
+      groups: {
+        isolated: {
+          settings: {
+            secrets: Object.assign(
+              { GROUP_SECRET: { env: "GROUP_ENV" } },
+              { inherit: false }
+            ) as RawRepoSettings["secrets"],
+          },
+        },
+      },
+      repos: [{ git: "https://github.com/o/r.git", groups: ["isolated"] }],
+    };
+    const config = normalizeConfig(raw, {});
+    const secrets = config.repos[0].settings?.secrets as Record<
+      string,
+      unknown
+    >;
+    assert.equal(secrets.ROOT_SECRET, undefined);
+    assert.deepStrictEqual(secrets.GROUP_SECRET, { env: "GROUP_ENV" });
+  });
+});
+
+describe("mergeRawSettings variables deleteOrphaned survives inherit: false", () => {
+  test("group-level inherit: false keeps root variables.deleteOrphaned", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "f.json": { content: {} } },
+      settings: {
+        variables: Object.assign(
+          { ROOT_VAR: "value" },
+          { deleteOrphaned: true }
+        ) as RawRootSettings["variables"],
+      },
+      groups: {
+        isolated: {
+          settings: {
+            variables: Object.assign(
+              { X: "1" },
+              { inherit: false }
+            ) as RawRepoSettings["variables"],
+          },
+        },
+      },
+      repos: [{ git: "https://github.com/o/r.git", groups: ["isolated"] }],
+    };
+    const config = normalizeConfig(raw, {});
+    const vars = config.repos[0].settings?.variables as Record<string, unknown>;
+    assert.equal(vars.ROOT_VAR, undefined);
+    assert.equal(vars.X, "1");
+    assert.equal(vars.deleteOrphaned, true);
+  });
 });
