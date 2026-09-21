@@ -105,6 +105,29 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:github
 
+  integration-test-cli-secrets-github-pat:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/integration-test-setup
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run GitHub secrets integration tests (PAT)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-secrets
+
   integration-test-cli-sync-github-app:
     runs-on: ubuntu-latest
 
