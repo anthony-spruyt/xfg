@@ -29,6 +29,15 @@ concurrency:
 
 jobs:
   deploy:
+    # The release commit fires this twice at the same sha: once for main, once
+    # for the moved `vN` tag. deploy-pages keys deployments on the sha, so the
+    # second (the one that adds the new `N.x` docs) is a no-op and the site keeps
+    # serving the main build. Skip main here so only the tag run deploys.
+    # https://github.com/actions/deploy-pages/issues/383
+    if: >-
+      ${{ github.event_name != 'push'
+          || github.ref_type != 'branch'
+          || !startsWith(github.event.head_commit.message, 'chore(main): release') }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages
