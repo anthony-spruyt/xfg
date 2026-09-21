@@ -107,8 +107,10 @@ jobs:
           MAJOR=$(echo "${TAG_NAME#v}" | cut -d. -f1)
           COMMIT_SHA=$(gh api "repos/$REPO/git/ref/tags/${TAG_NAME}" --jq '.object.sha')
 
-          # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching
-          CURRENT=$(gh api "repos/$REPO/git/ref/tags/v${MAJOR}" --jq '.object.sha' 2>/dev/null || true)
+          # Use git/ref (singular) for exact match — git/refs (plural) does prefix matching.
+          # On 404 gh prints the error body to stdout, so reset CURRENT rather than `|| true`
+          # or the first release of a new major PATCHes a non-existent ref and 422s.
+          CURRENT=$(gh api "repos/$REPO/git/ref/tags/v${MAJOR}" --jq '.object.sha' 2>/dev/null) || CURRENT=""
 
           if [ "$CURRENT" = "$COMMIT_SHA" ]; then
             echo "v${MAJOR} already at ${COMMIT_SHA}"
