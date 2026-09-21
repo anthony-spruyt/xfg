@@ -317,4 +317,68 @@ describe("mergeConfigFragments", () => {
       }
     );
   });
+
+  test("rejects a root-level secrets block with the migration error", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "base.yaml",
+        config: {
+          id: "test",
+          repos: [{ git: "git@github.com:org/repo.git" }],
+        },
+      },
+      {
+        fileName: "secrets.yaml",
+        config: {
+          secrets: { MY_KEY: { env: "MY_KEY_VALUE" } },
+        } as ConfigFragment["config"],
+      },
+    ];
+
+    assert.throws(
+      () => mergeConfigFragments(fragments),
+      (err: Error) => {
+        assert.ok(
+          err.message.includes("secrets.yaml"),
+          `Expected 'secrets.yaml' in message, got: ${err.message}`
+        );
+        assert.ok(
+          err.message.includes("settings.secrets"),
+          `Expected 'settings.secrets' in message, got: ${err.message}`
+        );
+        assert.ok(
+          err.message.includes("migration-v7"),
+          `Expected migration doc link in message, got: ${err.message}`
+        );
+        return true;
+      }
+    );
+  });
+
+  test("merges settings.secrets from one file with repos from another", () => {
+    const fragments: ConfigFragment[] = [
+      {
+        fileName: "settings.yaml",
+        config: {
+          id: "test",
+          settings: { secrets: { MY_KEY: { env: "MY_KEY_VALUE" } } },
+        },
+      },
+      {
+        fileName: "repos.yaml",
+        config: {
+          repos: [
+            { git: "git@github.com:org/a.git" },
+            { git: "git@github.com:org/b.git" },
+          ],
+        },
+      },
+    ];
+
+    const merged = mergeConfigFragments(fragments);
+    assert.deepStrictEqual(merged.settings?.secrets, {
+      MY_KEY: { env: "MY_KEY_VALUE" },
+    });
+    assert.equal(merged.repos.length, 2);
+  });
 });

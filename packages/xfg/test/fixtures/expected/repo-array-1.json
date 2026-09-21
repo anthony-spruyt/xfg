@@ -5,12 +5,7 @@
     "level": "debug",
     "format": "json"
   },
-  "features": [
-    "health-check",
-    "metrics"
-  ],
-  "tags": [
-    "base"
-  ],
+  "features": ["health-check", "metrics"],
+  "tags": ["base"],
   "team": "platform"
 }

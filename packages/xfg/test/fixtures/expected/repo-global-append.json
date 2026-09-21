@@ -1,12 +1,4 @@
 {
-  "features": [
-    "base-feature-1",
-    "base-feature-2",
-    "added-feature"
-  ],
-  "tags": [
-    "tag1",
-    "tag2",
-    "tag3"
-  ]
+  "features": ["base-feature-1", "base-feature-2", "added-feature"],
+  "tags": ["tag1", "tag2", "tag3"]
 }
