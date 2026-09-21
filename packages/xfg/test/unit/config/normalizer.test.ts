@@ -6386,6 +6386,124 @@ describe("mergeRawSettings variables", () => {
   });
 });
 
+describe("mergeSettings secrets", () => {
+  test("repo-level inherit: false clears inherited secrets", () => {
+    const root: RawRootSettings = {
+      secrets: { ROOT_SECRET: { env: "ROOT_ENV" } },
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        { REPO_SECRET: { env: "REPO_ENV" } },
+        { inherit: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.ROOT_SECRET, undefined);
+    assert.deepStrictEqual(secrets.REPO_SECRET, { env: "REPO_ENV" });
+  });
+
+  test("SECRET_NAME: false opts out of a single inherited secret", () => {
+    const root: RawRootSettings = {
+      secrets: {
+        DROP_ME: { env: "DROP_ENV" },
+        KEEP_ME: { env: "KEEP_ENV" },
+      },
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: { DROP_ME: false } as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.DROP_ME, undefined);
+    assert.deepStrictEqual(secrets.KEEP_ME, { env: "KEEP_ENV" });
+  });
+
+  test("repo-level secrets deleteOrphaned overrides root", () => {
+    const root: RawRootSettings = {
+      secrets: Object.assign(
+        { ROOT_SECRET: { env: "ROOT_ENV" } },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["secrets"],
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        {},
+        { deleteOrphaned: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.deleteOrphaned, false);
+    assert.deepStrictEqual(secrets.ROOT_SECRET, { env: "ROOT_ENV" });
+  });
+
+  test("repo-level secrets inherit: false keeps root deleteOrphaned", () => {
+    const root: RawRootSettings = {
+      secrets: Object.assign(
+        { ROOT_SECRET: { env: "ROOT_ENV" } },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["secrets"],
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        { OWN: { env: "OWN_ENV" } },
+        { inherit: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.ROOT_SECRET, undefined);
+    assert.equal(secrets.deleteOrphaned, true);
+  });
+
+  test("secrets with a deleteOrphaned-only repo layer survive as actionable", () => {
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        {},
+        { deleteOrphaned: true }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(undefined, perRepo);
+    assert.equal(
+      (result?.secrets as Record<string, unknown>)?.deleteOrphaned,
+      true
+    );
+  });
+
+  test("empty merged secrets collapse to undefined", () => {
+    const root: RawRootSettings = {
+      secrets: { ONLY: { env: "ONLY_ENV" } },
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        {},
+        { inherit: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    assert.equal(result?.secrets, undefined);
+  });
+
+  test("repo secret with different case replaces the root secret", () => {
+    const root: RawRootSettings = {
+      secrets: { MY_SECRET: { env: "ROOT_ENV" }, OTHER: { env: "OTHER_ENV" } },
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: { my_secret: { env: "REPO_ENV" } },
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(
+      Object.keys(secrets).filter((k) => k.toUpperCase() === "MY_SECRET")
+        .length,
+      1
+    );
+    assert.deepStrictEqual(secrets.my_secret, { env: "REPO_ENV" });
+    assert.equal(secrets.MY_SECRET, undefined);
+  });
+});
+
 describe("mergeRawSettings secrets", () => {
   test("group-level secrets merge into a repo in that group", () => {
     const raw: RawConfig = {
