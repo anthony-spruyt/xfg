@@ -526,8 +526,6 @@ export interface RawConfig {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RawRootSettings;
-  /** @deprecated Root-level secrets moved under `settings.secrets`. Removed in a later step of this change. */
-  secrets?: SecretsConfig;
 }
 
 // File content for a single file in a repo
@@ -563,6 +561,4 @@ export interface Config {
   githubHosts?: string[];
   deleteOrphaned?: boolean;
   settings?: RepoSettings;
-  /** @deprecated Secrets are now per-repo under `RepoConfig.settings.secrets`. Removed in a later step of this change. */
-  secrets?: SecretsConfig;
 }

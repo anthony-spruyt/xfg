@@ -1,42 +1,33 @@
-import { loadRawConfig } from "../config/index.js";
-import { normalizeConfig } from "../config/normalizer.js";
 import {
-  validateRawConfig,
+  loadRawConfig,
+  normalizeConfig,
   validateSecretsConfig,
-  validateVariableSecretOverlaps,
-} from "../config/validator.js";
+  validateNormalizedConfig,
+} from "../config/index.js";
 import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
-} from "../secrets/index.js";
+} from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { SecretsProcessorResult } from "../secrets/processor.js";
-import type { SecretConfig, Config } from "../config/index.js";
+import type { SecretsProcessorResult } from "../settings/secrets/index.js";
+import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
-
-type SecretsConfig = Record<string, SecretConfig | boolean> & {
-  deleteOrphaned?: boolean;
-};
 
 export interface ISecretsProcessorAdapter {
   process(
-    secretsConfig: SecretsConfig,
+    repoConfig: RepoConfig,
     repoInfo: RepoInfo,
     options: { dryRun?: boolean; token?: string; noDelete?: boolean }
   ): Promise<SecretsProcessorResult>;
 }
 
 export interface SecretsSyncDependencies {
-  processorFactory?: (
-    config: Config,
-    cwd: string,
-    retries: number
-  ) => ISecretsProcessorAdapter;
+  processorFactory?: (cwd: string, retries: number) => ISecretsProcessorAdapter;
 }
 
 export interface SecretsSyncOptions {
@@ -48,7 +39,6 @@ export interface SecretsSyncOptions {
 }
 
 function createDefaultProcessor(
-  _config: Config,
   cwd: string,
   retries: number
 ): ISecretsProcessorAdapter {
@@ -71,32 +61,17 @@ export async function runSecretsSync(
   const cwd = workDir ?? "./tmp";
 
   const rawConfig = loadRawConfig(configPath);
-  validateRawConfig(rawConfig);
   validateSecretsConfig(rawConfig);
-  validateVariableSecretOverlaps(rawConfig);
   const config = normalizeConfig(rawConfig, process.env);
-
-  if (!config.secrets) {
-    logger.info("No secrets configured. Nothing to do.");
-    return;
-  }
-
-  const { deleteOrphaned, ...secretEntries } = config.secrets;
-  const secretNames = Object.keys(secretEntries).filter(
-    (k) => typeof secretEntries[k] !== "boolean"
-  );
-
-  if (secretNames.length === 0 && !deleteOrphaned) {
-    logger.info("No secrets configured. Nothing to do.");
-    return;
-  }
+  validateNormalizedConfig(config);
 
   const processorFactory = deps.processorFactory ?? createDefaultProcessor;
-  const processor = processorFactory(config, cwd, retries ?? 3);
+  const processor = processorFactory(cwd, retries ?? 3);
 
   const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
 
   let hasErrors = false;
+  let anySecretsConfigured = false;
   logger.setTotal(config.repos.length);
 
   for (let i = 0; i < config.repos.length; i++) {
@@ -108,11 +83,19 @@ export async function runSecretsSync(
         githubHosts: config.githubHosts,
       });
 
-      const result = await processor.process(config.secrets, repoInfo, {
+      const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
         token,
         noDelete,
       });
+
+      if (result.noSecretsConfigured) {
+        // Silent: with per-repo scoping most repos have no secrets, and a line
+        // each would bury the repos that do.
+        continue;
+      }
+
+      anySecretsConfigured = true;
 
       if (result.skipped) {
         logger.skip(i + 1, repoName, result.message);
@@ -123,9 +106,14 @@ export async function runSecretsSync(
         hasErrors = true;
       }
     } catch (error) {
+      anySecretsConfigured = true;
       logger.error(i + 1, repoName, `Secrets: ${toErrorMessage(error)}`);
       hasErrors = true;
     }
+  }
+
+  if (!anySecretsConfigured) {
+    logger.info("No secrets configured. Nothing to do.");
   }
 
   if (hasErrors) {

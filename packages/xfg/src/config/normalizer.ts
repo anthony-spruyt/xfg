@@ -910,6 +910,5 @@ export function normalizeConfig(
     githubHosts: raw.githubHosts,
     deleteOrphaned: raw.deleteOrphaned,
     settings: normalizedRootSettings,
-    secrets: raw.secrets,
   };
 }
