@@ -5669,7 +5669,13 @@ describe("group extends validation", () => {
       const normalized = normalizeConfig(raw, {});
       assert.throws(
         () => validateNormalizedConfig(normalized),
-        /https:\/\/github\.com\/o\/r\.git/
+        (err: Error) => {
+          assert.ok(
+            err.message.includes("https://github.com/o/r.git"),
+            `Expected the repo to be named, got: ${err.message}`
+          );
+          return true;
+        }
       );
     });
 

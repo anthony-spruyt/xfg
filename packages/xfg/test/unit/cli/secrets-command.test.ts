@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import { writeFileSync, rmSync, mkdtempSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -10,8 +10,8 @@ import {
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { SecretsProcessorResult } from "../../../src/settings/secrets/index.js";
 
-const testDir = join(tmpdir(), "test-secrets-cmd-tmp");
-const testConfigPath = join(testDir, "test-config.yaml");
+let testDir: string;
+let testConfigPath: string;
 
 function createMockProcessor(
   overrides: Partial<SecretsProcessorResult> = {}
@@ -42,10 +42,8 @@ describe("secrets-command", () => {
   let consoleOutput: string[];
 
   beforeEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "test-secrets-cmd-"));
+    testConfigPath = join(testDir, "test-config.yaml");
 
     originalConsoleLog = console.log;
     originalConsoleError = console.error;
