@@ -1,7 +1,9 @@
 import type {
+  Config,
   RawConfig,
   RawRootSettings,
   RawRepoSettings,
+  RepoSettings,
   SecretConfig,
 } from "./types.js";
 import { validateFileName } from "./validators/file-validator.js";
@@ -21,7 +23,30 @@ import { validateRepoEntry } from "./validators/repo-entry-validator.js";
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const VARIABLE_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const VARIABLE_RESERVED_KEYS = new Set(["deleteOrphaned", "inherit"]);
+const SECRET_RESERVED_KEYS = new Set(["deleteOrphaned", "inherit"]);
 const CONFIG_ID_MAX_LENGTH = 64;
+
+function validateNoRootLevelSecrets(config: RawConfig): void {
+  if ((config as unknown as Record<string, unknown>).secrets === undefined) {
+    return;
+  }
+  throw new ValidationError(
+    "Root-level 'secrets' is no longer supported — move it under 'settings.secrets'. " +
+      "Secrets can now also be scoped per group and per repo. " +
+      "See https://anthony-spruyt.github.io/xfg/migration-v7/"
+  );
+}
+
+function collectAllSettings(
+  config: RawConfig
+): (RawRootSettings | RawRepoSettings | undefined)[] {
+  return [
+    config.settings,
+    ...(Array.isArray(config.repos) ? config.repos.map((r) => r.settings) : []),
+    ...Object.values(config.groups ?? {}).map((g) => g.settings),
+    ...(config.conditionalGroups ?? []).map((cg) => cg.settings),
+  ];
+}
 
 function validateConfigId(config: RawConfig): void {
   if (!config.id || typeof config.id !== "string") {
@@ -90,6 +115,12 @@ function validateRootSettings(config: RawConfig): void {
   if (config.settings.variables && "inherit" in config.settings.variables) {
     throw new ValidationError(
       "'inherit' is not allowed in root-level variables (nothing to inherit from)"
+    );
+  }
+
+  if (config.settings.secrets && "inherit" in config.settings.secrets) {
+    throw new ValidationError(
+      "'inherit' is not allowed in root-level secrets (nothing to inherit from)"
     );
   }
 }
@@ -200,6 +231,10 @@ function hasConditionalGroupPR(config: RawConfig): boolean {
  * @throws ValidationError if validation fails
  */
 export function validateRawConfig(config: RawConfig): void {
+  // Must run before the "nothing to do" check below, or an old secrets-only
+  // config trips the generic error and never sees the migration message.
+  validateNoRootLevelSecrets(config);
+
   validateConfigId(config);
 
   const hasFiles =
@@ -214,8 +249,10 @@ export function validateRawConfig(config: RawConfig): void {
   const hasCondGrpFiles = hasConditionalGroupFiles(config);
   const hasCondGrpSettings = hasConditionalGroupSettingsPresent(config);
   const hasCondGrpPR = hasConditionalGroupPR(config);
-  const hasSecrets =
-    isPlainObject(config.secrets) && Object.keys(config.secrets).length > 0;
+  // config.repos is not confirmed to be an array until further down.
+  const hasRepoSettings =
+    Array.isArray(config.repos) &&
+    config.repos.some((r) => isPlainObject(r.settings));
 
   if (
     !hasFiles &&
@@ -225,12 +262,12 @@ export function validateRawConfig(config: RawConfig): void {
     !hasCondGrpFiles &&
     !hasCondGrpSettings &&
     !hasCondGrpPR &&
-    !hasSecrets
+    !hasRepoSettings
   ) {
     throw new ValidationError(
-      "Config requires at least one of: 'files', 'settings', or 'secrets'. " +
-        "Use 'files' to sync configuration files, 'settings' to manage repository settings, " +
-        "or 'secrets' to manage GitHub Actions secrets."
+      "Config requires at least one of: 'files' or 'settings'. " +
+        "Use 'files' to sync configuration files, or 'settings' to manage repository " +
+        "settings, variables, and secrets."
     );
   }
 
@@ -298,13 +335,7 @@ export function validateForSync(config: RawConfig): void {
   }
 
   // Validate variable names across all settings
-  const allSettings: (RawRootSettings | RawRepoSettings | undefined)[] = [
-    config.settings,
-    ...config.repos.map((r) => r.settings),
-    ...Object.values(config.groups ?? {}).map((g) => g.settings),
-    ...(config.conditionalGroups ?? []).map((cg) => cg.settings),
-  ];
-  for (const settings of allSettings) {
+  for (const settings of collectAllSettings(config)) {
     if (!settings?.variables) continue;
     const vars = settings.variables as Record<string, unknown>;
 
@@ -345,112 +376,51 @@ export function validateForSync(config: RawConfig): void {
 
   // Validate secret names and configs
   validateSecretsConfig(config);
-
-  // Cross-validate: no overlap between global secret names and variable names
-  validateVariableSecretOverlaps(config);
 }
 
-export function validateVariableSecretOverlaps(config: RawConfig): void {
-  if (!config.secrets) return;
+const ENTRY_MAP_META_KEYS = new Set(["deleteOrphaned", "inherit"]);
 
-  const { deleteOrphaned: _, ...secretEntries } = config.secrets;
-  // GitHub treats secret/variable names case-insensitively for collision purposes
-  const secretNames = new Set(
-    Object.keys(secretEntries)
-      .filter((k) => typeof secretEntries[k] !== "boolean")
-      .map((n) => n.toUpperCase())
+function entryNames(map: Record<string, unknown> | undefined): string[] {
+  if (!map) return [];
+  return Object.keys(map).filter(
+    (k) => !ENTRY_MAP_META_KEYS.has(k) && typeof map[k] !== "boolean"
   );
+}
 
+function assertNoOverlap(
+  settings: RepoSettings | undefined,
+  context: string
+): void {
+  const secretNames = new Set(
+    entryNames(settings?.secrets as Record<string, unknown> | undefined).map(
+      (n) => n.toUpperCase()
+    )
+  );
   if (secretNames.size === 0) return;
 
-  // Check root-level variables
-  if (config.settings?.variables) {
-    const {
-      deleteOrphaned: _rd,
-      inherit: _ri,
-      ...rootVarEntries
-    } = config.settings.variables as Record<string, unknown>;
-    const rootVariableNames = Object.keys(rootVarEntries).filter(
-      (k) => typeof rootVarEntries[k] !== "boolean"
+  const overlapping = entryNames(
+    settings?.variables as Record<string, unknown> | undefined
+  ).filter((n) => secretNames.has(n.toUpperCase()));
+
+  if (overlapping.length > 0) {
+    throw new ValidationError(
+      `${context}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
+        "GitHub does not allow variables and secrets with the same name."
     );
-    const overlapping = rootVariableNames.filter((n) =>
-      secretNames.has(n.toUpperCase())
-    );
-    if (overlapping.length > 0) {
-      throw new ValidationError(
-        `${overlapping.join(", ")} overlap between root variables and secrets. ` +
-          "GitHub does not allow variables and secrets with the same name."
-      );
-    }
   }
+}
+
+/**
+ * Cross-validates the MERGED settings of each repo: a variable and a secret with
+ * the same name collide at GitHub. Must run post-normalize — a per-layer check
+ * misses a root secret colliding with a repo variable.
+ */
+export function validateNormalizedConfig(config: Config): void {
+  // config.repos never covers a root-only collision when repos is empty.
+  assertNoOverlap(config.settings, "Root settings");
 
   for (const repo of config.repos) {
-    const {
-      deleteOrphaned: _d,
-      inherit: _i,
-      ...varEntries
-    } = (repo.settings?.variables ?? {}) as Record<string, unknown>;
-    const variableNames = Object.keys(varEntries).filter(
-      (k) => typeof varEntries[k] !== "boolean"
-    );
-    const overlapping = variableNames.filter((n) =>
-      secretNames.has(n.toUpperCase())
-    );
-    if (overlapping.length > 0) {
-      throw new ValidationError(
-        `Repo '${repo.git}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
-          "GitHub does not allow variables and secrets with the same name."
-      );
-    }
-  }
-
-  // Check group-level variables
-  if (isPlainObject(config.groups)) {
-    for (const [groupName, group] of Object.entries(config.groups)) {
-      if (!group.settings?.variables) continue;
-      const {
-        deleteOrphaned: _gd,
-        inherit: _gi,
-        ...groupVarEntries
-      } = group.settings.variables as Record<string, unknown>;
-      const groupVariableNames = Object.keys(groupVarEntries).filter(
-        (k) => typeof groupVarEntries[k] !== "boolean"
-      );
-      const overlapping = groupVariableNames.filter((n) =>
-        secretNames.has(n.toUpperCase())
-      );
-      if (overlapping.length > 0) {
-        throw new ValidationError(
-          `Group '${groupName}': ${overlapping.join(", ")} overlap between variables and secrets. ` +
-            "GitHub does not allow variables and secrets with the same name."
-        );
-      }
-    }
-  }
-
-  // Check conditional group-level variables
-  if (Array.isArray(config.conditionalGroups)) {
-    for (let i = 0; i < config.conditionalGroups.length; i++) {
-      const cg = config.conditionalGroups[i];
-      if (!cg.settings?.variables) continue;
-      const {
-        deleteOrphaned: _cd,
-        inherit: _ci,
-        ...cgVarEntries
-      } = cg.settings.variables as Record<string, unknown>;
-      const cgVariableNames = Object.keys(cgVarEntries).filter(
-        (k) => typeof cgVarEntries[k] !== "boolean"
-      );
-      const overlapping = cgVariableNames.filter((n) =>
-        secretNames.has(n.toUpperCase())
-      );
-      if (overlapping.length > 0) {
-        throw new ValidationError(
-          `Conditional group ${i}: ${overlapping.join(", ")} overlap between variables and secrets. ` +
-            "GitHub does not allow variables and secrets with the same name."
-        );
-      }
-    }
+    assertNoOverlap(repo.settings, `Repo '${repo.git}'`);
   }
 }
 
@@ -492,6 +462,8 @@ export function hasActionableSettings(
     }
   }
 
+  // Secrets are deliberately absent: `xfg sync` must never process them.
+  // A secrets-only config leaves `xfg sync` with nothing to do.
   return false;
 }
 
@@ -530,20 +502,24 @@ function validateSecretEntry(name: string, config: SecretConfig): void {
   }
 }
 
-export function validateSecretsConfig(config: RawConfig): void {
-  if (!config.secrets) return;
+function validateSecretsLayer(secrets: Record<string, unknown>): void {
+  const { deleteOrphaned, inherit } = secrets;
 
-  const { deleteOrphaned, ...entries } = config.secrets;
-
-  // Reject 'deleteOrphaned' used as a secret name (it's a reserved peer key)
   if (deleteOrphaned !== undefined && typeof deleteOrphaned !== "boolean") {
     throw new ValidationError(
       "'deleteOrphaned' is a reserved key in secrets config and cannot be used as a secret name."
     );
   }
 
+  if (inherit !== undefined && typeof inherit !== "boolean") {
+    throw new ValidationError(
+      "'inherit' is a reserved key in secrets config and cannot be used as a secret name."
+    );
+  }
+
   // Reject boolean true — only false (opt-out) is valid
-  for (const [name, value] of Object.entries(entries)) {
+  for (const [name, value] of Object.entries(secrets)) {
+    if (SECRET_RESERVED_KEYS.has(name)) continue;
     if (value === true) {
       throw new ValidationError(
         `Secret '${name}' is set to true, which is not valid. Use false to opt out, or provide a SecretConfig object.`
@@ -553,7 +529,8 @@ export function validateSecretsConfig(config: RawConfig): void {
 
   // Reject duplicate case-insensitive secret names
   const seen = new Map<string, string>();
-  for (const name of Object.keys(entries)) {
+  for (const name of Object.keys(secrets)) {
+    if (SECRET_RESERVED_KEYS.has(name)) continue;
     const upper = name.toUpperCase();
     const existing = seen.get(upper);
     if (existing) {
@@ -564,8 +541,16 @@ export function validateSecretsConfig(config: RawConfig): void {
     seen.set(upper, name);
   }
 
-  for (const [name, value] of Object.entries(entries)) {
+  for (const [name, value] of Object.entries(secrets)) {
+    if (SECRET_RESERVED_KEYS.has(name)) continue;
     if (typeof value === "boolean") continue;
     validateSecretEntry(name, value as SecretConfig);
+  }
+}
+
+export function validateSecretsConfig(config: RawConfig): void {
+  for (const settings of collectAllSettings(config)) {
+    if (!settings?.secrets) continue;
+    validateSecretsLayer(settings.secrets as Record<string, unknown>);
   }
 }
