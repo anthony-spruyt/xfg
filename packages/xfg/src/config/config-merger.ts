@@ -22,6 +22,17 @@ export function mergeConfigFragments(fragments: ConfigFragment[]): RawConfig {
     throw new ValidationError("No config fragments to merge");
   }
 
+  // Root-level `secrets` is not a SINGLE_FILE_KEY and would be silently dropped
+  // before validateRawConfig ever sees it, so the migration error must fire here too.
+  for (const { fileName, config } of fragments) {
+    if ((config as unknown as Record<string, unknown>).secrets !== undefined) {
+      throw new ValidationError(
+        `${fileName}: root-level 'secrets' is no longer supported — move it under 'settings.secrets'. ` +
+          "See https://anthony-spruyt.github.io/xfg/migration-v7/"
+      );
+    }
+  }
+
   const merged: Record<string, unknown> = {};
   const singleKeySource: Partial<Record<keyof RawConfig, string>> = {};
   const allRepos: RawConfig["repos"][number][] = [];

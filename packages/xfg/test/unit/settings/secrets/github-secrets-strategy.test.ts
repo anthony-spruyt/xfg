@@ -1,11 +1,11 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { GitHubSecretsStrategy } from "../../../src/secrets/github-secrets-strategy.js";
+import { GitHubSecretsStrategy } from "../../../../src/settings/secrets/github-secrets-strategy.js";
 import type {
   ICommandExecutor,
   ExecOptions,
-} from "../../../src/shared/command-executor.js";
-import type { GitHubRepoInfo } from "../../../src/repo/index.js";
+} from "../../../../src/shared/command-executor.js";
+import type { GitHubRepoInfo } from "../../../../src/repo/index.js";
 
 class MockExecutor implements ICommandExecutor {
   calls: { executable: string; args: string[]; options?: ExecOptions }[] = [];

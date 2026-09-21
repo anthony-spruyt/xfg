@@ -4,6 +4,7 @@ import {
   loadRawConfig,
   normalizeConfig,
   validateForSync,
+  validateNormalizedConfig,
 } from "../config/index.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
 import { validateBranchName } from "./branch-utils.js";
@@ -108,6 +109,7 @@ export async function runSync(
   const rawConfig = loadRawConfig(configPath);
   validateForSync(rawConfig);
   const config = normalizeConfig(rawConfig, process.env);
+  validateNormalizedConfig(config);
   const fileNames = getUniqueFileNames(config);
 
   let branchName: string;

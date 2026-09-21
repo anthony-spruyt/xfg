@@ -5,8 +5,9 @@ import {
   validateForSync,
   hasActionableSettings,
   validateSecretsConfig,
-  validateVariableSecretOverlaps,
+  validateNormalizedConfig,
 } from "../../../src/config/validator.js";
+import { normalizeConfig } from "../../../src/config/normalizer.js";
 import { ValidationError } from "../../../src/shared/errors.js";
 import type {
   RawConfig,
@@ -14,6 +15,7 @@ import type {
   RawFileConfig,
   RawRepoConfig,
   RawRepoSettings,
+  RawRootSettings,
   SecretConfig,
 } from "../../../src/config/index.js";
 
@@ -3777,6 +3779,36 @@ describe("hasActionableSettings", () => {
   test("returns false when repo is false (opt-out)", () => {
     assert.equal(hasActionableSettings({ repo: false as never }), false);
   });
+
+  test("returns false for secrets only — xfg sync must not process secrets", () => {
+    assert.equal(
+      hasActionableSettings({ secrets: { MY_SECRET: { env: "SRC" } } }),
+      false
+    );
+  });
+
+  test("returns false for secrets with deleteOrphaned only", () => {
+    assert.equal(
+      hasActionableSettings({
+        secrets: Object.assign({}, { deleteOrphaned: true }),
+      }),
+      false
+    );
+  });
+});
+
+describe("validateForSync with secrets", () => {
+  test("a secrets-only config leaves xfg sync with nothing to do", () => {
+    const config: RawConfig = {
+      id: "test-config",
+      settings: { secrets: { MY_SECRET: { env: "SRC" } } },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+    assert.throws(
+      () => validateForSync(config),
+      /Config requires at least one of/
+    );
+  });
 });
 
 describe("validateRawConfig - lifecycle fields", () => {
@@ -5410,21 +5442,21 @@ describe("group extends validation", () => {
   describe("validateSecrets", () => {
     test("accepts valid secret config", () => {
       const config = createValidConfig({
-        secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
+        settings: { secrets: { MY_SECRET: { env: "SOURCE_VAR" } } },
       });
       assert.doesNotThrow(() => validateSecretsConfig(config));
     });
 
     test("rejects secret names starting with GITHUB_", () => {
       const config = createValidConfig({
-        secrets: { GITHUB_TOKEN: { env: "TOKEN" } },
+        settings: { secrets: { GITHUB_TOKEN: { env: "TOKEN" } } },
       });
       assert.throws(() => validateSecretsConfig(config), /GITHUB_/);
     });
 
     test("rejects secret without env field", () => {
       const config = createValidConfig({
-        secrets: { MY_SECRET: {} as SecretConfig },
+        settings: { secrets: { MY_SECRET: {} as SecretConfig } },
       });
       assert.throws(() => validateSecretsConfig(config), /env/);
     });
@@ -5436,9 +5468,11 @@ describe("group extends validation", () => {
 
     test("rejects deleteOrphaned used as a secret name", () => {
       const config = createValidConfig({
-        secrets: {
-          deleteOrphaned: { env: "FOO" },
-        } as unknown as RawConfig["secrets"],
+        settings: {
+          secrets: {
+            deleteOrphaned: { env: "FOO" },
+          } as unknown as RawRootSettings["secrets"],
+        },
       });
       assert.throws(
         () => validateSecretsConfig(config),
@@ -5448,9 +5482,11 @@ describe("group extends validation", () => {
 
     test("rejects duplicate case-insensitive secret names", () => {
       const config = createValidConfig({
-        secrets: {
-          MY_SECRET: { env: "SRC_UPPER" },
-          my_secret: { env: "SRC_LOWER" },
+        settings: {
+          secrets: {
+            MY_SECRET: { env: "SRC_UPPER" },
+            my_secret: { env: "SRC_LOWER" },
+          },
         },
       });
       assert.throws(
@@ -5461,133 +5497,262 @@ describe("group extends validation", () => {
 
     test("rejects secret names with invalid characters", () => {
       const config = createValidConfig({
-        secrets: { "MY-SECRET": { env: "SRC" } },
+        settings: { secrets: { "MY-SECRET": { env: "SRC" } } },
       });
       assert.throws(() => validateSecretsConfig(config), /invalid.*character/i);
     });
-  });
 
-  describe("secrets-only config", () => {
-    test("accepts config with only secrets and repos", () => {
-      const config: RawConfig = {
-        id: "test",
-        repos: [{ git: "https://github.com/o/r.git" }],
-        secrets: {
-          MY_SECRET: { env: "SOURCE_VAR" },
-        },
-      };
-      assert.doesNotThrow(() => validateRawConfig(config));
-    });
-  });
-
-  describe("cross-validation", () => {
-    test("rejects overlapping variable and secret names", () => {
-      const config = createValidConfig({
-        repos: [
-          {
-            git: "https://github.com/o/r.git",
-            settings: {
-              variables: { DEPLOY_TOKEN: "value" },
-            },
-          },
-        ],
-        secrets: {
-          DEPLOY_TOKEN: { env: "SRC" },
-        },
-      });
-      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
-    });
-
-    test("rejects overlapping root variable and secret names", () => {
-      const config = createValidConfig({
-        settings: {
-          variables: { DEPLOY_TOKEN: "value" },
-        },
-        secrets: {
-          DEPLOY_TOKEN: { env: "SRC" },
-        },
-      });
-      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
-    });
-
-    test("rejects overlapping group variable and secret names", () => {
+    test("validates secrets declared on a group layer", () => {
       const config: RawConfig = {
         id: "test-config",
         files: { "f.json": { content: {} } },
         groups: {
-          myGroup: {
-            settings: {
-              variables: { DEPLOY_TOKEN: "value" },
-            },
-          },
+          myGroup: { settings: { secrets: { "BAD-NAME": { env: "SRC" } } } },
         },
         repos: [{ git: "git@github.com:org/repo.git", groups: ["myGroup"] }],
-        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
       };
-      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+      assert.throws(() => validateSecretsConfig(config), /invalid.*character/i);
     });
 
-    test("rejects overlapping conditional group variable and secret names", () => {
+    test("validates secrets declared on a repo layer", () => {
       const config: RawConfig = {
         id: "test-config",
         files: { "f.json": { content: {} } },
-        groups: { g1: {} },
-        conditionalGroups: [
+        repos: [
           {
-            when: { allOf: ["g1"] },
+            git: "git@github.com:org/repo.git",
+            settings: { secrets: { MY_SECRET: {} as SecretConfig } },
+          },
+        ],
+      };
+      assert.throws(() => validateSecretsConfig(config), /env/);
+    });
+
+    test("accepts inherit: false in a repo secrets block", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
             settings: {
-              variables: { DEPLOY_TOKEN: "value" },
+              secrets: Object.assign(
+                { MY_SECRET: { env: "SRC" } },
+                { inherit: false }
+              ) as RawRepoSettings["secrets"],
             },
           },
         ],
-        repos: [{ git: "git@github.com:org/repo.git", groups: ["g1"] }],
-        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
       };
-      assert.throws(() => validateForSync(config), /DEPLOY_TOKEN.*overlap/i);
+      assert.doesNotThrow(() => validateSecretsConfig(config));
     });
 
-    test("rejects case-insensitive overlapping variable and secret names", () => {
+    test("accepts inherit: true in a repo secrets block", () => {
+      const config: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              secrets: Object.assign(
+                { MY_SECRET: { env: "SRC" } },
+                { inherit: true }
+              ) as RawRepoSettings["secrets"],
+            },
+          },
+        ],
+      };
+      assert.doesNotThrow(() => validateSecretsConfig(config));
+    });
+
+    test("rejects inherit in root-level secrets", () => {
       const config = createValidConfig({
         settings: {
-          variables: { deploy_token: "value" },
+          secrets: Object.assign(
+            { MY_SECRET: { env: "SRC" } },
+            { inherit: false }
+          ) as RawRootSettings["secrets"],
         },
-        secrets: { DEPLOY_TOKEN: { env: "SRC" } },
       });
-      assert.throws(() => validateForSync(config), /deploy_token.*overlap/i);
+      assert.throws(
+        () => validateRawConfig(config),
+        /nothing to inherit from/i
+      );
     });
   });
 
-  describe("validateVariableSecretOverlaps standalone", () => {
-    test("detects overlap when called independently", () => {
-      const config = createValidConfig({
-        settings: {
-          variables: { API_KEY: "value" },
-        },
-        secrets: { API_KEY: { env: "SRC" } },
-      });
+  describe("secrets-only config", () => {
+    test("accepts config with secrets only under repos[].settings", () => {
+      const config: RawConfig = {
+        id: "test",
+        repos: [
+          {
+            git: "https://github.com/o/r.git",
+            settings: { secrets: { MY_SECRET: { env: "SOURCE_VAR" } } },
+          },
+        ],
+      };
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("throws the migration error for a root-level secrets block", () => {
+      const config = {
+        id: "test",
+        repos: [{ git: "https://github.com/o/r.git" }],
+        secrets: { MY_SECRET: { env: "SOURCE_VAR" } },
+      } as unknown as RawConfig;
+
       assert.throws(
-        () => validateVariableSecretOverlaps(config),
-        /API_KEY.*overlap/i
+        () => validateRawConfig(config),
+        (err: Error) => {
+          assert.ok(
+            err.message.includes("settings.secrets"),
+            `Expected 'settings.secrets' in message, got: ${err.message}`
+          );
+          assert.ok(
+            !err.message.includes("Config requires at least one of"),
+            `Expected migration error, got the generic error: ${err.message}`
+          );
+          return true;
+        }
+      );
+    });
+
+    test("throws ValidationError, not TypeError, when repos is missing", () => {
+      const config = {
+        id: "test",
+        settings: { secrets: { MY_SECRET: { env: "SOURCE_VAR" } } },
+      } as unknown as RawConfig;
+
+      assert.throws(
+        () => validateRawConfig(config),
+        (err: unknown) => {
+          assert.ok(
+            err instanceof ValidationError,
+            `Expected ValidationError, got: ${String(err)}`
+          );
+          return true;
+        }
+      );
+    });
+  });
+
+  describe("validateNormalizedConfig", () => {
+    test("rejects a root secret colliding with a per-repo variable", () => {
+      const raw = createValidConfig({
+        settings: { secrets: { MY_KEY: { env: "X" } } },
+        repos: [
+          {
+            git: "https://github.com/o/r.git",
+            settings: { variables: { MY_KEY: "hello" } },
+          },
+        ],
+      });
+      const normalized = normalizeConfig(raw, {});
+      assert.throws(
+        () => validateNormalizedConfig(normalized),
+        /MY_KEY.*overlap/i
+      );
+    });
+
+    test("names the repo in the overlap error", () => {
+      const raw = createValidConfig({
+        settings: { secrets: { MY_KEY: { env: "X" } } },
+        repos: [
+          {
+            git: "https://github.com/o/r.git",
+            settings: { variables: { MY_KEY: "hello" } },
+          },
+        ],
+      });
+      const normalized = normalizeConfig(raw, {});
+      assert.throws(
+        () => validateNormalizedConfig(normalized),
+        (err: Error) => {
+          assert.ok(
+            err.message.includes("https://github.com/o/r.git"),
+            `Expected the repo to be named, got: ${err.message}`
+          );
+          return true;
+        }
+      );
+    });
+
+    test("rejects a case-insensitive collision", () => {
+      const raw = createValidConfig({
+        settings: {
+          secrets: { DEPLOY_TOKEN: { env: "X" } },
+          variables: { deploy_token: "value" },
+        },
+      });
+      const normalized = normalizeConfig(raw, {});
+      assert.throws(
+        () => validateNormalizedConfig(normalized),
+        /deploy_token.*overlap/i
+      );
+    });
+
+    test("rejects a collision introduced by a group layer", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        settings: { secrets: { DEPLOY_TOKEN: { env: "X" } } },
+        groups: {
+          myGroup: { settings: { variables: { DEPLOY_TOKEN: "value" } } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["myGroup"] }],
+      };
+      const normalized = normalizeConfig(raw, {});
+      assert.throws(
+        () => validateNormalizedConfig(normalized),
+        /DEPLOY_TOKEN.*overlap/i
+      );
+    });
+
+    test("does not report deleteOrphaned as an overlap", () => {
+      const raw = createValidConfig({
+        settings: {
+          secrets: Object.assign(
+            { MY_SECRET: { env: "X" } },
+            { deleteOrphaned: true }
+          ) as RawRootSettings["secrets"],
+          variables: Object.assign(
+            { MY_VAR: "value" },
+            { deleteOrphaned: true }
+          ) as RawRootSettings["variables"],
+        },
+      });
+      const normalized = normalizeConfig(raw, {});
+      assert.doesNotThrow(() => validateNormalizedConfig(normalized));
+    });
+
+    test("catches a root-level collision when repos is empty", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "f.json": { content: {} } },
+        settings: {
+          secrets: { DEPLOY_TOKEN: { env: "X" } },
+          variables: { DEPLOY_TOKEN: "value" },
+        },
+        repos: [],
+      };
+      const normalized = normalizeConfig(raw, {});
+      assert.throws(
+        () => validateNormalizedConfig(normalized),
+        /DEPLOY_TOKEN.*overlap/i
       );
     });
 
     test("passes when no overlap exists", () => {
-      const config = createValidConfig({
+      const raw = createValidConfig({
         settings: {
-          variables: { MY_VAR: "value" },
-        },
-        secrets: { MY_SECRET: { env: "SRC" } },
-      });
-      assert.doesNotThrow(() => validateVariableSecretOverlaps(config));
-    });
-
-    test("passes when no secrets defined", () => {
-      const config = createValidConfig({
-        settings: {
+          secrets: { MY_SECRET: { env: "X" } },
           variables: { MY_VAR: "value" },
         },
       });
-      assert.doesNotThrow(() => validateVariableSecretOverlaps(config));
+      const normalized = normalizeConfig(raw, {});
+      assert.doesNotThrow(() => validateNormalizedConfig(normalized));
     });
   });
 });

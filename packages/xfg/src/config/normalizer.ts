@@ -209,8 +209,8 @@ function mergeLabels(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
-// GitHub treats variable names case-insensitively; overlay keys win over base keys with same name but different casing.
-function mergeVariablesCaseInsensitive(
+// GitHub treats variable and secret names case-insensitively; overlay keys win over base keys with same name but different casing.
+function mergeCaseInsensitiveEntries(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>
 ): Record<string, unknown> {
@@ -229,6 +229,67 @@ function mergeVariablesCaseInsensitive(
     result[key] = value;
   }
   return result;
+}
+
+const ENTRY_MAP_META_KEYS = new Set(["inherit", "deleteOrphaned"]);
+
+function stripEntryMapMetaKeys(
+  entries: Record<string, unknown>
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(entries)) {
+    if (ENTRY_MAP_META_KEYS.has(name)) continue;
+    result[name] = value;
+  }
+  return result;
+}
+
+/**
+ * Merges one name-keyed settings entry map (variables or secrets) over another.
+ * `deleteOrphaned` is a policy peer key resolved innermost-wins; `inherit: false`
+ * discards inherited entries only and never clears it.
+ */
+function mergeEntryMapLayer(
+  base: Record<string, unknown> | undefined,
+  overlay: Record<string, unknown> | undefined
+): Record<string, unknown> {
+  const baseEntries = base ?? {};
+  const overlayEntries = overlay ?? {};
+
+  const effectiveDeleteOrphaned =
+    overlayEntries.deleteOrphaned !== undefined
+      ? overlayEntries.deleteOrphaned
+      : baseEntries.deleteOrphaned;
+
+  const inherited =
+    overlayEntries.inherit === false ? {} : stripEntryMapMetaKeys(baseEntries);
+
+  const merged = mergeCaseInsensitiveEntries(
+    inherited,
+    stripEntryMapMetaKeys(overlayEntries)
+  );
+
+  const result: Record<string, unknown> = {};
+  for (const [name, value] of Object.entries(merged)) {
+    if (value !== false) {
+      result[name] = value;
+    }
+  }
+
+  if (effectiveDeleteOrphaned !== undefined) {
+    result.deleteOrphaned = effectiveDeleteOrphaned;
+  }
+
+  return result;
+}
+
+/** deleteOrphaned alone is not actionable, so an entry-less map collapses to undefined. */
+function dropEntryMapIfEmpty(
+  merged: Record<string, unknown>
+): Record<string, unknown> | undefined {
+  const { deleteOrphaned, ...entries } = merged;
+  if (Object.keys(entries).length === 0 && !deleteOrphaned) return undefined;
+  return merged;
 }
 
 /**
@@ -335,51 +396,27 @@ export function mergeSettings(
     }
   }
 
-  // Variables merging — deleteOrphaned is a peer key (like secrets' deleteOrphaned)
   if (root?.variables || perRepo?.variables) {
-    const rootVars = root?.variables ?? {};
-    const repoVars = perRepo?.variables ?? {};
-
-    const rootDeleteOrphaned = (rootVars as Record<string, unknown>)
-      .deleteOrphaned;
-    const repoDeleteOrphaned = (repoVars as Record<string, unknown>)
-      .deleteOrphaned;
-    const effectiveDeleteOrphaned =
-      repoDeleteOrphaned !== undefined
-        ? repoDeleteOrphaned
-        : rootDeleteOrphaned;
-
-    const inherit = (repoVars as Record<string, unknown>).inherit;
-    if (inherit === false) {
-      const {
-        inherit: _,
-        deleteOrphaned: _d,
-        ...rest
-      } = repoVars as Record<string, unknown>;
-      result.variables = Object.fromEntries(
-        Object.entries(rest).filter(([, v]) => v !== false)
-      ) as Record<string, string>;
-    } else {
-      const combined = mergeVariablesCaseInsensitive(
-        rootVars as Record<string, unknown>,
-        repoVars as Record<string, unknown>
-      );
-      const { inherit: _, deleteOrphaned: _d, ...rest } = combined;
-      result.variables = Object.fromEntries(
-        Object.entries(rest).filter(([, v]) => v !== false)
-      ) as Record<string, string>;
+    const merged = dropEntryMapIfEmpty(
+      mergeEntryMapLayer(
+        root?.variables as Record<string, unknown> | undefined,
+        perRepo?.variables as Record<string, unknown> | undefined
+      )
+    );
+    if (merged) {
+      result.variables = merged as RepoSettings["variables"];
     }
+  }
 
-    if (effectiveDeleteOrphaned !== undefined) {
-      (result.variables as Record<string, unknown>).deleteOrphaned =
-        effectiveDeleteOrphaned;
-    }
-
-    // Only delete if no variable entries remain (deleteOrphaned alone is not actionable)
-    const { deleteOrphaned: _check, ...varEntries } =
-      result.variables as Record<string, unknown>;
-    if (Object.keys(varEntries).length === 0 && !effectiveDeleteOrphaned) {
-      delete result.variables;
+  if (root?.secrets || perRepo?.secrets) {
+    const merged = dropEntryMapIfEmpty(
+      mergeEntryMapLayer(
+        root?.secrets as Record<string, unknown> | undefined,
+        perRepo?.secrets as Record<string, unknown> | undefined
+      )
+    );
+    if (merged) {
+      result.secrets = merged as RepoSettings["secrets"];
     }
   }
 
@@ -572,42 +609,18 @@ function mergeRawSettings(
     }
   }
 
-  // Variables: simple string values with false opt-outs (mergeNamedEntries won't work for strings)
   if (overlay.variables) {
-    const overlayVars = overlay.variables as Record<string, unknown>;
-    const inherit = overlayVars.inherit !== false;
-    const baseVars = inherit
-      ? { ...(result.variables ?? {}) }
-      : ({} as Record<string, unknown>);
+    result.variables = mergeEntryMapLayer(
+      result.variables as Record<string, unknown> | undefined,
+      overlay.variables as Record<string, unknown>
+    ) as typeof result.variables;
+  }
 
-    // Build overlay entries (excluding meta keys)
-    const overlayEntries: Record<string, unknown> = {};
-    for (const [name, entry] of Object.entries(overlay.variables)) {
-      if (name === "inherit" || name === "deleteOrphaned") continue;
-      overlayEntries[name] = entry;
-    }
-
-    // Case-insensitive merge: overlay keys replace base keys with same name
-    const merged = mergeVariablesCaseInsensitive(baseVars, overlayEntries);
-
-    // Apply false opt-outs
-    const cleaned: Record<string, unknown> = {};
-    for (const [name, value] of Object.entries(merged)) {
-      if (name === "inherit" || name === "deleteOrphaned") continue;
-      if (value !== false) {
-        cleaned[name] = value;
-      }
-    }
-
-    const baseDelete = (baseVars as Record<string, unknown>).deleteOrphaned;
-    const effectiveDelete =
-      overlayVars.deleteOrphaned !== undefined
-        ? overlayVars.deleteOrphaned
-        : baseDelete;
-    if (effectiveDelete !== undefined) {
-      cleaned.deleteOrphaned = effectiveDelete;
-    }
-    result.variables = cleaned as typeof result.variables;
+  if (overlay.secrets) {
+    result.secrets = mergeEntryMapLayer(
+      result.secrets as Record<string, unknown> | undefined,
+      overlay.secrets as Record<string, unknown>
+    ) as typeof result.secrets;
   }
 
   // deleteOrphaned: overlay wins
@@ -897,6 +910,5 @@ export function normalizeConfig(
     githubHosts: raw.githubHosts,
     deleteOrphaned: raw.deleteOrphaned,
     settings: normalizedRootSettings,
-    secrets: raw.secrets,
   };
 }

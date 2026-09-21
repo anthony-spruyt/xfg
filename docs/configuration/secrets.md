@@ -1,6 +1,8 @@
 # Secrets
 
-xfg can sync GitHub Actions secrets to your repositories using the `xfg secrets sync` command. Secrets are defined at the root level of your config file (not under `settings:`), and their values are read from environment variables at runtime. Secrets are configured at the root level only. Unlike variables, secrets cannot be defined per-repo or per-group.
+xfg can sync GitHub Actions secrets to your repositories using the `xfg secrets sync` command. Secrets live under `settings:` and their values are read from environment variables at runtime. Like variables, they can be scoped at the root, group, conditional-group, and per-repo level.
+
+Secrets are **never** touched by a plain `xfg sync` — only `xfg secrets sync` reads them.
 
 !!! note "GitHub-Only Feature"
     Secrets are only available for GitHub repositories. Azure DevOps and GitLab repos will be skipped when running `xfg secrets sync`.
@@ -10,13 +12,14 @@ xfg can sync GitHub Actions secrets to your repositories using the `xfg secrets 
 ```yaml
 id: my-config
 
-secrets:
-  MY_API_KEY:
-    env: MY_API_KEY_VALUE
-  DATABASE_URL:
-    env: DATABASE_URL_VALUE
-  DEPLOY_TOKEN:
-    env: DEPLOY_TOKEN_VALUE
+settings:
+  secrets:
+    MY_API_KEY:
+      env: MY_API_KEY_VALUE
+    DATABASE_URL:
+      env: DATABASE_URL_VALUE
+    DEPLOY_TOKEN:
+      env: DEPLOY_TOKEN_VALUE
 
 repos:
   - git: git@github.com:your-org/your-repo.git
@@ -42,12 +45,85 @@ Each secret entry maps a secret name (as it will appear in GitHub) to a `SecretC
 | `env` | Yes      | Name of the environment variable holding the value |
 
 ```yaml
-secrets:
-  MY_SECRET:
-    env: MY_SECRET_VALUE   # Read from $MY_SECRET_VALUE at runtime
+settings:
+  secrets:
+    MY_SECRET:
+      env: MY_SECRET_VALUE   # Read from $MY_SECRET_VALUE at runtime
 ```
 
 The secret name (`MY_SECRET`) is what gets created in GitHub Actions. The `env` field is the environment variable that xfg reads at runtime to get the actual secret value.
+
+## Scoping Secrets
+
+Secrets merge through the same layers as variables: root → group → conditional group → repo. Innermost wins.
+
+```yaml
+id: my-config
+
+settings:
+  secrets:
+    SHARED_KEY:
+      env: SHARED_KEY_VALUE
+
+groups:
+  frontend:
+    settings:
+      secrets:
+        NPM_TOKEN:
+          env: NPM_TOKEN_VALUE
+
+repos:
+  # Gets SHARED_KEY and NPM_TOKEN
+  - git: git@github.com:your-org/web.git
+    groups: [frontend]
+
+  # Gets SHARED_KEY only
+  - git: git@github.com:your-org/api.git
+
+  # Gets DEPLOY_KEY only — inherit: false discards everything above
+  - git: git@github.com:your-org/isolated.git
+    groups: [frontend]
+    settings:
+      secrets:
+        inherit: false
+        DEPLOY_KEY:
+          env: ISOLATED_DEPLOY_KEY
+
+  # Gets nothing — SHARED_KEY is opted out by name
+  - git: git@github.com:your-org/legacy.git
+    settings:
+      secrets:
+        SHARED_KEY: false
+```
+
+| Directive         | Effect                                                              |
+| ----------------- | ------------------------------------------------------------------- |
+| `inherit: false`  | Discard every inherited secret at this layer                        |
+| `NAME: false`     | Opt out of one inherited secret                                     |
+| `deleteOrphaned`  | Policy switch, innermost wins — `inherit: false` does not clear it  |
+
+`deleteOrphaned` is a policy switch, not an entry. `inherit: false` discards inherited *entries* but leaves an inherited `deleteOrphaned` in place. To turn cleanup off for a repo, set `deleteOrphaned: false` explicitly.
+
+!!! danger "`inherit: false` plus `deleteOrphaned: true` deletes inherited secrets"
+    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo:
+
+    ```yaml
+    settings:
+      secrets:
+        SHARED_KEY:
+          env: SHARED
+
+    repos:
+      - git: git@github.com:org/isolated.git
+        settings:
+          secrets:
+            inherit: false          # SHARED_KEY is no longer desired here
+            deleteOrphaned: true    # ...so it gets deleted from the repo
+            OWN_KEY:
+              env: OWN
+    ```
+
+    This is correct behaviour, but the interaction is easy to miss. Run `--dry-run` first.
 
 ## Secret Naming Rules
 
@@ -56,21 +132,23 @@ Secret names must match `[A-Za-z_][A-Za-z0-9_]*` and may not start with `GITHUB_
 Valid examples:
 
 ```yaml
-secrets:
-  API_KEY:
-    env: API_KEY_VALUE
-  _INTERNAL_TOKEN:
-    env: INTERNAL_TOKEN
+settings:
+  secrets:
+    API_KEY:
+      env: API_KEY_VALUE
+    _INTERNAL_TOKEN:
+      env: INTERNAL_TOKEN
 ```
 
 Invalid examples (will be rejected):
 
 ```yaml
-secrets:
-  GITHUB_TOKEN:        # Reserved prefix
-    env: TOKEN
-  MY-SECRET:           # Hyphens not allowed
-    env: SECRET
+settings:
+  secrets:
+    GITHUB_TOKEN:        # Reserved prefix
+      env: TOKEN
+    MY-SECRET:           # Hyphens not allowed
+      env: SECRET
 ```
 
 ## Case-Insensitive Matching
@@ -115,10 +193,11 @@ The plaintext value never leaves your environment unencrypted.
 When `deleteOrphaned: true` is set, secrets not present in the config will be deleted from the repository:
 
 ```yaml
-secrets:
-  deleteOrphaned: true
-  MY_API_KEY:
-    env: MY_API_KEY_VALUE
+settings:
+  secrets:
+    deleteOrphaned: true
+    MY_API_KEY:
+      env: MY_API_KEY_VALUE
 ```
 
 !!! danger

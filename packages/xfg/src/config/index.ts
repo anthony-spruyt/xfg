@@ -31,6 +31,7 @@ export type {
   RawRepoFileOverride,
   RawGroupConfig,
   SecretConfig,
+  SecretsConfig,
   RawRootSettings,
   RawRepoSettings,
   RawRepoConfig,
@@ -55,4 +56,8 @@ export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 export { convertContentToString } from "./formatter.js";
 
 // Config validation
-export { validateForSync, validateSecretsConfig } from "./validator.js";
+export {
+  validateForSync,
+  validateSecretsConfig,
+  validateNormalizedConfig,
+} from "./validator.js";

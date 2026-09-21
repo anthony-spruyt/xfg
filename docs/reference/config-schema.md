@@ -45,7 +45,6 @@ Or configure in `.vscode/settings.json`:
 | `conditionalGroups` | `array`     | \*       | Groups that activate based on repo group membership                |
 | `repos`             | `array`     | Yes      | List of repository configurations                                  |
 | `settings`          | `object`    | \*       | Repository settings (rulesets, labels, variables, etc.)            |
-| `secrets`           | `object`    | No       | GitHub Actions secrets (root-level, synced via `xfg secrets sync`) |
 | `prOptions`         | `PROptions` | No       | Global PR merge options                                            |
 | `prTemplate`        | `string`    | No       | Custom PR body template                                            |
 | `githubHosts`       | `array`     | No       | GitHub Enterprise Server hostnames                                 |
@@ -68,6 +67,7 @@ The `settings` object (at root, group, or repo level) supports the following fie
 | `labels`         | `object`  | GitHub labels keyed by name                               |
 | `codeScanning`   | `object`  | GitHub code scanning default setup                        |
 | `variables`      | `object`  | GitHub Actions variables keyed by name (see below)        |
+| `secrets`        | `object`  | GitHub Actions secrets keyed by name (see below)          |
 | `deleteOrphaned` | `boolean` | Default for orphan deletion across all settings sub-types |
 
 #### Variables Field
@@ -84,12 +84,15 @@ See [GitHub Variables](../configuration/variables.md) for full details.
 
 ### Secrets Object
 
-The `secrets` object is at the **root level** (not under `settings`) and is synced via `xfg secrets sync`, not `xfg sync`. It maps secret names to `SecretConfig` objects:
+The `secrets` field lives under `settings` (at root, group, conditional-group, or repo level) and is synced via `xfg secrets sync`, **not** `xfg sync`. It maps secret names to `SecretConfig` objects:
 
-| Field            | Type      | Description                                    |
-| ---------------- | --------- | ---------------------------------------------- |
-| `deleteOrphaned` | `boolean` | Delete secrets removed from config             |
-| `SECRET_NAME`    | `object`  | `SecretConfig` with an `env` field (see below) |
+| Key              | Type               | Description                                                                         |
+| ---------------- | ------------------ | ----------------------------------------------------------------------------------- |
+| `deleteOrphaned` | `boolean`          | Delete secrets removed from config (independent of settings-level `deleteOrphaned`) |
+| `inherit`        | `boolean`          | Set to `false` to discard all inherited secrets (per-repo/group only)               |
+| `SECRET_NAME`    | `object \| false` | `SecretConfig` with an `env` field, or `false` to opt out of an inherited secret    |
+
+See [Secrets](../configuration/secrets.md) for scoping rules and the `inherit` / `deleteOrphaned` interaction.
 
 #### SecretConfig
 

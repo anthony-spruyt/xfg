@@ -339,6 +339,34 @@ function validateSettingsCodeScanning(
   );
 }
 
+function validateSettingsSecrets(
+  settings: RawRepoSettings | RawRootSettings,
+  context: string
+): void {
+  if (settings.secrets === undefined) return;
+
+  if (!isPlainObject(settings.secrets)) {
+    throw new ValidationError(`${context}: settings.secrets must be an object`);
+  }
+
+  for (const [name, value] of Object.entries(settings.secrets)) {
+    if (name === "deleteOrphaned" || name === "inherit") {
+      if (value !== undefined && typeof value !== "boolean") {
+        throw new ValidationError(
+          `${context}: settings.secrets.${name} must be a boolean`
+        );
+      }
+      continue;
+    }
+    if (value === false) continue;
+    if (!isPlainObject(value)) {
+      throw new ValidationError(
+        `${context}: secret '${name}' must be an object with an 'env' field, or false to opt out`
+      );
+    }
+  }
+}
+
 export function validateSettings(
   settings: unknown,
   context: string,
@@ -353,6 +381,7 @@ export function validateSettings(
   validateSettingsDeleteOrphaned(settings, context);
   validateSettingsRepo(settings, context, rootCtx);
   validateSettingsCodeScanning(settings, context, rootCtx);
+  validateSettingsSecrets(settings, context);
 }
 
 export function enrichSettingsContext(

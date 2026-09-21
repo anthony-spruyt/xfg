@@ -5,12 +5,6 @@
     "level": "info",
     "format": "json"
   },
-  "features": [
-    "priority-feature",
-    "health-check",
-    "metrics"
-  ],
-  "tags": [
-    "base"
-  ]
+  "features": ["priority-feature", "health-check", "metrics"],
+  "tags": ["base"]
 }

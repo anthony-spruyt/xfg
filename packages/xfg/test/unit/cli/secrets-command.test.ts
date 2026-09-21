@@ -1,16 +1,17 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync, rmSync, mkdirSync, existsSync } from "node:fs";
+import { writeFileSync, rmSync, mkdtempSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   runSecretsSync,
   type ISecretsProcessorAdapter,
 } from "../../../src/cli/secrets-command.js";
-import type { SecretsProcessorResult } from "../../../src/secrets/processor.js";
+import type { RepoConfig } from "../../../src/config/index.js";
+import type { SecretsProcessorResult } from "../../../src/settings/secrets/index.js";
 
-const testDir = join(tmpdir(), "test-secrets-cmd-tmp");
-const testConfigPath = join(testDir, "test-config.yaml");
+let testDir: string;
+let testConfigPath: string;
 
 function createMockProcessor(
   overrides: Partial<SecretsProcessorResult> = {}
@@ -18,10 +19,8 @@ function createMockProcessor(
   const result: SecretsProcessorResult = {
     success: true,
     repoName: "test-org/test-repo",
-    message: "1 created, 0 updated, 0 deleted",
-    created: 1,
-    updated: 0,
-    deleted: 0,
+    message: "Applied: 1 created",
+    changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
     ...overrides,
   };
   return {
@@ -43,10 +42,8 @@ describe("secrets-command", () => {
   let consoleOutput: string[];
 
   beforeEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "test-secrets-cmd-"));
+    testConfigPath = join(testDir, "test-config.yaml");
 
     originalConsoleLog = console.log;
     originalConsoleError = console.error;
@@ -72,9 +69,10 @@ describe("secrets-command", () => {
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  DEPLOY_TOKEN:
-    env: TOKEN_SOURCE
+settings:
+  secrets:
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
 repos:
   - git: https://github.com/test-org/test-repo
 `
@@ -98,13 +96,14 @@ repos:
 
     const callArgs = processMock.mock.calls[0].arguments;
 
-    const secretsConfig = callArgs[0] as Record<string, unknown>;
+    const repoConfig = callArgs[0] as RepoConfig;
+    const secrets = repoConfig.settings?.secrets as Record<string, unknown>;
     assert.ok(
-      "DEPLOY_TOKEN" in secretsConfig,
-      "secretsConfig should contain DEPLOY_TOKEN"
+      "DEPLOY_TOKEN" in secrets,
+      "repo settings should carry DEPLOY_TOKEN"
     );
     assert.deepEqual(
-      (secretsConfig.DEPLOY_TOKEN as { env: string }).env,
+      (secrets.DEPLOY_TOKEN as { env: string }).env,
       "TOKEN_SOURCE",
       "DEPLOY_TOKEN should have env: TOKEN_SOURCE"
     );
@@ -127,7 +126,7 @@ repos:
 
     const output = consoleOutput.join("\n");
     assert.ok(
-      output.includes("1 created, 0 updated, 0 deleted"),
+      output.includes("Applied: 1 created"),
       "Should log success message from processor"
     );
   });
@@ -144,20 +143,15 @@ repos:
 `
     );
 
-    const mockProcessor = createMockProcessor();
+    const mockProcessor = createMockProcessor({
+      skipped: true,
+      noSecretsConfigured: true,
+      message: "No secrets configured",
+    });
 
     await runSecretsSync(
       { config: testConfigPath, workDir: testDir },
       { processorFactory: () => mockProcessor }
-    );
-
-    const processMock = mockProcessor.process as unknown as ReturnType<
-      typeof mock.fn
-    >;
-    assert.equal(
-      processMock.mock.calls.length,
-      0,
-      "processor.process should not be called when no secrets configured"
     );
 
     const output = consoleOutput.join("\n");
@@ -165,15 +159,47 @@ repos:
       output.includes("Nothing to do"),
       "Should log nothing-to-do message"
     );
+    assert.ok(
+      !output.includes("Skipped -"),
+      `Empty-secrets skips must not print a skip line, got: ${output}`
+    );
+  });
+
+  test("creates the work dir so gh can be spawned with it as cwd", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const missingWorkDir = join(testDir, "does", "not", "exist");
+    assert.equal(existsSync(missingWorkDir), false);
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: missingWorkDir },
+      { processorFactory: () => createMockProcessor() }
+    );
+
+    assert.ok(
+      existsSync(missingWorkDir),
+      "Work dir must exist before gh is spawned with it as cwd"
+    );
   });
 
   test("error handling: processor throws, function throws aggregated error", async () => {
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  MY_SECRET:
-    env: SECRET_VAR
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
 repos:
   - git: https://github.com/test-org/test-repo
 `
@@ -212,9 +238,10 @@ repos:
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  DEPLOY_TOKEN:
-    env: TOKEN_SOURCE
+settings:
+  secrets:
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
 repos:
   - git: https://github.com/test-org/test-repo
 `
@@ -243,9 +270,10 @@ repos:
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  DEPLOY_TOKEN:
-    env: TOKEN_SOURCE
+settings:
+  secrets:
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
 repos:
   - git: https://github.com/test-org/test-repo
 `
@@ -270,18 +298,23 @@ repos:
     );
   });
 
-  test("secrets with only deleteOrphaned: false and no entries returns early", async () => {
+  test("secrets with only deleteOrphaned: false and no entries is nothing to do", async () => {
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  deleteOrphaned: false
+settings:
+  secrets:
+    deleteOrphaned: false
 repos:
   - git: https://github.com/test-org/test-repo
 `
     );
 
-    const mockProcessor = createMockProcessor();
+    const mockProcessor = createMockProcessor({
+      skipped: true,
+      noSecretsConfigured: true,
+      message: "No secrets configured",
+    });
 
     await runSecretsSync(
       { config: testConfigPath, workDir: testDir },
@@ -291,10 +324,11 @@ repos:
     const processMock = mockProcessor.process as unknown as ReturnType<
       typeof mock.fn
     >;
+    const repoConfig = processMock.mock.calls[0].arguments[0] as RepoConfig;
     assert.equal(
-      processMock.mock.calls.length,
-      0,
-      "processor.process should not be called when no secret entries and deleteOrphaned is false"
+      repoConfig.settings?.secrets,
+      undefined,
+      "deleteOrphaned: false alone is not actionable, so secrets collapse away"
     );
 
     const output = consoleOutput.join("\n");
@@ -304,13 +338,77 @@ repos:
     );
   });
 
+  test("only repos with merged secrets are reported; empty ones stay silent", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+groups:
+  frontend:
+    settings:
+      secrets:
+        NPM_TOKEN:
+          env: NPM_TOKEN_VALUE
+repos:
+  - git: https://github.com/test-org/web
+    groups: [frontend]
+  - git: https://github.com/test-org/api
+`
+    );
+
+    const seen: { git: string; hasSecrets: boolean }[] = [];
+    const mockProcessor: ISecretsProcessorAdapter = {
+      process: mock.fn(
+        async (repoConfig: RepoConfig): Promise<SecretsProcessorResult> => {
+          const hasSecrets = repoConfig.settings?.secrets !== undefined;
+          seen.push({ git: repoConfig.git, hasSecrets });
+          if (!hasSecrets) {
+            return {
+              success: true,
+              repoName: repoConfig.git,
+              message: "No secrets configured",
+              skipped: true,
+              noSecretsConfigured: true,
+            };
+          }
+          return {
+            success: true,
+            repoName: repoConfig.git,
+            message: "Applied: 1 created",
+            changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
+          };
+        }
+      ),
+    };
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { processorFactory: () => mockProcessor }
+    );
+
+    assert.deepEqual(seen, [
+      { git: "https://github.com/test-org/web", hasSecrets: true },
+      { git: "https://github.com/test-org/api", hasSecrets: false },
+    ]);
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("Applied: 1 created"),
+      `Expected the scoped repo to be reported, got: ${output}`
+    );
+    assert.ok(
+      !output.includes("api"),
+      `The repo with no secrets must not be logged, got: ${output}`
+    );
+  });
+
   test("processes multiple repos and aggregates errors", async () => {
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  MY_SECRET:
-    env: SECRET_VAR
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
 repos:
   - git: https://github.com/test-org/repo1
   - git: https://github.com/test-org/repo2
@@ -327,10 +425,8 @@ repos:
         return {
           success: true,
           repoName: "test-org/repo2",
-          message: "1 created, 0 updated, 0 deleted",
-          created: 1,
-          updated: 0,
-          deleted: 0,
+          message: "Applied: 1 created",
+          changes: { create: 1, update: 0, delete: 0, unchanged: 0 },
         };
       }),
     };
@@ -358,9 +454,10 @@ repos:
     writeFileSync(
       testConfigPath,
       `id: test-config
-secrets:
-  MY_SECRET:
-    env: SECRET_VAR
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
 repos:
   - git: https://github.com/test-org/test-repo
 `
