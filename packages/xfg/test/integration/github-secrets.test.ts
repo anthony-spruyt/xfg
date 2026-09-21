@@ -22,17 +22,23 @@ interface Secret {
 
 let repoName: string;
 let testRepo: string;
+let scopedRepoName: string;
+let scopedTestRepo: string;
 let tmpDir: string;
 
-async function getSecrets(): Promise<Secret[]> {
+async function getSecretsFor(repo: string): Promise<Secret[]> {
   try {
     const output = await execWithRetry(
-      `gh api repos/${testRepo}/actions/secrets --jq '.secrets'`
+      `gh api repos/${repo}/actions/secrets --jq '.secrets'`
     );
     return JSON.parse(output) as Secret[];
   } catch {
     return [];
   }
+}
+
+async function getSecrets(): Promise<Secret[]> {
+  return getSecretsFor(testRepo);
 }
 
 async function runSecretsSync(
@@ -55,13 +61,17 @@ describe("GitHub Secrets Integration Test", () => {
   before(async () => {
     repoName = generateRepoName("secrets");
     testRepo = `${OWNER}/${repoName}`;
+    scopedRepoName = generateRepoName("secrets-scoped");
+    scopedTestRepo = `${OWNER}/${scopedRepoName}`;
     tmpDir = join(tmpdir(), `xfg-secrets-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
     await createRepo(OWNER, repoName);
+    await createRepo(OWNER, scopedRepoName);
   });
 
   after(async () => {
     await deleteRepo(OWNER, repoName);
+    await deleteRepo(OWNER, scopedRepoName);
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
@@ -69,11 +79,12 @@ describe("GitHub Secrets Integration Test", () => {
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets
+settings:
+  secrets:
+    XFG_TEST_SECRET:
+      env: XFG_TEST_SECRET_VALUE
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  XFG_TEST_SECRET:
-    env: XFG_TEST_SECRET_VALUE
 `
     );
 
@@ -94,11 +105,12 @@ secrets:
     const setupConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets-setup
+settings:
+  secrets:
+    XFG_TEST_SECRET:
+      env: XFG_TEST_SECRET_VALUE
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  XFG_TEST_SECRET:
-    env: XFG_TEST_SECRET_VALUE
 `
     );
     await runSecretsSync(setupConfigPath);
@@ -117,11 +129,12 @@ secrets:
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets
+settings:
+  secrets:
+    XFG_TEST_SECRET:
+      env: XFG_TEST_SECRET_VALUE
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  XFG_TEST_SECRET:
-    env: XFG_TEST_SECRET_VALUE
 `
     );
 
@@ -141,11 +154,12 @@ secrets:
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets
+settings:
+  secrets:
+    XFG_DRY_RUN_SECRET:
+      env: XFG_TEST_SECRET_VALUE
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  XFG_DRY_RUN_SECRET:
-    env: XFG_TEST_SECRET_VALUE
 `
     );
 
@@ -156,16 +170,55 @@ secrets:
     assert.equal(found, undefined, "Dry-run secret should not exist");
   });
 
+  test("a group-scoped secret reaches only the repo in that group", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets-scoped
+groups:
+  scoped:
+    settings:
+      secrets:
+        XFG_GROUP_SCOPED_SECRET:
+          env: XFG_TEST_SECRET_VALUE
+repos:
+  - git: https://github.com/${scopedTestRepo}.git
+    groups: [scoped]
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    await runSecretsSync(configPath);
+
+    await withTestRetry(
+      async () => {
+        const scoped = await getSecretsFor(scopedTestRepo);
+        assert.ok(
+          scoped.find((s) => s.name === "XFG_GROUP_SCOPED_SECRET"),
+          "The repo in the group should receive the group-scoped secret"
+        );
+      },
+      { description: "group-scoped secret visible on the in-group repo" }
+    );
+
+    const unscoped = await getSecretsFor(testRepo);
+    assert.equal(
+      unscoped.find((s) => s.name === "XFG_GROUP_SCOPED_SECRET"),
+      undefined,
+      "The repo outside the group must not receive the group-scoped secret"
+    );
+  });
+
   test("deletes orphaned secret", async () => {
     // Ensure secret exists before testing deletion (decouples from prior test ordering)
     const setupConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets-setup-delete
+settings:
+  secrets:
+    XFG_TEST_SECRET:
+      env: XFG_TEST_SECRET_VALUE
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  XFG_TEST_SECRET:
-    env: XFG_TEST_SECRET_VALUE
 `
     );
     await runSecretsSync(setupConfigPath);
@@ -184,10 +237,11 @@ secrets:
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-secrets
+settings:
+  secrets:
+    deleteOrphaned: true
 repos:
   - git: https://github.com/${testRepo}.git
-secrets:
-  deleteOrphaned: true
 `
     );
 
