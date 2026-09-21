@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/next/examples/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/next/migration-v7/">
       
       
-        <link rel="prev" href="../configuration/code-scanning/">
+        <link rel="prev" href="../reference/config-schema/">
       
       
-        <link rel="next" href="multi-file-sync/">
+        <link rel="next" href="../migration-v5/">
       
       
       <link rel="icon" href="../assets/images/favicon.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Overview - xfg</title>
+        <title>v6 to v7 - xfg</title>
       
     
     
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#examples-overview" class="md-skip">
+        <a href="#migrating-from-v6-to-v7" class="md-skip">
           Skip to content
         </a>
       
@@ -114,7 +114,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              v6 to v7
             
           </span>
         </div>
@@ -322,13 +322,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../examples/" class="md-tabs__link">
           
   
   
@@ -404,11 +402,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../migration-v7/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="./" class="md-tabs__link">
           
   
   
@@ -1157,31 +1157,28 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -1194,7 +1191,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -1205,32 +1202,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
         
   
   
@@ -1241,53 +1216,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#basic-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Basic Examples
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#content-formatting" class="md-nav__link">
-    <span class="md-ellipsis">
-      Content &amp; Formatting
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Advanced Features
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1300,7 +1228,7 @@
   
   
     <li class="md-nav__item">
-      <a href="multi-file-sync/" class="md-nav__link">
+      <a href="../examples/multi-file-sync/" class="md-nav__link">
         
   
   
@@ -1323,7 +1251,7 @@
   
   
     <li class="md-nav__item">
-      <a href="shared-config/" class="md-nav__link">
+      <a href="../examples/shared-config/" class="md-nav__link">
         
   
   
@@ -1346,7 +1274,7 @@
   
   
     <li class="md-nav__item">
-      <a href="env-specific/" class="md-nav__link">
+      <a href="../examples/env-specific/" class="md-nav__link">
         
   
   
@@ -1369,7 +1297,7 @@
   
   
     <li class="md-nav__item">
-      <a href="merge-strategies/" class="md-nav__link">
+      <a href="../examples/merge-strategies/" class="md-nav__link">
         
   
   
@@ -1392,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="create-only/" class="md-nav__link">
+      <a href="../examples/create-only/" class="md-nav__link">
         
   
   
@@ -1415,7 +1343,7 @@
   
   
     <li class="md-nav__item">
-      <a href="yaml-comments/" class="md-nav__link">
+      <a href="../examples/yaml-comments/" class="md-nav__link">
         
   
   
@@ -1438,7 +1366,7 @@
   
   
     <li class="md-nav__item">
-      <a href="text-files/" class="md-nav__link">
+      <a href="../examples/text-files/" class="md-nav__link">
         
   
   
@@ -1461,7 +1389,7 @@
   
   
     <li class="md-nav__item">
-      <a href="executable-files/" class="md-nav__link">
+      <a href="../examples/executable-files/" class="md-nav__link">
         
   
   
@@ -1484,7 +1412,7 @@
   
   
     <li class="md-nav__item">
-      <a href="subdirectory-paths/" class="md-nav__link">
+      <a href="../examples/subdirectory-paths/" class="md-nav__link">
         
   
   
@@ -1507,7 +1435,7 @@
   
   
     <li class="md-nav__item">
-      <a href="file-references/" class="md-nav__link">
+      <a href="../examples/file-references/" class="md-nav__link">
         
   
   
@@ -1530,7 +1458,7 @@
   
   
     <li class="md-nav__item">
-      <a href="auto-merge/" class="md-nav__link">
+      <a href="../examples/auto-merge/" class="md-nav__link">
         
   
   
@@ -1553,7 +1481,7 @@
   
   
     <li class="md-nav__item">
-      <a href="delete-orphaned/" class="md-nav__link">
+      <a href="../examples/delete-orphaned/" class="md-nav__link">
         
   
   
@@ -1966,28 +1894,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_10" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
-        
-          
-          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="">
             
   
   
@@ -2000,7 +1931,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             Migration
@@ -2011,10 +1942,32 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../migration-v7/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    v6 to v7
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2025,6 +1978,95 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Breaking Changes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-root-level-secrets-moves-under-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Root-level secrets: moves under settings:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-secrets-can-now-be-scoped" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Secrets can now be scoped
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-group-level-variablesinherit-false-no-longer-clears-deleteorphaned" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Group-level variables.inherit: false no longer clears deleteOrphaned
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-split-config-folders-only-root-settings-is-single-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Split config folders: only root settings: is single-file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub Action
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-changes-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      No Changes Required
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2229,27 +2271,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#basic-examples" class="md-nav__link">
+  <a href="#breaking-changes" class="md-nav__link">
     <span class="md-ellipsis">
-      Basic Examples
+      Breaking Changes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-root-level-secrets-moves-under-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Root-level secrets: moves under settings:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-secrets-can-now-be-scoped" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Secrets can now be scoped
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-group-level-variablesinherit-false-no-longer-clears-deleteorphaned" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Group-level variables.inherit: false no longer clears deleteOrphaned
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-split-config-folders-only-root-settings-is-single-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Split config folders: only root settings: is single-file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#github-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub Action
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#content-formatting" class="md-nav__link">
+  <a href="#no-changes-required" class="md-nav__link">
     <span class="md-ellipsis">
-      Content &amp; Formatting
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#advanced-features" class="md-nav__link">
-    <span class="md-ellipsis">
-      Advanced Features
+      No Changes Required
     </span>
   </a>
   
@@ -2274,28 +2358,109 @@
   
 
 
-<h1 id="examples-overview">Examples Overview<a class="headerlink" href="#examples-overview" title="Permanent link">&para;</a></h1>
-<p>This section contains real-world examples demonstrating xfg's capabilities.</p>
-<h2 id="basic-examples">Basic Examples<a class="headerlink" href="#basic-examples" title="Permanent link">&para;</a></h2>
+<h1 id="migrating-from-v6-to-v7">Migrating from v6 to v7<a class="headerlink" href="#migrating-from-v6-to-v7" title="Permanent link">&para;</a></h1>
+<p>v7 moves <code>secrets:</code> under <code>settings:</code>, so secrets can be scoped per group and per repo instead of being pushed to every repo in the config.</p>
+<h2 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h2>
+<h3 id="1-root-level-secrets-moves-under-settings">1. Root-level <code>secrets:</code> moves under <code>settings:</code><a class="headerlink" href="#1-root-level-secrets-moves-under-settings" title="Permanent link">&para;</a></h3>
+<p><strong>Before (v6):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-config</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">MY_KEY</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MY_KEY_VALUE</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/web.git</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/api.git</span>
+</span></code></pre></div>
+<p><strong>After (v7):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-config</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">MY_KEY</span><span class="p">:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">      </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MY_KEY_VALUE</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/web.git</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/api.git</span>
+</span></code></pre></div>
+<p>There is no back-compat shim. A root-level <code>secrets:</code> block produces:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Root-level 'secrets' is no longer supported — move it under 'settings.secrets'.
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>Secrets can now also be scoped per group and per repo.
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>See https://anthony-spruyt.github.io/xfg/migration-v7/
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Your editor will not flag this</p>
+<p>The config schema's root object does not set <code>additionalProperties: false</code>, so a stale root-level <code>secrets:</code> block will not be underlined in your editor. The validation error above is the only signal you get.</p>
+</div>
+<h3 id="2-secrets-can-now-be-scoped">2. Secrets can now be scoped<a class="headerlink" href="#2-secrets-can-now-be-scoped" title="Permanent link">&para;</a></h3>
+<p>This is the point of the change. Secrets merge through the same layers as variables — root → group → conditional group → repo, innermost wins:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">SHARED_KEY</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">      </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">SHARED_KEY_VALUE</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nt">groups</span><span class="p">:</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span><span class="nt">frontend</span><span class="p">:</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">        </span><span class="nt">NPM_TOKEN</span><span class="p">:</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">          </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NPM_TOKEN_VALUE</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/web.git</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">frontend</span><span class="p p-Indicator">]</span><span class="w">          </span><span class="c1"># SHARED_KEY + NPM_TOKEN</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/api.git</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">      </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">        </span><span class="nt">MY_KEY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">           </span><span class="c1"># opt out of one inherited secret</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/isolated.git</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">      </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="w">        </span><span class="nt">inherit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">          </span><span class="c1"># discard all inherited secrets</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span class="w">        </span><span class="nt">DEPLOY_KEY</span><span class="p">:</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="w">          </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ISOLATED_DEPLOY_KEY</span>
+</span></code></pre></div>
+<p>See <a href="../configuration/secrets/">Secrets</a> for the full reference, including the <code>inherit: false</code> + <code>deleteOrphaned: true</code> interaction.</p>
+<h3 id="3-group-level-variablesinherit-false-no-longer-clears-deleteorphaned">3. Group-level <code>variables.inherit: false</code> no longer clears <code>deleteOrphaned</code><a class="headerlink" href="#3-group-level-variablesinherit-false-no-longer-clears-deleteorphaned" title="Permanent link">&para;</a></h3>
+<p><code>deleteOrphaned</code> is a policy switch, not an entry. The repo layer already treated it that way; the group layer did not. Both now behave the same: <code>inherit: false</code> discards inherited <em>entries</em> only.</p>
+<p><strong>v6 behaviour:</strong> root <code>variables.deleteOrphaned: true</code> + a group with <code>variables: { inherit: false, ... }</code> silently disabled orphan deletion for that group.</p>
+<p><strong>v7 behaviour:</strong> <code>deleteOrphaned: true</code> stays on.</p>
+<p>To opt out, set it explicitly:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">groups</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">myGroup</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">variables</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">inherit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">   </span><span class="c1"># was implicit in v6, now required</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">MY_VAR</span><span class="p">:</span><span class="w"> </span><span class="s">"value"</span>
+</span></code></pre></div>
+<p>The same rule applies to the new <code>settings.secrets</code>.</p>
+<h3 id="4-split-config-folders-only-root-settings-is-single-file">4. Split config folders: only root <code>settings:</code> is single-file<a class="headerlink" href="#4-split-config-folders-only-root-settings-is-single-file" title="Permanent link">&para;</a></h3>
+<p>In a split config folder, root-level <code>settings:</code> — and therefore any root-level secrets — must live in exactly one file. Group- and repo-scoped secrets can be spread across files as usual, because <code>groups</code> and <code>repos</code> merge across files.</p>
+<p>This also fixes a v6 bug: a root-level <code>secrets:</code> block in a split config folder was silently dropped during the merge, so <code>xfg secrets sync</code> reported no secrets at all. Under <code>settings:</code> it merges correctly.</p>
+<h2 id="github-action">GitHub Action<a class="headerlink" href="#github-action" title="Permanent link">&para;</a></h2>
+<p>Update your workflow files from <code>@v6</code> to <code>@v7</code>:</p>
+<p><strong>Before (v6):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v6</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./config.yaml</span>
+</span></code></pre></div>
+<p><strong>After (v7):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v7</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">with</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./config.yaml</span>
+</span></code></pre></div>
+<h2 id="no-changes-required">No Changes Required<a class="headerlink" href="#no-changes-required" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="multi-file-sync/">Multi-File Sync</a> - Sync multiple config files to multiple repos</li>
-<li><a href="shared-config/">Shared Config Across Teams</a> - Define common settings with team-specific overrides</li>
-</ul>
-<h2 id="content-formatting">Content &amp; Formatting<a class="headerlink" href="#content-formatting" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="yaml-comments/">YAML Comments &amp; Empty Files</a> - Add schema directives and header comments</li>
-<li><a href="text-files/">Text Files</a> - Sync <code>.gitignore</code>, <code>.markdownlintignore</code>, and other text files</li>
-<li><a href="executable-files/">Executable Files</a> - Shell scripts and executable permissions</li>
-<li><a href="subdirectory-paths/">Subdirectory Paths</a> - Sync files to nested directories</li>
-</ul>
-<h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="env-specific/">Environment-Specific Values</a> - Use environment variables for dynamic values</li>
-<li><a href="merge-strategies/">Per-File Merge Strategies</a> - Control how arrays merge</li>
-<li><a href="create-only/">Create-Only Files</a> - Files that are created once but not overwritten</li>
-<li><a href="file-references/">File References</a> - Load content from external template files</li>
-<li><a href="auto-merge/">Auto-Merge PRs</a> - Automatic PR merging options</li>
-<li><a href="delete-orphaned/">Delete Orphaned Files</a> - Auto-delete files removed from config</li>
+<li><strong><code>xfg secrets sync</code></strong> — still a separate command; a plain <code>xfg sync</code> never touches secrets, even though they now live under <code>settings:</code></li>
+<li><strong>Secret encryption and env-var resolution</strong> — unchanged (libsodium sealed box, values read from environment variables at runtime)</li>
+<li><strong>Secret naming rules</strong> — unchanged, including case-insensitive matching</li>
+<li><strong>CLI flags</strong> — <code>--dry-run</code>, <code>--no-delete</code>, <code>--config</code>, <code>--work-dir</code>, <code>--retries</code> all work the same way</li>
+<li><strong>Everything else under <code>settings:</code></strong> — rulesets, labels, repo settings, code scanning are unchanged</li>
 </ul>
 
 

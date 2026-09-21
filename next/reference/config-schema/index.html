@@ -16,7 +16,7 @@
         <link rel="prev" href="../cli-options/">
       
       
-        <link rel="next" href="../../migration-v5/">
+        <link rel="next" href="../../migration-v7/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
@@ -408,7 +408,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v5/" class="md-tabs__link">
+        <a href="../../migration-v7/" class="md-tabs__link">
           
   
   
@@ -2161,6 +2161,29 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v7/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    v6 to v7
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v5/" class="md-nav__link">
         
   
@@ -2617,12 +2640,6 @@
 <td>Repository settings (rulesets, labels, variables, etc.)</td>
 </tr>
 <tr>
-<td><code>secrets</code></td>
-<td><code>object</code></td>
-<td>No</td>
-<td>GitHub Actions secrets (root-level, synced via <code>xfg secrets sync</code>)</td>
-</tr>
-<tr>
 <td><code>prOptions</code></td>
 <td><code>PROptions</code></td>
 <td>No</td>
@@ -2693,6 +2710,11 @@
 <td>GitHub Actions variables keyed by name (see below)</td>
 </tr>
 <tr>
+<td><code>secrets</code></td>
+<td><code>object</code></td>
+<td>GitHub Actions secrets keyed by name (see below)</td>
+</tr>
+<tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
 <td>Default for orphan deletion across all settings sub-types</td>
@@ -2729,11 +2751,11 @@
 </table>
 <p>See <a href="../../configuration/variables/">GitHub Variables</a> for full details.</p>
 <h3 id="secrets-object">Secrets Object<a class="headerlink" href="#secrets-object" title="Permanent link">&para;</a></h3>
-<p>The <code>secrets</code> object is at the <strong>root level</strong> (not under <code>settings</code>) and is synced via <code>xfg secrets sync</code>, not <code>xfg sync</code>. It maps secret names to <code>SecretConfig</code> objects:</p>
+<p>The <code>secrets</code> field lives under <code>settings</code> (at root, group, conditional-group, or repo level) and is synced via <code>xfg secrets sync</code>, <strong>not</strong> <code>xfg sync</code>. It maps secret names to <code>SecretConfig</code> objects:</p>
 <table>
 <thead>
 <tr>
-<th>Field</th>
+<th>Key</th>
 <th>Type</th>
 <th>Description</th>
 </tr>
@@ -2742,15 +2764,21 @@
 <tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
-<td>Delete secrets removed from config</td>
+<td>Delete secrets removed from config (independent of settings-level <code>deleteOrphaned</code>)</td>
+</tr>
+<tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>Set to <code>false</code> to discard all inherited secrets (per-repo/group only)</td>
 </tr>
 <tr>
 <td><code>SECRET_NAME</code></td>
-<td><code>object</code></td>
-<td><code>SecretConfig</code> with an <code>env</code> field (see below)</td>
+<td><code>object \| false</code></td>
+<td><code>SecretConfig</code> with an <code>env</code> field, or <code>false</code> to opt out of an inherited secret</td>
 </tr>
 </tbody>
 </table>
+<p>See <a href="../../configuration/secrets/">Secrets</a> for scoping rules and the <code>inherit</code> / <code>deleteOrphaned</code> interaction.</p>
 <h4 id="secretconfig">SecretConfig<a class="headerlink" href="#secretconfig" title="Permanent link">&para;</a></h4>
 <table>
 <thead>
