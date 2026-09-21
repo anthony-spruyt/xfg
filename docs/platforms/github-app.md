@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: anthony-spruyt/xfg@v6 # x-release-please-major
+      - uses: anthony-spruyt/xfg@v7 # x-release-please-major
         with:
           config: sync-config.yaml
           github-client-id: ${{ vars.CLIENT_ID }}
