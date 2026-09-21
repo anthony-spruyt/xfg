@@ -1,5 +1,26 @@
 # Changelog
 
+## [7.0.0](https://github.com/anthony-spruyt/xfg/compare/v6.4.7...v7.0.0) (2026-09-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* root-level 'secrets:' is no longer supported. Move it under 'settings.secrets', where it can also be scoped per group and per repo. See docs/migration-v7.md.
+
+### Features
+
+* scope secrets by group and repo ([#1010](https://github.com/anthony-spruyt/xfg/issues/1010)) ([7605a01](https://github.com/anthony-spruyt/xfg/commit/7605a01d23373d4ba91215a333d1a1abc2170533))
+
+
+### Bug Fixes
+
+* **lint:** resolve eslint flat config under MegaLinter ([#1002](https://github.com/anthony-spruyt/xfg/issues/1002)) ([e0f8126](https://github.com/anthony-spruyt/xfg/commit/e0f8126217ac61c0c39e695e8a3353dcffa84a66))
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.13.6 ([#997](https://github.com/anthony-spruyt/xfg/issues/997)) ([3e7d376](https://github.com/anthony-spruyt/xfg/commit/3e7d376fe4f8c25fd14c90e531e50e29b544622a))
+
 ## [6.4.7](https://github.com/anthony-spruyt/xfg/compare/v6.4.6...v6.4.7) (2026-09-19)
 
 
