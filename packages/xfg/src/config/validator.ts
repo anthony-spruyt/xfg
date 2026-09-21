@@ -517,16 +517,6 @@ function validateSecretsLayer(secrets: Record<string, unknown>): void {
     );
   }
 
-  // Reject boolean true — only false (opt-out) is valid
-  for (const [name, value] of Object.entries(secrets)) {
-    if (SECRET_RESERVED_KEYS.has(name)) continue;
-    if (value === true) {
-      throw new ValidationError(
-        `Secret '${name}' is set to true, which is not valid. Use false to opt out, or provide a SecretConfig object.`
-      );
-    }
-  }
-
   // Reject duplicate case-insensitive secret names
   const seen = new Map<string, string>();
   for (const name of Object.keys(secrets)) {
