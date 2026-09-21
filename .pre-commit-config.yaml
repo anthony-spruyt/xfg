@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/pre-commit-config.json
 
 fail_fast: false
-exclude: "(^|/)CHANGELOG\\.md$"
 repos:
   - repo: "https://github.com/adrienverge/yamllint"
     rev: "v1.38.0"
@@ -43,6 +42,7 @@ repos:
     rev: "1.0.0"
     hooks:
       - id: "mdformat"
+        exclude: "^\\.claude/|(^|/)CHANGELOG\\.md$"
         additional_dependencies:
           - "mdformat-gfm"
           - "mdformat-frontmatter"
