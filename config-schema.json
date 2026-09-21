@@ -65,29 +65,6 @@
     "settings": {
       "$ref": "#/definitions/rootSettings",
       "description": "Global repository settings including GitHub Rulesets. Can be overridden per-repo. Settings are merged: per-repo rulesets override root rulesets with same name."
-    },
-    "secrets": {
-      "type": "object",
-      "description": "Secrets config: map of secret names to SecretConfig. Use deleteOrphaned to remove secrets not in config.",
-      "properties": {
-        "deleteOrphaned": {
-          "type": "boolean",
-          "default": false,
-          "description": "Delete secrets from repos that are not defined in this config. Default: false"
-        }
-      },
-      "additionalProperties": {
-        "oneOf": [
-          {
-            "type": "boolean",
-            "const": false,
-            "description": "Set to false to disable this secret"
-          },
-          {
-            "$ref": "#/definitions/secretConfig"
-          }
-        ]
-      }
     }
   },
   "definitions": {
@@ -639,6 +616,29 @@
             ]
           }
         },
+        "secrets": {
+          "type": "object",
+          "description": "Map of GitHub Actions secret names to SecretConfig. Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.",
+          "properties": {
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete secrets from repos that are not defined in this config. Independent from the settings-level deleteOrphaned flag. Default: false"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to disable this secret"
+              },
+              {
+                "$ref": "#/definitions/secretConfig"
+              }
+            ]
+          }
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
@@ -744,6 +744,33 @@
               {
                 "type": "string",
                 "description": "Variable value"
+              }
+            ]
+          }
+        },
+        "secrets": {
+          "type": "object",
+          "description": "Map of GitHub Actions secret names to SecretConfig. Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited secrets. Does not clear an inherited deleteOrphaned. Default: true"
+            },
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete secrets from repos that are not defined in this config. Overrides an inherited secrets.deleteOrphaned. Default: false"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited secret"
+              },
+              {
+                "$ref": "#/definitions/secretConfig"
               }
             ]
           }
