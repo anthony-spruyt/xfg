@@ -1,5 +1,5 @@
-import type { RepoInfo } from "../repo/index.js";
-import type { GhApiOptions } from "../shared/gh-api-utils.js";
+import type { RepoInfo } from "../../repo/index.js";
+import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 export interface GitHubSecret {
   name: string;

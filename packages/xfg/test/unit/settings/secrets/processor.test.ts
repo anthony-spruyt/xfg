@@ -1,20 +1,20 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { SecretsProcessor } from "../../../src/secrets/processor.js";
+import { SecretsProcessor } from "../../../../src/settings/secrets/processor.js";
 import type {
   ISecretsStrategy,
   GitHubSecret,
   GitHubPublicKey,
-} from "../../../src/secrets/types.js";
-import type { ISecretEncryptor } from "../../../src/secrets/encryption.js";
-import type { IEnvResolver } from "../../../src/shared/env-resolver.js";
+} from "../../../../src/settings/secrets/types.js";
+import type { ISecretEncryptor } from "../../../../src/settings/secrets/encryption.js";
+import type { IEnvResolver } from "../../../../src/shared/env-resolver.js";
 import type {
   GitHubRepoInfo,
   AzureDevOpsRepoInfo,
   RepoInfo,
-} from "../../../src/repo/index.js";
-import type { GhApiOptions } from "../../../src/shared/gh-api-utils.js";
-import type { SecretConfig } from "../../../src/config/index.js";
+} from "../../../../src/repo/index.js";
+import type { GhApiOptions } from "../../../../src/shared/gh-api-utils.js";
+import type { RepoConfig, SecretConfig } from "../../../../src/config/index.js";
 
 class MockSecretsStrategy implements ISecretsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
@@ -95,11 +95,17 @@ const mockGitHubRepo: GitHubRepoInfo = {
   gitUrl: "https://github.com/test-org/test-repo.git",
 };
 
-function makeSecretsConfig(
+function makeRepoConfig(
   secrets: Record<string, SecretConfig>,
   deleteOrphaned = false
-): Record<string, SecretConfig | boolean> & { deleteOrphaned?: boolean } {
-  return { ...secrets, deleteOrphaned };
+): RepoConfig {
+  return {
+    git: "https://github.com/test-org/test-repo.git",
+    files: [],
+    settings: {
+      secrets: Object.assign({ ...secrets }, { deleteOrphaned }),
+    },
+  };
 }
 
 describe("SecretsProcessor", () => {
@@ -113,12 +119,12 @@ describe("SecretsProcessor", () => {
       envResolver
     );
     const result = await processor.process(
-      makeSecretsConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+      makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
       mockGitHubRepo,
       {}
     );
     assert.equal(result.success, true);
-    assert.equal(result.created, 1);
+    assert.equal(result.changes!.create, 1);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls.length, 1);
     assert.equal(upsertCalls[0].args[0], "DEPLOY_TOKEN");
@@ -145,13 +151,13 @@ describe("SecretsProcessor", () => {
       envResolver
     );
     const result = await processor.process(
-      makeSecretsConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+      makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
       mockGitHubRepo,
       {}
     );
     assert.equal(result.success, true);
-    assert.equal(result.updated, 1);
-    assert.equal(result.created, 0);
+    assert.equal(result.changes!.update, 1);
+    assert.equal(result.changes!.create, 0);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls[0].args[0], "DEPLOY_TOKEN");
     assert.equal(upsertCalls[0].args[2], "key-1");
@@ -168,11 +174,11 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({}, true),
+      makeRepoConfig({}, true),
       mockGitHubRepo,
       {}
     );
-    assert.equal(result.deleted, 1);
+    assert.equal(result.changes!.delete, 1);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
     assert.equal(deleteCalls.length, 1);
     assert.equal(deleteCalls[0].args[0], "OLD_SECRET");
@@ -189,11 +195,11 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({}, true),
+      makeRepoConfig({}, true),
       mockGitHubRepo,
       { noDelete: true }
     );
-    assert.equal(result.deleted, 0);
+    assert.equal(result.changes!.delete, 0);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
     assert.equal(deleteCalls.length, 0);
   });
@@ -207,7 +213,7 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({ MY_SECRET: { env: "SRC" } }),
+      makeRepoConfig({ MY_SECRET: { env: "SRC" } }),
       mockGitHubRepo,
       { dryRun: true }
     );
@@ -227,13 +233,13 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({ EXISTING: { env: "SRC" }, NEW_ONE: { env: "SRC2" } }),
+      makeRepoConfig({ EXISTING: { env: "SRC" }, NEW_ONE: { env: "SRC2" } }),
       mockGitHubRepo,
       { dryRun: true }
     );
     assert.equal(result.dryRun, true);
-    assert.equal(result.updated, 1);
-    assert.equal(result.created, 1);
+    assert.equal(result.changes!.update, 1);
+    assert.equal(result.changes!.create, 1);
   });
 
   test("dry run counts orphans as deleted when deleteOrphaned is true", async () => {
@@ -247,37 +253,35 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({}, true),
+      makeRepoConfig({}, true),
       mockGitHubRepo,
       { dryRun: true }
     );
     assert.equal(result.dryRun, true);
-    assert.equal(result.deleted, 1);
+    assert.equal(result.changes!.delete, 1);
     const mutatingCalls = strategy.calls.filter((c) => c.method !== "list");
     assert.equal(mutatingCalls.length, 0);
   });
 
-  test("fails fast when env vars are missing", async () => {
+  test("fails without mutating when env vars are missing", async () => {
     const strategy = new MockSecretsStrategy();
     const processor = new SecretsProcessor(
       strategy,
       new MockEncryptor(),
       new MockEnvResolver({})
     );
-    await assert.rejects(
-      () =>
-        processor.process(
-          makeSecretsConfig({ SEC: { env: "MISSING_VAR" } }),
-          mockGitHubRepo,
-          {}
-        ),
-      /MISSING_VAR/
+    const result = await processor.process(
+      makeRepoConfig({ SEC: { env: "MISSING_VAR" } }),
+      mockGitHubRepo,
+      {}
     );
+    assert.equal(result.success, false);
+    assert.match(result.message, /MISSING_VAR/);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls.length, 0);
   });
 
-  test("rejects empty env var value", async () => {
+  test("fails without mutating on an empty env var value", async () => {
     const strategy = new MockSecretsStrategy();
     strategy.listResponse = [];
     const envResolver = new MockEnvResolver({ TOKEN_SOURCE: "" });
@@ -286,17 +290,56 @@ describe("SecretsProcessor", () => {
       new MockEncryptor(),
       envResolver
     );
-    await assert.rejects(
-      () =>
-        processor.process(
-          makeSecretsConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
-          mockGitHubRepo,
-          {}
-        ),
-      /TOKEN_SOURCE/
+    const result = await processor.process(
+      makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+      mockGitHubRepo,
+      {}
     );
+    assert.equal(result.success, false);
+    assert.match(result.message, /TOKEN_SOURCE/);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls.length, 0);
+  });
+
+  test("reports noSecretsConfigured when the repo has no merged secrets", async () => {
+    const strategy = new MockSecretsStrategy();
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const result = await processor.process(
+      { git: "https://github.com/test-org/test-repo.git", files: [] },
+      mockGitHubRepo,
+      {}
+    );
+    assert.equal(result.skipped, true);
+    assert.equal(result.noSecretsConfigured, true);
+    assert.equal(strategy.calls.length, 0);
+  });
+
+  test("a non-GitHub repo skip is not a noSecretsConfigured skip", async () => {
+    const strategy = new MockSecretsStrategy();
+    const processor = new SecretsProcessor(
+      strategy,
+      new MockEncryptor(),
+      new MockEnvResolver({})
+    );
+    const adoRepo: AzureDevOpsRepoInfo = {
+      type: "azure-devops",
+      owner: "org",
+      repo: "repo",
+      organization: "org",
+      project: "proj",
+      gitUrl: "https://dev.azure.com/org/proj/_git/repo",
+    };
+    const result = await processor.process(
+      makeRepoConfig({ SEC: { env: "VAR" } }),
+      adoRepo,
+      {}
+    );
+    assert.equal(result.skipped, true);
+    assert.equal(result.noSecretsConfigured, undefined);
   });
 
   test("matches existing secret case-insensitively against API response", async () => {
@@ -311,12 +354,12 @@ describe("SecretsProcessor", () => {
       envResolver
     );
     const result = await processor.process(
-      makeSecretsConfig({ MY_SECRET: { env: "SRC" } }),
+      makeRepoConfig({ MY_SECRET: { env: "SRC" } }),
       mockGitHubRepo,
       {}
     );
-    assert.equal(result.updated, 1);
-    assert.equal(result.created, 0);
+    assert.equal(result.changes!.update, 1);
+    assert.equal(result.changes!.create, 0);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls[0].args[0], "MY_SECRET");
   });
@@ -333,14 +376,14 @@ describe("SecretsProcessor", () => {
       new MockEnvResolver({})
     );
     const result = await processor.process(
-      makeSecretsConfig({}, true),
+      makeRepoConfig({}, true),
       mockGitHubRepo,
       {}
     );
     assert.equal(result.success, true);
-    assert.equal(result.deleted, 2);
-    assert.equal(result.created, 0);
-    assert.equal(result.updated, 0);
+    assert.equal(result.changes!.delete, 2);
+    assert.equal(result.changes!.create, 0);
+    assert.equal(result.changes!.update, 0);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
     assert.equal(deleteCalls.length, 2);
     const pubKeyCalls = strategy.calls.filter(
@@ -365,7 +408,7 @@ describe("SecretsProcessor", () => {
       envResolver
     );
     const result = await processor.process(
-      makeSecretsConfig(
+      makeRepoConfig(
         {
           EXISTING: { env: "SRC_EXISTING" },
           BRAND_NEW: { env: "SRC_NEW" },
@@ -376,9 +419,9 @@ describe("SecretsProcessor", () => {
       {}
     );
     assert.equal(result.success, true);
-    assert.equal(result.created, 1);
-    assert.equal(result.updated, 1);
-    assert.equal(result.deleted, 1);
+    assert.equal(result.changes!.create, 1);
+    assert.equal(result.changes!.update, 1);
+    assert.equal(result.changes!.delete, 1);
     const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
     assert.equal(upsertCalls.length, 2);
     const deleteCalls = strategy.calls.filter((c) => c.method === "delete");
@@ -402,7 +445,7 @@ describe("SecretsProcessor", () => {
       gitUrl: "https://dev.azure.com/org/proj/_git/repo",
     };
     const result = await processor.process(
-      makeSecretsConfig({ SEC: { env: "VAR" } }),
+      makeRepoConfig({ SEC: { env: "VAR" } }),
       adoRepo,
       {}
     );

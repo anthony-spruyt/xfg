@@ -48,3 +48,14 @@ export {
   type IVariablesProcessor,
   GitHubVariablesStrategy,
 } from "./variables/index.js";
+
+// Secrets — not wired into `xfg sync`; driven by `xfg secrets sync` only.
+export {
+  SecretsProcessor,
+  type ISecretsProcessor,
+  type SecretsProcessorOptions,
+  type SecretsProcessorResult,
+  GitHubSecretsStrategy,
+  SodiumEncryptor,
+  type ISecretEncryptor,
+} from "./secrets/index.js";
