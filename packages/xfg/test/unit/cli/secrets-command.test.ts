@@ -165,6 +165,33 @@ repos:
     );
   });
 
+  test("creates the work dir so gh can be spawned with it as cwd", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const missingWorkDir = join(testDir, "does", "not", "exist");
+    assert.equal(existsSync(missingWorkDir), false);
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: missingWorkDir },
+      { processorFactory: () => createMockProcessor() }
+    );
+
+    assert.ok(
+      existsSync(missingWorkDir),
+      "Work dir must exist before gh is spawned with it as cwd"
+    );
+  });
+
   test("error handling: processor throws, function throws aggregated error", async () => {
     writeFileSync(
       testConfigPath,

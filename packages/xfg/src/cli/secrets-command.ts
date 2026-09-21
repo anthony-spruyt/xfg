@@ -1,3 +1,4 @@
+import { mkdirSync } from "node:fs";
 import {
   loadRawConfig,
   normalizeConfig,
@@ -59,6 +60,8 @@ export async function runSecretsSync(
   const logger = new Logger(!!(process.env.DEBUG || process.env.XFG_DEBUG));
   const { config: configPath, dryRun, workDir, retries, noDelete } = options;
   const cwd = workDir ?? "./tmp";
+  // gh is spawned with this as its cwd; a missing dir surfaces as "spawnSync gh ENOENT".
+  mkdirSync(cwd, { recursive: true });
 
   const rawConfig = loadRawConfig(configPath);
   validateSecretsConfig(rawConfig);
