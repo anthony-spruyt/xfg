@@ -6,8 +6,7 @@ export function escapeCell(text: string | undefined): string {
   if (!text) return "";
   return text
     .replace(BARE_URL, "`$1`")
-    .replace(/\|/g, "\\|")
-    .replace(/</g, "\\<")
+    .replace(/[\\|<]/g, (char) => `\\${char}`)
     .replace(/\s+/g, " ")
     .trim();
 }

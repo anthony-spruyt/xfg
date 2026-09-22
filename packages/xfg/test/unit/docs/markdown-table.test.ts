@@ -51,6 +51,11 @@ describe("renderTable", () => {
 });
 
 describe("escapeCell", () => {
+  test("escapes backslashes before the characters they would escape", () => {
+    assert.equal(escapeCell("a \\| b"), "a \\\\\\| b");
+    assert.equal(escapeCell("path\\\\to"), "path\\\\\\\\to");
+  });
+
   test("escapes pipes", () => {
     assert.equal(escapeCell("a | b"), "a \\| b");
   });
