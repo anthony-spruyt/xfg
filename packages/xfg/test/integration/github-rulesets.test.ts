@@ -17,6 +17,7 @@ import {
 
 const OWNER = "spruyt-labs";
 const RULESET_NAME = "xfg-test-ruleset";
+const MERGIFY_APP_ID = 2753244;
 
 let repoName: string;
 let testRepo: string;
@@ -283,6 +284,78 @@ repos:
         );
       },
       { description: "ruleset append verified", retries: 5, baseDelayMs: 3000 }
+    );
+  });
+
+  test("settings bypassMode exempt is accepted and idempotent", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-rulesets-exempt
+files:
+  .xfg-settings-test:
+    content: "# Placeholder for settings integration test"
+    createOnly: true
+settings:
+  rulesets:
+    ${RULESET_NAME}:
+      target: branch
+      enforcement: active
+      bypassActors:
+        - actorId: ${MERGIFY_APP_ID}
+          actorType: Integration
+          bypassMode: exempt
+      conditions:
+        refName:
+          include:
+            - refs/heads/main
+          exclude: []
+      rules:
+        - type: pull_request
+          parameters:
+            requiredApprovingReviewCount: 1
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    files:
+      .xfg-settings-test: false
+`
+    );
+
+    console.log("Creating ruleset with exempt bypass actor...");
+    await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+
+    const ruleset = await withTestRetry(
+      async () => {
+        const str = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        );
+        if (!str.trim()) throw new Error("Ruleset not visible yet");
+        return JSON.parse(str) as { id: number };
+      },
+      { description: "exempt ruleset visible", retries: 5, baseDelayMs: 3000 }
+    );
+    await waitForRulesetVisible(ruleset.id);
+
+    const detail = await execWithRetry(
+      `gh api repos/${testRepo}/rulesets/${ruleset.id} --jq '.bypass_actors[0].bypass_mode'`
+    );
+    assert.equal(
+      detail.trim(),
+      "exempt",
+      "GitHub should store bypass_mode exempt"
+    );
+
+    console.log("\nRunning dry-run to check for ping-pong...");
+    const dryRunOutput = await exec(
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
+      { cwd: projectRoot }
+    );
+    console.log(dryRunOutput);
+    assert.ok(
+      !dryRunOutput.includes("to update") &&
+        !dryRunOutput.includes("to create"),
+      `Second run should report no ruleset changes, got: ${dryRunOutput}`
     );
   });
 

@@ -23,7 +23,11 @@ const VALID_ACTOR_TYPES = validValues<BypassActorType>([
   "User",
   "Integration",
 ]);
-const VALID_BYPASS_MODES = validValues<BypassMode>(["always", "pull_request"]);
+const VALID_BYPASS_MODES = validValues<BypassMode>([
+  "always",
+  "pull_request",
+  "exempt",
+]);
 const VALID_PATTERN_OPERATORS = [
   "starts_with",
   "ends_with",

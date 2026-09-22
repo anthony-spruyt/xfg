@@ -63,7 +63,7 @@ settings:
       bypassActors: # Optional: who can bypass these rules
         - actorId: 12345
           actorType: Team # "Team", "User", or "Integration"
-          bypassMode: always # "always" or "pull_request"
+          bypassMode: always # "always", "pull_request", or "exempt"
 
       conditions: # Which refs this applies to
         refName:
@@ -405,7 +405,23 @@ bypassActors:
   - actorId: 789012
     actorType: User
     bypassMode: always
+
+  # Merge queue app (e.g., Mergify) - rules are not evaluated at all
+  - actorId: 2753244
+    actorType: Integration
+    bypassMode: exempt
 ```
+
+`bypassMode` values:
+
+| Value          | Behavior                                                                         |
+| -------------- | -------------------------------------------------------------------------------- |
+| `always`       | Actor can bypass rules on any operation. A bypass audit entry is recorded.       |
+| `pull_request` | Actor can bypass rules only via pull requests. A bypass audit entry is recorded. |
+| `exempt`       | Rules are not run for the actor at all. **No bypass audit entry is created.**    |
+
+!!! warning "exempt skips the audit trail"
+    `exempt` is the only mode that works with GitHub-native stacked pull requests, and it is what [Mergify recommends](https://docs.mergify.com/merge-queue/github-rulesets#bypass-actors) for its app. It also means bypasses are not audited, so choose it deliberately.
 
 !!! tip "Finding Actor IDs"
     Use the GitHub API to find actor IDs.
