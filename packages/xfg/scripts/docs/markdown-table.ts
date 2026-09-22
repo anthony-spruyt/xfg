@@ -11,6 +11,13 @@ export function escapeCell(text: string | undefined): string {
     .trim();
 }
 
+// A sentence ends at .!? followed by whitespace and a capital — not at "v1.2.3" or "./tmp".
+const SENTENCE_END = /(?<=[.!?])\s+(?=[A-Z(`'"])/;
+
+export function firstSentence(text: string): string {
+  return text.split(SENTENCE_END)[0];
+}
+
 export function renderTable(headers: string[], rows: string[][]): string {
   const widths = headers.map((header, column) =>
     Math.max(

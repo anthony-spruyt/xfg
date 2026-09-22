@@ -14,8 +14,6 @@ xfg sync --config <path> [options]
 
 <!-- xfg:generated cli:sync -->
 
-<!-- markdownlint-disable MD013 -->
-
 | Option             | Alias | Description                                                                                                                        | Default      |
 | ------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------ |
 | `--config`         | `-c`  | Path to YAML config file                                                                                                           | **Required** |
@@ -27,8 +25,6 @@ xfg sync --config <path> [options]
 | `--work-dir`       | `-w`  | Temporary directory for cloning                                                                                                    | `./tmp`      |
 | `--retries`        | `-r`  | Number of retries for network operations (0 to disable)                                                                            | `3`          |
 | `--no-delete`      |       | Skip deletion of orphaned resources even if deleteOrphaned is configured                                                           | `false`      |
-
-<!-- markdownlint-enable MD013 -->
 
 <!-- xfg:generated:end -->
 
@@ -87,8 +83,6 @@ xfg secrets sync --config <path> [options]
 
 <!-- xfg:generated cli:secrets-sync -->
 
-<!-- markdownlint-disable MD013 -->
-
 | Option        | Alias | Description                                             | Default      |
 | ------------- | ----- | ------------------------------------------------------- | ------------ |
 | `--config`    | `-c`  | Path to xfg config file                                 | **Required** |
@@ -96,8 +90,6 @@ xfg secrets sync --config <path> [options]
 | `--no-delete` |       | Skip deletion of orphaned secrets                       | `false`      |
 | `--work-dir`  | `-w`  | Temporary directory for cloning                         | `./tmp`      |
 | `--retries`   | `-r`  | Number of retries for network operations (0 to disable) | `3`          |
-
-<!-- markdownlint-enable MD013 -->
 
 <!-- xfg:generated:end -->
 

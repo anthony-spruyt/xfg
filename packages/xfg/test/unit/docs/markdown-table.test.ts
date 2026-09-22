@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   renderTable,
   escapeCell,
+  firstSentence,
 } from "../../../scripts/docs/markdown-table.js";
 
 describe("renderTable", () => {
@@ -47,6 +48,34 @@ describe("renderTable", () => {
         "| x   |     |",
       ].join("\n")
     );
+  });
+});
+
+describe("firstSentence", () => {
+  test("returns short text unchanged", () => {
+    assert.equal(firstSentence("Short text."), "Short text.");
+  });
+
+  test("takes only the leading sentence", () => {
+    assert.equal(
+      firstSentence("First sentence here. Second sentence follows."),
+      "First sentence here."
+    );
+  });
+
+  test("does not split on a period inside a version or path", () => {
+    assert.equal(firstSentence("Use v1.2.3 now."), "Use v1.2.3 now.");
+  });
+
+  test("does not split on a lowercase continuation", () => {
+    assert.equal(
+      firstSentence("Ends here. then lowercase."),
+      "Ends here. then lowercase."
+    );
+  });
+
+  test("returns the whole string when there is no sentence break", () => {
+    assert.equal(firstSentence("no punctuation at all"), "no punctuation at all");
   });
 });
 

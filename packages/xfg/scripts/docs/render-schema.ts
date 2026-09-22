@@ -1,4 +1,4 @@
-import { renderTable, escapeCell } from "./markdown-table.js";
+import { renderTable, escapeCell, firstSentence } from "./markdown-table.js";
 
 export interface JsonSchema {
   $ref?: string;
@@ -17,6 +17,8 @@ export interface JsonSchema {
 }
 
 const PREFIX = "schema:";
+
+
 
 export function anchorFor(name: string): string {
   return `#${name.toLowerCase()}`;
@@ -74,6 +76,18 @@ function renderDefault(schema: JsonSchema): string {
   return schema.default === undefined ? "-" : literal(schema.default);
 }
 
+// mdformat pads every cell to its column width, so one long description widens
+// every row in the table. Detail beyond the first sentence goes in a list below.
+function propertyDetails(schema: JsonSchema): string[] {
+  return Object.entries(schema.properties ?? {})
+    .map(([name, property]): [string, string] => {
+      const description = escapeCell(property.description);
+      return [name, description.slice(firstSentence(description).length).trim()];
+    })
+    .filter(([, rest]) => rest.length > 0)
+    .map(([name, rest]) => `- \`${name}\` — ${rest}`);
+}
+
 function propertyTable(schema: JsonSchema): string {
   const properties = schema.properties ?? {};
   const required = new Set(schema.required ?? []);
@@ -83,7 +97,7 @@ function propertyTable(schema: JsonSchema): string {
     renderType(property),
     required.has(name) ? "Yes" : "No",
     renderDefault(property),
-    escapeCell(property.description),
+    firstSentence(escapeCell(property.description)),
   ]);
 
   return renderTable(
@@ -109,6 +123,8 @@ function renderDefinition(name: string, schema: JsonSchema): string {
 
   if (schema.properties) {
     parts.push(propertyTable(schema));
+    const details = propertyDetails(schema);
+    if (details.length > 0) parts.push(details.join("\n"));
   }
 
   if (
@@ -136,7 +152,12 @@ export function schemaBlockIds(schema: JsonSchema): string[] {
 
 export function renderSchemaBlock(schema: JsonSchema, id: string): string {
   const name = id.slice(PREFIX.length);
-  if (name === "root") return propertyTable(schema);
+  if (name === "root") {
+    const details = propertyDetails(schema);
+    return details.length > 0
+      ? `${propertyTable(schema)}\n\n${details.join("\n")}`
+      : propertyTable(schema);
+  }
 
   const definition = schema.definitions?.[name];
   if (!definition) throw new Error(`unknown schema definition '${name}'`);

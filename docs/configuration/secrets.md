@@ -104,30 +104,24 @@ repos:
 
 `deleteOrphaned` is a policy switch, not an entry. `inherit: false` discards inherited *entries* but leaves an inherited `deleteOrphaned` in place. To turn cleanup off for a repo, set `deleteOrphaned: false` explicitly.
 
-<!-- markdownlint-disable MD046 -->
-
 !!! danger "`inherit: false` plus `deleteOrphaned: true` deletes inherited secrets"
-    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo:
+    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
 
-    ```yaml
+```yaml
+settings:
+  secrets:
+    SHARED_KEY:
+      env: SHARED
+
+repos:
+  - git: git@github.com:org/isolated.git
     settings:
       secrets:
-        SHARED_KEY:
-          env: SHARED
-
-    repos:
-      - git: git@github.com:org/isolated.git
-        settings:
-          secrets:
-            inherit: false          # SHARED_KEY is no longer desired here
-            deleteOrphaned: true    # ...so it gets deleted from the repo
-            OWN_KEY:
-              env: OWN
-    ```
-
-    This is correct behaviour, but the interaction is easy to miss. Run `--dry-run` first.
-
-<!-- markdownlint-enable MD046 -->
+        inherit: false          # SHARED_KEY is no longer desired here
+        deleteOrphaned: true    # ...so it gets deleted from the repo
+        OWN_KEY:
+          env: OWN
+```
 
 ## Secret Naming Rules
 

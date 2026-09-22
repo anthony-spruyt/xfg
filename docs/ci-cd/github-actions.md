@@ -17,8 +17,6 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 <!-- xfg:generated action:inputs -->
 
-<!-- markdownlint-disable MD013 -->
-
 | Input                    | Required | Default               | Description                                                                                                                                                |
 | ------------------------ | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `config`                 | Yes      | -                     | Path to YAML config file                                                                                                                                   |
@@ -36,8 +34,6 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 | `github-app-private-key` | No       | -                     | GitHub App private key (PEM format) for JWT signing                                                                                                        |
 | `no-delete`              | No       | `false`               | Skip deletion of orphaned resources even if deleteOrphaned is configured                                                                                   |
 | `xfg-package`            | No       | -                     | Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release. |
-
-<!-- markdownlint-enable MD013 -->
 
 <!-- xfg:generated:end -->
 

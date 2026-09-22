@@ -1,9 +1,6 @@
 const START = /^<!-- xfg:generated (\S+) -->$/;
 const END = /^<!-- xfg:generated:end -->$/;
 
-// Generated tables pad every cell to the column width, which routinely exceeds MD013's 400.
-const LINT_OFF = "<!-- markdownlint-disable MD013 -->";
-const LINT_ON = "<!-- markdownlint-enable MD013 -->";
 
 export type BlockRenderer = (id: string) => string;
 
@@ -35,17 +32,7 @@ export function applyGeneratedBlocks(
       throw new Error(`unterminated generated block '${id}'`);
     }
 
-    out.push(
-      line,
-      "",
-      LINT_OFF,
-      "",
-      render(id).replace(/^\n+|\n+$/g, ""),
-      "",
-      LINT_ON,
-      "",
-      lines[end]
-    );
+    out.push(line, "", render(id).replace(/^\n+|\n+$/g, ""), "", lines[end]);
     i = end + 1;
   }
 
