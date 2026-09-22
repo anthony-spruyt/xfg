@@ -37,18 +37,33 @@ Or configure in `.vscode/settings.json`:
 
 ### Root Object
 
-| Field               | Type        | Required | Description                                                        |
-| ------------------- | ----------- | -------- | ------------------------------------------------------------------ |
-| `id`                | `string`    | Yes      | Unique config identifier (alphanumeric, `-`, `_`)                  |
-| `files`             | `object`    | \*       | Map of filenames to file configs                                   |
-| `groups`            | `object`    | \*       | Named config groups referenced by repos                            |
-| `conditionalGroups` | `array`     | \*       | Groups that activate based on repo group membership                |
-| `repos`             | `array`     | Yes      | List of repository configurations                                  |
-| `settings`          | `object`    | \*       | Repository settings (rulesets, labels, variables, etc.)            |
-| `prOptions`         | `PROptions` | No       | Global PR merge options                                            |
-| `prTemplate`        | `string`    | No       | Custom PR body template                                            |
-| `githubHosts`       | `array`     | No       | GitHub Enterprise Server hostnames                                 |
-| `deleteOrphaned`    | `boolean`   | No       | Global default for orphan file deletion                            |
+<!-- xfg:generated schema:root -->
+
+| Field               | Type                                                  | Required | Default | Description                                                              |
+| ------------------- | ----------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `id`                | `string`                                              | No       | -       | Unique identifier for this config.                                       |
+| `files`             | `object` of [`fileConfig`](#fileconfig)               | No       | -       | Map of target filenames to their configurations.                         |
+| `groups`            | `object` of [`groupConfig`](#groupconfig)             | No       | -       | Named configuration groups that repos can reference via 'groups: [...]'. |
+| `conditionalGroups` | [`conditionalGroupConfig`](#conditionalgroupconfig)[] | No       | -       | Conditional groups that activate based on which groups a repo has.       |
+| `repos`             | [`repo`](#repo)[]                                     | No       | -       | List of repository configurations.                                       |
+| `prOptions`         | [`prOptions`](#proptions)                             | No       | -       | Global PR merge options.                                                 |
+| `prTemplate`        | `string`                                              | No       | -       | Custom PR body template.                                                 |
+| `githubHosts`       | `string[]`                                            | No       | -       | List of GitHub Enterprise Server hostnames.                              |
+| `deleteOrphaned`    | `boolean`                                             | No       | `false` | Global default for orphan deletion.                                      |
+| `settings`          | [`rootSettings`](#rootsettings)                       | No       | -       | Global repository settings including GitHub Rulesets.                    |
+
+- `id` — Used to namespace managed files in .xfg.json manifest, allowing multiple configs to manage the same repo without conflicts.
+- `files` — Each file is synced to all repos by default.
+- `groups` — Groups create a merge chain: root → group1 → group2 → repo overrides. Each group can define files, prOptions, and settings.
+- `conditionalGroups` — Each entry has a 'when' clause (allOf/anyOf/noneOf) and the same files/prOptions/settings as regular groups. Merges after explicit groups, before repo overrides.
+- `repos` — When using directory-based config, repos can be split across multiple files. Directory-based config recursively scans subdirectories.
+- `prOptions` — Can be overridden per-repo.
+- `prTemplate` — Can be inline markdown or a file reference (@path/to/template.md relative to config file). Supports ${xfg:...} templating variables: ${xfg:pr.fileChanges} (bulleted file list), ${xfg:pr.fileCount}, ${xfg:pr.title}, plus all repo variables (repo.name, repo.owner, repo.fullName, etc.).
+- `githubHosts` — URLs matching these hosts will be treated as GitHub repositories instead of falling back to GitLab detection. Example: ['github.mycompany.com', 'ghe.internal.net']
+- `deleteOrphaned` — When true, files removed from the xfg config will be deleted from target repos (tracked via .xfg.json manifest). Can be overridden per-file or per-repo. Default: false
+- `settings` — Can be overridden per-repo. Settings are merged: per-repo rulesets override root rulesets with same name.
+
+<!-- xfg:generated:end -->
 
 !!! note "files/settings/groups requirement"
     At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
@@ -56,134 +71,642 @@ Or configure in `.vscode/settings.json`:
 !!! tip "Multi-file directory config"
     When passing a directory to `-c`, xfg recursively scans subdirectories for `.yaml` and `.yml` files. See [Multi-File Configuration](../configuration/multi-file.md) for ordering rules and constraints.
 
-### Settings Object
+## Definitions
 
-The `settings` object (at root, group, or repo level) supports the following fields:
+Every definition below is generated from `config-schema.json`. Prose guides live under [Configuration](../configuration/index.md).
 
-| Field            | Type      | Description                                               |
-| ---------------- | --------- | --------------------------------------------------------- |
-| `rulesets`       | `object`  | GitHub rulesets keyed by name                             |
-| `repo`           | `object`  | GitHub repository settings                                |
-| `labels`         | `object`  | GitHub labels keyed by name                               |
-| `codeScanning`   | `object`  | GitHub code scanning default setup                        |
-| `variables`      | `object`  | GitHub Actions variables keyed by name (see below)        |
-| `secrets`        | `object`  | GitHub Actions secrets keyed by name (see below)          |
-| `deleteOrphaned` | `boolean` | Default for orphan deletion across all settings sub-types |
+### fileConfig
 
-#### Variables Field
+<!-- xfg:generated schema:fileConfig -->
 
-The `variables` field in `settings` maps variable names to their string values. Two special keys control behavior:
+Configuration for a single file to sync
 
-| Key              | Type              | Description                                                                           |
-| ---------------- | ----------------- | ------------------------------------------------------------------------------------- |
-| `deleteOrphaned` | `boolean`         | Delete variables removed from config (independent of settings-level `deleteOrphaned`) |
-| `inherit`        | `boolean`         | Set to `false` to discard all inherited variables (per-repo/group only)               |
-| `VAR_NAME`       | `string \| false` | Variable value, or `false` to opt out of an inherited variable                        |
+| Field            | Type                                          | Required | Default   | Description                                                                    |
+| ---------------- | --------------------------------------------- | -------- | --------- | ------------------------------------------------------------------------------ |
+| `content`        | `object` \| `string` \| `string[]`            | No       | -         | File content.                                                                  |
+| `mergeStrategy`  | `replace` \| `append` \| `prepend` \| `merge` | No       | `replace` | Array merge strategy for this file.                                            |
+| `createOnly`     | `boolean`                                     | No       | `false`   | If true, only create this file if it doesn't already exist in the target repo. |
+| `header`         | `string` \| `string[]`                        | No       | -         | YAML only.                                                                     |
+| `schemaUrl`      | `string`                                      | No       | -         | YAML only.                                                                     |
+| `executable`     | `boolean`                                     | No       | -         | Mark the file as executable via git update-index --add --chmod=+x.             |
+| `template`       | `boolean`                                     | No       | `false`   | Enable xfg templating for this file.                                           |
+| `vars`           | `object` of `string`                          | No       | -         | Custom template variables for this file.                                       |
+| `deleteOrphaned` | `boolean`                                     | No       | `false`   | Track this file for orphan deletion.                                           |
 
-See [GitHub Variables](../configuration/variables.md) for full details.
+- `content` — Object for JSON/YAML files, string or string[] for text files. Use @path/to/file to reference external template files (paths relative to config file). Supports ${VAR} env interpolation; use $${VAR} to output literal ${VAR}. Omit for empty file.
+- `mergeStrategy` — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace
+- `createOnly` — Useful for files like .trivyignore or .prettierignore where you want to provide defaults but let repos customize. Default: false
+- `header` — Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files.
+- `schemaUrl` — URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=\<url>' at the top of YAML files. For JSON files, use $schema property in content instead.
+- `executable` — Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true.
+- `template` — When true, ${xfg:variable} placeholders are replaced with repo-specific values. Available variables: repo.name, repo.owner, repo.fullName, repo.url, repo.platform, repo.host, file.name, date, and any custom vars. Use $${xfg:...} to output literal ${xfg:...}. Default: false
+- `vars` — Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars.
+- `deleteOrphaned` — When true, if this file is removed from the config, it will be deleted from target repos. Tracked via .xfg.json manifest. Overrides global deleteOrphaned setting. Default: false
 
-### Secrets Object
+<!-- xfg:generated:end -->
 
-The `secrets` field lives under `settings` (at root, group, conditional-group, or repo level) and is synced via `xfg secrets sync`, **not** `xfg sync`. It maps secret names to `SecretConfig` objects:
+### repo
 
-| Key              | Type               | Description                                                                         |
-| ---------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| `deleteOrphaned` | `boolean`          | Delete secrets removed from config (independent of settings-level `deleteOrphaned`) |
-| `inherit`        | `boolean`          | Set to `false` to discard all inherited secrets (per-repo/group only)               |
-| `SECRET_NAME`    | `object \| false` | `SecretConfig` with an `env` field, or `false` to opt out of an inherited secret    |
+<!-- xfg:generated schema:repo -->
 
-See [Secrets](../configuration/secrets.md) for scoping rules and the `inherit` / `deleteOrphaned` interaction.
+Repository configuration
 
-#### SecretConfig
+| Field       | Type                                                           | Required | Default | Description                                       |
+| ----------- | -------------------------------------------------------------- | -------- | ------- | ------------------------------------------------- |
+| `git`       | `string` \| `string[]`                                         | Yes      | -       | Git repository URL(s).                            |
+| `files`     | `object` of `false` \| [`repoFileOverride`](#repofileoverride) | No       | -       | Per-repo file overrides or exclusions.            |
+| `groups`    | `string[]`                                                     | No       | -       | List of group names to apply to this repo.        |
+| `prOptions` | [`prOptions`](#proptions)                                      | No       | -       | Per-repo PR merge options.                        |
+| `settings`  | [`repoSettings`](#reposettings)                                | No       | -       | Per-repo settings including GitHub Rulesets.      |
+| `upstream`  | `string`                                                       | No       | -       | Fork upstream repo if target doesn't exist.       |
+| `source`    | `string`                                                       | No       | -       | Migrate from source repo if target doesn't exist. |
 
-| Field | Type     | Required | Description                                               |
-| ----- | -------- | -------- | --------------------------------------------------------- |
-| `env` | `string` | Yes      | Name of the environment variable holding the secret value |
+- `git` — Supports GitHub (`git@github.com:owner/repo.git`, `https://github.com/owner/repo.git`) and Azure DevOps formats
+- `files` — Keys must reference files defined in the root 'files' object. Set to false to exclude a file from this repo. Set inherit: false to skip all inherited files.
+- `groups` — Groups are merged in order: root → group1 → group2 → repo overrides. Group names must reference groups defined in the root 'groups' object.
+- `prOptions` — Overrides global prOptions.
+- `settings` — Merged with global settings: per-repo rulesets override root rulesets with same name.
+- `upstream` — When the target repo is missing, xfg forks from this URL instead of creating an empty repo. Mutually exclusive with 'source'. Supports SSH (`git@host:owner/repo.git`) and HTTPS (`https://host/owner/repo.git`) formats.
+- `source` — When the target repo is missing, xfg clones this repo with --mirror and pushes to the new target. Use for cross-platform migration (e.g., Azure DevOps to GitHub). Mutually exclusive with 'upstream'. Supports SSH and HTTPS formats.
 
-See [Secrets](../configuration/secrets.md) for full details.
-
-### File Config
-
-| Field            | Type                  | Required | Description                          |
-| ---------------- | --------------------- | -------- | ------------------------------------ |
-| `content`        | `object/string/array` | No       | File content or `@path/to/file` ref  |
-| `mergeStrategy`  | `string`              | No       | `replace`, `append`, `prepend`       |
-| `createOnly`     | `boolean`             | No       | Only create if doesn't exist         |
-| `executable`     | `boolean`             | No       | Mark file as executable              |
-| `header`         | `string/array`        | No       | YAML header comment(s)               |
-| `schemaUrl`      | `string`              | No       | YAML schema directive URL            |
-| `template`       | `boolean`             | No       | Enable `${xfg:...}` variable support |
-| `vars`           | `object`              | No       | Custom template variables            |
-| `deleteOrphaned` | `boolean`             | No       | Track file for orphan deletion       |
-
-### Group Config
-
-| Field       | Type                 | Required | Description                                              |
-| ----------- | -------------------- | -------- | -------------------------------------------------------- |
-| `extends`   | `string \| string[]` | No       | Parent group name(s) to inherit from                     |
-| `files`     | `object`             | No       | Files defined or overridden by this group                |
-| `prOptions` | `PROptions`          | No       | PR options for repos using this group                    |
-| `settings`  | `object`             | No       | Settings for repos using this group (supports `inherit`) |
-
-Groups support `extends` (inherit from parent groups), `inherit: false` (discard accumulated files), `file: false` (remove a file), and full file config or override objects.
-
-### Conditional Group Config
-
-| Field       | Type        | Required | Description                                               |
-| ----------- | ----------- | -------- | --------------------------------------------------------- |
-| `when`      | `object`    | Yes      | Condition that determines when this group activates       |
-| `files`     | `object`    | No       | Files defined or overridden (same capabilities as groups) |
-| `prOptions` | `PROptions` | No       | PR options for matching repos                             |
-| `settings`  | `object`    | No       | Settings for matching repos (supports `inherit`)          |
-
-The `when` clause:
-
-| Field   | Type       | Required | Description                                   |
-| ------- | ---------- | -------- | --------------------------------------------- |
-| `allOf` | `string[]` | \*       | All listed groups must be present on the repo |
-| `anyOf` | `string[]` | \*       | At least one listed group must be present     |
-
-At least one of `allOf` or `anyOf` is required. When both are specified, both conditions must be satisfied. See [Groups — Conditional Groups](../configuration/groups.md#conditional-groups).
-
-### Repo Config
-
-| Field       | Type           | Required | Description                                         |
-| ----------- | -------------- | -------- | --------------------------------------------------- |
-| `git`       | `string/array` | Yes      | Git URL(s)                                          |
-| `files`     | `object`       | No       | Per-repo file overrides                             |
-| `groups`    | `string[]`     | No       | Group names to apply (merged in order)              |
-| `settings`  | `object`       | No       | Per-repo settings (rulesets, labels, repo settings) |
-| `prOptions` | `PROptions`    | No       | Per-repo PR options                                 |
-| `upstream`  | `string`       | No       | Fork from this URL if target doesn't exist          |
-| `source`    | `string`       | No       | Migrate from this URL if target doesn't exist       |
+<!-- xfg:generated:end -->
 
 !!! note "`upstream` and `source` are mutually exclusive"
     See [Repo Lifecycle](../configuration/lifecycle.md) for details.
 
-### Per-Repo File Override
+### prOptions
 
-| Field            | Type                  | Required | Description                           |
-| ---------------- | --------------------- | -------- | ------------------------------------- |
-| `content`        | `object/string/array` | No       | Content overlay merged onto base      |
-| `override`       | `boolean`             | No       | If true, ignore base content entirely |
-| `createOnly`     | `boolean`             | No       | Override root-level createOnly        |
-| `executable`     | `boolean`             | No       | Override root-level executable        |
-| `header`         | `string/array`        | No       | Override root-level header            |
-| `schemaUrl`      | `string`              | No       | Override root-level schemaUrl         |
-| `template`       | `boolean`             | No       | Override root-level template          |
-| `vars`           | `object`              | No       | Per-repo template variables           |
-| `deleteOrphaned` | `boolean`             | No       | Override file-level deleteOrphaned    |
+<!-- xfg:generated schema:prOptions -->
 
-### PR Options
+PR merge behavior options
 
-| Field           | Type       | Default  | Description                                  |
-| --------------- | ---------- | -------- | -------------------------------------------- |
-| `merge`         | `string`   | `auto`   | `manual`, `auto`, `force`, `direct`          |
-| `mergeStrategy` | `string`   | `squash` | `merge`, `squash`, `rebase`                  |
-| `deleteBranch`  | `boolean`  | `true`   | Delete branch after merge                    |
-| `bypassReason`  | `string`   | -        | Reason for bypass (Azure DevOps only)        |
-| `labels`        | `string[]` | -        | Labels to apply to created PRs (GitHub only) |
-| `branch`        | `string`   | -        | Branch name for sync PRs                     |
+| Field           | Type                                      | Required | Default  | Description                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `merge`         | `manual` \| `auto` \| `force` \| `direct` | No       | `auto`   | Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. |
+| `mergeStrategy` | `merge` \| `squash` \| `rebase`           | No       | `squash` | How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base.                                                                                             |
+| `deleteBranch`  | `boolean`                                 | No       | `true`   | Delete the source branch after merge completes.                                                                                                                                                                     |
+| `bypassReason`  | `string`                                  | No       | -        | Reason for bypassing policies (Azure DevOps only, required when merge=force)                                                                                                                                        |
+| `labels`        | `string[]`                                | No       | -        | Labels to apply to created PRs/MRs.                                                                                                                                                                                 |
+| `branch`        | `string`                                  | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
+
+- `merge` — Default: auto
+- `mergeStrategy` — Default: squash
+- `deleteBranch` — Default: true
+- `labels` — Labels must exist on the target repository.
+- `branch` — Per-repo overrides group, group overrides global. CLI --branch flag overrides all.
+
+<!-- xfg:generated:end -->
+
+### repoFileOverride
+
+<!-- xfg:generated schema:repoFileOverride -->
+
+Per-repo override for a specific file
+
+| Field            | Type                               | Required | Default | Description                                                                      |
+| ---------------- | ---------------------------------- | -------- | ------- | -------------------------------------------------------------------------------- |
+| `content`        | `object` \| `string` \| `string[]` | No       | -       | Content overlay merged onto the file's base content.                             |
+| `override`       | `boolean`                          | No       | `false` | If true, use only this content and skip merging with base.                       |
+| `createOnly`     | `boolean`                          | No       | -       | Override the root-level createOnly setting for this specific repo                |
+| `header`         | `string` \| `string[]`             | No       | -       | YAML only.                                                                       |
+| `schemaUrl`      | `string`                           | No       | -       | YAML only.                                                                       |
+| `executable`     | `boolean`                          | No       | -       | Override the root-level executable setting for this specific repo.               |
+| `template`       | `boolean`                          | No       | -       | Override the root-level template setting for this specific repo.                 |
+| `vars`           | `object` of `string`               | No       | -       | Per-repo custom template variables.                                              |
+| `deleteOrphaned` | `boolean`                          | No       | -       | Override the file-level or global deleteOrphaned setting for this specific repo. |
+
+- `content` — Use @path/to/file to reference external template files. Must match the content type of the root file definition.
+- `override` — Default: false
+- `header` — Override the root-level header for this specific repo. Ignored for JSON and text files.
+- `schemaUrl` — Override the root-level schemaUrl for this specific repo. For JSON files, use $schema property in content instead.
+- `executable` — Set to true to mark executable, or false to disable auto-executable behavior for .sh files.
+- `template` — Set to true to enable xfg templating, or false to disable it.
+- `vars` — These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true.
+- `deleteOrphaned` — Set to true to enable orphan tracking, or false to disable it for this repo.
+
+<!-- xfg:generated:end -->
+
+### groupConfig
+
+<!-- xfg:generated schema:groupConfig -->
+
+Configuration group that can define files, prOptions, and settings. Referenced by repos via 'groups: [groupName]'.
+
+| Field       | Type                                                                                          | Required | Default | Description                                                           |
+| ----------- | --------------------------------------------------------------------------------------------- | -------- | ------- | --------------------------------------------------------------------- |
+| `extends`   | `string` \| `string[]`                                                                        | No       | -       | Parent group name(s) to inherit files, settings, and PR options from. |
+| `files`     | `object` of `false` \| [`fileConfig`](#fileconfig) \| [`repoFileOverride`](#repofileoverride) | No       | -       | Files defined or overridden by this group.                            |
+| `prOptions` | [`prOptions`](#proptions)                                                                     | No       | -       | PR merge options for repos using this group.                          |
+| `settings`  | [`repoSettings`](#reposettings)                                                               | No       | -       | Settings for repos using this group.                                  |
+
+- `extends` — Accepts a single group name or an array of group names. Parents are merged before the child group.
+- `files` — Keys are filenames. Set to false to remove an inherited file. Set inherit: false to discard all accumulated files from prior layers.
+- `prOptions` — Overrides root prOptions, can be overridden by repo prOptions.
+- `settings` — Supports inherit: false on rulesets/labels sub-sections. Merged between root and repo settings.
+
+<!-- xfg:generated:end -->
+
+### conditionalGroupConfig
+
+<!-- xfg:generated schema:conditionalGroupConfig -->
+
+Conditional group that activates based on which groups a repo has. Has a 'when' clause and the same files/prOptions/settings as regular groups.
+
+| Field       | Type                                                                                          | Required | Default | Description                                            |
+| ----------- | --------------------------------------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------ |
+| `when`      | `any`                                                                                         | Yes      | -       | Condition that determines when this group activates.   |
+| `files`     | `object` of `false` \| [`fileConfig`](#fileconfig) \| [`repoFileOverride`](#repofileoverride) | No       | -       | Files defined or overridden by this conditional group. |
+| `prOptions` | [`prOptions`](#proptions)                                                                     | No       | -       | PR merge options for repos matching this condition.    |
+| `settings`  | [`repoSettings`](#reposettings)                                                               | No       | -       | Settings for repos matching this condition.            |
+
+- `when` — At least one of allOf, anyOf, or noneOf is required.
+- `files` — Same capabilities as regular group files.
+- `settings` — Supports inherit: false on rulesets/labels sub-sections.
+
+<!-- xfg:generated:end -->
+
+See [Groups — Conditional Groups](../configuration/groups.md#conditional-groups).
+
+### codeScanningSettings
+
+<!-- xfg:generated schema:codeScanningSettings -->
+
+GitHub code scanning default setup configuration
+
+| Field        | Type                                                                                                                    | Required | Default | Description                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------- |
+| `state`      | `configured` \| `not-configured`                                                                                        | Yes      | -       | Enable or disable code scanning default setup                                         |
+| `querySuite` | `default` \| `extended`                                                                                                 | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries |
+| `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` | No       | -       | Languages to analyze.                                                                 |
+
+- `languages` — If omitted, GitHub auto-detects languages in the repository.
+
+<!-- xfg:generated:end -->
+
+### rootSettings
+
+<!-- xfg:generated schema:rootSettings -->
+
+Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.
+
+| Field            | Type                                                   | Required | Default | Description                                                     |
+| ---------------- | ------------------------------------------------------ | -------- | ------- | --------------------------------------------------------------- |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)           | No       | -       | Map of ruleset names to configurations.                         |
+| `repo`           | [`githubRepoSettings`](#githubreposettings)            | No       | -       | GitHub repository settings (features, merge options, security). |
+| `labels`         | `object` of `false` \| [`label`](#label)               | No       | -       | Map of label names to configurations.                           |
+| `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)        | No       | -       | GitHub code scanning default setup configuration.               |
+| `variables`      | `object` of `false` \| `string`                        | No       | -       | Map of GitHub Actions variable names to values.                 |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig) | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
+| `deleteOrphaned` | `boolean`                                              | No       | `false` | Track managed resources for orphan deletion.                    |
+
+- `rulesets` — Set a ruleset to false to disable it.
+- `labels` — Set a label to false to disable it.
+- `variables` — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.
+- `secrets` — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.
+- `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
+
+<!-- xfg:generated:end -->
+
+See [Secrets](../configuration/secrets.md) and [GitHub Variables](../configuration/variables.md) for scoping rules and the `inherit` / `deleteOrphaned` interaction.
+
+### repoSettings
+
+<!-- xfg:generated schema:repoSettings -->
+
+Repository settings including GitHub Rulesets and repository features
+
+| Field            | Type                                                       | Required | Default | Description                                                     |
+| ---------------- | ---------------------------------------------------------- | -------- | ------- | --------------------------------------------------------------- |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)               | No       | -       | Map of ruleset names to configurations.                         |
+| `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)     | No       | -       | GitHub repository settings (features, merge options, security). |
+| `labels`         | `object` of `false` \| [`label`](#label)                   | No       | -       | Map of label names to configurations.                           |
+| `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings) | No       | -       | GitHub code scanning default setup configuration.               |
+| `variables`      | `object` of `false` \| `string`                            | No       | -       | Map of GitHub Actions variable names to values.                 |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)     | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
+| `deleteOrphaned` | `boolean`                                                  | No       | `false` | Track managed resources for orphan deletion.                    |
+
+- `rulesets` — Set a ruleset to false to opt out. Set inherit: false to skip all inherited rulesets.
+- `repo` — Set to false at per-repo level to opt out of inherited settings.
+- `labels` — Set a label to false to opt out. Set inherit: false to skip all inherited labels.
+- `codeScanning` — Set to false at per-repo level to opt out of inherited settings.
+- `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
+- `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
+- `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
+
+<!-- xfg:generated:end -->
+
+### githubRepoSettings
+
+<!-- xfg:generated schema:githubRepoSettings -->
+
+GitHub repository settings for features, merge options, and security
+
+| Field                           | Type                                      | Required | Default | Description                                                       |
+| ------------------------------- | ----------------------------------------- | -------- | ------- | ----------------------------------------------------------------- |
+| `description`                   | `string`                                  | No       | -       | Repository description.                                           |
+| `hasIssues`                     | `boolean`                                 | No       | -       | Enable or disable GitHub Issues.                                  |
+| `hasProjects`                   | `boolean`                                 | No       | -       | Enable or disable GitHub Projects.                                |
+| `hasWiki`                       | `boolean`                                 | No       | -       | Enable or disable the repository wiki.                            |
+| `hasDiscussions`                | `boolean`                                 | No       | -       | Enable or disable GitHub Discussions                              |
+| `isTemplate`                    | `boolean`                                 | No       | -       | Mark the repository as a template repository                      |
+| `allowForking`                  | `boolean`                                 | No       | -       | Allow forking of a private repository                             |
+| `visibility`                    | `public` \| `private` \| `internal`       | No       | -       | Repository visibility.                                            |
+| `archived`                      | `boolean`                                 | No       | -       | Archive the repository.                                           |
+| `allowSquashMerge`              | `boolean`                                 | No       | -       | Allow squash-merging pull requests                                |
+| `allowMergeCommit`              | `boolean`                                 | No       | -       | Allow merge commits for pull requests                             |
+| `allowRebaseMerge`              | `boolean`                                 | No       | -       | Allow rebase-merging pull requests                                |
+| `allowAutoMerge`                | `boolean`                                 | No       | -       | Allow auto-merge on pull requests                                 |
+| `deleteBranchOnMerge`           | `boolean`                                 | No       | -       | Automatically delete head branches after pull requests are merged |
+| `allowUpdateBranch`             | `boolean`                                 | No       | -       | Show 'Update branch' button in pull requests                      |
+| `squashMergeCommitTitle`        | `PR_TITLE` \| `COMMIT_OR_PR_TITLE`        | No       | -       | Default title for squash merge commits                            |
+| `squashMergeCommitMessage`      | `PR_BODY` \| `COMMIT_MESSAGES` \| `BLANK` | No       | -       | Default message for squash merge commits                          |
+| `mergeCommitTitle`              | `PR_TITLE` \| `MERGE_MESSAGE`             | No       | -       | Default title for merge commits                                   |
+| `mergeCommitMessage`            | `PR_BODY` \| `PR_TITLE` \| `BLANK`        | No       | -       | Default message for merge commits                                 |
+| `vulnerabilityAlerts`           | `boolean`                                 | No       | -       | Enable or disable Dependabot vulnerability alerts                 |
+| `automatedSecurityFixes`        | `boolean`                                 | No       | -       | Enable or disable Dependabot automated security fixes             |
+| `secretScanning`                | `boolean`                                 | No       | -       | Enable or disable secret scanning                                 |
+| `secretScanningPushProtection`  | `boolean`                                 | No       | -       | Enable or disable secret scanning push protection                 |
+| `privateVulnerabilityReporting` | `boolean`                                 | No       | -       | Enable or disable private vulnerability reporting                 |
+| `webCommitSignoffRequired`      | `boolean`                                 | No       | -       | Require contributors to sign off on web-based commits             |
+| `defaultBranch`                 | `string`                                  | No       | -       | The default branch for the repository                             |
+
+- `description` — Used when creating new repositories via lifecycle management (upstream/source fields).
+- `hasIssues` — Warning: Disabling may hide existing issues.
+- `hasProjects` — Warning: Disabling may hide existing projects.
+- `hasWiki` — Warning: Disabling may hide existing wiki content.
+- `visibility` — Warning: Changing visibility may expose or hide repository content.
+- `archived` — Warning: Archived repositories are read-only.
+
+<!-- xfg:generated:end -->
+
+### arrayMergeDirective
+
+<!-- xfg:generated schema:arrayMergeDirective -->
+
+Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.
+
+| Field         | Type                                          | Required | Default | Description                                                                                                                                                                   |
+| ------------- | --------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id) |
+| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                           |
+
+<!-- xfg:generated:end -->
+
+### bypassActorsArrayMergeDirective
+
+<!-- xfg:generated schema:bypassActorsArrayMergeDirective -->
+
+Merge directive for bypassActors array
+
+| Field         | Type                                          | Required | Default | Description                      |
+| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array |
+| `$values`     | [`bypassActor`](#bypassactor)[]               | Yes      | -       | Bypass actor values to merge     |
+
+<!-- xfg:generated:end -->
+
+### rulesArrayMergeDirective
+
+<!-- xfg:generated schema:rulesArrayMergeDirective -->
+
+Merge directive for rules array
+
+| Field         | Type                                          | Required | Default | Description                      |
+| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array |
+| `$values`     | [`rulesetRule`](#rulesetrule)[]               | Yes      | -       | Rule values to merge             |
+
+<!-- xfg:generated:end -->
+
+### ruleset
+
+<!-- xfg:generated schema:ruleset -->
+
+GitHub Ruleset configuration
+
+| Field          | Type                                                                                                     | Required | Default  | Description                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `target`       | `branch` \| `tag`                                                                                        | No       | `branch` | Target type: 'branch' for branch rules, 'tag' for tag rules.                                                                   |
+| `enforcement`  | `active` \| `disabled` \| `evaluate`                                                                     | No       | `active` | Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). |
+| `bypassActors` | [`bypassActor`](#bypassactor)[] \| [`bypassActorsArrayMergeDirective`](#bypassactorsarraymergedirective) | No       | -        |                                                                                                                                |
+| `conditions`   | [`rulesetConditions`](#rulesetconditions)                                                                | No       | -        | Conditions for when this ruleset applies (which branches/tags to target)                                                       |
+| `rules`        | [`rulesetRule`](#rulesetrule)[] \| [`rulesArrayMergeDirective`](#rulesarraymergedirective)               | No       | -        |                                                                                                                                |
+
+- `target` — Default: branch
+- `enforcement` — Default: active
+
+<!-- xfg:generated:end -->
+
+### bypassActor
+
+<!-- xfg:generated schema:bypassActor -->
+
+Actor who can bypass ruleset restrictions
+
+| Field        | Type                                   | Required | Default | Description                                                                                                                                                                 |
+| ------------ | -------------------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `actorId`    | `integer`                              | Yes      | -       | The ID of the actor (team ID, user ID, or integration ID)                                                                                                                   |
+| `actorType`  | `Team` \| `User` \| `Integration`      | Yes      | -       | Type of actor: Team, User, or Integration (GitHub App)                                                                                                                      |
+| `bypassMode` | `always` \| `pull_request` \| `exempt` | No       | -       | When the actor can bypass: 'always' for all operations, 'pull_request' for PR operations only, 'exempt' to skip rule evaluation entirely (no bypass audit entry is created) |
+
+<!-- xfg:generated:end -->
+
+### rulesetConditions
+
+<!-- xfg:generated schema:rulesetConditions -->
+
+Conditions for when the ruleset applies
+
+| Field     | Type     | Required | Default | Description                          |
+| --------- | -------- | -------- | ------- | ------------------------------------ |
+| `refName` | `object` | No       | -       | Ref name patterns to include/exclude |
+
+<!-- xfg:generated:end -->
+
+### rulesetRule
+
+<!-- xfg:generated schema:rulesetRule -->
+
+One of:
+
+- [`pullRequestRule`](#pullrequestrule)
+- [`requiredStatusChecksRule`](#requiredstatuschecksrule)
+- [`requiredSignaturesRule`](#requiredsignaturesrule)
+- [`requiredLinearHistoryRule`](#requiredlinearhistoryrule)
+- [`nonFastForwardRule`](#nonfastforwardrule)
+- [`creationRule`](#creationrule)
+- [`deletionRule`](#deletionrule)
+- [`updateRule`](#updaterule)
+- [`requiredDeploymentsRule`](#requireddeploymentsrule)
+- [`codeScanningRule`](#codescanningrule)
+- [`codeQualityRule`](#codequalityrule)
+- [`workflowsRule`](#workflowsrule)
+- [`patternRule`](#patternrule)
+- [`filePathRestrictionRule`](#filepathrestrictionrule)
+- [`fileExtensionRestrictionRule`](#fileextensionrestrictionrule)
+- [`maxFilePathLengthRule`](#maxfilepathlengthrule)
+- [`maxFileSizeRule`](#maxfilesizerule)
+
+<!-- xfg:generated:end -->
+
+### pullRequestRule
+
+<!-- xfg:generated schema:pullRequestRule -->
+
+Require pull request before merging
+
+| Field        | Type           | Required | Default | Description |
+| ------------ | -------------- | -------- | ------- | ----------- |
+| `type`       | `pull_request` | Yes      | -       |             |
+| `parameters` | `object`       | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### requiredReviewer
+
+<!-- xfg:generated schema:requiredReviewer -->
+
+Required reviewer configuration for specific file patterns
+
+| Field              | Type       | Required | Default | Description                                             |
+| ------------------ | ---------- | -------- | ------- | ------------------------------------------------------- |
+| `filePatterns`     | `string[]` | Yes      | -       | File path patterns that require this reviewer           |
+| `minimumApprovals` | `integer`  | Yes      | -       | Minimum number of approvals required from this reviewer |
+| `reviewer`         | `object`   | Yes      | -       |                                                         |
+
+<!-- xfg:generated:end -->
+
+### requiredStatusChecksRule
+
+<!-- xfg:generated schema:requiredStatusChecksRule -->
+
+Require status checks to pass
+
+| Field        | Type                     | Required | Default | Description |
+| ------------ | ------------------------ | -------- | ------- | ----------- |
+| `type`       | `required_status_checks` | Yes      | -       |             |
+| `parameters` | `object`                 | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### requiredSignaturesRule
+
+<!-- xfg:generated schema:requiredSignaturesRule -->
+
+Require signed commits
+
+| Field  | Type                  | Required | Default | Description |
+| ------ | --------------------- | -------- | ------- | ----------- |
+| `type` | `required_signatures` | Yes      | -       |             |
+
+<!-- xfg:generated:end -->
+
+### requiredLinearHistoryRule
+
+<!-- xfg:generated schema:requiredLinearHistoryRule -->
+
+Require linear history (no merge commits)
+
+| Field  | Type                      | Required | Default | Description |
+| ------ | ------------------------- | -------- | ------- | ----------- |
+| `type` | `required_linear_history` | Yes      | -       |             |
+
+<!-- xfg:generated:end -->
+
+### nonFastForwardRule
+
+<!-- xfg:generated schema:nonFastForwardRule -->
+
+Prevent force pushes
+
+| Field  | Type               | Required | Default | Description |
+| ------ | ------------------ | -------- | ------- | ----------- |
+| `type` | `non_fast_forward` | Yes      | -       |             |
+
+<!-- xfg:generated:end -->
+
+### creationRule
+
+<!-- xfg:generated schema:creationRule -->
+
+Restrict ref creation
+
+| Field  | Type       | Required | Default | Description |
+| ------ | ---------- | -------- | ------- | ----------- |
+| `type` | `creation` | Yes      | -       |             |
+
+<!-- xfg:generated:end -->
+
+### deletionRule
+
+<!-- xfg:generated schema:deletionRule -->
+
+Restrict ref deletion
+
+| Field  | Type       | Required | Default | Description |
+| ------ | ---------- | -------- | ------- | ----------- |
+| `type` | `deletion` | Yes      | -       |             |
+
+<!-- xfg:generated:end -->
+
+### updateRule
+
+<!-- xfg:generated schema:updateRule -->
+
+Restrict updates to refs
+
+| Field        | Type     | Required | Default | Description |
+| ------------ | -------- | -------- | ------- | ----------- |
+| `type`       | `update` | Yes      | -       |             |
+| `parameters` | `object` | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### requiredDeploymentsRule
+
+<!-- xfg:generated schema:requiredDeploymentsRule -->
+
+Require deployments to succeed
+
+| Field        | Type                   | Required | Default | Description |
+| ------------ | ---------------------- | -------- | ------- | ----------- |
+| `type`       | `required_deployments` | Yes      | -       |             |
+| `parameters` | `object`               | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### codeScanningRule
+
+<!-- xfg:generated schema:codeScanningRule -->
+
+Require code scanning results
+
+| Field        | Type            | Required | Default | Description |
+| ------------ | --------------- | -------- | ------- | ----------- |
+| `type`       | `code_scanning` | Yes      | -       |             |
+| `parameters` | `object`        | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### codeQualityRule
+
+<!-- xfg:generated schema:codeQualityRule -->
+
+Require code quality checks
+
+| Field        | Type           | Required | Default | Description |
+| ------------ | -------------- | -------- | ------- | ----------- |
+| `type`       | `code_quality` | Yes      | -       |             |
+| `parameters` | `object`       | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### workflowsRule
+
+<!-- xfg:generated schema:workflowsRule -->
+
+Require specific workflows to pass
+
+| Field        | Type        | Required | Default | Description |
+| ------------ | ----------- | -------- | ------- | ----------- |
+| `type`       | `workflows` | Yes      | -       |             |
+| `parameters` | `object`    | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### patternRule
+
+<!-- xfg:generated schema:patternRule -->
+
+Pattern-based rules for commit messages, author emails, etc.
+
+| Field        | Type                                                                                                                                  | Required | Default | Description       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------- | ----------------- |
+| `type`       | `commit_author_email_pattern` \| `commit_message_pattern` \| `committer_email_pattern` \| `branch_name_pattern` \| `tag_name_pattern` | Yes      | -       | Pattern rule type |
+| `parameters` | `object`                                                                                                                              | Yes      | -       |                   |
+
+<!-- xfg:generated:end -->
+
+### filePathRestrictionRule
+
+<!-- xfg:generated schema:filePathRestrictionRule -->
+
+Restrict changes to specific file paths
+
+| Field        | Type                    | Required | Default | Description |
+| ------------ | ----------------------- | -------- | ------- | ----------- |
+| `type`       | `file_path_restriction` | Yes      | -       |             |
+| `parameters` | `object`                | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### fileExtensionRestrictionRule
+
+<!-- xfg:generated schema:fileExtensionRestrictionRule -->
+
+Restrict changes to files with specific extensions
+
+| Field        | Type                         | Required | Default | Description |
+| ------------ | ---------------------------- | -------- | ------- | ----------- |
+| `type`       | `file_extension_restriction` | Yes      | -       |             |
+| `parameters` | `object`                     | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### maxFilePathLengthRule
+
+<!-- xfg:generated schema:maxFilePathLengthRule -->
+
+Restrict maximum file path length
+
+| Field        | Type                   | Required | Default | Description |
+| ------------ | ---------------------- | -------- | ------- | ----------- |
+| `type`       | `max_file_path_length` | Yes      | -       |             |
+| `parameters` | `object`               | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### maxFileSizeRule
+
+<!-- xfg:generated schema:maxFileSizeRule -->
+
+Restrict maximum file size
+
+| Field        | Type            | Required | Default | Description |
+| ------------ | --------------- | -------- | ------- | ----------- |
+| `type`       | `max_file_size` | Yes      | -       |             |
+| `parameters` | `object`        | No       | -       |             |
+
+<!-- xfg:generated:end -->
+
+### label
+
+<!-- xfg:generated schema:label -->
+
+GitHub label configuration
+
+| Field         | Type     | Required | Default | Description                            |
+| ------------- | -------- | -------- | ------- | -------------------------------------- |
+| `color`       | `string` | Yes      | -       | Hex color code (with or without #).    |
+| `description` | `string` | No       | -       | Label description (max 100 characters) |
+| `new_name`    | `string` | No       | -       | Rename this label.                     |
+
+- `color` — Example: 'd73a4a' or '#d73a4a'
+- `new_name` — Maps to GitHub API's new_name field.
+
+<!-- xfg:generated:end -->
+
+### secretConfig
+
+<!-- xfg:generated schema:secretConfig -->
+
+Secret configuration mapping to an environment variable source
+
+| Field | Type     | Required | Default | Description                                                  |
+| ----- | -------- | -------- | ------- | ------------------------------------------------------------ |
+| `env` | `string` | Yes      | -       | Name of the environment variable containing the secret value |
+
+<!-- xfg:generated:end -->
 
 ## Validation
 
