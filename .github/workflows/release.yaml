@@ -97,7 +97,7 @@ jobs:
         run: npm run build
 
       - name: Update floating major version tag
-        # docs.yaml enumerates these `v{N}` tags to publish versioned docs, and
+        # docs.yaml triggers on this `v{N}` tag to publish versioned docs, and
         # consumers pin `anthony-spruyt/xfg@v6` — dropping this breaks both.
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}

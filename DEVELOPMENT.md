@@ -466,7 +466,9 @@ Release-As: 7.0.0
 
 ### The floating `vN` tag
 
-Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` enumerates `v[0-9]` tags to publish versioned docs. The publish job moves that tag on every release. If you remove that step, action consumers freeze and versioned docs silently stop updating.
+Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` triggers on `vN` tag pushes to publish that major's docs as `latest`. The publish job moves that tag on every release. If you remove that step, action consumers freeze and versioned docs silently stop updating.
+
+Only the current major and `next` (main) are rebuilt. Older majors keep the docs build they were released with.
 
 The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6.
 

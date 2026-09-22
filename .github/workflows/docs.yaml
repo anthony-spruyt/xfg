@@ -13,15 +13,12 @@ on:
     tags:
       # Floating `vN` tags only. release.yaml moves `vN` *after* pushing the
       # three-part tag, so a `v*.*.*` trigger checks out before `vN` has moved
-      # and builds the previous release's docs. Matching `v*` fired both and
-      # the `vN` run silently corrected the stale one.
+      # and builds the previous release's docs.
       - "v[0-9]+"
   workflow_dispatch:
 
 permissions:
-  contents: write
-  pages: write
-  id-token: write
+  contents: read
 
 concurrency:
   group: pages
@@ -29,19 +26,7 @@ concurrency:
 
 jobs:
   deploy:
-    # The release commit fires this twice at the same sha: once for main, once
-    # for the moved `vN` tag. deploy-pages keys deployments on the sha, so the
-    # second (the one that adds the new `N.x` docs) is a no-op and the site keeps
-    # serving the main build. Skip main here so only the tag run deploys.
-    # https://github.com/actions/deploy-pages/issues/383
-    if: >-
-      ${{ github.event_name != 'push'
-          || github.ref_type != 'branch'
-          || !startsWith(github.event.head_commit.message, 'chore(main): release') }}
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -64,116 +49,23 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install MkDocs Material
-        run: pip install 'mkdocs<2' 'mkdocs-material<9.7' mike
+      - name: Install docs toolchain
+        run: pip install -r docs/requirements.txt
 
       - name: Configure git for mike
         run: |
           git config user.name "xfg-release[bot]"
           git config user.email "xfg-release[bot]@users.noreply.github.com"
 
-      - name: Build released majors from floating tags
-        # Source of truth is the `v{N}` floating tags maintained by
-        # release.yaml. The highest one also gets the `latest` alias.
-        # Adding a new major (v7+) needs no changes here — release.yaml
-        # creates the floating tag and this loop picks it up automatically.
+      - name: Deploy released major as latest
+        if: ${{ github.ref_type == 'tag' }}
+        # `--alias-type copy` is load-bearing: Pages does not follow symlinks,
+        # so a symlinked `latest` alias 404s.
         run: |
-          set -euo pipefail
-          highest="$(git tag -l 'v[0-9]' 'v[0-9][0-9]' | sort -V | tail -1)"
-          if [ -z "$highest" ]; then
-            echo "No released major tags (vN) found; skipping versioned deploys"
-            exit 0
-          fi
-          for tag in $(git tag -l 'v[0-9]' 'v[0-9][0-9]' | sort -V); do
-            major="${tag#v}"
-            workdir="/tmp/${tag}-docs"
-            git worktree add "$workdir" "$tag"
-            if [ "$tag" = "$highest" ]; then
-              mike deploy --update-aliases --alias-type copy \
-                --config-file "$workdir/mkdocs.yml" "${major}.x" latest
-            else
-              mike deploy --config-file "$workdir/mkdocs.yml" "${major}.x"
-            fi
-            git worktree remove "$workdir"
-          done
+          major="${GITHUB_REF_NAME#v}"
+          mike deploy --push --update-aliases --alias-type copy "${major}.x" latest
+          mike set-default --push latest
 
-      - name: Build unreleased main under `next`
-        # Preview of unreleased docs — shown as its own tab, never aliased
-        # to `latest`, so users don't see main's content as a released version.
-        run: mike deploy next
-
-      - name: Set default version
-        run: mike set-default latest
-
-      - name: Extract site for deployment
-        run: |
-          # Check out the built site from local gh-pages branch
-          git worktree add /tmp/site gh-pages
-          # Remove .git artifacts from the deployment directory
-          rm -rf /tmp/site/.git
-
-      - name: Configure Pages
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
-        with:
-          path: /tmp/site
-
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
-
-      - name: Save mike state to gh-pages branch
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          TREE_SHA=$(git rev-parse "gh-pages^{tree}")
-          MESSAGE=$(git log -1 --format=%s gh-pages)
-
-          # Push local gh-pages objects to a temporary tag ref so GitHub has
-          # the tree/blob objects. tag-rules also requires signatures; this
-          # works only because xfg-release-bot is a bypass actor on it.
-          git push --force origin "gh-pages:refs/tags/_gh-pages-staging"
-
-          # Get parent commit SHA (empty string if gh-pages doesn't exist on remote)
-          PARENT_SHA=""
-          if gh api "repos/${{ github.repository }}/git/ref/heads/gh-pages" --jq '.object.sha' > /tmp/parent_sha 2>/dev/null; then
-            PARENT_SHA=$(cat /tmp/parent_sha)
-          fi
-
-          # Create a signed commit via the GitHub API
-          if [ -n "$PARENT_SHA" ]; then
-            COMMIT_SHA=$(gh api "repos/${{ github.repository }}/git/commits" \
-              --method POST \
-              -f "message=$MESSAGE" \
-              -f "tree=$TREE_SHA" \
-              -f "parents[]=$PARENT_SHA" \
-              --jq '.sha')
-
-            gh api "repos/${{ github.repository }}/git/refs/heads/gh-pages" \
-              --method PATCH \
-              -f "sha=$COMMIT_SHA" \
-              -F "force=true"
-          else
-            COMMIT_SHA=$(gh api "repos/${{ github.repository }}/git/commits" \
-              --method POST \
-              -f "message=$MESSAGE" \
-              -f "tree=$TREE_SHA" \
-              --jq '.sha')
-
-            gh api "repos/${{ github.repository }}/git/refs" \
-              --method POST \
-              -f "ref=refs/heads/gh-pages" \
-              -f "sha=$COMMIT_SHA"
-          fi
-
-          echo "Saved mike state as verified commit $COMMIT_SHA to gh-pages"
-
-      - name: Clean up staging tag
-        if: always()
-        run: git push origin --delete refs/tags/_gh-pages-staging || true
-
-      - name: Clean up worktree
-        if: always()
-        run: git worktree remove /tmp/site || true
+      - name: Deploy unreleased main as next
+        if: ${{ github.ref_type != 'tag' }}
+        run: mike deploy --push next
