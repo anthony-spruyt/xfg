@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.0](https://github.com/anthony-spruyt/xfg/compare/v7.0.0...v7.1.0) (2026-09-22)
+
+
+### Features
+
+* **rulesets:** support bypassMode: exempt ([#1020](https://github.com/anthony-spruyt/xfg/issues/1020)) ([5e7299e](https://github.com/anthony-spruyt/xfg/commit/5e7299e9f3e9c6846809041dfbfbd7b50355d114)), closes [#1019](https://github.com/anthony-spruyt/xfg/issues/1019)
+
 ## [7.0.0](https://github.com/anthony-spruyt/xfg/compare/v6.4.7...v7.0.0) (2026-09-21)
 
 
