@@ -11,15 +11,6 @@ queue_rules:
     merge_conditions:
       - "-draft"
       - "check-success = summary / Check Results"
-      - or:
-          - "#approved-reviews-by >= 1"
-          - and:
-              - "label=autorelease: pending"
-              - "author = repo-operator-release-bot[bot]"
-          - and:
-              - "author = repo-operator-release-bot[bot]"
-              - "head~=^chore/megalinter-refresh-"
-              - "-files~=^(?!megalinter-[^/]+/\\.rebuild-stamp$)"
 priority_rules:
   - name: "revert PRs"
     conditions:
@@ -32,52 +23,6 @@ priority_rules:
     priority: "high"
     allow_checks_interruption: true
 pull_request_rules:
-  - name: "auto-merge approved PRs"
-    conditions:
-      - "#approved-reviews-by >= 1"
-      - "-label = blocked"
-      - "-draft"
-      - "-merged"
-    actions:
-      queue: {}
-  - name: "auto-merge revert PRs"
-    conditions:
-      - "label = agent/revert"
-      - "author~=.*\\[bot\\]$"
-      - "-label = blocked"
-      - "-merged"
-    actions:
-      queue: {}
-  - name: "auto-merge release-please PRs"
-    conditions:
-      - "label=autorelease: pending"
-      - "author = repo-operator-release-bot[bot]"
-      - "head~=^release-please--branches--"
-      - "files~=^\\.release-please-manifest\\.json$"
-      - "-label = blocked"
-      - "-draft"
-      - "-merged"
-    actions:
-      queue: {}
-  - name: "auto-merge megalinter refresh PRs"
-    conditions:
-      - "author = repo-operator-release-bot[bot]"
-      - "head~=^chore/megalinter-refresh-"
-      - "-files~=^(?!megalinter-[^/]+/\\.rebuild-stamp$)"
-      - "-label = blocked"
-      - "-draft"
-      - "-merged"
-    actions:
-      queue: {}
-  - name: "emergency merge (break glass)"
-    conditions:
-      - "label = emergency/merge"
-      - "author = anthony-spruyt"
-      - "-label = blocked"
-      - "-draft"
-      - "-merged"
-    actions:
-      queue: {}
   - name: "cleanup labels on close"
     conditions:
       - "closed"
@@ -132,3 +77,4 @@ merge_protections_settings:
   reporting_method: "check-runs"
   auto_merge_conditions:
     - "-author = xfg-release-bot[bot]"
+    - "-label = blocked"
