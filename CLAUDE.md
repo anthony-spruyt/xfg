@@ -8,10 +8,9 @@ TypeScript CLI tool for repository-as-code: sync files and manage settings acros
 
 Full docs: <https://anthony-spruyt.github.io/xfg/>
 
-**When updating docs, update BOTH:**
+`README.md` is badges plus a short quick start. Everything else lives in `docs/` (GitHub Pages).
 
-- `README.md` - Badges, quick start only
-- `docs/` - Full documentation (GitHub Pages)
+CLI option tables, config schema tables, and action input tables in `docs/` are generated. Edit the source (`src/cli/program.ts`, `config-schema.json`, `action.yml`), then run `npm run docs:generate` from `packages/xfg/`. `npm test` fails if they drift.
 
 ## Development
 
@@ -22,6 +21,7 @@ cd packages/xfg
 npm run build    # Compile TypeScript
 npm test         # Run unit tests
 npm run dev      # Run CLI via ts-node
+npm run docs:generate  # Regenerate generated doc tables
 ```
 
 ## Pre-PR Checklist
@@ -30,8 +30,9 @@ npm run dev      # Run CLI via ts-node
 
 1. `npm test` - Unit tests
 2. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
-3. `./lint.sh` - Linting
-4. Integration tests (for ALL behavioral changes that integration tests can cover):
+3. `npm run docs:check` - Generated doc tables are in sync with their sources
+4. `./lint.sh` - Linting
+5. Integration tests (for ALL behavioral changes that integration tests can cover):
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
