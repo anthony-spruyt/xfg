@@ -25,8 +25,7 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/tags/') }}
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@fe104658747b27e96e4f7e80cd0a94068e53901d
@@ -60,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
-      contents: write
+      contents: read
       id-token: write
     env:
       TAG_NAME: ${{ github.ref_name }}
@@ -98,7 +97,7 @@ jobs:
         run: npm run build
 
       - name: Update floating major version tag
-        # docs.yaml enumerates these `v{N}` tags to publish versioned docs, and
+        # docs.yaml triggers on this `v{N}` tag to publish versioned docs, and
         # consumers pin `anthony-spruyt/xfg@v6` — dropping this breaks both.
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
