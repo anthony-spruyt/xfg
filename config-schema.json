@@ -1055,9 +1055,10 @@
           "type": "string",
           "enum": [
             "always",
-            "pull_request"
+            "pull_request",
+            "exempt"
           ],
-          "description": "When the actor can bypass: 'always' for all operations, 'pull_request' for PR operations only"
+          "description": "When the actor can bypass: 'always' for all operations, 'pull_request' for PR operations only, 'exempt' to skip rule evaluation entirely (no bypass audit entry is created)"
         }
       }
     },

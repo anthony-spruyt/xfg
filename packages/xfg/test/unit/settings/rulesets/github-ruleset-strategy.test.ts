@@ -424,6 +424,18 @@ describe("configToGitHub", () => {
     assert.equal(result.bypass_actors[1].bypass_mode, undefined);
   });
 
+  test("passes bypass_mode exempt through verbatim", () => {
+    const ruleset: Ruleset = {
+      bypassActors: [
+        { actorId: 2753244, actorType: "Integration", bypassMode: "exempt" },
+      ],
+    };
+
+    const result = configToGitHub("test-rules", ruleset);
+
+    assert.equal(result.bypass_actors?.[0].bypass_mode, "exempt");
+  });
+
   test("converts conditions with camelCase to snake_case", () => {
     const ruleset: Ruleset = {
       conditions: {

@@ -1,5 +1,5 @@
 import type { RepoInfo } from "../../repo/index.js";
-import type { Ruleset } from "../../config/index.js";
+import type { Ruleset, BypassMode } from "../../config/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 
 /**
@@ -20,7 +20,7 @@ export interface GitHubRuleset {
 export interface GitHubBypassActor {
   actor_id: number;
   actor_type: "Team" | "User" | "Integration";
-  bypass_mode?: "always" | "pull_request";
+  bypass_mode?: BypassMode;
 }
 
 export interface GitHubRulesetConditions {

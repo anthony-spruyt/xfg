@@ -1036,6 +1036,84 @@ describe("diffRulesets bypass_actors ordering (#622)", () => {
     assert.equal(changes.length, 1);
     assert.equal(changes[0].action, "update");
   });
+
+  test("bypass_mode exempt round-trips as unchanged", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: [
+          {
+            actor_id: 2753244,
+            actor_type: "Integration",
+            bypass_mode: "exempt",
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            {
+              actorId: 2753244,
+              actorType: "Integration",
+              bypassMode: "exempt",
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, false);
+
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].action, "unchanged");
+  });
+
+  test("bypass_mode change from always to exempt is detected", () => {
+    const current: GitHubRuleset[] = [
+      {
+        id: 1,
+        name: "pr-rules",
+        target: "branch",
+        enforcement: "active",
+        bypass_actors: [
+          {
+            actor_id: 2753244,
+            actor_type: "Integration",
+            bypass_mode: "always",
+          },
+        ],
+      },
+    ];
+    const desired = new Map<string, Ruleset>([
+      [
+        "pr-rules",
+        {
+          target: "branch",
+          enforcement: "active",
+          bypassActors: [
+            {
+              actorId: 2753244,
+              actorType: "Integration",
+              bypassMode: "exempt",
+            },
+          ],
+        },
+      ],
+    ]);
+
+    const changes = diffRulesets(current, desired, false);
+
+    assert.equal(changes.length, 1);
+    assert.equal(changes[0].action, "update");
+  });
 });
 
 describe("desired-state orphan detection", () => {
