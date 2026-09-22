@@ -12,17 +12,21 @@ xfg sync --config <path> [options]
 
 ### Options
 
-| Option             | Alias | Description                                                               | Default                                        |
-| ------------------ | ----- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| `--config`         | `-c`  | Path to YAML config file                                                  | **Required**                                   |
-| `--dry-run`        | `-d`  | Show what would be done without making changes                            | `false`                                        |
-| `--work-dir`       | `-w`  | Temporary directory for cloning                                           | `./tmp`                                        |
-| `--retries`        | `-r`  | Number of retries for network operations                                  | `3`                                            |
-| `--branch`         | `-b`  | Override branch name                                                      | `chore/sync-{filename}` or `chore/sync-config` |
-| `--merge`          | `-m`  | PR merge mode: `manual`, `auto`, `force`, `direct`                        | `auto`                                         |
-| `--merge-strategy` |       | Merge strategy: `merge`, `squash`, `rebase`                               | `squash`                                       |
-| `--delete-branch`  |       | Delete source branch after merge                                          | `true`                                         |
-| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, labels, variables, and secrets | `false`                                        |
+<!-- xfg:generated cli:sync -->
+
+| Option             | Alias | Description                                                                                                                        | Default      |
+| ------------------ | ----- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `--config`         | `-c`  | Path to YAML config file                                                                                                           | **Required** |
+| `--branch`         | `-b`  | Override the branch name (default: chore/sync-{filename} or chore/sync-config)                                                     | -            |
+| `--merge`          | `-m`  | PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR) | -            |
+| `--merge-strategy` |       | Merge strategy: merge, squash (default), rebase                                                                                    | -            |
+| `--delete-branch`  |       | Delete source branch after merge                                                                                                   | `false`      |
+| `--dry-run`        | `-d`  | Show what would be done without making changes                                                                                     | `false`      |
+| `--work-dir`       | `-w`  | Temporary directory for cloning                                                                                                    | `./tmp`      |
+| `--retries`        | `-r`  | Number of retries for network operations (0 to disable)                                                                            | `3`          |
+| `--no-delete`      |       | Skip deletion of orphaned resources even if deleteOrphaned is configured                                                           | `false`      |
+
+<!-- xfg:generated:end -->
 
 !!! note "GitHub-Only Settings"
     Repository settings, rulesets, labels, and variables management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
@@ -77,13 +81,17 @@ xfg secrets sync --config <path> [options]
 
 ### Secrets Options
 
-| Option        | Alias | Description                                                              | Default      |
-| ------------- | ----- | ------------------------------------------------------------------------ | ------------ |
-| `--config`    | `-c`  | Path to YAML config file                                                 | **Required** |
-| `--dry-run`   | `-d`  | Show what would be done without making changes                           | `false`      |
-| `--work-dir`  | `-w`  | Temporary directory for cloning                                          | `./tmp`      |
-| `--retries`   | `-r`  | Number of retries for network operations                                 | `3`          |
-| `--no-delete` |       | Skip deletion of orphaned secrets even if `deleteOrphaned` is configured | `false`      |
+<!-- xfg:generated cli:secrets-sync -->
+
+| Option        | Alias | Description                                             | Default      |
+| ------------- | ----- | ------------------------------------------------------- | ------------ |
+| `--config`    | `-c`  | Path to xfg config file                                 | **Required** |
+| `--dry-run`   | `-d`  | Show what would be done without making changes          | `false`      |
+| `--no-delete` |       | Skip deletion of orphaned secrets                       | `false`      |
+| `--work-dir`  | `-w`  | Temporary directory for cloning                         | `./tmp`      |
+| `--retries`   | `-r`  | Number of retries for network operations (0 to disable) | `3`          |
+
+<!-- xfg:generated:end -->
 
 !!! note "GitHub-Only"
     Secrets management only works with GitHub repositories. Non-GitHub repos are skipped.

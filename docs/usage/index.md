@@ -55,17 +55,7 @@ Non-structured files (`.sh`, `.md`, `.txt`, etc.) show only the file path withou
 
 ## CLI Options
 
-| Option             | Alias | Description                                                                    | Required |
-| ------------------ | ----- | ------------------------------------------------------------------------------ | -------- |
-| `--config`         | `-c`  | Path to YAML config file                                                       | Yes      |
-| `--dry-run`        | `-d`  | Show what would be done without making changes                                 | No       |
-| `--work-dir`       | `-w`  | Temporary directory for cloning (default: `./tmp`)                             | No       |
-| `--retries`        | `-r`  | Number of retries for network operations (default: 3)                          | No       |
-| `--branch`         | `-b`  | Override branch name (default: `chore/sync-{filename}` or `chore/sync-config`) | No       |
-| `--merge`          | `-m`  | PR merge mode: `manual`, `auto` (default), `force` (bypass checks), `direct`   | No       |
-| `--merge-strategy` |       | Merge strategy: `merge`, `squash` (default), `rebase`                          | No       |
-| `--delete-branch`  |       | Delete source branch after merge                                               | No       |
-| `--no-delete`      |       | Skip deletion of orphaned files, rulesets, and labels                          | No       |
+See [CLI Options Reference](../reference/cli-options.md) for the full option list, aliases, and defaults.
 
 !!! note
     Settings management (rulesets, labels, repo settings) only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.

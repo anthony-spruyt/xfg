@@ -96,34 +96,32 @@ repos:
         SHARED_KEY: false
 ```
 
-| Directive         | Effect                                                              |
-| ----------------- | ------------------------------------------------------------------- |
-| `inherit: false`  | Discard every inherited secret at this layer                        |
-| `NAME: false`     | Opt out of one inherited secret                                     |
-| `deleteOrphaned`  | Policy switch, innermost wins — `inherit: false` does not clear it  |
+| Directive        | Effect                                                             |
+| ---------------- | ------------------------------------------------------------------ |
+| `inherit: false` | Discard every inherited secret at this layer                       |
+| `NAME: false`    | Opt out of one inherited secret                                    |
+| `deleteOrphaned` | Policy switch, innermost wins — `inherit: false` does not clear it |
 
 `deleteOrphaned` is a policy switch, not an entry. `inherit: false` discards inherited *entries* but leaves an inherited `deleteOrphaned` in place. To turn cleanup off for a repo, set `deleteOrphaned: false` explicitly.
 
 !!! danger "`inherit: false` plus `deleteOrphaned: true` deletes inherited secrets"
-    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo:
+    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
 
-    ```yaml
+```yaml
+settings:
+  secrets:
+    SHARED_KEY:
+      env: SHARED
+
+repos:
+  - git: git@github.com:org/isolated.git
     settings:
       secrets:
-        SHARED_KEY:
-          env: SHARED
-
-    repos:
-      - git: git@github.com:org/isolated.git
-        settings:
-          secrets:
-            inherit: false          # SHARED_KEY is no longer desired here
-            deleteOrphaned: true    # ...so it gets deleted from the repo
-            OWN_KEY:
-              env: OWN
-    ```
-
-    This is correct behaviour, but the interaction is easy to miss. Run `--dry-run` first.
+        inherit: false          # SHARED_KEY is no longer desired here
+        deleteOrphaned: true    # ...so it gets deleted from the repo
+        OWN_KEY:
+          env: OWN
+```
 
 ## Secret Naming Rules
 
@@ -224,13 +222,7 @@ Secret values are never shown in dry-run output — only the secret names.
 xfg secrets sync --config <path> [options]
 ```
 
-| Option        | Alias | Description                                                       | Default      |
-| ------------- | ----- | ----------------------------------------------------------------- | ------------ |
-| `--config`    | `-c`  | Path to YAML config file                                          | **Required** |
-| `--dry-run`   | `-d`  | Show what would be done without making changes                    | `false`      |
-| `--work-dir`  | `-w`  | Temporary directory for cloning                                   | `./tmp`      |
-| `--retries`   | `-r`  | Number of retries for network operations                          | `3`          |
-| `--no-delete` |       | Skip deletion of orphaned secrets even if `deleteOrphaned` is set | `false`      |
+See [CLI Options — Secrets Sync Command](../reference/cli-options.md#secrets-sync-command) for the full option list.
 
 ## GitHub API Reference
 

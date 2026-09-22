@@ -46,51 +46,6 @@ gh auth login
 xfg sync --config ./config.yaml
 ```
 
-### Example Config
-
-```yaml
-# sync-config.yaml
-id: my-org-standards
-
-files:
-  .prettierrc.json:
-    content:
-      semi: false
-      singleQuote: true
-      tabWidth: 2
-
-settings:
-  repo:
-    allowSquashMerge: true
-    deleteBranchOnMerge: true
-    vulnerabilityAlerts: true
-    secretScanning: true
-
-  rulesets:
-    main-protection:
-      target: branch
-      enforcement: active
-      conditions:
-        refName:
-          include: [refs/heads/main]
-          exclude: []
-      rules:
-        - type: pull_request
-          parameters:
-            requiredApprovingReviewCount: 1
-        - type: required_status_checks
-          parameters:
-            requiredStatusChecks:
-              - context: "ci/build"
-
-repos:
-  - git:
-      - git@github.com:your-org/frontend-app.git
-      - git@github.com:your-org/backend-api.git
-```
-
-**Result:** PRs are created with `.prettierrc.json` files, and repos get standardized merge options, security settings, and branch protection rulesets.
-
 ## Documentation
 
-See **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for the full feature list, configuration reference, examples, platform setup, and troubleshooting.
+See **[anthony-spruyt.github.io/xfg](https://anthony-spruyt.github.io/xfg/)** for the full feature list, [configuration reference](https://anthony-spruyt.github.io/xfg/latest/reference/config-schema/), [CLI options](https://anthony-spruyt.github.io/xfg/latest/reference/cli-options/), examples, platform setup, and troubleshooting.

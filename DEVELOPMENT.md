@@ -439,6 +439,8 @@ For CONTEXT7_API_KEY and other MCP server API keys:
 
 Versions are owned by [release-please](https://github.com/googleapis/release-please). Nobody picks a bump by hand.
 
+This section is the only description of the release process. `docs/` links here rather than restating it.
+
 ### How a release happens
 
 1. You merge conventional-commit PRs to `main`.
@@ -470,7 +472,7 @@ Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` trigger
 
 Only the current major and `next` (main) are rebuilt. Older majors keep the docs build they were released with.
 
-The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6.
+The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6. `packages/xfg/test/unit/docs/action-pins.test.ts` fails if a pin drifts from `.release-please-manifest.json`, loses its marker, or lives in a file missing from `extra-files`.
 
 ### Re-running a publish
 

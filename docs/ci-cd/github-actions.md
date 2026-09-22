@@ -15,22 +15,27 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 ### Action Inputs
 
-| Input                    | Required | Default               | Description                                                |
-| ------------------------ | -------- | --------------------- | ---------------------------------------------------------- |
-| `config`                 | Yes      | -                     | Path to YAML config file                                   |
-| `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs |
-| `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                         |
-| `retries`                | No       | `3`                   | Number of network retries                                  |
-| `branch`                 | No       | -                     | Override sync branch name                                  |
-| `merge`                  | No       | -                     | PR merge mode (`manual`/`auto`/`force`/`direct`)           |
-| `merge-strategy`         | No       | -                     | Merge strategy (`merge`/`squash`/`rebase`)                 |
-| `delete-branch`          | No       | `false`               | Delete branch after merge                                  |
-| `github-token`           | No       | `${{ github.token }}` | GitHub token for authentication                            |
-| `github-client-id`       | No       | -                     | GitHub App Client ID for installation token generation     |
-| `github-app-private-key` | No       | -                     | GitHub App private key (PEM) for JWT signing               |
-| `azure-devops-token`     | No       | -                     | Azure DevOps Personal Access Token                         |
-| `gitlab-token`           | No       | -                     | GitLab token for authentication                            |
-| `no-delete`              | No       | `false`               | Skip deletion of orphaned resources                        |
+<!-- xfg:generated action:inputs -->
+
+| Input                    | Required | Default               | Description                                                                                                                                                |
+| ------------------------ | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`                 | Yes      | -                     | Path to YAML config file                                                                                                                                   |
+| `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs                                                                                                 |
+| `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                                                                                                                         |
+| `retries`                | No       | `3`                   | Number of network retries                                                                                                                                  |
+| `branch`                 | No       | -                     | Override sync branch name                                                                                                                                  |
+| `merge`                  | No       | -                     | PR merge mode (manual/auto/force/direct)                                                                                                                   |
+| `merge-strategy`         | No       | -                     | Merge strategy (merge/squash/rebase)                                                                                                                       |
+| `delete-branch`          | No       | `false`               | Delete branch after merge                                                                                                                                  |
+| `github-token`           | No       | `${{ github.token }}` | GitHub token for authentication                                                                                                                            |
+| `azure-devops-token`     | No       | -                     | Azure DevOps Personal Access Token                                                                                                                         |
+| `gitlab-token`           | No       | -                     | GitLab token for authentication                                                                                                                            |
+| `github-client-id`       | No       | -                     | GitHub App Client ID (generates installation tokens automatically)                                                                                         |
+| `github-app-private-key` | No       | -                     | GitHub App private key (PEM format) for JWT signing                                                                                                        |
+| `no-delete`              | No       | `false`               | Skip deletion of orphaned resources even if deleteOrphaned is configured                                                                                   |
+| `xfg-package`            | No       | -                     | Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release. |
+
+<!-- xfg:generated:end -->
 
 ### Multi-Platform Example
 
