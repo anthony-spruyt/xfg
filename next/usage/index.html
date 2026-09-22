@@ -2743,72 +2743,7 @@
 </span></code></pre></div>
 <p>Non-structured files (<code>.sh</code>, <code>.md</code>, <code>.txt</code>, etc.) show only the file path without content diffs.</p>
 <h2 id="cli-options">CLI Options<a class="headerlink" href="#cli-options" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Option</th>
-<th>Alias</th>
-<th>Description</th>
-<th>Required</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--config</code></td>
-<td><code>-c</code></td>
-<td>Path to YAML config file</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td><code>--dry-run</code></td>
-<td><code>-d</code></td>
-<td>Show what would be done without making changes</td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--work-dir</code></td>
-<td><code>-w</code></td>
-<td>Temporary directory for cloning (default: <code>./tmp</code>)</td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--retries</code></td>
-<td><code>-r</code></td>
-<td>Number of retries for network operations (default: 3)</td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--branch</code></td>
-<td><code>-b</code></td>
-<td>Override branch name (default: <code>chore/sync-{filename}</code> or <code>chore/sync-config</code>)</td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--merge</code></td>
-<td><code>-m</code></td>
-<td>PR merge mode: <code>manual</code>, <code>auto</code> (default), <code>force</code> (bypass checks), <code>direct</code></td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--merge-strategy</code></td>
-<td></td>
-<td>Merge strategy: <code>merge</code>, <code>squash</code> (default), <code>rebase</code></td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--delete-branch</code></td>
-<td></td>
-<td>Delete source branch after merge</td>
-<td>No</td>
-</tr>
-<tr>
-<td><code>--no-delete</code></td>
-<td></td>
-<td>Skip deletion of orphaned files, rulesets, and labels</td>
-<td>No</td>
-</tr>
-</tbody>
-</table>
+<p>See <a href="../reference/cli-options/">CLI Options Reference</a> for the full option list, aliases, and defaults.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Settings management (rulesets, labels, repo settings) only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.</p>

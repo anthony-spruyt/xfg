@@ -2811,6 +2811,8 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>&lt;path&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </span></code></pre></div>
 <h3 id="options">Options<a class="headerlink" href="#options" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated cli:sync -->
+
 <table>
 <thead>
 <tr>
@@ -2828,6 +2830,30 @@
 <td><strong>Required</strong></td>
 </tr>
 <tr>
+<td><code>--branch</code></td>
+<td><code>-b</code></td>
+<td>Override the branch name (default: chore/sync-{filename} or chore/sync-config)</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>--merge</code></td>
+<td><code>-m</code></td>
+<td>PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR)</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>--merge-strategy</code></td>
+<td></td>
+<td>Merge strategy: merge, squash (default), rebase</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>--delete-branch</code></td>
+<td></td>
+<td>Delete source branch after merge</td>
+<td><code>false</code></td>
+</tr>
+<tr>
 <td><code>--dry-run</code></td>
 <td><code>-d</code></td>
 <td>Show what would be done without making changes</td>
@@ -2842,41 +2868,19 @@
 <tr>
 <td><code>--retries</code></td>
 <td><code>-r</code></td>
-<td>Number of retries for network operations</td>
+<td>Number of retries for network operations (0 to disable)</td>
 <td><code>3</code></td>
-</tr>
-<tr>
-<td><code>--branch</code></td>
-<td><code>-b</code></td>
-<td>Override branch name</td>
-<td><code>chore/sync-{filename}</code> or <code>chore/sync-config</code></td>
-</tr>
-<tr>
-<td><code>--merge</code></td>
-<td><code>-m</code></td>
-<td>PR merge mode: <code>manual</code>, <code>auto</code>, <code>force</code>, <code>direct</code></td>
-<td><code>auto</code></td>
-</tr>
-<tr>
-<td><code>--merge-strategy</code></td>
-<td></td>
-<td>Merge strategy: <code>merge</code>, <code>squash</code>, <code>rebase</code></td>
-<td><code>squash</code></td>
-</tr>
-<tr>
-<td><code>--delete-branch</code></td>
-<td></td>
-<td>Delete source branch after merge</td>
-<td><code>true</code></td>
 </tr>
 <tr>
 <td><code>--no-delete</code></td>
 <td></td>
-<td>Skip deletion of orphaned files, rulesets, labels, variables, and secrets</td>
+<td>Skip deletion of orphaned resources even if deleteOrphaned is configured</td>
 <td><code>false</code></td>
 </tr>
 </tbody>
 </table>
+<!-- xfg:generated:end -->
+
 <div class="admonition note">
 <p class="admonition-title">GitHub-Only Settings</p>
 <p>Repository settings, rulesets, labels, and variables management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.</p>
@@ -2920,6 +2924,8 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>xfg<span class="w"> </span>secrets<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>&lt;path&gt;<span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </span></code></pre></div>
 <h3 id="secrets-options">Secrets Options<a class="headerlink" href="#secrets-options" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated cli:secrets-sync -->
+
 <table>
 <thead>
 <tr>
@@ -2933,13 +2939,19 @@
 <tr>
 <td><code>--config</code></td>
 <td><code>-c</code></td>
-<td>Path to YAML config file</td>
+<td>Path to xfg config file</td>
 <td><strong>Required</strong></td>
 </tr>
 <tr>
 <td><code>--dry-run</code></td>
 <td><code>-d</code></td>
 <td>Show what would be done without making changes</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>--no-delete</code></td>
+<td></td>
+<td>Skip deletion of orphaned secrets</td>
 <td><code>false</code></td>
 </tr>
 <tr>
@@ -2951,17 +2963,13 @@
 <tr>
 <td><code>--retries</code></td>
 <td><code>-r</code></td>
-<td>Number of retries for network operations</td>
+<td>Number of retries for network operations (0 to disable)</td>
 <td><code>3</code></td>
-</tr>
-<tr>
-<td><code>--no-delete</code></td>
-<td></td>
-<td>Skip deletion of orphaned secrets even if <code>deleteOrphaned</code> is configured</td>
-<td><code>false</code></td>
 </tr>
 </tbody>
 </table>
+<!-- xfg:generated:end -->
+
 <div class="admonition note">
 <p class="admonition-title">GitHub-Only</p>
 <p>Secrets management only works with GitHub repositories. Non-GitHub repos are skipped.</p>
