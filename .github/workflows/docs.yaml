@@ -15,7 +15,7 @@ on:
       # three-part tag, so a `v*.*.*` trigger checks out before `vN` has moved
       # and builds the previous release's docs. Matching `v*` fired both and
       # the `vN` run silently corrected the stale one.
-      - "v[0-9]"
+      - "v[0-9]+"
   workflow_dispatch:
 
 permissions:
@@ -79,12 +79,12 @@ jobs:
         # creates the floating tag and this loop picks it up automatically.
         run: |
           set -euo pipefail
-          highest="$(git tag -l 'v[0-9]' | sort -V | tail -1)"
+          highest="$(git tag -l 'v[0-9]' 'v[0-9][0-9]' | sort -V | tail -1)"
           if [ -z "$highest" ]; then
-            echo "No released major tags (v[0-9]) found; skipping versioned deploys"
+            echo "No released major tags (vN) found; skipping versioned deploys"
             exit 0
           fi
-          for tag in $(git tag -l 'v[0-9]' | sort -V); do
+          for tag in $(git tag -l 'v[0-9]' 'v[0-9][0-9]' | sort -V); do
             major="${tag#v}"
             workdir="/tmp/${tag}-docs"
             git worktree add "$workdir" "$tag"
@@ -131,9 +131,9 @@ jobs:
           TREE_SHA=$(git rev-parse "gh-pages^{tree}")
           MESSAGE=$(git log -1 --format=%s gh-pages)
 
-          # Push local gh-pages objects to a temporary tag ref so GitHub
-          # has the tree/blob objects. Tags are not covered by the
-          # branch-signatures ruleset (refs/heads/**).
+          # Push local gh-pages objects to a temporary tag ref so GitHub has
+          # the tree/blob objects. tag-rules also requires signatures; this
+          # works only because xfg-release-bot is a bypass actor on it.
           git push --force origin "gh-pages:refs/tags/_gh-pages-staging"
 
           # Get parent commit SHA (empty string if gh-pages doesn't exist on remote)
