@@ -6,6 +6,7 @@ export type {
   MergeStrategy,
   // Rulesets
   BypassActor,
+  BypassMode,
   StatusCheckConfig,
   CodeScanningTool,
   PullRequestRuleParameters,

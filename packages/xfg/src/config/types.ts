@@ -18,7 +18,7 @@ export type RulesetEnforcement = "active" | "disabled" | "evaluate";
 
 export type BypassActorType = "Team" | "User" | "Integration";
 
-export type BypassMode = "always" | "pull_request";
+export type BypassMode = "always" | "pull_request" | "exempt";
 
 type PatternOperator = "starts_with" | "ends_with" | "contains" | "regex";
 

@@ -2038,7 +2038,7 @@ describe("validateRawConfig", () => {
       });
       assert.throws(
         () => validateRawConfig(config),
-        /bypassMode must be one of: always, pull_request/
+        /bypassMode must be one of: always, pull_request, exempt/
       );
     });
 
@@ -2055,6 +2055,11 @@ describe("validateRawConfig", () => {
                   bypassMode: "pull_request",
                 },
                 { actorId: 789, actorType: "User" },
+                {
+                  actorId: 2753244,
+                  actorType: "Integration",
+                  bypassMode: "exempt",
+                },
               ],
             },
           },

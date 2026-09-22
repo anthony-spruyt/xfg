@@ -917,10 +917,12 @@ describe("settings types", () => {
       { actorId: 1, actorType: "Integration", bypassMode: "always" },
       { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
       { actorId: 3, actorType: "User" },
+      { actorId: 4, actorType: "Integration", bypassMode: "exempt" },
     ];
     assert.equal(actors[0].actorType, "Integration");
     assert.equal(actors[1].actorType, "Team");
     assert.equal(actors[2].actorType, "User");
+    assert.equal(actors[3].bypassMode, "exempt");
   });
 
   test("StatusCheckConfig supports context and integrationId", () => {
