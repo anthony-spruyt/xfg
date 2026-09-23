@@ -78,5 +78,5 @@ merge_protections_settings:
   auto_merge_conditions:
     - or:
         - "-label=autorelease: pending"
-        - "schedule = Mon 09:00-12:00[Australia/Melbourne]"
+        - "schedule = Mon-Mon 09:00-12:00[Australia/Melbourne]"
     - "-label = blocked"
