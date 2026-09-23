@@ -7,6 +7,10 @@ branding:
   color: "blue"
 
 inputs:
+  command:
+    description: "xfg command to run (sync/secrets-sync). secrets-sync ignores branch, merge, merge-strategy, and delete-branch"
+    required: false
+    default: "sync"
   config:
     description: "Path to YAML config file"
     required: true
@@ -136,8 +140,16 @@ runs:
         XFG_GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
         AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
+        XFG_COMMAND: ${{ inputs.command }}
       run: |
-        CMD="xfg sync"
+        case "${XFG_COMMAND}" in
+          sync) CMD="xfg sync" ;;
+          secrets-sync) CMD="xfg secrets sync" ;;
+          *)
+            echo "::error::Unknown command '${XFG_COMMAND}' (expected sync or secrets-sync)"
+            exit 1
+            ;;
+        esac
         CMD="$CMD --config ${{ inputs.config }}"
         CMD="$CMD --work-dir ${{ inputs.work-dir }}"
         CMD="$CMD --retries ${{ inputs.retries }}"
@@ -150,20 +162,22 @@ runs:
           CMD="$CMD --no-delete"
         fi
 
-        if [ -n "${{ inputs.branch }}" ]; then
-          CMD="$CMD --branch ${{ inputs.branch }}"
-        fi
+        if [ "${XFG_COMMAND}" = "sync" ]; then
+          if [ -n "${{ inputs.branch }}" ]; then
+            CMD="$CMD --branch ${{ inputs.branch }}"
+          fi
 
-        if [ -n "${{ inputs.merge }}" ]; then
-          CMD="$CMD --merge ${{ inputs.merge }}"
-        fi
+          if [ -n "${{ inputs.merge }}" ]; then
+            CMD="$CMD --merge ${{ inputs.merge }}"
+          fi
 
-        if [ -n "${{ inputs.merge-strategy }}" ]; then
-          CMD="$CMD --merge-strategy ${{ inputs.merge-strategy }}"
-        fi
+          if [ -n "${{ inputs.merge-strategy }}" ]; then
+            CMD="$CMD --merge-strategy ${{ inputs.merge-strategy }}"
+          fi
 
-        if [ "${{ inputs.delete-branch }}" = "true" ]; then
-          CMD="$CMD --delete-branch"
+          if [ "${{ inputs.delete-branch }}" = "true" ]; then
+            CMD="$CMD --delete-branch"
+          fi
         fi
 
         echo "Running: $CMD"

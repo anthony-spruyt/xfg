@@ -1,4 +1,4 @@
-export { SecretsProcessor } from "./processor.js";
+export { SecretsProcessor, hasDesiredSecrets } from "./processor.js";
 export type {
   ISecretsProcessor,
   SecretsProcessorOptions,

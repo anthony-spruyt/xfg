@@ -9,10 +9,16 @@ import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
+  hasDesiredSecrets,
 } from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { parseGitUrl } from "../repo/index.js";
+import { createTokenManager } from "../vcs/index.js";
+import {
+  resolveGitHubToken,
+  type ITokenManager,
+} from "../shared/gh-token-utils.js";
+import { isGitHubRepo, parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { SecretsProcessorResult } from "../settings/secrets/index.js";
@@ -29,6 +35,7 @@ export interface ISecretsProcessorAdapter {
 
 export interface SecretsSyncDependencies {
   processorFactory?: (cwd: string, retries: number) => ISecretsProcessorAdapter;
+  tokenManager?: ITokenManager | null;
 }
 
 export interface SecretsSyncOptions {
@@ -71,7 +78,19 @@ export async function runSecretsSync(
   const processorFactory = deps.processorFactory ?? createDefaultProcessor;
   const processor = processorFactory(cwd, retries ?? 3);
 
-  const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+  const envToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+  const tokenManager =
+    deps.tokenManager !== undefined
+      ? deps.tokenManager
+      : createTokenManager(
+          process.env.XFG_GITHUB_CLIENT_ID &&
+            process.env.XFG_GITHUB_APP_PRIVATE_KEY
+            ? {
+                clientId: process.env.XFG_GITHUB_CLIENT_ID,
+                privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
+              }
+            : undefined
+        );
 
   let hasErrors = false;
   let anySecretsConfigured = false;
@@ -85,6 +104,27 @@ export async function runSecretsSync(
       const repoInfo = parseGitUrl(repoConfig.git, {
         githubHosts: config.githubHosts,
       });
+
+      let token = envToken;
+      if (isGitHubRepo(repoInfo) && hasDesiredSecrets(repoConfig)) {
+        const resolved = await resolveGitHubToken({
+          repoInfo,
+          tokenManager,
+          context: repoName,
+          log: logger,
+          envToken,
+        });
+        if (resolved.skipped) {
+          anySecretsConfigured = true;
+          logger.skip(
+            i + 1,
+            repoName,
+            `No GitHub App installation found for ${repoInfo.owner}`
+          );
+          continue;
+        }
+        token = resolved.token;
+      }
 
       const result = await processor.process(repoConfig, repoInfo, {
         dryRun,

@@ -48,6 +48,7 @@
         "/README.md",
         "/docs/index.md",
         "/docs/ci-cd/github-actions.md",
+        "/docs/configuration/secrets.md",
         "/docs/platforms/github-app.md"
       ]
     }

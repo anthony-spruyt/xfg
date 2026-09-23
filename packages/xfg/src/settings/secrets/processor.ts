@@ -38,7 +38,7 @@ function secretEntriesOf(
   return Object.entries(entries);
 }
 
-function hasDesiredSecrets(repoConfig: RepoConfig): boolean {
+export function hasDesiredSecrets(repoConfig: RepoConfig): boolean {
   const s = repoConfig.settings?.secrets ?? {};
   const { deleteOrphaned, ...entries } = s as Record<string, unknown>;
   return Object.keys(entries).length > 0 || deleteOrphaned === true;

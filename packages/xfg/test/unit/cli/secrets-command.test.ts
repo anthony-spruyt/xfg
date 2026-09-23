@@ -479,4 +479,93 @@ repos:
       "Should log the skip message"
     );
   });
+
+  describe("GitHub App auth", () => {
+    const originalGhToken = process.env.GH_TOKEN;
+
+    beforeEach(() => {
+      process.env.GH_TOKEN = "env-token";
+    });
+
+    afterEach(() => {
+      if (originalGhToken === undefined) delete process.env.GH_TOKEN;
+      else process.env.GH_TOKEN = originalGhToken;
+    });
+
+    const appConfig = `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://github.com/org-a/repo-a
+  - git: https://github.com/org-b/repo-b
+`;
+
+    test("passes a per-owner app token to the processor", async () => {
+      writeFileSync(testConfigPath, appConfig);
+      const tokenManager = {
+        getTokenForRepo: mock.fn(
+          async (repo: { owner: string }) => `app-token-${repo.owner}`
+        ),
+      };
+      const mockProcessor = createMockProcessor();
+
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        { processorFactory: () => mockProcessor, tokenManager }
+      );
+
+      const processMock = mockProcessor.process as unknown as ReturnType<
+        typeof mock.fn
+      >;
+      const tokens = processMock.mock.calls.map(
+        (c) => (c.arguments[2] as { token?: string }).token
+      );
+      assert.deepEqual(tokens, ["app-token-org-a", "app-token-org-b"]);
+    });
+
+    test("skips repos whose owner has no app installation", async () => {
+      writeFileSync(testConfigPath, appConfig);
+      const tokenManager = {
+        getTokenForRepo: mock.fn(async (repo: { owner: string }) =>
+          repo.owner === "org-a" ? "app-token-org-a" : null
+        ),
+      };
+      const mockProcessor = createMockProcessor();
+
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        { processorFactory: () => mockProcessor, tokenManager }
+      );
+
+      const processMock = mockProcessor.process as unknown as ReturnType<
+        typeof mock.fn
+      >;
+      assert.equal(processMock.mock.calls.length, 1);
+      const output = consoleOutput.join("\n");
+      assert.ok(
+        output.includes("No GitHub App installation found for org-b"),
+        `Expected skip message for org-b, got: ${output}`
+      );
+    });
+
+    test("falls back to GH_TOKEN without an app token manager", async () => {
+      writeFileSync(testConfigPath, appConfig);
+      const mockProcessor = createMockProcessor();
+
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        { processorFactory: () => mockProcessor, tokenManager: null }
+      );
+
+      const processMock = mockProcessor.process as unknown as ReturnType<
+        typeof mock.fn
+      >;
+      const tokens = processMock.mock.calls.map(
+        (c) => (c.arguments[2] as { token?: string }).token
+      );
+      assert.deepEqual(tokens, ["env-token", "env-token"]);
+    });
+  });
 });

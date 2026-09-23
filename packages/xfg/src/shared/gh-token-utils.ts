@@ -3,7 +3,7 @@ import { toErrorMessage } from "./type-guards.js";
 import type { DebugWarnLog } from "./logger.js";
 import type { GitHubApiTarget } from "./gh-api-utils.js";
 
-interface ITokenManager {
+export interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
 }
 
