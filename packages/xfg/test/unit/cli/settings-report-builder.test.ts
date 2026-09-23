@@ -1,6 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { buildSettingsReport } from "../../../src/cli/settings-report-builder.js";
+import type { PlanEntry } from "../../../src/settings/base-processor.js";
 
 describe("buildSettingsReport", () => {
   test("converts settings processor result to SettingsReport", () => {
@@ -603,7 +604,7 @@ describe("buildSettingsReport", () => {
                   oldValue: false,
                   newValue: true,
                 },
-              ] as any,
+              ] as unknown as PlanEntry[],
             },
           },
         },
