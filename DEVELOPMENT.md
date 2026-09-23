@@ -448,7 +448,7 @@ This section is the only description of the release process. `docs/` links here 
 3. **You merge that release PR when you want a release.** That merge is the trigger.
 4. Merging cuts the `vX.Y.Z` tag, moves the floating `vN` tag, publishes `@aspruyt/xfg` to npm with provenance, and publishes the GitHub Release.
 
-Unlike `spruyt-labs` and `container-images`, this repo does **not** auto-merge its release PR. Mergify's auto-merge rule is scoped to `repo-operator-release-bot[bot]`; xfg releases as `xfg-release-bot[bot]`, so the rule never matches and the PR sits open until a human merges it. That is intentional — it is how releases stay manually triggered. Do not "fix" it.
+The release PR is opened by `repo-operator-release-bot[bot]`, the same app as every other release-please repo. Mergify holds it for a manual merge, except in a weekly window (Monday 09:00-12:00 Melbourne) where it auto-merges so pending fixes do not sit unreleased. The rule lives in the synced `.mergify.yml`; change it in `repo-operator`, not here.
 
 ### What bump you get
 
