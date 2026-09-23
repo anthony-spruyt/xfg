@@ -215,10 +215,6 @@ function formatRulesetConfigPlain(config: Ruleset): string[] {
   );
 }
 
-/**
- * Renders a single repo's settings/rulesets/labels changes as plain-text diff lines.
- * Shared between formatSettingsReportMarkdown and unified-summary's renderSettingsLines.
- */
 export function renderRepoSettingsDiffLines(
   repo: RepoChanges,
   diffLines: string[]

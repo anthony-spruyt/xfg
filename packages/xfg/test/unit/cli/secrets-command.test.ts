@@ -651,8 +651,8 @@ repos:
     );
 
     const output = consoleOutput.join("\n");
-    assert.ok(output.includes("test-org/test-repo: Secrets:"), output);
-    assert.ok(!output.includes("https://github.com/test-org"), output);
+    assert.match(output, /^\[1\/1\] ✓ test-org\/test-repo: Secrets:/m);
+    assert.doesNotMatch(output, /:\/\//);
   });
 
   test("records a failed repo in the step summary", async () => {
