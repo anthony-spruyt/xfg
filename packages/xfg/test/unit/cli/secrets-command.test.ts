@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
-import { writeFileSync, rmSync, mkdtempSync, existsSync } from "node:fs";
+import {
+  writeFileSync,
+  readFileSync,
+  rmSync,
+  mkdtempSync,
+  existsSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -8,7 +14,63 @@ import {
   type ISecretsProcessorAdapter,
 } from "../../../src/cli/secrets-command.js";
 import type { RepoConfig } from "../../../src/config/index.js";
-import type { SecretsProcessorResult } from "../../../src/settings/secrets/index.js";
+import {
+  SecretsProcessor,
+  type SecretsProcessorResult,
+  type ISecretsStrategy,
+  type ISecretEncryptor,
+  type GitHubSecret,
+} from "../../../src/settings/secrets/index.js";
+import { EnvResolver } from "../../../src/shared/env-resolver.js";
+
+const SECRET_VALUE = "plaintext-must-never-leak";
+
+class FakeSecretsStrategy implements ISecretsStrategy {
+  constructor(private readonly existing: GitHubSecret[]) {}
+  async list(): Promise<GitHubSecret[]> {
+    return this.existing;
+  }
+  async getPublicKey() {
+    return { key_id: "kid", key: "pk" };
+  }
+  async upsert(): Promise<void> {}
+  async delete(): Promise<void> {}
+}
+
+const passthroughEncryptor: ISecretEncryptor = {
+  encrypt: async (value: string) => value,
+};
+
+function createRealProcessor(): ISecretsProcessorAdapter {
+  return new SecretsProcessor(
+    new FakeSecretsStrategy([
+      { name: "DEPLOY_TOKEN", created_at: "", updated_at: "" },
+      { name: "OLD_TOKEN", created_at: "", updated_at: "" },
+    ]),
+    passthroughEncryptor,
+    new EnvResolver({ TOKEN_SOURCE: SECRET_VALUE, KEY_SOURCE: SECRET_VALUE })
+  );
+}
+
+const PLAN_CONFIG = `id: test-config
+settings:
+  secrets:
+    deleteOrphaned: true
+    DEPLOY_TOKEN:
+      env: TOKEN_SOURCE
+    NEW_KEY:
+      env: KEY_SOURCE
+repos:
+  - git: https://github.com/test-org/test-repo
+`;
+
+function restoreEnv(name: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[name];
+  } else {
+    process.env[name] = value;
+  }
+}
 
 let testDir: string;
 let testConfigPath: string;
@@ -40,6 +102,8 @@ describe("secrets-command", () => {
   let originalConsoleLog: typeof console.log;
   let originalConsoleError: typeof console.error;
   let consoleOutput: string[];
+  let originalSummary: string | undefined;
+  let originalDebug: string | undefined;
 
   beforeEach(() => {
     testDir = mkdtempSync(join(tmpdir(), "test-secrets-cmd-"));
@@ -48,6 +112,9 @@ describe("secrets-command", () => {
     originalConsoleLog = console.log;
     originalConsoleError = console.error;
     consoleOutput = [];
+    originalSummary = process.env.GITHUB_STEP_SUMMARY;
+    originalDebug = process.env.XFG_DEBUG;
+    delete process.env.GITHUB_STEP_SUMMARY;
     console.log = (...args: unknown[]) => {
       consoleOutput.push(args.map(String).join(" "));
     };
@@ -59,6 +126,8 @@ describe("secrets-command", () => {
   afterEach(() => {
     console.log = originalConsoleLog;
     console.error = originalConsoleError;
+    restoreEnv("GITHUB_STEP_SUMMARY", originalSummary);
+    restoreEnv("XFG_DEBUG", originalDebug);
 
     if (existsSync(testDir)) {
       rmSync(testDir, { recursive: true, force: true });
@@ -478,5 +547,81 @@ repos:
       output.includes("Skipped: not a GitHub repository"),
       "Should log the skip message"
     );
+  });
+
+  for (const dryRun of [true, false]) {
+    test(`names every secret per repo in console and step summary (dryRun=${dryRun})`, async () => {
+      writeFileSync(testConfigPath, PLAN_CONFIG);
+      const summaryPath = join(testDir, "summary.md");
+      process.env.GITHUB_STEP_SUMMARY = summaryPath;
+      process.env.XFG_DEBUG = "1";
+
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir, dryRun },
+        { processorFactory: () => createRealProcessor() }
+      );
+
+      const output = consoleOutput.join("\n");
+      assert.ok(output.includes('+ secret "NEW_KEY"'), output);
+      assert.ok(
+        output.includes('~ secret "DEPLOY_TOKEN" (update, value write-only)'),
+        output
+      );
+      assert.ok(output.includes('- secret "OLD_TOKEN"'), output);
+      assert.ok(
+        output.includes(
+          "Plan: 3 secrets (1 to create, 1 to update, 1 to delete)"
+        ),
+        output
+      );
+
+      const summary = readFileSync(summaryPath, "utf-8");
+      assert.ok(
+        summary.includes(dryRun ? "## xfg Plan" : "## xfg Apply"),
+        summary
+      );
+      assert.ok(summary.includes("### test-org/test-repo"), summary);
+      assert.ok(summary.includes('+ secret "NEW_KEY"'), summary);
+      assert.ok(
+        summary.includes('! secret "DEPLOY_TOKEN" (update, value write-only)'),
+        summary
+      );
+      assert.ok(summary.includes('- secret "OLD_TOKEN"'), summary);
+      assert.ok(summary.includes("3 secrets"), summary);
+
+      assert.ok(!output.includes(SECRET_VALUE), output);
+      assert.ok(!summary.includes(SECRET_VALUE), summary);
+    });
+  }
+
+  test("does not write a step summary when GITHUB_STEP_SUMMARY is unset", async () => {
+    writeFileSync(testConfigPath, PLAN_CONFIG);
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { processorFactory: () => createRealProcessor() }
+    );
+
+    assert.equal(existsSync(join(testDir, "summary.md")), false);
+  });
+
+  test("records a failed repo in the step summary", async () => {
+    writeFileSync(testConfigPath, PLAN_CONFIG);
+    const summaryPath = join(testDir, "summary.md");
+    process.env.GITHUB_STEP_SUMMARY = summaryPath;
+
+    await assert.rejects(
+      runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        {
+          processorFactory: () =>
+            createThrowingProcessor(new Error("API rate limit exceeded")),
+        }
+      )
+    );
+
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes("### test-org/test-repo"), summary);
+    assert.ok(summary.includes("API rate limit exceeded"), summary);
   });
 });

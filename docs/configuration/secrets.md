@@ -203,18 +203,24 @@ settings:
 
 ## Dry Run Output
 
-When running with `--dry-run`, xfg shows a plan of changes without applying them:
+Every run lists each secret it creates, updates or deletes, per repo. With `--dry-run` nothing is written:
 
 ```text
-[1/2] your-org/frontend: Secrets (dry-run)
-  + MY_API_KEY
-  + DATABASE_URL
-  ~ DEPLOY_TOKEN (update)
-
-[1/2] ✓ your-org/frontend: 2 created, 1 updated (dry-run)
+[1/2] ✓ https://github.com/your-org/frontend.git: Secrets: [DRY RUN] 2 created, 1 updated, 1 deleted
+        + secret "MY_API_KEY"
+        + secret "DATABASE_URL"
+        ~ secret "DEPLOY_TOKEN" (update, value write-only)
+        - secret "OLD_TOKEN"
+      Plan: 4 secrets (2 to create, 1 to update, 1 to delete)
 ```
 
-Secret values are never shown in dry-run output — only the secret names.
+Without `--dry-run` the first line reads `Secrets: Applied: ...` and the same list follows.
+
+Existing secrets always show as `update`. GitHub never returns secret values, so xfg cannot tell whether a value changed and rewrites it every run.
+
+When `GITHUB_STEP_SUMMARY` is set, the same list is written to the job summary (`## xfg Plan` for a dry run, `## xfg Apply` otherwise).
+
+Secret values are never shown — only the secret names.
 
 ## Secrets Sync Command
 

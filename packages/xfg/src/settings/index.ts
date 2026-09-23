@@ -52,6 +52,7 @@ export {
 // Secrets — not wired into `xfg sync`; driven by `xfg secrets sync` only.
 export {
   SecretsProcessor,
+  type SecretsPlanEntry,
   type ISecretsProcessor,
   type SecretsProcessorOptions,
   type SecretsProcessorResult,

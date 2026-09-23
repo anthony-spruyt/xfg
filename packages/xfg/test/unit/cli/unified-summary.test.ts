@@ -1095,6 +1095,43 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("### org/repo"));
   });
 
+  test("renders variables-only apply with names and totals", () => {
+    const settings: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          variables: [
+            { name: "NEW_VAR", action: "create", newValue: "a" },
+            { name: "UPD_VAR", action: "update", oldValue: "b", newValue: "c" },
+            { name: "OLD_VAR", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        ...emptySettings().totals,
+        variables: { create: 1, update: 1, delete: 1 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      settings,
+      dryRun: false,
+    });
+
+    assert.ok(markdown.includes("## xfg Apply"), markdown);
+    assert.ok(markdown.includes('+ variable "NEW_VAR"'), markdown);
+    assert.ok(markdown.includes('! variable "UPD_VAR"'), markdown);
+    assert.ok(markdown.includes('- variable "OLD_VAR"'), markdown);
+    assert.ok(
+      markdown.includes(
+        "**Applied: 3 variables (1 created, 1 updated, 1 deleted)**"
+      ),
+      markdown
+    );
+  });
+
   test("returns empty when settings has no changes", () => {
     const markdown = formatUnifiedSummaryMarkdown({
       settings: emptySettings(),

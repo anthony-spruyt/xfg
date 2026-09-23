@@ -429,6 +429,44 @@ describe("SecretsProcessor", () => {
     assert.equal(deleteCalls[0].args[0], "ORPHAN");
   });
 
+  for (const dryRun of [true, false]) {
+    test(`planOutput names every secret without values (dryRun=${dryRun})`, async () => {
+      const strategy = new MockSecretsStrategy();
+      strategy.listResponse = [
+        { name: "EXISTING", created_at: "", updated_at: "" },
+        { name: "ORPHAN", created_at: "", updated_at: "" },
+      ];
+      const processor = new SecretsProcessor(
+        strategy,
+        new MockEncryptor(),
+        new MockEnvResolver({
+          SRC_EXISTING: "super-secret-existing",
+          SRC_NEW: "super-secret-new",
+        })
+      );
+      const result = await processor.process(
+        makeRepoConfig(
+          {
+            EXISTING: { env: "SRC_EXISTING" },
+            BRAND_NEW: { env: "SRC_NEW" },
+          },
+          true
+        ),
+        mockGitHubRepo,
+        { dryRun }
+      );
+
+      assert.deepEqual(result.planOutput?.entries, [
+        { name: "BRAND_NEW", action: "create" },
+        { name: "EXISTING", action: "update" },
+        { name: "ORPHAN", action: "delete" },
+      ]);
+      const serialized = JSON.stringify(result);
+      assert.ok(!serialized.includes("super-secret"), serialized);
+      assert.ok(!serialized.includes("SRC_"), serialized);
+    });
+  }
+
   test("skips non-GitHub repos", async () => {
     const strategy = new MockSecretsStrategy();
     const processor = new SecretsProcessor(

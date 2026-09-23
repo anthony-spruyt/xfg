@@ -4,6 +4,7 @@ import {
   renderSyncLines,
   renderRepoSettingsDiffLines,
   formatCountEntry,
+  hasRepoSettingsChanges,
   type LifecycleReport,
   type LifecycleAction,
   type SyncReport,
@@ -113,6 +114,38 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
       },
     ]);
     if (labelsEntry) parts.push(labelsEntry);
+
+    const variablesEntry = formatCountEntry("variable", "variables", [
+      {
+        label: selectLabel(dry, "created", "to create"),
+        value: t.variables?.create ?? 0,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.variables?.update ?? 0,
+      },
+      {
+        label: selectLabel(dry, "deleted", "to delete"),
+        value: t.variables?.delete ?? 0,
+      },
+    ]);
+    if (variablesEntry) parts.push(variablesEntry);
+
+    const secretsEntry = formatCountEntry("secret", "secrets", [
+      {
+        label: selectLabel(dry, "created", "to create"),
+        value: t.secrets?.create ?? 0,
+      },
+      {
+        label: selectLabel(dry, "updated", "to update"),
+        value: t.secrets?.update ?? 0,
+      },
+      {
+        label: selectLabel(dry, "deleted", "to delete"),
+        value: t.secrets?.delete ?? 0,
+      },
+    ]);
+    if (secretsEntry) parts.push(secretsEntry);
   }
 
   if (parts.length === 0) {
@@ -126,17 +159,7 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
 function hasAnyChanges(input: UnifiedSummaryInput): boolean {
   if (input.lifecycle && hasLifecycleChanges(input.lifecycle)) return true;
   if (input.sync?.repos.some((r) => r.files.length > 0 || r.error)) return true;
-  if (
-    input.settings?.repos.some(
-      (r) =>
-        r.settings.length > 0 ||
-        r.rulesets.length > 0 ||
-        r.labels.length > 0 ||
-        r.error
-    )
-  )
-    return true;
-  return false;
+  return input.settings?.repos.some(hasRepoSettingsChanges) ?? false;
 }
 
 // =============================================================================
@@ -234,14 +257,10 @@ export function formatUnifiedSummaryMarkdown(
     const hasLcChange = lcAction && lcAction.action !== "existed";
     const hasSyncChanges =
       syncRepo && (syncRepo.files.length > 0 || syncRepo.error);
-    const hasSettingsChanges =
-      settingsRepo &&
-      (settingsRepo.settings.length > 0 ||
-        settingsRepo.rulesets.length > 0 ||
-        settingsRepo.labels.length > 0 ||
-        settingsRepo.error);
+    const repoHasSettingsChanges =
+      settingsRepo && hasRepoSettingsChanges(settingsRepo);
 
-    if (!hasLcChange && !hasSyncChanges && !hasSettingsChanges) continue;
+    if (!hasLcChange && !hasSyncChanges && !repoHasSettingsChanges) continue;
 
     lines.push(`### ${repoName}`);
     lines.push("");
@@ -256,7 +275,7 @@ export function formatUnifiedSummaryMarkdown(
     if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
 
     // Blank line between files and settings sections
-    if (hasSyncChanges && hasSettingsChanges) diffLines.push("");
+    if (hasSyncChanges && repoHasSettingsChanges) diffLines.push("");
 
     if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
 

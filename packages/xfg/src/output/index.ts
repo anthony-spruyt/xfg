@@ -10,6 +10,7 @@ export {
 export {
   formatCountEntry,
   formatSettingsReportCLI,
+  hasRepoSettingsChanges,
   renderRepoSettingsDiffLines,
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
@@ -18,6 +19,7 @@ export {
   type SettingChange,
   type RulesetChange,
   type LabelChange,
+  type SecretChange,
 } from "./settings-report.js";
 export {
   formatSyncReportCLI,

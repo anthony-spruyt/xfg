@@ -11,6 +11,7 @@ export interface SettingsReport {
     rulesets: { create: number; update: number; delete: number };
     labels: { create: number; update: number; delete: number };
     variables?: { create: number; update: number; delete: number };
+    secrets?: { create: number; update: number; delete: number };
   };
 }
 
@@ -25,7 +26,24 @@ export interface RepoChanges {
     oldValue?: string;
     newValue?: string;
   }[];
+  secrets?: SecretChange[];
   error?: string;
+}
+
+export interface SecretChange {
+  name: string;
+  action: ActiveAction;
+}
+
+export function hasRepoSettingsChanges(repo: RepoChanges): boolean {
+  return (
+    repo.settings.length > 0 ||
+    repo.rulesets.length > 0 ||
+    repo.labels.length > 0 ||
+    (repo.variables ?? []).length > 0 ||
+    (repo.secrets ?? []).length > 0 ||
+    !!repo.error
+  );
 }
 
 export interface SettingChange {
@@ -164,6 +182,13 @@ function formatSettingsSummary(totals: SettingsReport["totals"]): string {
   ]);
   if (variablesEntry) parts.push(variablesEntry);
 
+  const secretsEntry = formatCountEntry("secret", "secrets", [
+    { label: "to create", value: totals.secrets?.create ?? 0 },
+    { label: "to update", value: totals.secrets?.update ?? 0 },
+    { label: "to delete", value: totals.secrets?.delete ?? 0 },
+  ]);
+  if (secretsEntry) parts.push(secretsEntry);
+
   if (parts.length === 0) {
     return "No changes";
   }
@@ -184,15 +209,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
   const lines: string[] = [];
 
   for (const repo of report.repos) {
-    if (
-      repo.settings.length === 0 &&
-      repo.rulesets.length === 0 &&
-      repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
-      !repo.error
-    ) {
-      continue;
-    }
+    if (!hasRepoSettingsChanges(repo)) continue;
 
     lines.push(chalk.yellow(`~ ${repo.repoName}`));
 
@@ -348,6 +365,21 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
+  if ((repo.secrets ?? []).length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  // Names only: secret values are write-only and must never reach output.
+  for (const secret of repo.secrets ?? []) {
+    if (secret.action === "create") {
+      diffLines.push(`+ secret "${secret.name}"`);
+    } else if (secret.action === "update") {
+      diffLines.push(`! secret "${secret.name}" (update, value write-only)`);
+    } else {
+      diffLines.push(`- secret "${secret.name}"`);
+    }
+  }
+
   if (repo.error) {
     diffLines.push(`- Error: ${repo.error}`);
   }
@@ -373,15 +405,7 @@ export function formatSettingsReportMarkdown(
 
   // Per-repo sections: heading + diff block
   for (const repo of report.repos) {
-    if (
-      repo.settings.length === 0 &&
-      repo.rulesets.length === 0 &&
-      repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
-      !repo.error
-    ) {
-      continue;
-    }
+    if (!hasRepoSettingsChanges(repo)) continue;
 
     lines.push(`### ${repo.repoName}`);
     lines.push("");

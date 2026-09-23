@@ -228,6 +228,29 @@ describe("VariablesProcessor", () => {
     assert.equal(deleteCalls[0].args[0], "ORPHAN");
   });
 
+  test("apply mode returns planOutput naming every changed variable", async () => {
+    const strategy = new MockVariablesStrategy();
+    strategy.listResponse = [
+      { name: "EXISTING", value: "old", created_at: "", updated_at: "" },
+      { name: "ORPHAN", value: "val", created_at: "", updated_at: "" },
+    ];
+    const processor = new VariablesProcessor(strategy);
+    const result = await processor.process(
+      makeRepoConfig({ EXISTING: "new", BRAND_NEW: "fresh" }, true),
+      mockGitHubRepo,
+      { dryRun: false }
+    );
+    assert.equal(result.dryRun, undefined);
+    const active = result.planOutput?.entries
+      .filter((e) => e.action !== "unchanged")
+      .map((e) => [e.action, e.name]);
+    assert.deepEqual(active, [
+      ["create", "BRAND_NEW"],
+      ["update", "EXISTING"],
+      ["delete", "ORPHAN"],
+    ]);
+  });
+
   test("returns failure when strategy throws", async () => {
     const strategy = new MockVariablesStrategy();
     strategy.listResponse = [];

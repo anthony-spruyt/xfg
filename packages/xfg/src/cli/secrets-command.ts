@@ -12,9 +12,14 @@ import {
 } from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { parseGitUrl } from "../repo/index.js";
+import { parseGitUrl, getRepoDisplayName } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import {
+  buildSettingsReport,
+  type ProcessorResults,
+} from "./settings-report-builder.js";
+import { writeUnifiedSummary } from "./unified-summary.js";
 import type { SecretsProcessorResult } from "../settings/secrets/index.js";
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
@@ -75,16 +80,19 @@ export async function runSecretsSync(
 
   let hasErrors = false;
   let anySecretsConfigured = false;
+  const reportResults: ProcessorResults[] = [];
   logger.setTotal(config.repos.length);
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
     const repoName = repoConfig.git;
+    let displayName = repoName;
 
     try {
       const repoInfo = parseGitUrl(repoConfig.git, {
         githubHosts: config.githubHosts,
       });
+      displayName = getRepoDisplayName(repoInfo);
 
       const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
@@ -104,13 +112,20 @@ export async function runSecretsSync(
         logger.skip(i + 1, repoName, result.message);
       } else if (result.success) {
         logger.success(i + 1, repoName, `Secrets: ${result.message}`);
+        for (const line of result.planOutput?.lines ?? []) {
+          logger.info(line);
+        }
+        reportResults.push({ repoName: displayName, secretsResult: result });
       } else {
         logger.error(i + 1, repoName, `Secrets: ${result.message}`);
+        reportResults.push({ repoName: displayName, error: result.message });
         hasErrors = true;
       }
     } catch (error) {
       anySecretsConfigured = true;
-      logger.error(i + 1, repoName, `Secrets: ${toErrorMessage(error)}`);
+      const message = toErrorMessage(error);
+      logger.error(i + 1, repoName, `Secrets: ${message}`);
+      reportResults.push({ repoName: displayName, error: message });
       hasErrors = true;
     }
   }
@@ -118,6 +133,12 @@ export async function runSecretsSync(
   if (!anySecretsConfigured) {
     logger.info("No secrets configured. Nothing to do.");
   }
+
+  writeUnifiedSummary({
+    settings: buildSettingsReport(reportResults),
+    dryRun: dryRun ?? false,
+    summaryPath: process.env.GITHUB_STEP_SUMMARY,
+  });
 
   if (hasErrors) {
     throw new Error("One or more repositories failed secrets sync.");

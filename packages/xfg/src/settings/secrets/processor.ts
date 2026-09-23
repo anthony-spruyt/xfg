@@ -4,6 +4,7 @@ import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../../shared/env-resolver.js";
 import { diffSecrets } from "./diff.js";
+import { formatSecretsPlan, type SecretsPlanResult } from "./formatter.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,
@@ -26,6 +27,7 @@ export interface SecretsProcessorOptions extends BaseProcessorOptions {
 
 export interface SecretsProcessorResult extends BaseProcessorResult {
   changes?: ChangeCounts;
+  planOutput?: SecretsPlanResult;
   /** Set when the skip is "nothing configured here" rather than "not a GitHub repo". */
   noSecretsConfigured?: boolean;
 }
@@ -103,9 +105,10 @@ export class SecretsProcessor implements ISecretsProcessor {
       deleteOrphaned
     );
     const changeCounts = countActions(changes);
+    const planOutput = formatSecretsPlan(changes);
 
     if (dryRun) {
-      return buildDryRunResult(repoName, changeCounts);
+      return buildDryRunResult(repoName, changeCounts, { planOutput });
     }
 
     const resolvedValues =
@@ -151,6 +154,8 @@ export class SecretsProcessor implements ISecretsProcessor {
       }
     }
 
-    return buildApplyResult(repoName, changeCounts, appliedCount);
+    return buildApplyResult(repoName, changeCounts, appliedCount, {
+      planOutput,
+    });
   }
 }
