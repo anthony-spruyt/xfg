@@ -25,7 +25,7 @@ describe("createTokenManager", () => {
   test("returns token manager when credentials provided", () => {
     const manager = createTokenManager({
       clientId: "12345",
-      privateKey: "-----BEGIN RSA PRIVATE KEY-----",
+      privateKey: "test-private-key",
     });
 
     assert.ok(manager !== null, "Should return a token manager");
@@ -48,7 +48,7 @@ describe("createTokenManagerFromEnv", () => {
   test("returns token manager when both app env vars are set", () => {
     const manager = createTokenManagerFromEnv({
       XFG_GITHUB_CLIENT_ID: "12345",
-      XFG_GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----",
+      XFG_GITHUB_APP_PRIVATE_KEY: "test-private-key",
     });
 
     assert.ok(manager !== null, "Should return a token manager");
