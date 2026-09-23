@@ -484,6 +484,65 @@ repos:
     );
   });
 
+  test("failed result logs error and throws aggregated error", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor({
+      success: false,
+      message: "Failed: permission denied",
+    });
+
+    await assert.rejects(
+      async () =>
+        runSecretsSync(
+          { config: testConfigPath, workDir: testDir },
+          { processorFactory: () => mockProcessor }
+        ),
+      /One or more repositories failed secrets sync/
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("Secrets: Failed: permission denied"),
+      "Should log the failure message"
+    );
+  });
+
+  test("default processor skips non-GitHub repos without calling gh", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://gitlab.com/test-org/test-repo
+`
+    );
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { tokenManager: null }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("is not a GitHub repository"),
+      "Default processor should skip the GitLab repo"
+    );
+  });
+
   describe("GitHub App auth", () => {
     const originalGhToken = process.env.GH_TOKEN;
 

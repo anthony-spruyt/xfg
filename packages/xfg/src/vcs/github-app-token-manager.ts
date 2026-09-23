@@ -8,9 +8,8 @@ const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
 
 interface Installation {
   id: number;
-  account: {
-    login: string;
-  };
+  // Enterprise installations have an account with slug/name but no login
+  account: { login?: string } | null;
 }
 
 interface TokenResponse {
@@ -110,8 +109,10 @@ export class GitHubAppTokenManager {
 
       const installations = (await response.json()) as Installation[];
       for (const installation of installations) {
+        const login = installation.account?.login;
+        if (!login) continue;
         this.installations.set(
-          installationKey(apiHost, installation.account.login),
+          installationKey(apiHost, login),
           installation.id
         );
       }

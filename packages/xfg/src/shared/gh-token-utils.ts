@@ -46,7 +46,7 @@ export async function resolveGitHubToken(
   } catch (error) {
     const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
     if (envToken) {
-      log?.warn(`${errorMsg}; falling back to GH_TOKEN`);
+      log?.warn(`${errorMsg}; falling back to the environment token`);
     } else {
       log?.warn(`${errorMsg}; no fallback token available`);
     }

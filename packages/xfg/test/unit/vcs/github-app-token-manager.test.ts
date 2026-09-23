@@ -249,6 +249,40 @@ describe("GitHubAppTokenManager", () => {
       );
     });
 
+    test("skips enterprise installations that have no account login", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+
+      globalThis.fetch = mock.fn(async () => {
+        return new Response(
+          JSON.stringify([
+            { id: 5, account: { slug: "my-ent", name: "My Ent" } },
+            { id: 6, account: null },
+            { id: 111, account: { login: "org1" } },
+          ]),
+          {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }) as typeof fetch;
+
+      await manager.discoverInstallations("api.github.com");
+
+      assert.equal(
+        manager.getInstallationId("api.github.com", "org1"),
+        111,
+        "Should still find org1 installation"
+      );
+      assert.equal(
+        manager.getInstallationId("api.github.com", "my-ent"),
+        undefined,
+        "Should not register enterprise installation"
+      );
+    });
+
     test("getInstallationId returns undefined for unknown owner", async () => {
       const manager = new GitHubAppTokenManager(
         TEST_CLIENT_ID,

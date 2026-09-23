@@ -191,7 +191,7 @@ describe("resolveGitHubToken", () => {
     assert.equal(warnMessages.length, 1);
     assert.match(warnMessages[0], /auth failed/);
     assert.match(warnMessages[0], /my-repo/);
-    assert.match(warnMessages[0], /falling back to GH_TOKEN/);
+    assert.match(warnMessages[0], /falling back to the environment token/);
   });
 
   test("warns 'no fallback' when no envToken on error", async () => {
