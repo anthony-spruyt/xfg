@@ -76,5 +76,7 @@ merge_protections:
 merge_protections_settings:
   reporting_method: "check-runs"
   auto_merge_conditions:
-    - "-author = xfg-release-bot[bot]"
+    - or:
+        - "-label=autorelease: pending"
+        - "schedule = Mon 09:00-12:00[Australia/Melbourne]"
     - "-label = blocked"
