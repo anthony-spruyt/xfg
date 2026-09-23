@@ -206,7 +206,7 @@ settings:
 Every run lists each secret it creates, updates or deletes, per repo. With `--dry-run` nothing is written:
 
 ```text
-[1/2] ✓ https://github.com/your-org/frontend.git: Secrets: [DRY RUN] 2 created, 1 updated, 1 deleted
+[1/2] ✓ your-org/frontend: Secrets: [DRY RUN] 2 created, 1 updated, 1 deleted
         + secret "MY_API_KEY"
         + secret "DATABASE_URL"
         ~ secret "DEPLOY_TOKEN" (update, value write-only)
@@ -214,7 +214,9 @@ Every run lists each secret it creates, updates or deletes, per repo. With `--dr
       Plan: 4 secrets (2 to create, 1 to update, 1 to delete)
 ```
 
-Without `--dry-run` the first line reads `Secrets: Applied: ...` and the same list follows.
+Without `--dry-run` the first line reads `Secrets: Applied: ...`, the same list follows, and the last line reads `Applied: 4 secrets (2 created, 1 updated, 1 deleted)`.
+
+If a write fails partway, the run fails and the list shows only the secrets already written. Those writes are not rolled back.
 
 Existing secrets always show as `update`. GitHub never returns secret values, so xfg cannot tell whether a value changed and rewrites it every run.
 

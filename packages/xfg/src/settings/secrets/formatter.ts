@@ -5,6 +5,7 @@ import {
   isActiveAction,
   type ActiveAction,
 } from "../base-processor.js";
+import { formatActionCountEntry } from "../../shared/count-format.js";
 
 export interface SecretsPlanEntry {
   name: string;
@@ -16,7 +17,11 @@ export interface SecretsPlanResult {
   entries: SecretsPlanEntry[];
 }
 
-const ACTION_ORDER: ActiveAction[] = ["create", "update", "delete"];
+const ACTION_ORDER: Record<ActiveAction, number> = {
+  create: 0,
+  update: 1,
+  delete: 2,
+};
 
 // Names only: this formatter must never receive or print a secret value.
 function formatEntry(entry: SecretsPlanEntry): string {
@@ -32,29 +37,29 @@ function formatEntry(entry: SecretsPlanEntry): string {
   }
 }
 
-export function formatSecretsPlan(changes: SecretChange[]): SecretsPlanResult {
-  const entries: SecretsPlanEntry[] = ACTION_ORDER.flatMap((action) =>
-    changes
-      .filter(isActiveAction)
-      .filter((c) => c.action === action)
-      .map((c) => ({ name: c.name, action: c.action }))
-  );
+export function formatSecretsPlan(
+  changes: SecretChange[],
+  dryRun: boolean
+): SecretsPlanResult {
+  const entries: SecretsPlanEntry[] = changes
+    .filter(isActiveAction)
+    .map((c) => ({ name: c.name, action: c.action }))
+    .sort((a, b) => ACTION_ORDER[a.action] - ACTION_ORDER[b.action]);
 
-  if (entries.length === 0) {
+  const summary = formatActionCountEntry(
+    "secret",
+    "secrets",
+    countActions(entries),
+    dryRun
+  );
+  if (!summary) {
     return { lines: [], entries };
   }
-
-  const counts = countActions(entries);
-  const parts: string[] = [];
-  if (counts.create > 0) parts.push(`${counts.create} to create`);
-  if (counts.update > 0) parts.push(`${counts.update} to update`);
-  if (counts.delete > 0) parts.push(`${counts.delete} to delete`);
-  const noun = entries.length === 1 ? "secret" : "secrets";
 
   return {
     lines: [
       ...entries.map(formatEntry),
-      `  Plan: ${entries.length} ${noun} (${parts.join(", ")})`,
+      `  ${dryRun ? "Plan" : "Applied"}: ${summary}`,
     ],
     entries,
   };

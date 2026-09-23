@@ -85,8 +85,7 @@ export async function runSecretsSync(
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
-    const repoName = repoConfig.git;
-    let displayName = repoName;
+    let displayName = repoConfig.git;
 
     try {
       const repoInfo = parseGitUrl(repoConfig.git, {
@@ -109,22 +108,28 @@ export async function runSecretsSync(
       anySecretsConfigured = true;
 
       if (result.skipped) {
-        logger.skip(i + 1, repoName, result.message);
-      } else if (result.success) {
-        logger.success(i + 1, repoName, `Secrets: ${result.message}`);
-        for (const line of result.planOutput?.lines ?? []) {
-          logger.info(line);
-        }
-        reportResults.push({ repoName: displayName, secretsResult: result });
+        logger.skip(i + 1, displayName, result.message);
+        continue;
+      }
+
+      if (result.success) {
+        logger.success(i + 1, displayName, `Secrets: ${result.message}`);
       } else {
-        logger.error(i + 1, repoName, `Secrets: ${result.message}`);
-        reportResults.push({ repoName: displayName, error: result.message });
+        logger.error(i + 1, displayName, `Secrets: ${result.message}`);
         hasErrors = true;
       }
+      for (const line of result.planOutput?.lines ?? []) {
+        logger.info(line);
+      }
+      reportResults.push({
+        repoName: displayName,
+        secretsResult: result,
+        ...(result.success ? {} : { error: result.message }),
+      });
     } catch (error) {
       anySecretsConfigured = true;
       const message = toErrorMessage(error);
-      logger.error(i + 1, repoName, `Secrets: ${message}`);
+      logger.error(i + 1, displayName, `Secrets: ${message}`);
       reportResults.push({ repoName: displayName, error: message });
       hasErrors = true;
     }

@@ -3,8 +3,9 @@ import type { RepoConfig, SecretConfig } from "../../config/index.js";
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../../shared/env-resolver.js";
-import { diffSecrets } from "./diff.js";
+import { diffSecrets, type SecretChange } from "./diff.js";
 import { formatSecretsPlan, type SecretsPlanResult } from "./formatter.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,
@@ -105,10 +106,11 @@ export class SecretsProcessor implements ISecretsProcessor {
       deleteOrphaned
     );
     const changeCounts = countActions(changes);
-    const planOutput = formatSecretsPlan(changes);
 
     if (dryRun) {
-      return buildDryRunResult(repoName, changeCounts, { planOutput });
+      return buildDryRunResult(repoName, changeCounts, {
+        planOutput: formatSecretsPlan(changes, true),
+      });
     }
 
     const resolvedValues =
@@ -121,41 +123,56 @@ export class SecretsProcessor implements ISecretsProcessor {
           )
         : new Map<string, string>();
 
-    let appliedCount = 0;
     const publicKey =
       secretEntries.length > 0
         ? await this.strategy.getPublicKey(githubRepo, strategyOptions)
         : undefined;
 
-    for (const change of changes) {
-      switch (change.action) {
-        case "create":
-        case "update": {
-          const encrypted = await this.encryptor.encrypt(
-            resolvedValues.get(change.name)!,
-            publicKey!.key
-          );
-          await this.strategy.upsert(
-            githubRepo,
-            change.name,
-            encrypted,
-            publicKey!.key_id,
-            strategyOptions
-          );
-          appliedCount++;
-          break;
+    const applied: SecretChange[] = [];
+    try {
+      for (const change of changes) {
+        switch (change.action) {
+          case "create":
+          case "update": {
+            const encrypted = await this.encryptor.encrypt(
+              resolvedValues.get(change.name)!,
+              publicKey!.key
+            );
+            await this.strategy.upsert(
+              githubRepo,
+              change.name,
+              encrypted,
+              publicKey!.key_id,
+              strategyOptions
+            );
+            applied.push(change);
+            break;
+          }
+          case "delete":
+            await this.strategy.delete(
+              githubRepo,
+              change.name,
+              strategyOptions
+            );
+            applied.push(change);
+            break;
+          case "unchanged":
+            break;
         }
-        case "delete":
-          await this.strategy.delete(githubRepo, change.name, strategyOptions);
-          appliedCount++;
-          break;
-        case "unchanged":
-          break;
       }
+    } catch (error) {
+      // Report what already landed: the writes are not rolled back.
+      return {
+        success: false,
+        repoName,
+        message: `Failed: ${toErrorMessage(error)}`,
+        changes: countActions(applied),
+        planOutput: formatSecretsPlan(applied, false),
+      };
     }
 
-    return buildApplyResult(repoName, changeCounts, appliedCount, {
-      planOutput,
+    return buildApplyResult(repoName, changeCounts, applied.length, {
+      planOutput: formatSecretsPlan(changes, false),
     });
   }
 }

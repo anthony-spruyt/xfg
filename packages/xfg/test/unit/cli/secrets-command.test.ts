@@ -14,6 +14,7 @@ import {
   type ISecretsProcessorAdapter,
 } from "../../../src/cli/secrets-command.js";
 import type { RepoConfig } from "../../../src/config/index.js";
+import type { RepoInfo } from "../../../src/repo/index.js";
 import {
   SecretsProcessor,
   type SecretsProcessorResult,
@@ -33,7 +34,7 @@ class FakeSecretsStrategy implements ISecretsStrategy {
   async getPublicKey() {
     return { key_id: "kid", key: "pk" };
   }
-  async upsert(): Promise<void> {}
+  async upsert(_repo: RepoInfo, _name: string): Promise<void> {}
   async delete(): Promise<void> {}
 }
 
@@ -570,7 +571,9 @@ repos:
       assert.ok(output.includes('- secret "OLD_TOKEN"'), output);
       assert.ok(
         output.includes(
-          "Plan: 3 secrets (1 to create, 1 to update, 1 to delete)"
+          dryRun
+            ? "Plan: 3 secrets (1 to create, 1 to update, 1 to delete)"
+            : "Applied: 3 secrets (1 created, 1 updated, 1 deleted)"
         ),
         output
       );
@@ -594,15 +597,62 @@ repos:
     });
   }
 
-  test("does not write a step summary when GITHUB_STEP_SUMMARY is unset", async () => {
+  test("reports secrets written before a mid-apply failure", async () => {
     writeFileSync(testConfigPath, PLAN_CONFIG);
+    const summaryPath = join(testDir, "summary.md");
+    process.env.GITHUB_STEP_SUMMARY = summaryPath;
+
+    const strategy = new FakeSecretsStrategy([
+      { name: "DEPLOY_TOKEN", created_at: "", updated_at: "" },
+      { name: "OLD_TOKEN", created_at: "", updated_at: "" },
+    ]);
+    strategy.upsert = async (_repo: RepoInfo, name: string) => {
+      if (name === "NEW_KEY") throw new Error("HTTP 502");
+    };
+    const processor = new SecretsProcessor(
+      strategy,
+      passthroughEncryptor,
+      new EnvResolver({ TOKEN_SOURCE: SECRET_VALUE, KEY_SOURCE: SECRET_VALUE })
+    );
+
+    await assert.rejects(
+      runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        { processorFactory: () => processor }
+      )
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(output.includes("HTTP 502"), output);
+    assert.ok(output.includes('~ secret "DEPLOY_TOKEN"'), output);
+    assert.ok(output.includes('- secret "OLD_TOKEN"'), output);
+    assert.ok(!output.includes('secret "NEW_KEY"'), output);
+    assert.ok(output.includes("Applied: 2 secrets"), output);
+
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes('! secret "DEPLOY_TOKEN"'), summary);
+    assert.ok(summary.includes('- secret "OLD_TOKEN"'), summary);
+    assert.ok(!summary.includes('secret "NEW_KEY"'), summary);
+    assert.ok(summary.includes("HTTP 502"), summary);
+  });
+
+  test("labels console lines with the same repo name as the step summary", async () => {
+    writeFileSync(
+      testConfigPath,
+      PLAN_CONFIG.replace(
+        "https://github.com/test-org/test-repo",
+        "https://github.com/test-org/test-repo.git"
+      )
+    );
 
     await runSecretsSync(
-      { config: testConfigPath, workDir: testDir },
+      { config: testConfigPath, workDir: testDir, dryRun: true },
       { processorFactory: () => createRealProcessor() }
     );
 
-    assert.equal(existsSync(join(testDir, "summary.md")), false);
+    const output = consoleOutput.join("\n");
+    assert.ok(output.includes("test-org/test-repo: Secrets:"), output);
+    assert.ok(!output.includes("https://github.com/test-org"), output);
   });
 
   test("records a failed repo in the step summary", async () => {

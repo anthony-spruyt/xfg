@@ -8,10 +8,10 @@ import {
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,
   renderRepoSettingsDiffLines,
-  formatCountEntry,
   type SettingsReport,
   type RepoChanges,
 } from "../../../src/output/settings-report.js";
+import { formatCountEntry } from "../../../src/shared/count-format.js";
 import type { PropertyDiff } from "../../../src/settings/rulesets/diff-algorithm.js";
 
 describe("formatSettingsReportCLI", () => {

@@ -4,12 +4,15 @@ import {
   renderSyncLines,
   renderRepoSettingsDiffLines,
   formatCountEntry,
+  formatSettingsCountEntries,
   hasRepoSettingsChanges,
   type LifecycleReport,
   type LifecycleAction,
   type SyncReport,
   type SettingsReport,
+  type RepoChanges,
 } from "../output/index.js";
+import { formatActionCountEntry } from "../shared/count-format.js";
 
 // =============================================================================
 // Types
@@ -50,102 +53,17 @@ function formatCombinedSummary(input: UnifiedSummaryInput): string {
   }
 
   if (input.sync) {
-    const t = input.sync.totals;
-    const entry = formatCountEntry("file", "files", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.files.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.files.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.files.delete,
-      },
-    ]);
+    const entry = formatActionCountEntry(
+      "file",
+      "files",
+      input.sync.totals.files,
+      dry
+    );
     if (entry) parts.push(entry);
   }
 
   if (input.settings) {
-    const t = input.settings.totals;
-
-    const settingsEntry = formatCountEntry("setting", "settings", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.settings.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.settings.update,
-      },
-    ]);
-    if (settingsEntry) parts.push(settingsEntry);
-
-    const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.rulesets.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.rulesets.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.rulesets.delete,
-      },
-    ]);
-    if (rulesetsEntry) parts.push(rulesetsEntry);
-
-    const labelsEntry = formatCountEntry("label", "labels", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.labels.create,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.labels.update,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.labels.delete,
-      },
-    ]);
-    if (labelsEntry) parts.push(labelsEntry);
-
-    const variablesEntry = formatCountEntry("variable", "variables", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.variables?.create ?? 0,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.variables?.update ?? 0,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.variables?.delete ?? 0,
-      },
-    ]);
-    if (variablesEntry) parts.push(variablesEntry);
-
-    const secretsEntry = formatCountEntry("secret", "secrets", [
-      {
-        label: selectLabel(dry, "created", "to create"),
-        value: t.secrets?.create ?? 0,
-      },
-      {
-        label: selectLabel(dry, "updated", "to update"),
-        value: t.secrets?.update ?? 0,
-      },
-      {
-        label: selectLabel(dry, "deleted", "to delete"),
-        value: t.secrets?.delete ?? 0,
-      },
-    ]);
-    if (secretsEntry) parts.push(secretsEntry);
+    parts.push(...formatSettingsCountEntries(input.settings.totals, dry));
   }
 
   if (parts.length === 0) {
@@ -216,30 +134,31 @@ export function formatUnifiedSummaryMarkdown(
 
   const lines: string[] = [];
 
-  // Title: "xfg Plan" for dry-run, "xfg Apply" otherwise
   const title = input.dryRun ? "## xfg Plan" : "## xfg Apply";
   lines.push(title);
   lines.push("");
 
-  // Dry-run warning
   if (input.dryRun) {
     lines.push("> [!WARNING]");
     lines.push("> This was a dry run — no changes were applied");
     lines.push("");
   }
 
-  // Build lookup maps
   const lifecycleByRepo = new Map(
     (input.lifecycle?.actions ?? []).map((a) => [a.repoName, a])
   );
   const syncByRepo = new Map(
     (input.sync?.repos ?? []).map((r) => [r.repoName, r])
   );
-  const settingsByRepo = new Map(
-    (input.settings?.repos ?? []).map((r) => [r.repoName, r])
-  );
+  // Entries can share a display name (same owner/repo on github.com and GHE).
+  const settingsByRepo = new Map<string, RepoChanges[]>();
+  for (const r of input.settings?.repos ?? []) {
+    settingsByRepo.set(r.repoName, [
+      ...(settingsByRepo.get(r.repoName) ?? []),
+      r,
+    ]);
+  }
 
-  // Collect all repo names in order
   const allRepos: string[] = [];
   const addRepo = (name: string) => {
     if (!allRepos.includes(name)) allRepos.push(name);
@@ -248,17 +167,17 @@ export function formatUnifiedSummaryMarkdown(
   for (const r of input.sync?.repos ?? []) addRepo(r.repoName);
   for (const r of input.settings?.repos ?? []) addRepo(r.repoName);
 
-  // Per-repo sections: heading + diff block
   for (const repoName of allRepos) {
     const lcAction = lifecycleByRepo.get(repoName);
     const syncRepo = syncByRepo.get(repoName);
-    const settingsRepo = settingsByRepo.get(repoName);
+    const settingsRepos = (settingsByRepo.get(repoName) ?? []).filter(
+      hasRepoSettingsChanges
+    );
 
     const hasLcChange = lcAction && lcAction.action !== "existed";
     const hasSyncChanges =
       syncRepo && (syncRepo.files.length > 0 || syncRepo.error);
-    const repoHasSettingsChanges =
-      settingsRepo && hasRepoSettingsChanges(settingsRepo);
+    const repoHasSettingsChanges = settingsRepos.length > 0;
 
     if (!hasLcChange && !hasSyncChanges && !repoHasSettingsChanges) continue;
 
@@ -269,15 +188,16 @@ export function formatUnifiedSummaryMarkdown(
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
 
-    // Blank line between lifecycle and sync sections
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
     if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
 
-    // Blank line between files and settings sections
     if (hasSyncChanges && repoHasSettingsChanges) diffLines.push("");
 
-    if (settingsRepo) renderRepoSettingsDiffLines(settingsRepo, diffLines);
+    settingsRepos.forEach((settingsRepo, i) => {
+      if (i > 0) diffLines.push("");
+      renderRepoSettingsDiffLines(settingsRepo, diffLines);
+    });
 
     if (diffLines.length > 0) {
       lines.push("```diff");
@@ -287,7 +207,6 @@ export function formatUnifiedSummaryMarkdown(
     }
   }
 
-  // Combined summary
   lines.push(`**${formatCombinedSummary(input)}**`);
 
   return lines.join("\n");

@@ -19,7 +19,7 @@ describe("formatSecretsPlan", () => {
       { action: "create", name: "NEW_KEY" },
     ];
 
-    const result = formatSecretsPlan(changes);
+    const result = formatSecretsPlan(changes, true);
 
     assert.deepEqual(result.lines.map(stripAnsi), [
       '    + secret "NEW_KEY"',
@@ -35,7 +35,10 @@ describe("formatSecretsPlan", () => {
   });
 
   test("uses the singular noun for one secret", () => {
-    const result = formatSecretsPlan([{ action: "create", name: "ONLY" }]);
+    const result = formatSecretsPlan(
+      [{ action: "create", name: "ONLY" }],
+      true
+    );
     assert.equal(
       stripAnsi(result.lines.at(-1)!),
       "  Plan: 1 secret (1 to create)"
@@ -43,8 +46,33 @@ describe("formatSecretsPlan", () => {
   });
 
   test("returns no lines when nothing changes", () => {
-    const result = formatSecretsPlan([]);
+    const result = formatSecretsPlan([], true);
     assert.deepEqual(result.lines, []);
     assert.deepEqual(result.entries, []);
+  });
+
+  test("uses past tense after an apply", () => {
+    const result = formatSecretsPlan(
+      [
+        { action: "create", name: "NEW_KEY" },
+        { action: "delete", name: "OLD_TOKEN" },
+      ],
+      false
+    );
+    assert.equal(
+      stripAnsi(result.lines.at(-1)!),
+      "  Applied: 2 secrets (1 created, 1 deleted)"
+    );
+  });
+
+  test("ignores unchanged entries", () => {
+    const result = formatSecretsPlan(
+      [
+        { action: "unchanged", name: "SAME" },
+        { action: "create", name: "NEW_KEY" },
+      ],
+      true
+    );
+    assert.deepEqual(result.entries, [{ name: "NEW_KEY", action: "create" }]);
   });
 });

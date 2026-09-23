@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import { formatCountEntry } from "./settings-report.js";
+import { formatCountEntry } from "../shared/count-format.js";
 import { formatDiffLine } from "../shared/diff-format.js";
 import type { MergeMode } from "../config/index.js";
 import type { ActiveAction } from "../settings/index.js";

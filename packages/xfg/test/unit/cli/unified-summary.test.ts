@@ -1132,6 +1132,28 @@ describe("formatUnifiedSummaryMarkdown", () => {
     );
   });
 
+  test("keeps every settings entry that shares a display name", () => {
+    const repo = (secret: string) => ({
+      repoName: "org/app",
+      settings: [],
+      rulesets: [],
+      labels: [],
+      secrets: [{ name: secret, action: "create" as const }],
+    });
+    const settings: SettingsReport = {
+      repos: [repo("FROM_GITHUB_COM"), repo("FROM_GHE")],
+      totals: {
+        ...emptySettings().totals,
+        secrets: { create: 2, update: 0, delete: 0 },
+      },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({ settings, dryRun: true });
+
+    assert.equal(markdown.split("### org/app").length - 1, 1, markdown);
+    assert.ok(markdown.includes('+ secret "FROM_GITHUB_COM"'), markdown);
+    assert.ok(markdown.includes('+ secret "FROM_GHE"'), markdown);
+  });
+
   test("returns empty when settings has no changes", () => {
     const markdown = formatUnifiedSummaryMarkdown({
       settings: emptySettings(),

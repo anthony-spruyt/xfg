@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import { formatCountEntry } from "./settings-report.js";
+import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
 
