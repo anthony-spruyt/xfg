@@ -3,6 +3,7 @@ import { strict as assert } from "node:assert";
 import {
   createCommitStrategy,
   createTokenManager,
+  createTokenManagerFromEnv,
 } from "../../../src/vcs/commit-strategy-selector.js";
 import { GitCommitStrategy } from "../../../src/vcs/git-commit-strategy.js";
 import { FileModeFixupCommitStrategy } from "../../../src/vcs/file-mode-fixup-commit-strategy.js";
@@ -25,6 +26,29 @@ describe("createTokenManager", () => {
     const manager = createTokenManager({
       clientId: "12345",
       privateKey: "-----BEGIN RSA PRIVATE KEY-----",
+    });
+
+    assert.ok(manager !== null, "Should return a token manager");
+  });
+});
+
+describe("createTokenManagerFromEnv", () => {
+  test("returns null unless both app env vars are set", () => {
+    assert.equal(createTokenManagerFromEnv({}), null);
+    assert.equal(
+      createTokenManagerFromEnv({ XFG_GITHUB_CLIENT_ID: "12345" }),
+      null
+    );
+    assert.equal(
+      createTokenManagerFromEnv({ XFG_GITHUB_APP_PRIVATE_KEY: "key" }),
+      null
+    );
+  });
+
+  test("returns token manager when both app env vars are set", () => {
+    const manager = createTokenManagerFromEnv({
+      XFG_GITHUB_CLIENT_ID: "12345",
+      XFG_GITHUB_APP_PRIVATE_KEY: "-----BEGIN RSA PRIVATE KEY-----",
     });
 
     assert.ok(manager !== null, "Should return a token manager");

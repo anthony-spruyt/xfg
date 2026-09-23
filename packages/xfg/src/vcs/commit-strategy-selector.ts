@@ -26,6 +26,16 @@ export function createTokenManager(
   );
 }
 
+export function createTokenManagerFromEnv(
+  env: NodeJS.ProcessEnv
+): GitHubAppTokenManager | null {
+  const clientId = env.XFG_GITHUB_CLIENT_ID;
+  const privateKey = env.XFG_GITHUB_APP_PRIVATE_KEY;
+  return createTokenManager(
+    clientId && privateKey ? { clientId, privateKey } : undefined
+  );
+}
+
 /**
  * Returns FileModeFixupCommitStrategy (decorating GraphQLCommitStrategy) for
  * GitHub repos with App credentials (verified commits + executable file mode

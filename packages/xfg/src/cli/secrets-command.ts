@@ -13,7 +13,7 @@ import {
 } from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
-import { createTokenManager } from "../vcs/index.js";
+import { createTokenManagerFromEnv } from "../vcs/index.js";
 import {
   resolveGitHubToken,
   type ITokenManager,
@@ -82,15 +82,7 @@ export async function runSecretsSync(
   const tokenManager =
     deps.tokenManager !== undefined
       ? deps.tokenManager
-      : createTokenManager(
-          process.env.XFG_GITHUB_CLIENT_ID &&
-            process.env.XFG_GITHUB_APP_PRIVATE_KEY
-            ? {
-                clientId: process.env.XFG_GITHUB_CLIENT_ID,
-                privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
-              }
-            : undefined
-        );
+      : createTokenManagerFromEnv(process.env);
 
   let hasErrors = false;
   let anySecretsConfigured = false;
