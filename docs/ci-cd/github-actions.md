@@ -38,6 +38,8 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 <!-- xfg:generated:end -->
 
+Each input is passed to xfg as exactly one argument. Put extra flags in their own inputs, not inside another input's value.
+
 ### Multi-Platform Example
 
 Sync configs across GitHub, Azure DevOps, and GitLab repositories:

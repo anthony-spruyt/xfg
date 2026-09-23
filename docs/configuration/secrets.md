@@ -180,7 +180,7 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 
 ## Authentication
 
-`xfg secrets sync` authenticates the same way as `xfg sync`. With `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` set, it mints a GitHub App token per repo owner and skips owners without an installation. Otherwise it uses `GH_TOKEN` (or `GITHUB_TOKEN`). See [GitHub App](../platforms/github-app.md).
+With `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` set, `xfg secrets sync` mints a GitHub App token per repo owner. A repo whose owner has no installation **fails** the run, so a missed rotation is never silent. Without app credentials it uses `GH_TOKEN`, then `GITHUB_TOKEN`. See [GitHub App](../platforms/github-app.md).
 
 The app needs the **Secrets: Read and write** repository permission.
 

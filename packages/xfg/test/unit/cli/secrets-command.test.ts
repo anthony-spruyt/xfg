@@ -9,6 +9,10 @@ import {
 } from "../../../src/cli/secrets-command.js";
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { SecretsProcessorResult } from "../../../src/settings/secrets/index.js";
+import type {
+  IGitHubTokenProvider,
+  ITokenManager,
+} from "../../../src/shared/gh-token-utils.js";
 
 let testDir: string;
 let testConfigPath: string;
@@ -502,12 +506,58 @@ repos:
   - git: https://github.com/org-b/repo-b
 `;
 
-    test("passes a per-owner app token to the processor", async () => {
+    const repoA = {
+      type: "github" as const,
+      owner: "org-a",
+      repo: "repo-a",
+      host: "github.com",
+      gitUrl: "https://github.com/org-a/repo-a.git",
+    };
+
+    async function captureProvider(
+      tokenManager: ITokenManager | null | undefined
+    ): Promise<IGitHubTokenProvider> {
+      writeFileSync(testConfigPath, appConfig);
+      let captured: IGitHubTokenProvider | undefined;
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        {
+          processorFactory: (_cwd, _retries, tokenProvider) => {
+            captured = tokenProvider;
+            return createMockProcessor();
+          },
+          tokenManager,
+        }
+      );
+      assert.ok(captured, "processor factory should receive a token provider");
+      return captured;
+    }
+
+    test("wires the app token manager into the processor's token provider", async () => {
+      const provider = await captureProvider({
+        getTokenForRepo: async (repo: { owner: string }) =>
+          `app-token-${repo.owner}`,
+      });
+
+      assert.deepEqual(await provider.getToken(repoA, "org-a/repo-a"), {
+        token: "app-token-org-a",
+        skipped: false,
+      });
+    });
+
+    test("token provider falls back to GH_TOKEN without an app token manager", async () => {
+      const provider = await captureProvider(null);
+
+      assert.deepEqual(await provider.getToken(repoA, "org-a/repo-a"), {
+        token: "env-token",
+        skipped: false,
+      });
+    });
+
+    test("processes repos without resolving tokens in the CLI", async () => {
       writeFileSync(testConfigPath, appConfig);
       const tokenManager = {
-        getTokenForRepo: mock.fn(
-          async (repo: { owner: string }) => `app-token-${repo.owner}`
-        ),
+        getTokenForRepo: mock.fn(async () => "app-token"),
       };
       const mockProcessor = createMockProcessor();
 
@@ -516,56 +566,11 @@ repos:
         { processorFactory: () => mockProcessor, tokenManager }
       );
 
+      assert.equal(tokenManager.getTokenForRepo.mock.calls.length, 0);
       const processMock = mockProcessor.process as unknown as ReturnType<
         typeof mock.fn
       >;
-      const tokens = processMock.mock.calls.map(
-        (c) => (c.arguments[2] as { token?: string }).token
-      );
-      assert.deepEqual(tokens, ["app-token-org-a", "app-token-org-b"]);
-    });
-
-    test("skips repos whose owner has no app installation", async () => {
-      writeFileSync(testConfigPath, appConfig);
-      const tokenManager = {
-        getTokenForRepo: mock.fn(async (repo: { owner: string }) =>
-          repo.owner === "org-a" ? "app-token-org-a" : null
-        ),
-      };
-      const mockProcessor = createMockProcessor();
-
-      await runSecretsSync(
-        { config: testConfigPath, workDir: testDir },
-        { processorFactory: () => mockProcessor, tokenManager }
-      );
-
-      const processMock = mockProcessor.process as unknown as ReturnType<
-        typeof mock.fn
-      >;
-      assert.equal(processMock.mock.calls.length, 1);
-      const output = consoleOutput.join("\n");
-      assert.ok(
-        output.includes("No GitHub App installation found for org-b"),
-        `Expected skip message for org-b, got: ${output}`
-      );
-    });
-
-    test("falls back to GH_TOKEN without an app token manager", async () => {
-      writeFileSync(testConfigPath, appConfig);
-      const mockProcessor = createMockProcessor();
-
-      await runSecretsSync(
-        { config: testConfigPath, workDir: testDir },
-        { processorFactory: () => mockProcessor, tokenManager: null }
-      );
-
-      const processMock = mockProcessor.process as unknown as ReturnType<
-        typeof mock.fn
-      >;
-      const tokens = processMock.mock.calls.map(
-        (c) => (c.arguments[2] as { token?: string }).token
-      );
-      assert.deepEqual(tokens, ["env-token", "env-token"]);
+      assert.equal(processMock.mock.calls.length, 2);
     });
   });
 });

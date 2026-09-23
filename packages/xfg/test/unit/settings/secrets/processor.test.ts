@@ -14,6 +14,7 @@ import type {
   RepoInfo,
 } from "../../../../src/repo/index.js";
 import type { GhApiOptions } from "../../../../src/shared/gh-api-utils.js";
+import type { IGitHubTokenProvider } from "../../../../src/shared/gh-token-utils.js";
 import type { RepoConfig, SecretConfig } from "../../../../src/config/index.js";
 
 class MockSecretsStrategy implements ISecretsStrategy {
@@ -450,5 +451,86 @@ describe("SecretsProcessor", () => {
       {}
     );
     assert.equal(result.skipped, true);
+  });
+
+  describe("with a token provider", () => {
+    function providerReturning(
+      token: string | undefined,
+      skipped = false
+    ): IGitHubTokenProvider & { calls: string[] } {
+      const calls: string[] = [];
+      return {
+        calls,
+        getToken: async (repo) => {
+          calls.push(repo.owner);
+          return { token, skipped };
+        },
+      };
+    }
+
+    test("uses the provider's token for API calls", async () => {
+      const strategy = new MockSecretsStrategy();
+      const provider = providerReturning("app-token");
+      const processor = new SecretsProcessor(
+        strategy,
+        new MockEncryptor(),
+        new MockEnvResolver({ TOKEN_SOURCE: "v" }),
+        provider
+      );
+      const result = await processor.process(
+        makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+        mockGitHubRepo,
+        {}
+      );
+      assert.equal(result.success, true);
+      assert.deepEqual(provider.calls, ["test-org"]);
+      const upsertCalls = strategy.calls.filter((c) => c.method === "upsert");
+      assert.deepEqual(upsertCalls[0].args[3], {
+        token: "app-token",
+        host: "github.com",
+      });
+    });
+
+    test("fails when the owner has no app installation", async () => {
+      const strategy = new MockSecretsStrategy();
+      const processor = new SecretsProcessor(
+        strategy,
+        new MockEncryptor(),
+        new MockEnvResolver({ TOKEN_SOURCE: "v" }),
+        providerReturning(undefined, true)
+      );
+      const result = await processor.process(
+        makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+        mockGitHubRepo,
+        {}
+      );
+      assert.equal(result.success, false);
+      assert.equal(result.skipped, undefined);
+      assert.match(
+        result.message,
+        /No GitHub App installation found for test-org/
+      );
+      assert.equal(strategy.calls.length, 0);
+    });
+
+    test("does not resolve a token when no secrets are configured", async () => {
+      const provider = providerReturning("app-token");
+      const processor = new SecretsProcessor(
+        new MockSecretsStrategy(),
+        new MockEncryptor(),
+        new MockEnvResolver({}),
+        provider
+      );
+      const result = await processor.process(
+        {
+          git: "https://github.com/test-org/test-repo.git",
+          files: [],
+        },
+        mockGitHubRepo,
+        {}
+      );
+      assert.equal(result.noSecretsConfigured, true);
+      assert.deepEqual(provider.calls, []);
+    });
   });
 });

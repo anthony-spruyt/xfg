@@ -7,6 +7,19 @@ export interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
 }
 
+export interface GitHubTokenResult {
+  token: string | undefined;
+  skipped: boolean;
+}
+
+/** Resolves the token for one GitHub repo; skipped=true means the owner has no App installation. */
+export interface IGitHubTokenProvider {
+  getToken(
+    repoInfo: GitHubApiTarget,
+    context: string
+  ): Promise<GitHubTokenResult>;
+}
+
 export interface ResolveGitHubTokenOptions {
   repoInfo: GitHubApiTarget;
   tokenManager: ITokenManager | null;
@@ -22,7 +35,7 @@ export interface ResolveGitHubTokenOptions {
  */
 export async function resolveGitHubToken(
   options: ResolveGitHubTokenOptions
-): Promise<{ token: string | undefined; skipped: boolean }> {
+): Promise<GitHubTokenResult> {
   const { repoInfo, tokenManager, context, log, envToken } = options;
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
@@ -33,11 +46,36 @@ export async function resolveGitHubToken(
   } catch (error) {
     const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
     if (envToken) {
-      log?.debug(`${errorMsg}; falling back to GH_TOKEN`);
+      log?.warn(`${errorMsg}; falling back to GH_TOKEN`);
     } else {
       log?.warn(`${errorMsg}; no fallback token available`);
     }
     return { token: envToken, skipped: false };
+  }
+}
+
+export function noAppInstallationMessage(owner: string): string {
+  return `No GitHub App installation found for ${owner}`;
+}
+
+export class GitHubTokenProvider implements IGitHubTokenProvider {
+  constructor(
+    private readonly tokenManager: ITokenManager | null,
+    private readonly envToken?: string,
+    private readonly log?: DebugWarnLog
+  ) {}
+
+  getToken(
+    repoInfo: GitHubApiTarget,
+    context: string
+  ): Promise<GitHubTokenResult> {
+    return resolveGitHubToken({
+      repoInfo,
+      tokenManager: this.tokenManager,
+      context,
+      log: this.log,
+      envToken: this.envToken,
+    });
   }
 }
 

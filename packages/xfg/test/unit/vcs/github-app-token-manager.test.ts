@@ -202,7 +202,7 @@ describe("GitHubAppTokenManager", () => {
 
       assert.equal(
         capturedUrl,
-        "https://api.github.com/app/installations",
+        "https://api.github.com/app/installations?per_page=100",
         "Should call installations endpoint"
       );
       assert.ok(
@@ -297,13 +297,69 @@ describe("GitHubAppTokenManager", () => {
 
       assert.equal(
         capturedUrl,
-        "https://ghe.example.com/api/v3/app/installations",
+        "https://ghe.example.com/api/v3/app/installations?per_page=100",
         "Should call GHE API endpoint"
       );
       assert.equal(
         manager.getInstallationId("ghe.example.com/api/v3", "ghe-org"),
         333
       );
+    });
+
+    test("matches owners case-insensitively", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+
+      globalThis.fetch = mock.fn(async () => {
+        return new Response(
+          JSON.stringify([{ id: 111, account: { login: "my-org" } }]),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }) as typeof fetch;
+
+      await manager.discoverInstallations("api.github.com");
+
+      assert.equal(manager.getInstallationId("api.github.com", "My-Org"), 111);
+    });
+
+    test("follows Link rel=next to discover every page", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+
+      const urls: string[] = [];
+      globalThis.fetch = mock.fn(async (url: string | URL) => {
+        const urlStr = url.toString();
+        urls.push(urlStr);
+        if (urlStr.includes("page=2")) {
+          return new Response(
+            JSON.stringify([{ id: 222, account: { login: "org2" } }]),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(
+          JSON.stringify([{ id: 111, account: { login: "org1" } }]),
+          {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              Link: '<https://api.github.com/app/installations?per_page=100&page=2>; rel="next", <https://api.github.com/app/installations?per_page=100&page=2>; rel="last"',
+            },
+          }
+        );
+      }) as typeof fetch;
+
+      await manager.discoverInstallations("api.github.com");
+
+      assert.deepEqual(urls, [
+        "https://api.github.com/app/installations?per_page=100",
+        "https://api.github.com/app/installations?per_page=100&page=2",
+      ]);
+      assert.equal(manager.getInstallationId("api.github.com", "org1"), 111);
+      assert.equal(manager.getInstallationId("api.github.com", "org2"), 222);
     });
 
     test("throws on non-200 response", async () => {
@@ -634,7 +690,7 @@ describe("GitHubAppTokenManager", () => {
 
       assert.equal(
         discoveryUrl,
-        "https://api.github.com/app/installations",
+        "https://api.github.com/app/installations?per_page=100",
         "Should auto-discover via the installations endpoint"
       );
       assert.equal(token, "ghs_auto_token");

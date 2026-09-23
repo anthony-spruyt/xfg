@@ -9,16 +9,16 @@ import {
   SecretsProcessor,
   GitHubSecretsStrategy,
   SodiumEncryptor,
-  hasDesiredSecrets,
 } from "../settings/secrets/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { createTokenManagerFromEnv } from "../vcs/index.js";
 import {
-  resolveGitHubToken,
+  GitHubTokenProvider,
+  type IGitHubTokenProvider,
   type ITokenManager,
 } from "../shared/gh-token-utils.js";
-import { isGitHubRepo, parseGitUrl } from "../repo/index.js";
+import { parseGitUrl } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { SecretsProcessorResult } from "../settings/secrets/index.js";
@@ -34,7 +34,11 @@ export interface ISecretsProcessorAdapter {
 }
 
 export interface SecretsSyncDependencies {
-  processorFactory?: (cwd: string, retries: number) => ISecretsProcessorAdapter;
+  processorFactory?: (
+    cwd: string,
+    retries: number,
+    tokenProvider: IGitHubTokenProvider
+  ) => ISecretsProcessorAdapter;
   tokenManager?: ITokenManager | null;
 }
 
@@ -48,7 +52,8 @@ export interface SecretsSyncOptions {
 
 function createDefaultProcessor(
   cwd: string,
-  retries: number
+  retries: number,
+  tokenProvider: IGitHubTokenProvider
 ): ISecretsProcessorAdapter {
   const executor = new ProcessExecutor(process.env);
   const encryptor = new SodiumEncryptor();
@@ -57,7 +62,7 @@ function createDefaultProcessor(
     cwd,
     retries,
   });
-  return new SecretsProcessor(strategy, encryptor, envResolver);
+  return new SecretsProcessor(strategy, encryptor, envResolver, tokenProvider);
 }
 
 export async function runSecretsSync(
@@ -75,14 +80,18 @@ export async function runSecretsSync(
   const config = normalizeConfig(rawConfig, process.env);
   validateNormalizedConfig(config);
 
-  const processorFactory = deps.processorFactory ?? createDefaultProcessor;
-  const processor = processorFactory(cwd, retries ?? 3);
-
-  const envToken = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
   const tokenManager =
     deps.tokenManager !== undefined
       ? deps.tokenManager
       : createTokenManagerFromEnv(process.env);
+  const tokenProvider = new GitHubTokenProvider(
+    tokenManager,
+    process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
+    logger
+  );
+
+  const processorFactory = deps.processorFactory ?? createDefaultProcessor;
+  const processor = processorFactory(cwd, retries ?? 3, tokenProvider);
 
   let hasErrors = false;
   let anySecretsConfigured = false;
@@ -97,30 +106,8 @@ export async function runSecretsSync(
         githubHosts: config.githubHosts,
       });
 
-      let token = envToken;
-      if (isGitHubRepo(repoInfo) && hasDesiredSecrets(repoConfig)) {
-        const resolved = await resolveGitHubToken({
-          repoInfo,
-          tokenManager,
-          context: repoName,
-          log: logger,
-          envToken,
-        });
-        if (resolved.skipped) {
-          anySecretsConfigured = true;
-          logger.skip(
-            i + 1,
-            repoName,
-            `No GitHub App installation found for ${repoInfo.owner}`
-          );
-          continue;
-        }
-        token = resolved.token;
-      }
-
       const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
-        token,
         noDelete,
       });
 

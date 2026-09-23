@@ -3,6 +3,10 @@ import type { RepoConfig, SecretConfig } from "../../config/index.js";
 import type { ISecretsStrategy } from "./types.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../../shared/env-resolver.js";
+import {
+  noAppInstallationMessage,
+  type IGitHubTokenProvider,
+} from "../../shared/gh-token-utils.js";
 import { diffSecrets } from "./diff.js";
 import {
   withGitHubGuards,
@@ -38,7 +42,7 @@ function secretEntriesOf(
   return Object.entries(entries);
 }
 
-export function hasDesiredSecrets(repoConfig: RepoConfig): boolean {
+function hasDesiredSecrets(repoConfig: RepoConfig): boolean {
   const s = repoConfig.settings?.secrets ?? {};
   const { deleteOrphaned, ...entries } = s as Record<string, unknown>;
   return Object.keys(entries).length > 0 || deleteOrphaned === true;
@@ -48,7 +52,8 @@ export class SecretsProcessor implements ISecretsProcessor {
   constructor(
     private readonly strategy: ISecretsStrategy,
     private readonly encryptor: ISecretEncryptor,
-    private readonly envResolver: IEnvResolver
+    private readonly envResolver: IEnvResolver,
+    private readonly tokenProvider?: IGitHubTokenProvider
   ) {}
 
   async process(
@@ -79,6 +84,20 @@ export class SecretsProcessor implements ISecretsProcessor {
     effectiveToken: string | undefined,
     repoName: string
   ): Promise<SecretsProcessorResult> {
+    let token = effectiveToken;
+    if (this.tokenProvider) {
+      const resolved = await this.tokenProvider.getToken(githubRepo, repoName);
+      if (resolved.skipped) {
+        // A missed rotation must fail the run, not pass as a skip.
+        return {
+          success: false,
+          repoName,
+          message: `Failed: ${noAppInstallationMessage(githubRepo.owner)}`,
+        };
+      }
+      token = resolved.token;
+    }
+
     const { dryRun, noDelete } = options;
     const secrets = (repoConfig.settings?.secrets ?? {}) as Record<
       string,
@@ -91,7 +110,7 @@ export class SecretsProcessor implements ISecretsProcessor {
       (entry): entry is [string, SecretConfig] => typeof entry[1] !== "boolean"
     );
 
-    const strategyOptions = { token: effectiveToken, host: githubRepo.host };
+    const strategyOptions = { token, host: githubRepo.host };
     const currentSecrets = await this.strategy.list(
       githubRepo,
       strategyOptions
