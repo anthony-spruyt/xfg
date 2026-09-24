@@ -211,7 +211,6 @@ describe("formatSettingsReportCLI", () => {
     );
     assert.ok(output.includes("enforcement"), "should include properties");
     assert.ok(output.includes("active"), "should include property values");
-    // Verify "name" is NOT in tree output (it's in the header, not duplicated in tree)
     const treeLines = lines.filter((l) => l.includes("+ name:"));
     assert.equal(
       treeLines.length,

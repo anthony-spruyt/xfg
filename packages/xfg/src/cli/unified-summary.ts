@@ -134,7 +134,7 @@ export function formatUnifiedSummaryMarkdown(
   const syncByRepo = new Map(
     (input.sync?.repos ?? []).map((r) => [r.repoName, r])
   );
-  // Entries can share a display name (same owner/repo on github.com and GHE).
+  // The same repo can appear more than once (e.g. listed twice in config); keep every entry.
   const settingsByRepo = new Map<string, RepoChanges[]>();
   for (const r of input.settings?.repos ?? []) {
     settingsByRepo.set(r.repoName, [

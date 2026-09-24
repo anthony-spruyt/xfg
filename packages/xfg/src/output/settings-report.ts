@@ -75,11 +75,6 @@ export interface LabelChange {
   config?: Label;
 }
 
-/**
- * Shared recursive renderer for ruleset config objects.
- * The formatLine callback controls indentation style and coloring:
- *   formatLine(depth, text) → formatted line string
- */
 function renderRulesetConfig(
   config: Ruleset,
   startDepth: number,
@@ -148,7 +143,6 @@ const SETTINGS_CATEGORIES: {
   { noun: "secret", plural: "secrets", totals: (t) => t.secrets },
 ];
 
-/** One count entry per settings category with changes, e.g. "2 labels (2 to create)". */
 export function formatSettingsCountEntries(
   totals: SettingsReport["totals"],
   dryRun: boolean
