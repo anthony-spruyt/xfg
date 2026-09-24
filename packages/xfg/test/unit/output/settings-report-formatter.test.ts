@@ -133,7 +133,6 @@ describe("formatSettingsReportCLI", () => {
 
     assert.ok(output.includes("org/repo1"), "should include first repo");
     assert.ok(output.includes("org/repo2"), "should include second repo");
-    // Verify blank line between repos (repo1 content, blank, repo2 header)
     const repo1Index = lines.findIndex((l) => l.includes("org/repo1"));
     const repo2Index = lines.findIndex((l) => l.includes("org/repo2"));
     assert.ok(
@@ -374,14 +373,12 @@ describe("formatSettingsReportCLI", () => {
     const diffLines: string[] = [];
     renderRepoSettingsDiffLines(report.repos[0], diffLines);
 
-    // Find the setting line and the ruleset line
     const settingIdx = diffLines.findIndex((l) =>
       l.includes("deleteBranchOnMerge")
     );
     const rulesetIdx = diffLines.findIndex((l) => l.includes("my-ruleset"));
     assert.ok(settingIdx >= 0, "should have setting line");
     assert.ok(rulesetIdx >= 0, "should have ruleset line");
-    // Blank line between settings and rulesets
     assert.equal(
       diffLines[settingIdx + 1],
       "",
@@ -415,7 +412,6 @@ describe("formatSettingsReportCLI", () => {
     const labelIdx = diffLines.findIndex((l) => l.includes("bug"));
     assert.ok(rulesetIdx >= 0, "should have ruleset line");
     assert.ok(labelIdx >= 0, "should have label line");
-    // Blank line between rulesets and labels
     assert.equal(
       diffLines[rulesetIdx + 1],
       "",
@@ -450,7 +446,6 @@ describe("formatSettingsReportCLI", () => {
     const rulesetBIdx = diffLines.findIndex((l) => l.includes("ruleset-b"));
     assert.ok(rulesetAIdx >= 0, "should have ruleset-a line");
     assert.ok(rulesetBIdx >= 0, "should have ruleset-b line");
-    // Blank line between rulesets
     assert.equal(
       diffLines[rulesetAIdx + 1],
       "",
@@ -538,12 +533,10 @@ describe("formatSettingsReportCLI", () => {
     const lines = formatSettingsReportCLI(report);
     const output = lines.join("\n");
 
-    // Should NOT contain JSON blob format
     assert.ok(
       !output.includes('{"type":"pull_request"'),
       "should NOT show rules as JSON blob"
     );
-    // Should contain broken down properties
     assert.ok(output.includes("type:"), "should show type property");
     assert.ok(
       output.includes("pull_request") || output.includes('"pull_request"'),
@@ -1006,12 +999,10 @@ describe("formatSettingsReportMarkdown", () => {
 
     const markdown = formatSettingsReportMarkdown(report, false);
 
-    // Should NOT contain JSON blob format
     assert.ok(
       !markdown.includes('{"type":"pull_request"'),
       "should NOT show rules as JSON blob"
     );
-    // Should contain broken down properties
     assert.ok(markdown.includes("type:"), "should show type property");
     assert.ok(
       markdown.includes("pull_request") || markdown.includes('"pull_request"'),
@@ -1542,7 +1533,6 @@ describe("formatSettingsReportCLI variables", () => {
     const variableIdx = diffLines.findIndex((l) => l.includes("NODE_ENV"));
     assert.ok(labelIdx >= 0, "should have label line");
     assert.ok(variableIdx >= 0, "should have variable line");
-    // Blank line between labels and variables
     assert.equal(
       diffLines[variableIdx - 1],
       "",
@@ -1723,6 +1713,74 @@ describe("formatSettingsReportMarkdown variables", () => {
   });
 });
 
+describe("secrets in settings report", () => {
+  const emptyTotals: SettingsReport["totals"] = {
+    settings: { create: 0, update: 0 },
+    rulesets: { create: 0, update: 0, delete: 0 },
+    labels: { create: 0, update: 0, delete: 0 },
+    variables: { create: 0, update: 0, delete: 0 },
+  };
+
+  test("separates secrets from the variables above them with a blank line", () => {
+    const diffLines: string[] = [];
+    renderRepoSettingsDiffLines(
+      {
+        repoName: "org/repo",
+        settings: [],
+        rulesets: [],
+        labels: [],
+        variables: [{ name: "NODE_ENV", action: "delete" }],
+        secrets: [{ name: "API_KEY", action: "create" }],
+      },
+      diffLines
+    );
+
+    assert.deepEqual(diffLines, [
+      '- variable "NODE_ENV"',
+      "",
+      '+ secret "API_KEY"',
+    ]);
+  });
+
+  test("markdown omits repos without changes and keeps repos with only secrets", () => {
+    const markdown = formatSettingsReportMarkdown(
+      {
+        repos: [
+          {
+            repoName: "org/unchanged",
+            settings: [],
+            rulesets: [],
+            labels: [],
+            secrets: [],
+          },
+          {
+            repoName: "org/with-secret",
+            settings: [],
+            rulesets: [],
+            labels: [],
+            secrets: [{ name: "API_KEY", action: "update" }],
+          },
+        ],
+        totals: {
+          ...emptyTotals,
+          secrets: { create: 0, update: 1, delete: 0 },
+        },
+      },
+      true
+    );
+
+    const headings = markdown
+      .split("\n")
+      .filter((line) => line.startsWith("### "));
+    assert.deepEqual(headings, ["### org/with-secret"]);
+    assert.ok(
+      markdown.includes('! secret "API_KEY" (update, value write-only)'),
+      markdown
+    );
+    assert.ok(markdown.includes("**Plan: 1 secret (1 to update)**"), markdown);
+  });
+});
+
 describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression", () => {
   test("renders bypass_actor objects fully instead of [object Object]", () => {
     const propertyDiffs: PropertyDiff[] = [
@@ -1754,12 +1812,10 @@ describe("renderRepoSettingsDiffLines bypass_actors [object Object] regression",
     renderRepoSettingsDiffLines(repo, diffLines);
 
     const output = diffLines.join("\n");
-    // Must never contain [object Object]
     assert.ok(
       !output.includes("[object Object]"),
       `Diff output contains [object Object]: ${output}`
     );
-    // Should contain the actual property values
     assert.ok(output.includes("2719952"), `Missing actor_id in: ${output}`);
     assert.ok(
       output.includes("Integration"),

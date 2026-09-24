@@ -13,6 +13,7 @@ import {
   type ISettingsProcessor,
   type ChangeCounts,
   countActions,
+  isActiveAction,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
@@ -130,35 +131,23 @@ export class SecretsProcessor implements ISecretsProcessor {
 
     const applied: SecretChange[] = [];
     try {
-      for (const change of changes) {
-        switch (change.action) {
-          case "create":
-          case "update": {
-            const encrypted = await this.encryptor.encrypt(
-              resolvedValues.get(change.name)!,
-              publicKey!.key
-            );
-            await this.strategy.upsert(
-              githubRepo,
-              change.name,
-              encrypted,
-              publicKey!.key_id,
-              strategyOptions
-            );
-            applied.push(change);
-            break;
-          }
-          case "delete":
-            await this.strategy.delete(
-              githubRepo,
-              change.name,
-              strategyOptions
-            );
-            applied.push(change);
-            break;
-          case "unchanged":
-            break;
+      for (const change of changes.filter(isActiveAction)) {
+        if (change.action === "delete") {
+          await this.strategy.delete(githubRepo, change.name, strategyOptions);
+        } else {
+          const encrypted = await this.encryptor.encrypt(
+            resolvedValues.get(change.name)!,
+            publicKey!.key
+          );
+          await this.strategy.upsert(
+            githubRepo,
+            change.name,
+            encrypted,
+            publicKey!.key_id,
+            strategyOptions
+          );
         }
+        applied.push(change);
       }
     } catch (error) {
       // Report what already landed: the writes are not rolled back.
