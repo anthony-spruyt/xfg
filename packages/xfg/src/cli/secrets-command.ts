@@ -65,13 +65,15 @@ function hostQualifiedName(repoInfo: RepoInfo): string {
   return "host" in repoInfo ? `${repoInfo.host}/${name}` : name;
 }
 
-// owner/repo alone is ambiguous when the same path exists on several hosts.
+// owner/repo alone is ambiguous when the same path exists on several hosts;
+// GitHub treats owner/repo case-insensitively, so compare lowercased.
 function repoLabels(repos: RepoConfig[], parsed: ParsedRepo[]): string[] {
   const names = parsed.map((p, i) =>
     "repoInfo" in p ? getRepoDisplayName(p.repoInfo) : repos[i].git
   );
+  const keys = names.map((n) => n.toLowerCase());
   return parsed.map((p, i) => {
-    const shared = names.filter((n) => n === names[i]).length > 1;
+    const shared = keys.filter((k) => k === keys[i]).length > 1;
     return shared && "repoInfo" in p ? hostQualifiedName(p.repoInfo) : names[i];
   });
 }

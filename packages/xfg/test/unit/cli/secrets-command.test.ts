@@ -692,6 +692,40 @@ repos:
     ]);
   });
 
+  test("qualifies repos whose owner/repo differs only in case across hosts", async () => {
+    writeFileSync(
+      testConfigPath,
+      PLAN_CONFIG.replace(
+        "repos:\n  - git: https://github.com/test-org/test-repo\n",
+        `githubHosts:
+  - ghe.corp
+repos:
+  - git: https://github.com/Test-Org/test-repo
+  - git: https://ghe.corp/test-org/test-repo
+`
+      )
+    );
+    const summaryPath = join(testDir, "summary.md");
+    process.env.GITHUB_STEP_SUMMARY = summaryPath;
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir, dryRun: true },
+      { processorFactory: () => createRealProcessor() }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.match(output, /^\[1\/2\] ✓ github\.com\/Test-Org\/test-repo: /m);
+    assert.match(output, /^\[2\/2\] ✓ ghe\.corp\/test-org\/test-repo: /m);
+
+    const headings = readFileSync(summaryPath, "utf-8")
+      .split("\n")
+      .filter((line) => line.startsWith("### "));
+    assert.deepEqual(headings, [
+      "### github.com/Test-Org/test-repo",
+      "### ghe.corp/test-org/test-repo",
+    ]);
+  });
+
   test("labels an unparseable git URL with the raw value and keeps going", async () => {
     writeFileSync(
       testConfigPath,
