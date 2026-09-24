@@ -1,7 +1,3 @@
-/**
- * Formats a summary entry like "3 files (1 to create, 2 to update)".
- * Returns null if total is 0.
- */
 export function formatCountEntry(
   noun: string,
   pluralNoun: string,
@@ -23,10 +19,6 @@ export interface ActionTotals {
   delete?: number;
 }
 
-/**
- * Formats create/update/delete totals, future tense for a plan
- * ("2 to create") and past tense after an apply ("2 created").
- */
 export function formatActionCountEntry(
   noun: string,
   pluralNoun: string,
