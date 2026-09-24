@@ -1,4 +1,3 @@
-// test/unit/unified-summary.test.ts
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
@@ -159,7 +158,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    // Should be one section for the repo
     const headerMatches = markdown.match(/### org\/new-repo/g);
     assert.equal(headerMatches?.length, 1, "should have one header per repo");
     assert.ok(markdown.includes("+ CREATE"));
@@ -197,18 +195,15 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    // Extract lines inside the diff block
     const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
     assert.ok(diffMatch, "should have a diff block");
     const diffContent = diffMatch![1];
     const lines = diffContent.split("\n");
 
-    // Find the lifecycle line and the sync line
     const visibilityIdx = lines.findIndex((l) => l.includes("visibility"));
     const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
     assert.ok(visibilityIdx >= 0, "should have lifecycle visibility line");
     assert.ok(fileIdx >= 0, "should have sync file line");
-    // There should be a blank line between them
     assert.equal(
       lines[visibilityIdx + 1],
       "",
@@ -427,10 +422,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("! file-b.txt"));
   });
 
-  // =========================================================================
-  // Settings-only tests
-  // =========================================================================
-
   test("renders settings-only changes (add setting)", () => {
     const settings: SettingsReport = {
       repos: [
@@ -616,10 +607,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("Error: API rate limited"));
   });
 
-  // =========================================================================
-  // Combined lifecycle + sync + settings tests
-  // =========================================================================
-
   test("renders all three report types for same repo", () => {
     const lifecycle: LifecycleReport = {
       actions: [
@@ -669,16 +656,13 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    // Single repo header
     const headerMatches = markdown.match(/### org\/repo/g);
     assert.equal(headerMatches?.length, 1);
 
-    // All sections present
     assert.ok(markdown.includes("+ CREATE"));
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(markdown.includes('+ description: "My repo"'));
 
-    // Combined summary
     assert.ok(
       markdown.includes("1 repo (1 created)"),
       "should include repo count"
@@ -727,18 +711,15 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    // Extract lines inside the diff block
     const diffMatch = markdown.match(/```diff\n([\s\S]*?)```/);
     assert.ok(diffMatch, "should have a diff block");
     const diffContent = diffMatch![1];
     const lines = diffContent.split("\n");
 
-    // Find the sync file line and the settings line
     const fileIdx = lines.findIndex((l) => l.includes(".github/ci.yml"));
     const settingIdx = lines.findIndex((l) => l.includes("visibility"));
     assert.ok(fileIdx >= 0, "should have sync file line");
     assert.ok(settingIdx >= 0, "should have settings line");
-    // There should be a blank line between them
     assert.equal(
       lines[fileIdx + 1],
       "",
@@ -808,10 +789,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
       markdown.includes("**Applied: 2 rulesets (1 created, 1 deleted)**")
     );
   });
-
-  // =========================================================================
-  // Labels tests
-  // =========================================================================
 
   test("renders label create with config (color + description)", () => {
     const settings: SettingsReport = {
@@ -1090,7 +1067,6 @@ describe("formatUnifiedSummaryMarkdown", () => {
       dryRun: false,
     });
 
-    // Should not return empty string since there are label changes
     assert.ok(markdown.length > 0, "should detect labels as changes");
     assert.ok(markdown.includes("### org/repo"));
   });

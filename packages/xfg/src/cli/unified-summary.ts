@@ -14,10 +14,6 @@ import {
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
 
-// =============================================================================
-// Types
-// =============================================================================
-
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
   sync?: SyncReport;
@@ -25,10 +21,6 @@ interface UnifiedSummaryInput {
   dryRun: boolean;
   summaryPath?: string | undefined;
 }
-
-// =============================================================================
-// Helpers
-// =============================================================================
 
 function selectLabel(
   dry: boolean,
@@ -80,10 +72,6 @@ function hasAnyChanges(input: UnifiedSummaryInput): boolean {
   return input.settings?.repos.some(hasRepoSettingsChanges) ?? false;
 }
 
-// =============================================================================
-// Diff line builders
-// =============================================================================
-
 function renderLifecycleLines(
   lcAction: LifecycleAction,
   diffLines: string[]
@@ -120,10 +108,6 @@ function renderLifecycleLines(
     }
   }
 }
-
-// =============================================================================
-// Markdown Formatter
-// =============================================================================
 
 export function formatUnifiedSummaryMarkdown(
   input: UnifiedSummaryInput
@@ -211,10 +195,6 @@ export function formatUnifiedSummaryMarkdown(
 
   return lines.join("\n");
 }
-
-// =============================================================================
-// File Writer
-// =============================================================================
 
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
   const markdown = formatUnifiedSummaryMarkdown(input);
