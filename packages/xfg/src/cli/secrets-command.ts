@@ -58,6 +58,24 @@ function createDefaultProcessor(
   return new SecretsProcessor(strategy, encryptor, envResolver);
 }
 
+type ParsedRepo = { repoInfo: RepoInfo } | { error: unknown };
+
+function hostQualifiedName(repoInfo: RepoInfo): string {
+  const name = getRepoDisplayName(repoInfo);
+  return "host" in repoInfo ? `${repoInfo.host}/${name}` : name;
+}
+
+// owner/repo alone is ambiguous when the same path exists on several hosts.
+function repoLabels(repos: RepoConfig[], parsed: ParsedRepo[]): string[] {
+  const names = parsed.map((p, i) =>
+    "repoInfo" in p ? getRepoDisplayName(p.repoInfo) : repos[i].git
+  );
+  return parsed.map((p, i) => {
+    const shared = names.filter((n) => n === names[i]).length > 1;
+    return shared && "repoInfo" in p ? hostQualifiedName(p.repoInfo) : names[i];
+  });
+}
+
 export async function runSecretsSync(
   options: SecretsSyncOptions,
   deps: SecretsSyncDependencies = {}
@@ -83,15 +101,27 @@ export async function runSecretsSync(
   const reportResults: ProcessorResults[] = [];
   logger.setTotal(config.repos.length);
 
+  const parsed = config.repos.map((repoConfig): ParsedRepo => {
+    try {
+      return {
+        repoInfo: parseGitUrl(repoConfig.git, {
+          githubHosts: config.githubHosts,
+        }),
+      };
+    } catch (error) {
+      return { error };
+    }
+  });
+  const labels = repoLabels(config.repos, parsed);
+
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
-    let displayName = repoConfig.git;
+    const displayName = labels[i];
+    const parsedRepo = parsed[i];
 
     try {
-      const repoInfo = parseGitUrl(repoConfig.git, {
-        githubHosts: config.githubHosts,
-      });
-      displayName = getRepoDisplayName(repoInfo);
+      if ("error" in parsedRepo) throw parsedRepo.error;
+      const { repoInfo } = parsedRepo;
 
       const result = await processor.process(repoConfig, repoInfo, {
         dryRun,

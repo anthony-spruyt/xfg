@@ -655,6 +655,100 @@ repos:
     assert.doesNotMatch(output, /:\/\//);
   });
 
+  test("qualifies repos that share owner/repo across hosts with the host", async () => {
+    writeFileSync(
+      testConfigPath,
+      PLAN_CONFIG.replace(
+        "repos:\n  - git: https://github.com/test-org/test-repo\n",
+        `githubHosts:
+  - ghe.corp
+repos:
+  - git: https://github.com/test-org/test-repo
+  - git: https://ghe.corp/test-org/test-repo
+  - git: https://github.com/test-org/other-repo
+`
+      )
+    );
+    const summaryPath = join(testDir, "summary.md");
+    process.env.GITHUB_STEP_SUMMARY = summaryPath;
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir, dryRun: true },
+      { processorFactory: () => createRealProcessor() }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.match(output, /^\[1\/3\] ✓ github\.com\/test-org\/test-repo: /m);
+    assert.match(output, /^\[2\/3\] ✓ ghe\.corp\/test-org\/test-repo: /m);
+    assert.match(output, /^\[3\/3\] ✓ test-org\/other-repo: /m);
+
+    const headings = readFileSync(summaryPath, "utf-8")
+      .split("\n")
+      .filter((line) => line.startsWith("### "));
+    assert.deepEqual(headings, [
+      "### github.com/test-org/test-repo",
+      "### ghe.corp/test-org/test-repo",
+      "### test-org/other-repo",
+    ]);
+  });
+
+  test("labels an unparseable git URL with the raw value and keeps going", async () => {
+    writeFileSync(
+      testConfigPath,
+      PLAN_CONFIG.replace(
+        "repos:\n  - git: https://github.com/test-org/test-repo\n",
+        `repos:
+  - git: not-a-url
+  - git: https://github.com/test-org/test-repo
+`
+      )
+    );
+    const summaryPath = join(testDir, "summary.md");
+    process.env.GITHUB_STEP_SUMMARY = summaryPath;
+
+    await assert.rejects(
+      runSecretsSync(
+        { config: testConfigPath, workDir: testDir, dryRun: true },
+        { processorFactory: () => createRealProcessor() }
+      ),
+      /One or more repositories failed secrets sync/
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.match(
+      output,
+      /^\[1\/2\] ✗ not-a-url: Secrets: Unrecognized git URL format/m
+    );
+    assert.match(output, /^\[2\/2\] ✓ test-org\/test-repo: /m);
+
+    const headings = readFileSync(summaryPath, "utf-8")
+      .split("\n")
+      .filter((line) => line.startsWith("### "));
+    assert.deepEqual(headings, ["### not-a-url", "### test-org/test-repo"]);
+  });
+
+  test("does not host-qualify repos without a host that share a name", async () => {
+    writeFileSync(
+      testConfigPath,
+      PLAN_CONFIG.replace(
+        "repos:\n  - git: https://github.com/test-org/test-repo\n",
+        `repos:
+  - git: https://dev.azure.com/org/proj/_git/app
+  - git: https://dev.azure.com/org/proj/_git/app
+`
+      )
+    );
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir, dryRun: true },
+      { processorFactory: () => createRealProcessor() }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.match(output, /^\[1\/2\] ⊘ org\/proj\/app: Skipped - /m);
+    assert.match(output, /^\[2\/2\] ⊘ org\/proj\/app: Skipped - /m);
+  });
+
   test("records a failed repo in the step summary", async () => {
     writeFileSync(testConfigPath, PLAN_CONFIG);
     const summaryPath = join(testDir, "summary.md");
