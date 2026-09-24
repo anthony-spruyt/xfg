@@ -34,16 +34,10 @@ function formatLifecycleSummary(totals: LifecycleReport["totals"]): string {
   return entry ? `Plan: ${entry}` : "No changes";
 }
 
-/**
- * Returns true if the report has any non-"existed" actions worth displaying.
- */
 export function hasLifecycleChanges(report: LifecycleReport): boolean {
   return report.actions.some((a) => a.action !== "existed");
 }
 
-/**
- * Render action diff lines from lifecycle actions (shared between CLI and Markdown).
- */
 function renderActionDiffLines(actions: LifecycleAction[]): string[] {
   const lines: string[] = [];
 
@@ -111,19 +105,16 @@ export function formatLifecycleReportMarkdown(
 
   const lines: string[] = [];
 
-  // Title
   const titleSuffix = dryRun ? " (Dry Run)" : "";
   lines.push(`## Lifecycle Summary${titleSuffix}`);
   lines.push("");
 
-  // Dry-run warning
   if (dryRun) {
     lines.push("> [!WARNING]");
     lines.push("> This was a dry run — no changes were applied");
     lines.push("");
   }
 
-  // Diff block
   const diffLines = renderActionDiffLines(report.actions);
 
   if (diffLines.length > 0) {
@@ -133,7 +124,6 @@ export function formatLifecycleReportMarkdown(
     lines.push("");
   }
 
-  // Summary
   lines.push(`**${formatLifecycleSummary(report.totals)}**`);
 
   return lines.join("\n");

@@ -10,10 +10,6 @@ import {
   isActiveAction,
 } from "../settings/index.js";
 
-/**
- * Result from processing a repository's settings and rulesets.
- * Used to collect results during settings command execution.
- */
 export interface ProcessorResults {
   repoName: string;
   settingsResult?: {
