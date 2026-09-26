@@ -272,6 +272,16 @@ export async function execWithRetry(
 }
 
 /**
+ * True only for a 404 from gh/az/glab/curl. Any other failure (5xx, rate
+ * limit, auth) must not be mistaken for "resource absent".
+ */
+export function isNotFoundError(error: unknown): boolean {
+  const err = error as { message?: string; stderr?: string; stdout?: string };
+  const text = `${err?.message ?? ""} ${err?.stderr ?? ""} ${err?.stdout ?? ""}`;
+  return /HTTP 404|Not Found/i.test(text);
+}
+
+/**
  * Polls GitHub API until a file is visible, handling eventual consistency.
  *
  * Note: The repo and filePath are hardcoded test constants, not user input.
@@ -358,50 +368,14 @@ export async function waitForFileDeleted(
         ) {
           throw error;
         }
-        // exec() threw — file is gone (404)
+        if (!isNotFoundError(error)) {
+          throw error;
+        }
         console.log(`  File ${filePath} confirmed deleted`);
       }
     },
     { description: `file ${filePath} deleted in ${repo}` }
   );
-}
-
-/**
- * List all rulesets on a repo via GitHub API.
- * Note: repo is a hardcoded test constant, not user input.
- */
-export async function listRulesets(
-  repo: string,
-  envOptions?: { env: Record<string, string | undefined> }
-): Promise<Array<{ id: number; name: string }>> {
-  try {
-    const json = await execWithRetry(
-      `gh api repos/${repo}/rulesets`,
-      envOptions
-    );
-    return JSON.parse(json) as Array<{ id: number; name: string }>;
-  } catch {
-    return [];
-  }
-}
-
-/**
- * List all labels on a repo via GitHub API.
- * Note: repo is a hardcoded test constant, not user input.
- */
-export async function listLabels(
-  repo: string,
-  envOptions?: { env: Record<string, string | undefined> }
-): Promise<Array<{ name: string; color: string }>> {
-  try {
-    const json = await execWithRetry(
-      `gh api repos/${repo}/labels --paginate`,
-      envOptions
-    );
-    return JSON.parse(json) as Array<{ name: string; color: string }>;
-  } catch {
-    return [];
-  }
 }
 
 /**
@@ -518,20 +492,25 @@ export async function repoExists(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    await execWithRetry(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
-      ...envOptions,
-      quiet: true,
-    });
+    await withTestRetry(
+      () =>
+        exec(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
+          ...envOptions,
+          quiet: true,
+        }),
+      { description: `repo ${owner}/${repoName} visible` }
+    );
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (isNotFoundError(error)) return false;
+    throw error;
   }
 }
 
 /**
- * Check whether a repo exists with a single API call, no retries.
+ * Check whether a repo exists without waiting for a 404 to change.
  * Use this when asserting a repo should NOT exist (e.g. after a dry-run),
- * where a 404 is the expected outcome.
+ * where a 404 is the expected outcome. Transient errors are still retried.
  */
 export async function repoExistsNoRetry(
   owner: string,
@@ -539,18 +518,20 @@ export async function repoExistsNoRetry(
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
   try {
-    await exec(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
+    await execWithRetry(`gh api repos/${owner}/${repoName} --jq '.full_name'`, {
       ...envOptions,
       quiet: true,
     });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (isNotFoundError(error)) return false;
+    throw error;
   }
 }
 
 /**
  * Check whether a repo is a fork of a given upstream.
+ * API errors propagate so a failed lookup never reads as "not a fork".
  */
 export async function isForkedFrom(
   owner: string,
@@ -558,15 +539,11 @@ export async function isForkedFrom(
   upstreamFullName: string,
   envOptions?: { env: Record<string, string | undefined> }
 ): Promise<boolean> {
-  try {
-    const parentName = await execWithRetry(
-      `gh api repos/${owner}/${repoName} --jq '.parent.full_name'`,
-      envOptions
-    );
-    return parentName === upstreamFullName;
-  } catch {
-    return false;
-  }
+  const parentName = await execWithRetry(
+    `gh api repos/${owner}/${repoName} --jq '.parent.full_name'`,
+    envOptions
+  );
+  return parentName === upstreamFullName;
 }
 
 /**

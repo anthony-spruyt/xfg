@@ -13,6 +13,7 @@ import {
   writeConfig,
   resetTestRepo,
   waitForFileVisible as waitForFileVisibleBase,
+  waitForFileDeleted,
   waitForPrVisible,
   withTestRetry,
 } from "./test-helpers.js";
@@ -96,7 +97,6 @@ repos:
         assert.equal(json.prop1, "main");
         assert.equal(json.baseOnly, "inherited-from-root");
         assert.equal(json.addedByOverlay, true);
-        // Assert properties specifically introduced by the service-config group layer
         assert.equal(json.prop2.prop3, "MyService");
         assert.deepEqual(json.prop4.prop5, [
           { prop6: "platform" },
@@ -148,22 +148,20 @@ repos:
       cwd: projectRoot,
     });
 
-    const prAfter = await waitForPrVisible(testRepo, BRANCH_NAME, "number");
-    assert.ok(prAfter.number);
-
     await withTestRetry(
       async () => {
-        try {
-          const oldPRState = await exec(
-            `gh pr view ${prNumberBefore} --repo ${testRepo} --json state --jq '.state'`
-          );
-          assert.equal(oldPRState, "CLOSED");
-        } catch {
-          /* deleted or closed */
-        }
+        const prNumberAfter = await execWithRetry(
+          `gh pr list --repo ${testRepo} --head ${BRANCH_NAME} --json number --jq '.[0].number // empty'`
+        );
+        assert.ok(prNumberAfter);
+        assert.notEqual(Number(prNumberAfter), prNumberBefore);
+        const oldPRState = await execWithRetry(
+          `gh pr view ${prNumberBefore} --repo ${testRepo} --json state --jq '.state'`
+        );
+        assert.equal(oldPRState, "CLOSED");
       },
       {
-        description: "verify old PR is closed after re-sync",
+        description: "verify old PR closed and fresh PR created after re-sync",
         retries: 5,
         baseDelayMs: 3000,
       }
@@ -197,6 +195,16 @@ repos:
       cwd: projectRoot,
     });
     assert.ok(output.includes("createOnly") || output.includes("skip"));
+
+    const mainContent = await waitForFileVisible(createOnlyFile);
+    const json = JSON.parse(mainContent);
+    assert.equal(json.existing, true);
+    assert.equal(json.newContent, undefined);
+
+    const prCount = await execWithRetry(
+      `gh pr list --repo ${testRepo} --head chore/sync-createonly-test --state all --json number --jq 'length'`
+    );
+    assert.equal(prCount, "0");
   });
 
   test("PR title only includes files that actually changed (issue #90)", async () => {
@@ -288,7 +296,6 @@ repos:
         );
         const json = JSON.parse(fileContent);
 
-        // Dynamic assertions using ephemeral repo name
         assert.equal(json.repoName, repoName);
         assert.equal(json.repoOwner, OWNER);
         assert.equal(json.repoFullName, testRepo);
@@ -350,6 +357,11 @@ repos:
     const fileContent = await waitForFileVisible(directFile);
     const json = JSON.parse(fileContent);
     assert.equal(json.directMode, true);
+
+    const prCount = await execWithRetry(
+      `gh pr list --repo ${testRepo} --head chore/sync-direct-test-config --state all --json number --jq 'length'`
+    );
+    assert.equal(prCount, "0");
   });
 
   test("deleteOrphaned removes files when removed from config", async () => {
@@ -428,23 +440,7 @@ prOptions:
       cwd: projectRoot,
     });
 
-    await withTestRetry(
-      async () => {
-        try {
-          await exec(
-            `gh api repos/${testRepo}/contents/${orphanFile} --jq '.sha'`
-          );
-          assert.fail("orphan-test.json should have been deleted");
-        } catch {
-          /* correctly deleted */
-        }
-      },
-      {
-        description: "verify orphan file deleted after second sync",
-        retries: 5,
-        baseDelayMs: 3000,
-      }
-    );
+    await waitForFileDeleted(testRepo, orphanFile);
   });
 
   test("handles divergent branch when existing PR is present (issue #183)", async () => {
@@ -475,7 +471,6 @@ repos:
     const pr1 = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(pr1.number);
 
-    // Advance main
     const mainSha = await execWithRetry(
       `gh api repos/${testRepo}/contents/${divergentFile} --jq '.sha'`
     );
@@ -489,11 +484,27 @@ repos:
 
     const pr2 = await waitForPrVisible(testRepo, testBranch, "number");
     assert.ok(pr2.number);
-    // Verify sync produced output (check mark or repo reference)
     const url = new URL(`https://github.com/${testRepo}`);
     assert.ok(
       output2.includes("\u2713") ||
         output2.includes(url.hostname + url.pathname)
+    );
+
+    await withTestRetry(
+      async () => {
+        const fileContent = await execWithRetry(
+          `gh api repos/${testRepo}/contents/${divergentFile}?ref=${testBranch} --jq '.content' | base64 -d`
+        );
+        const json = JSON.parse(fileContent);
+        assert.equal(json.version, 3);
+        assert.equal(json.syncedByXfg, true);
+        assert.equal(json.advancedOnMain, undefined);
+      },
+      {
+        description: "verify divergent re-sync file content on PR branch",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 
@@ -510,8 +521,13 @@ repos:
 
     const branchContent =
       JSON.stringify({ orphanBranchVersion: 1 }, null, 2) + "\n";
-    await execWithRetry(
-      `gh api --method PUT repos/${testRepo}/contents/${orphanBranchFile} -f message="setup" -f content="${Buffer.from(branchContent).toString("base64")}" -f branch="${testBranch}"`
+    // Plain exec: execWithRetry treats the 404/422 of a not-yet-visible branch as permanent
+    await withTestRetry(
+      () =>
+        exec(
+          `gh api --method PUT repos/${testRepo}/contents/${orphanBranchFile} -f message="setup" -f content="${Buffer.from(branchContent).toString("base64")}" -f branch="${testBranch}"`
+        ),
+      { description: "create file on freshly created branch" }
     );
 
     const prCheck = await execWithRetry(

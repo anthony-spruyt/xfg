@@ -3,7 +3,10 @@ import type { GitHubRepoInfo } from "../repo/index.js";
 import type { GitAuthOptions, GitHubAppTokenManager } from "../vcs/index.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
 import type { ILogger } from "../shared/logger.js";
-import { resolveGitHubToken } from "../shared/gh-token-utils.js";
+import {
+  noAppInstallationMessage,
+  resolveGitHubToken,
+} from "../shared/gh-token-utils.js";
 
 export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
@@ -42,7 +45,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
         skipResult: {
           success: true,
           repoName,
-          message: `No GitHub App installation found for ${repoInfo.owner}`,
+          message: noAppInstallationMessage(repoInfo.owner),
           skipped: true,
         },
       };

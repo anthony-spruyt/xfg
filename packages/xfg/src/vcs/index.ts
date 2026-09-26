@@ -19,6 +19,7 @@ export type { GitOpsOptions } from "./git-ops.js";
 export {
   createCommitStrategy,
   createTokenManager,
+  createTokenManagerFromEnv,
 } from "./commit-strategy-selector.js";
 export { FileModeFixupCommitStrategy } from "./file-mode-fixup-commit-strategy.js";
 // Token manager type (concrete class used as type by sync module)

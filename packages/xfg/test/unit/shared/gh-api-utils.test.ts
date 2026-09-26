@@ -9,7 +9,9 @@ import {
   attachValidationDetails,
 } from "../../../src/shared/gh-api-utils.js";
 import {
+  GitHubTokenProvider,
   isHttp404Error,
+  noAppInstallationMessage,
   resolveGitHubToken,
 } from "../../../src/shared/gh-token-utils.js";
 import { parseApiJson } from "../../../src/shared/json-utils.js";
@@ -168,11 +170,11 @@ describe("resolveGitHubToken", () => {
     assert.deepEqual(result, { token: undefined, skipped: false });
   });
 
-  test("logs debug message on error", async () => {
-    const debugMessages: string[] = [];
+  test("warns when falling back to envToken on error", async () => {
+    const warnMessages: string[] = [];
     const log = {
-      debug: (msg: string) => debugMessages.push(msg),
-      warn: () => {},
+      debug: () => {},
+      warn: (msg: string) => warnMessages.push(msg),
     };
     const tokenManager = {
       getTokenForRepo: async () => {
@@ -186,10 +188,10 @@ describe("resolveGitHubToken", () => {
       log,
       envToken: "fallback",
     });
-    assert.equal(debugMessages.length, 1);
-    assert.match(debugMessages[0], /auth failed/);
-    assert.match(debugMessages[0], /my-repo/);
-    assert.match(debugMessages[0], /falling back to GH_TOKEN/);
+    assert.equal(warnMessages.length, 1);
+    assert.match(warnMessages[0], /auth failed/);
+    assert.match(warnMessages[0], /my-repo/);
+    assert.match(warnMessages[0], /falling back to the environment token/);
   });
 
   test("warns 'no fallback' when no envToken on error", async () => {
@@ -211,6 +213,35 @@ describe("resolveGitHubToken", () => {
     });
     assert.equal(warnMessages.length, 1);
     assert.match(warnMessages[0], /no fallback token available/);
+  });
+});
+
+describe("noAppInstallationMessage", () => {
+  test("names the owner", () => {
+    assert.equal(
+      noAppInstallationMessage("org-b"),
+      "No GitHub App installation found for org-b"
+    );
+  });
+});
+
+describe("GitHubTokenProvider", () => {
+  test("resolves via the token manager with envToken fallback", async () => {
+    const provider = new GitHubTokenProvider(
+      { getTokenForRepo: async () => undefined as unknown as string },
+      "env-token"
+    );
+    const result = await provider.getToken(makeRepoInfo(), "ctx");
+    assert.deepEqual(result, { token: "env-token", skipped: false });
+  });
+
+  test("reports skipped when the owner has no installation", async () => {
+    const provider = new GitHubTokenProvider(
+      { getTokenForRepo: async () => null },
+      "env-token"
+    );
+    const result = await provider.getToken(makeRepoInfo(), "ctx");
+    assert.deepEqual(result, { token: undefined, skipped: true });
   });
 });
 

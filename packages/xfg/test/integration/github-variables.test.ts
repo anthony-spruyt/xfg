@@ -26,14 +26,10 @@ let testRepo: string;
 let tmpDir: string;
 
 async function getVariables(): Promise<Variable[]> {
-  try {
-    const output = await execWithRetry(
-      `gh api repos/${testRepo}/actions/variables --jq '.variables'`
-    );
-    return JSON.parse(output) as Variable[];
-  } catch {
-    return [];
-  }
+  const output = await execWithRetry(
+    `gh api repos/${testRepo}/actions/variables --jq '.variables'`
+  );
+  return JSON.parse(output) as Variable[];
 }
 
 async function runSync(
@@ -87,7 +83,6 @@ repos:
   });
 
   test("updates variable value", async () => {
-    // Ensure variable exists before testing update (decouples from prior test ordering)
     const setupConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-github-variables-setup
@@ -161,7 +156,6 @@ repos:
   });
 
   test("deletes orphaned variables with deleteOrphaned", async () => {
-    // Ensure variable exists before testing deletion (decouples from prior test ordering)
     const setupConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-github-variables-setup

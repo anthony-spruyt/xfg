@@ -19,6 +19,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 
 | Input                    | Required | Default               | Description                                                                                                                                                |
 | ------------------------ | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `command`                | No       | `sync`                | xfg command to run (sync/secrets-sync). secrets-sync ignores branch, merge, merge-strategy, and delete-branch                                              |
 | `config`                 | Yes      | -                     | Path to YAML config file                                                                                                                                   |
 | `dry-run`                | No       | `false`               | Preview mode - show what would change without creating PRs                                                                                                 |
 | `work-dir`               | No       | `./tmp`               | Directory for cloning repositories                                                                                                                         |
@@ -36,6 +37,8 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 | `xfg-package`            | No       | -                     | Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release. |
 
 <!-- xfg:generated:end -->
+
+Each input is passed to xfg as exactly one argument. Put extra flags in their own inputs, not inside another input's value.
 
 ### Multi-Platform Example
 

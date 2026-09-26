@@ -15,6 +15,10 @@ import {
 } from "../../../src/cli/secrets-command.js";
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { RepoInfo } from "../../../src/repo/index.js";
+import type {
+  IGitHubTokenProvider,
+  ITokenManager,
+} from "../../../src/shared/gh-token-utils.js";
 import {
   SecretsProcessor,
   type SecretsProcessorResult,
@@ -548,6 +552,155 @@ repos:
       output.includes("Skipped: not a GitHub repository"),
       "Should log the skip message"
     );
+  });
+
+  test("failed result logs error and throws aggregated error", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor({
+      success: false,
+      message: "Failed: permission denied",
+    });
+
+    await assert.rejects(
+      async () =>
+        runSecretsSync(
+          { config: testConfigPath, workDir: testDir },
+          { processorFactory: () => mockProcessor }
+        ),
+      /One or more repositories failed secrets sync/
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("Secrets: Failed: permission denied"),
+      "Should log the failure message"
+    );
+  });
+
+  test("default processor skips non-GitHub repos without calling gh", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://gitlab.com/test-org/test-repo
+`
+    );
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { tokenManager: null }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes("is not a GitHub repository"),
+      "Default processor should skip the GitLab repo"
+    );
+  });
+
+  describe("GitHub App auth", () => {
+    const originalGhToken = process.env.GH_TOKEN;
+
+    beforeEach(() => {
+      process.env.GH_TOKEN = "env-token";
+    });
+
+    afterEach(() => {
+      if (originalGhToken === undefined) delete process.env.GH_TOKEN;
+      else process.env.GH_TOKEN = originalGhToken;
+    });
+
+    const appConfig = `id: test-config
+settings:
+  secrets:
+    MY_SECRET:
+      env: SECRET_VAR
+repos:
+  - git: https://github.com/org-a/repo-a
+  - git: https://github.com/org-b/repo-b
+`;
+
+    const repoA = {
+      type: "github" as const,
+      owner: "org-a",
+      repo: "repo-a",
+      host: "github.com",
+      gitUrl: "https://github.com/org-a/repo-a.git",
+    };
+
+    async function captureProvider(
+      tokenManager: ITokenManager | null | undefined
+    ): Promise<IGitHubTokenProvider> {
+      writeFileSync(testConfigPath, appConfig);
+      let captured: IGitHubTokenProvider | undefined;
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        {
+          processorFactory: (_cwd, _retries, tokenProvider) => {
+            captured = tokenProvider;
+            return createMockProcessor();
+          },
+          tokenManager,
+        }
+      );
+      assert.ok(captured, "processor factory should receive a token provider");
+      return captured;
+    }
+
+    test("wires the app token manager into the processor's token provider", async () => {
+      const provider = await captureProvider({
+        getTokenForRepo: async (repo: { owner: string }) =>
+          `app-token-${repo.owner}`,
+      });
+
+      assert.deepEqual(await provider.getToken(repoA, "org-a/repo-a"), {
+        token: "app-token-org-a",
+        skipped: false,
+      });
+    });
+
+    test("token provider falls back to GH_TOKEN without an app token manager", async () => {
+      const provider = await captureProvider(null);
+
+      assert.deepEqual(await provider.getToken(repoA, "org-a/repo-a"), {
+        token: "env-token",
+        skipped: false,
+      });
+    });
+
+    test("processes repos without resolving tokens in the CLI", async () => {
+      writeFileSync(testConfigPath, appConfig);
+      const tokenManager = {
+        getTokenForRepo: mock.fn(async () => "app-token"),
+      };
+      const mockProcessor = createMockProcessor();
+
+      await runSecretsSync(
+        { config: testConfigPath, workDir: testDir },
+        { processorFactory: () => mockProcessor, tokenManager }
+      );
+
+      assert.equal(tokenManager.getTokenForRepo.mock.calls.length, 0);
+      const processMock = mockProcessor.process as unknown as ReturnType<
+        typeof mock.fn
+      >;
+      assert.equal(processMock.mock.calls.length, 2);
+    });
   });
 
   for (const dryRun of [true, false]) {

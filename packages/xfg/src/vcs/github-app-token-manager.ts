@@ -8,9 +8,8 @@ const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
 
 interface Installation {
   id: number;
-  account: {
-    login: string;
-  };
+  // Enterprise installations have an account with slug/name but no login
+  account: { login?: string } | null;
 }
 
 interface TokenResponse {
@@ -88,36 +87,44 @@ export class GitHubAppTokenManager {
    * Stores installations in an internal map for later lookup.
    */
   async discoverInstallations(apiHost: string): Promise<void> {
-    const url = `https://${apiHost}/app/installations`;
     const jwt = this.generateJWT();
+    let url: string | undefined =
+      `https://${apiHost}/app/installations?per_page=100`;
 
-    const response = await withRetry(async () => {
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
+    while (url) {
+      const pageUrl: string = url;
+      const response = await withRetry(async () => {
+        const res = await fetch(pageUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        });
+
+        await assertOkResponse(res, "GitHub App installations");
+        return res;
       });
 
-      await assertOkResponse(res, "GitHub App installations");
-      return res;
-    });
+      const installations = (await response.json()) as Installation[];
+      for (const installation of installations) {
+        const login = installation.account?.login;
+        if (!login) continue;
+        this.installations.set(
+          installationKey(apiHost, login),
+          installation.id
+        );
+      }
 
-    const installations = (await response.json()) as Installation[];
-
-    for (const installation of installations) {
-      const key = `${apiHost}:${installation.account.login}`;
-      this.installations.set(key, installation.id);
+      url = nextPageUrl(response.headers.get("link"));
     }
 
     this.discoveredHosts.add(apiHost);
   }
 
   getInstallationId(apiHost: string, owner: string): number | undefined {
-    const key = `${apiHost}:${owner}`;
-    return this.installations.get(key);
+    return this.installations.get(installationKey(apiHost, owner));
   }
 
   /**
@@ -134,7 +141,7 @@ export class GitHubAppTokenManager {
       return null;
     }
 
-    const cacheKey = `${apiHost}:${owner}`;
+    const cacheKey = installationKey(apiHost, owner);
 
     // Check cache
     const cached = this.tokenCache.get(cacheKey);
@@ -191,12 +198,21 @@ export class GitHubAppTokenManager {
    * FOR TESTING ONLY: Manually expire a cached token.
    */
   _expireCacheForTesting(apiHost: string, owner: string): void {
-    const cacheKey = `${apiHost}:${owner}`;
+    const cacheKey = installationKey(apiHost, owner);
     const cached = this.tokenCache.get(cacheKey);
     if (cached) {
       cached.expiresAt = 0;
     }
   }
+}
+
+// GitHub logins are case-insensitive; config URLs may not match the canonical casing.
+function installationKey(apiHost: string, owner: string): string {
+  return `${apiHost}:${owner.toLowerCase()}`;
+}
+
+function nextPageUrl(linkHeader: string | null): string | undefined {
+  return linkHeader?.match(/<([^>]+)>;\s*rel="next"/)?.[1];
 }
 
 /**

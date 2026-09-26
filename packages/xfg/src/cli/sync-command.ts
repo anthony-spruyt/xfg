@@ -8,7 +8,7 @@ import {
 } from "../config/index.js";
 import { ValidationError, SyncError } from "../shared/errors.js";
 import { validateBranchName } from "./branch-utils.js";
-import { createTokenManager } from "../vcs/index.js";
+import { createTokenManagerFromEnv } from "../vcs/index.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
@@ -125,14 +125,7 @@ export async function runSync(
   logger.log(`Target files: ${formatFileNames(fileNames)}`);
   logger.log(`Branch: ${branchName}\n`);
 
-  const tokenManager = createTokenManager(
-    process.env.XFG_GITHUB_CLIENT_ID && process.env.XFG_GITHUB_APP_PRIVATE_KEY
-      ? {
-          clientId: process.env.XFG_GITHUB_CLIENT_ID,
-          privateKey: process.env.XFG_GITHUB_APP_PRIVATE_KEY,
-        }
-      : undefined
-  );
+  const tokenManager = createTokenManagerFromEnv(process.env);
 
   const processor = deps.processorFactory
     ? deps.processorFactory()

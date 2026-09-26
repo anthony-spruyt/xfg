@@ -62,6 +62,8 @@ This approach:
 - Caches tokens to minimize API calls
 - Skips repositories without app access (with a warning)
 
+The same inputs work with `command: secrets-sync`. Grant the app **Secrets: Read and write** for that. Unlike `sync`, secrets sync fails (rather than skips) repos without app access.
+
 ## How It Works
 
 When GitHub App credentials are provided, xfg:

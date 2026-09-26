@@ -1,7 +1,6 @@
 const START = /^<!-- xfg:generated (\S+) -->$/;
 const END = /^<!-- xfg:generated:end -->$/;
 
-
 export type BlockRenderer = (id: string) => string;
 
 export function applyGeneratedBlocks(

@@ -167,11 +167,22 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 ```yaml
 # GitHub Actions example
 - name: Sync secrets
-  run: xfg secrets sync -c config.yaml
+  uses: anthony-spruyt/xfg@v7 # x-release-please-major
+  with:
+    command: secrets-sync
+    config: config.yaml
+    github-client-id: ${{ vars.APP_CLIENT_ID }}
+    github-app-private-key: ${{ secrets.APP_PRIVATE_KEY }}
   env:
     MY_API_KEY_VALUE: ${{ secrets.MY_API_KEY_VALUE }}
     DATABASE_URL_VALUE: ${{ secrets.DATABASE_URL_VALUE }}
 ```
+
+## Authentication
+
+With `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` set, `xfg secrets sync` mints a GitHub App token per repo owner. A repo whose owner has no installation **fails** the run, so a missed rotation is never silent. Without app credentials it uses `GH_TOKEN`, then `GITHUB_TOKEN`. See [GitHub App](../platforms/github-app.md).
+
+The app needs the **Secrets: Read and write** repository permission.
 
 ## Encryption
 
