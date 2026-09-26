@@ -28,25 +28,14 @@ describe("renderTable", () => {
 
   test("dash row is at least three dashes wide", () => {
     const out = renderTable(["A"], [["b"]]);
-    assert.equal(
-      out,
-      [
-        "| A   |",
-        "| --- |",
-        "| b   |",
-      ].join("\n")
-    );
+    assert.equal(out, ["| A   |", "| --- |", "| b   |"].join("\n"));
   });
 
   test("pads short rows with empty cells", () => {
     const out = renderTable(["A", "B"], [["x"]]);
     assert.equal(
       out,
-      [
-        "| A   | B   |",
-        "| --- | --- |",
-        "| x   |     |",
-      ].join("\n")
+      ["| A   | B   |", "| --- | --- |", "| x   |     |"].join("\n")
     );
   });
 });
@@ -75,7 +64,10 @@ describe("firstSentence", () => {
   });
 
   test("returns the whole string when there is no sentence break", () => {
-    assert.equal(firstSentence("no punctuation at all"), "no punctuation at all");
+    assert.equal(
+      firstSentence("no punctuation at all"),
+      "no punctuation at all"
+    );
   });
 });
 

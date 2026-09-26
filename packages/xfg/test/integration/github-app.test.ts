@@ -300,6 +300,99 @@ repos:
   });
 });
 
+describe("GitHub App Secrets Test", { skip: SKIP_TESTS }, () => {
+  let secretsRepoName: string;
+  let secretsTestRepo: string;
+  let secretsTmpDir: string;
+
+  const secretsEnv = {
+    cwd: projectRoot,
+    env: {
+      ...xfgEnv.env,
+      GITHUB_TOKEN: undefined,
+      XFG_TEST_SECRET_VALUE: "integration-test-secret",
+    },
+  };
+
+  async function getSecretNames(): Promise<string[]> {
+    const output = await execWithRetry(
+      `gh api repos/${secretsTestRepo}/actions/secrets --jq '[.secrets[].name]'`
+    );
+    return JSON.parse(output) as string[];
+  }
+
+  before(async () => {
+    secretsTmpDir = join(tmpdir(), `xfg-app-secrets-test-${Date.now()}`);
+    mkdirSync(secretsTmpDir, { recursive: true });
+    secretsRepoName = generateRepoName("app-secrets");
+    secretsTestRepo = `${OWNER}/${secretsRepoName}`;
+    await createRepo(OWNER, secretsRepoName);
+  });
+
+  after(async () => {
+    await deleteRepo(OWNER, secretsRepoName);
+    rmSync(secretsTmpDir, { recursive: true, force: true });
+  });
+
+  test("secrets sync creates and deletes secrets with GitHub App credentials", async () => {
+    const createConfig = writeConfig(
+      secretsTmpDir,
+      `id: integration-test-github-app-secrets
+settings:
+  secrets:
+    XFG_APP_SECRET:
+      env: XFG_TEST_SECRET_VALUE
+repos:
+  - git: https://github.com/${secretsTestRepo}.git
+`
+    );
+
+    const output = await exec(
+      `node dist/cli.js secrets sync --config ${createConfig}`,
+      secretsEnv
+    );
+    console.log(output);
+
+    await withTestRetry(
+      async () => {
+        const names = await getSecretNames();
+        assert.ok(
+          names.includes("XFG_APP_SECRET"),
+          "XFG_APP_SECRET should exist"
+        );
+      },
+      { description: "App-created secret visible" }
+    );
+
+    const deleteConfig = writeConfig(
+      secretsTmpDir,
+      `id: integration-test-github-app-secrets
+settings:
+  secrets:
+    deleteOrphaned: true
+repos:
+  - git: https://github.com/${secretsTestRepo}.git
+`
+    );
+
+    await exec(
+      `node dist/cli.js secrets sync --config ${deleteConfig}`,
+      secretsEnv
+    );
+
+    await withTestRetry(
+      async () => {
+        const names = await getSecretNames();
+        assert.ok(
+          !names.includes("XFG_APP_SECRET"),
+          "XFG_APP_SECRET should be deleted as orphaned"
+        );
+      },
+      { description: "App-deleted secret gone" }
+    );
+  });
+});
+
 describe("GitHub App Mode Drift Test", { skip: SKIP_TESTS }, () => {
   let modeRepoName: string;
   let modeTestRepo: string;
