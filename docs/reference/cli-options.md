@@ -112,20 +112,17 @@ MY_SECRET=value xfg secrets sync --config ./config.yaml --no-delete
 ### Secrets Output
 
 ```text
-[1/2] your-org/frontend: Secrets
-  + MY_API_KEY
-  + DATABASE_URL
-
-[1/2] ✓ your-org/frontend: Secrets: 2 created, 0 updated, 0 deleted
-
-[2/2] your-org/backend: Secrets
-  ~ DEPLOY_TOKEN (update)
-
-[2/2] ✓ your-org/backend: Secrets: 0 created, 1 updated, 0 deleted
-
-==================================================
-Completed: 2 succeeded, 0 skipped, 0 failed
+[1/2] ✓ your-org/frontend: Secrets: [DRY RUN] 2 created
+        + secret "MY_API_KEY"
+        + secret "DATABASE_URL"
+      Plan: 2 secrets (2 to create)
+[2/2] ✓ your-org/backend: Secrets: [DRY RUN] 1 updated, 1 deleted
+        ~ secret "DEPLOY_TOKEN" (update, value write-only)
+        - secret "OLD_TOKEN"
+      Plan: 2 secrets (1 to update, 1 to delete)
 ```
+
+Without `--dry-run` each repo line reads `Secrets: Applied: ...` and each `Plan:` line becomes `Applied:` in the past tense, for example `Applied: 2 secrets (2 created)`. See [Secrets — Dry Run Output](../configuration/secrets.md#dry-run-output).
 
 ## Priority Order
 

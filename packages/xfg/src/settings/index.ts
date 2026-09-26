@@ -1,4 +1,3 @@
-// Base processor
 export {
   type BaseProcessorResult,
   type ISettingsProcessor,
@@ -8,7 +7,6 @@ export {
   isActiveAction,
 } from "./base-processor.js";
 
-// Rulesets
 export {
   type PropertyDiff,
   type RulesetPlanEntry,
@@ -17,7 +15,6 @@ export {
   GitHubRulesetStrategy,
 } from "./rulesets/index.js";
 
-// Repo settings
 export {
   RepoSettingsProcessor,
   type IRepoSettingsProcessor,
@@ -25,7 +22,6 @@ export {
   GitHubRepoSettingsStrategy,
 } from "./repo-settings/index.js";
 
-// Labels
 export {
   type LabelsPlanEntry,
   LabelsProcessor,
@@ -33,7 +29,6 @@ export {
   GitHubLabelsStrategy,
 } from "./labels/index.js";
 
-// Code scanning
 export {
   type CodeScanningPlanEntry,
   CodeScanningProcessor,
@@ -41,7 +36,6 @@ export {
   GitHubCodeScanningStrategy,
 } from "./code-scanning/index.js";
 
-// Variables
 export {
   type VariablesPlanEntry,
   VariablesProcessor,
@@ -52,6 +46,7 @@ export {
 // Secrets — not wired into `xfg sync`; driven by `xfg secrets sync` only.
 export {
   SecretsProcessor,
+  type SecretsPlanEntry,
   type ISecretsProcessor,
   type SecretsProcessorOptions,
   type SecretsProcessorResult,
