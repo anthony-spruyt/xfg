@@ -18,9 +18,14 @@ import {
   type IGitHubTokenProvider,
   type ITokenManager,
 } from "../shared/gh-token-utils.js";
-import { parseGitUrl } from "../repo/index.js";
+import { parseGitUrl, getRepoDisplayName } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import {
+  buildSettingsReport,
+  type ProcessorResults,
+} from "./settings-report-builder.js";
+import { writeUnifiedSummary } from "./unified-summary.js";
 import type { SecretsProcessorResult } from "../settings/secrets/index.js";
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
@@ -65,6 +70,26 @@ function createDefaultProcessor(
   return new SecretsProcessor(strategy, encryptor, envResolver, tokenProvider);
 }
 
+type ParsedRepo = { repoInfo: RepoInfo } | { error: unknown };
+
+function hostQualifiedName(repoInfo: RepoInfo): string {
+  const name = getRepoDisplayName(repoInfo);
+  return "host" in repoInfo ? `${repoInfo.host}/${name}` : name;
+}
+
+// owner/repo alone is ambiguous when the same path exists on several hosts;
+// GitHub treats owner/repo case-insensitively, so compare lowercased.
+function repoLabels(repos: RepoConfig[], parsed: ParsedRepo[]): string[] {
+  const names = parsed.map((p, i) =>
+    "repoInfo" in p ? getRepoDisplayName(p.repoInfo) : repos[i].git
+  );
+  const keys = names.map((n) => n.toLowerCase());
+  return parsed.map((p, i) => {
+    const shared = keys.filter((k) => k === keys[i]).length > 1;
+    return shared && "repoInfo" in p ? hostQualifiedName(p.repoInfo) : names[i];
+  });
+}
+
 export async function runSecretsSync(
   options: SecretsSyncOptions,
   deps: SecretsSyncDependencies = {}
@@ -95,16 +120,30 @@ export async function runSecretsSync(
 
   let hasErrors = false;
   let anySecretsConfigured = false;
+  const reportResults: ProcessorResults[] = [];
   logger.setTotal(config.repos.length);
+
+  const parsed = config.repos.map((repoConfig): ParsedRepo => {
+    try {
+      return {
+        repoInfo: parseGitUrl(repoConfig.git, {
+          githubHosts: config.githubHosts,
+        }),
+      };
+    } catch (error) {
+      return { error };
+    }
+  });
+  const labels = repoLabels(config.repos, parsed);
 
   for (let i = 0; i < config.repos.length; i++) {
     const repoConfig = config.repos[i];
-    const repoName = repoConfig.git;
+    const displayName = labels[i];
+    const parsedRepo = parsed[i];
 
     try {
-      const repoInfo = parseGitUrl(repoConfig.git, {
-        githubHosts: config.githubHosts,
-      });
+      if ("error" in parsedRepo) throw parsedRepo.error;
+      const { repoInfo } = parsedRepo;
 
       const result = await processor.process(repoConfig, repoInfo, {
         dryRun,
@@ -120,16 +159,29 @@ export async function runSecretsSync(
       anySecretsConfigured = true;
 
       if (result.skipped) {
-        logger.skip(i + 1, repoName, result.message);
-      } else if (result.success) {
-        logger.success(i + 1, repoName, `Secrets: ${result.message}`);
+        logger.skip(i + 1, displayName, result.message);
+        continue;
+      }
+
+      if (result.success) {
+        logger.success(i + 1, displayName, `Secrets: ${result.message}`);
       } else {
-        logger.error(i + 1, repoName, `Secrets: ${result.message}`);
+        logger.error(i + 1, displayName, `Secrets: ${result.message}`);
         hasErrors = true;
       }
+      for (const line of result.planOutput?.lines ?? []) {
+        logger.info(line);
+      }
+      reportResults.push({
+        repoName: displayName,
+        secretsResult: result,
+        ...(result.success ? {} : { error: result.message }),
+      });
     } catch (error) {
       anySecretsConfigured = true;
-      logger.error(i + 1, repoName, `Secrets: ${toErrorMessage(error)}`);
+      const message = toErrorMessage(error);
+      logger.error(i + 1, displayName, `Secrets: ${message}`);
+      reportResults.push({ repoName: displayName, error: message });
       hasErrors = true;
     }
   }
@@ -137,6 +189,12 @@ export async function runSecretsSync(
   if (!anySecretsConfigured) {
     logger.info("No secrets configured. Nothing to do.");
   }
+
+  writeUnifiedSummary({
+    settings: buildSettingsReport(reportResults),
+    dryRun: dryRun ?? false,
+    summaryPath: process.env.GITHUB_STEP_SUMMARY,
+  });
 
   if (hasErrors) {
     throw new Error("One or more repositories failed secrets sync.");

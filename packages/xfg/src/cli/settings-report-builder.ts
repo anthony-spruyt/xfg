@@ -5,14 +5,11 @@ import {
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
   type VariablesPlanEntry,
+  type SecretsPlanEntry,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
 
-/**
- * Result from processing a repository's settings and rulesets.
- * Used to collect results during settings command execution.
- */
 export interface ProcessorResults {
   repoName: string;
   settingsResult?: {
@@ -40,6 +37,11 @@ export interface ProcessorResults {
       entries?: VariablesPlanEntry[];
     };
   };
+  secretsResult?: {
+    planOutput?: {
+      entries?: SecretsPlanEntry[];
+    };
+  };
   error?: string;
 }
 
@@ -52,6 +54,7 @@ export function buildSettingsReport(
     rulesets: { create: 0, update: 0, delete: 0 },
     labels: { create: 0, update: 0, delete: 0 },
     variables: { create: 0, update: 0, delete: 0 },
+    secrets: { create: 0, update: 0, delete: 0 },
   };
 
   for (const result of results) {
@@ -61,6 +64,7 @@ export function buildSettingsReport(
       rulesets: [],
       labels: [],
       variables: [],
+      secrets: [],
     };
 
     if (result.settingsResult?.planOutput?.entries) {
@@ -140,6 +144,16 @@ export function buildSettingsReport(
       totals.variables.create += counts.create;
       totals.variables.update += counts.update;
       totals.variables.delete += counts.delete;
+    }
+
+    if (result.secretsResult?.planOutput?.entries) {
+      for (const entry of result.secretsResult.planOutput.entries) {
+        repoChanges.secrets!.push({ name: entry.name, action: entry.action });
+      }
+      const counts = countActions(repoChanges.secrets!);
+      totals.secrets.create += counts.create;
+      totals.secrets.update += counts.update;
+      totals.secrets.delete += counts.delete;
     }
 
     if (result.error) {

@@ -1,6 +1,6 @@
 import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -32,10 +32,14 @@ async function getVariables(): Promise<Variable[]> {
   return JSON.parse(output) as Variable[];
 }
 
-async function runSync(configPath: string, extraArgs = ""): Promise<string> {
+async function runSync(
+  configPath: string,
+  extraArgs = "",
+  summaryPath?: string
+): Promise<string> {
   return exec(
     `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
-    { cwd: projectRoot }
+    { cwd: projectRoot, env: { GITHUB_STEP_SUMMARY: summaryPath } }
   );
 }
 
@@ -110,7 +114,16 @@ repos:
 `
     );
 
-    await runSync(configPath);
+    const summaryPath = join(tmpDir, "update-summary.md");
+    const output = await runSync(configPath, "", summaryPath);
+
+    assert.ok(
+      output.includes('~ variable "XFG_TEST_VAR"'),
+      `apply output should name the variable, got: ${output}`
+    );
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes("## xfg Apply"), summary);
+    assert.ok(summary.includes('! variable "XFG_TEST_VAR"'), summary);
 
     await withTestRetry(
       async () => {
@@ -177,7 +190,15 @@ repos:
 `
     );
 
-    await runSync(configPath);
+    const summaryPath = join(tmpDir, "delete-summary.md");
+    const output = await runSync(configPath, "", summaryPath);
+
+    assert.ok(
+      output.includes('- variable "XFG_TEST_VAR"'),
+      `apply output should name the deleted variable, got: ${output}`
+    );
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes('- variable "XFG_TEST_VAR"'), summary);
 
     await withTestRetry(
       async () => {

@@ -7,7 +7,9 @@ import {
   noAppInstallationMessage,
   type IGitHubTokenProvider,
 } from "../../shared/gh-token-utils.js";
-import { diffSecrets } from "./diff.js";
+import { diffSecrets, type SecretChange } from "./diff.js";
+import { formatSecretsPlan, type SecretsPlanResult } from "./formatter.js";
+import { toErrorMessage } from "../../shared/type-guards.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,
@@ -15,6 +17,7 @@ import {
   type ISettingsProcessor,
   type ChangeCounts,
   countActions,
+  isActiveAction,
   buildDryRunResult,
   buildApplyResult,
 } from "../base-processor.js";
@@ -30,6 +33,7 @@ export interface SecretsProcessorOptions extends BaseProcessorOptions {
 
 export interface SecretsProcessorResult extends BaseProcessorResult {
   changes?: ChangeCounts;
+  planOutput?: SecretsPlanResult;
   /** Set when the skip is "nothing configured here" rather than "not a GitHub repo". */
   noSecretsConfigured?: boolean;
 }
@@ -124,7 +128,9 @@ export class SecretsProcessor implements ISecretsProcessor {
     const changeCounts = countActions(changes);
 
     if (dryRun) {
-      return buildDryRunResult(repoName, changeCounts);
+      return buildDryRunResult(repoName, changeCounts, {
+        planOutput: formatSecretsPlan(changes, true),
+      });
     }
 
     const resolvedValues =
@@ -137,16 +143,17 @@ export class SecretsProcessor implements ISecretsProcessor {
           )
         : new Map<string, string>();
 
-    let appliedCount = 0;
     const publicKey =
       secretEntries.length > 0
         ? await this.strategy.getPublicKey(githubRepo, strategyOptions)
         : undefined;
 
-    for (const change of changes) {
-      switch (change.action) {
-        case "create":
-        case "update": {
+    const applied: SecretChange[] = [];
+    try {
+      for (const change of changes.filter(isActiveAction)) {
+        if (change.action === "delete") {
+          await this.strategy.delete(githubRepo, change.name, strategyOptions);
+        } else {
           const encrypted = await this.encryptor.encrypt(
             resolvedValues.get(change.name)!,
             publicKey!.key
@@ -158,18 +165,22 @@ export class SecretsProcessor implements ISecretsProcessor {
             publicKey!.key_id,
             strategyOptions
           );
-          appliedCount++;
-          break;
         }
-        case "delete":
-          await this.strategy.delete(githubRepo, change.name, strategyOptions);
-          appliedCount++;
-          break;
-        case "unchanged":
-          break;
+        applied.push(change);
       }
+    } catch (error) {
+      // Report what already landed: the writes are not rolled back.
+      return {
+        success: false,
+        repoName,
+        message: `Failed: ${toErrorMessage(error)}`,
+        changes: countActions(applied),
+        planOutput: formatSecretsPlan(applied, false),
+      };
     }
 
-    return buildApplyResult(repoName, changeCounts, appliedCount);
+    return buildApplyResult(repoName, changeCounts, applied.length, {
+      planOutput: formatSecretsPlan(changes, false),
+    });
   }
 }

@@ -1,8 +1,16 @@
 import chalk from "chalk";
-import type { PropertyDiff, ActiveAction } from "../settings/index.js";
+import type {
+  PropertyDiff,
+  ActiveAction,
+  SecretsPlanEntry,
+} from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatScalarValue } from "../shared/string-utils.js";
+import {
+  formatActionCountEntry,
+  type ActionTotals,
+} from "../shared/count-format.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -11,6 +19,7 @@ export interface SettingsReport {
     rulesets: { create: number; update: number; delete: number };
     labels: { create: number; update: number; delete: number };
     variables?: { create: number; update: number; delete: number };
+    secrets?: { create: number; update: number; delete: number };
   };
 }
 
@@ -25,7 +34,19 @@ export interface RepoChanges {
     oldValue?: string;
     newValue?: string;
   }[];
+  secrets?: SecretsPlanEntry[];
   error?: string;
+}
+
+export function hasRepoSettingsChanges(repo: RepoChanges): boolean {
+  return (
+    repo.settings.length > 0 ||
+    repo.rulesets.length > 0 ||
+    repo.labels.length > 0 ||
+    (repo.variables ?? []).length > 0 ||
+    (repo.secrets ?? []).length > 0 ||
+    !!repo.error
+  );
 }
 
 export interface SettingChange {
@@ -54,11 +75,6 @@ export interface LabelChange {
   config?: Label;
 }
 
-/**
- * Shared recursive renderer for ruleset config objects.
- * The formatLine callback controls indentation style and coloring:
- *   formatLine(depth, text) → formatted line string
- */
 function renderRulesetConfig(
   config: Ruleset,
   startDepth: number,
@@ -115,55 +131,31 @@ function renderRulesetConfig(
   return lines;
 }
 
-/**
- * Formats a summary entry like "3 files (1 to create, 2 to update)".
- * Returns null if total is 0.
- */
-export function formatCountEntry(
-  noun: string,
-  pluralNoun: string,
-  counts: { label: string; value: number }[]
-): string | null {
-  const total = counts.reduce((sum, c) => sum + c.value, 0);
-  if (total === 0) return null;
+const SETTINGS_CATEGORIES: {
+  noun: string;
+  plural: string;
+  totals: (t: SettingsReport["totals"]) => ActionTotals | undefined;
+}[] = [
+  { noun: "setting", plural: "settings", totals: (t) => t.settings },
+  { noun: "ruleset", plural: "rulesets", totals: (t) => t.rulesets },
+  { noun: "label", plural: "labels", totals: (t) => t.labels },
+  { noun: "variable", plural: "variables", totals: (t) => t.variables },
+  { noun: "secret", plural: "secrets", totals: (t) => t.secrets },
+];
 
-  const word = total === 1 ? noun : pluralNoun;
-  const actions = counts
-    .filter((c) => c.value > 0)
-    .map((c) => `${c.value} ${c.label}`);
-  return `${total} ${word} (${actions.join(", ")})`;
+export function formatSettingsCountEntries(
+  totals: SettingsReport["totals"],
+  dryRun: boolean
+): string[] {
+  return SETTINGS_CATEGORIES.flatMap(({ noun, plural, totals: pick }) => {
+    const t = pick(totals);
+    const entry = t && formatActionCountEntry(noun, plural, t, dryRun);
+    return entry ? [entry] : [];
+  });
 }
 
 function formatSettingsSummary(totals: SettingsReport["totals"]): string {
-  const parts: string[] = [];
-
-  const settingsEntry = formatCountEntry("setting", "settings", [
-    { label: "to create", value: totals.settings.create },
-    { label: "to update", value: totals.settings.update },
-  ]);
-  if (settingsEntry) parts.push(settingsEntry);
-
-  const rulesetsEntry = formatCountEntry("ruleset", "rulesets", [
-    { label: "to create", value: totals.rulesets.create },
-    { label: "to update", value: totals.rulesets.update },
-    { label: "to delete", value: totals.rulesets.delete },
-  ]);
-  if (rulesetsEntry) parts.push(rulesetsEntry);
-
-  const labelsEntry = formatCountEntry("label", "labels", [
-    { label: "to create", value: totals.labels.create },
-    { label: "to update", value: totals.labels.update },
-    { label: "to delete", value: totals.labels.delete },
-  ]);
-  if (labelsEntry) parts.push(labelsEntry);
-
-  const variablesEntry = formatCountEntry("variable", "variables", [
-    { label: "to create", value: totals.variables?.create ?? 0 },
-    { label: "to update", value: totals.variables?.update ?? 0 },
-    { label: "to delete", value: totals.variables?.delete ?? 0 },
-  ]);
-  if (variablesEntry) parts.push(variablesEntry);
-
+  const parts = formatSettingsCountEntries(totals, true);
   if (parts.length === 0) {
     return "No changes";
   }
@@ -184,15 +176,7 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
   const lines: string[] = [];
 
   for (const repo of report.repos) {
-    if (
-      repo.settings.length === 0 &&
-      repo.rulesets.length === 0 &&
-      repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
-      !repo.error
-    ) {
-      continue;
-    }
+    if (!hasRepoSettingsChanges(repo)) continue;
 
     lines.push(chalk.yellow(`~ ${repo.repoName}`));
 
@@ -202,10 +186,9 @@ export function formatSettingsReportCLI(report: SettingsReport): string[] {
       lines.push(colorizeDiffLine(diffLine));
     }
 
-    lines.push(""); // Blank line between repos
+    lines.push("");
   }
 
-  // Summary
   lines.push(formatSettingsSummary(report.totals));
 
   return lines;
@@ -226,10 +209,6 @@ function formatRulesetConfigPlain(config: Ruleset): string[] {
   );
 }
 
-/**
- * Renders a single repo's settings/rulesets/labels changes as plain-text diff lines.
- * Shared between formatSettingsReportMarkdown and unified-summary's renderSettingsLines.
- */
 export function renderRepoSettingsDiffLines(
   repo: RepoChanges,
   diffLines: string[]
@@ -251,7 +230,6 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
-  // Blank line before rulesets if there was content above
   if (repo.rulesets.length > 0 && diffLines.length > startLength) {
     diffLines.push("");
   }
@@ -259,7 +237,6 @@ export function renderRepoSettingsDiffLines(
   for (let i = 0; i < repo.rulesets.length; i++) {
     const ruleset = repo.rulesets[i];
 
-    // Blank line between rulesets
     if (i > 0) diffLines.push("");
 
     if (ruleset.action === "create") {
@@ -292,7 +269,6 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
-  // Blank line before labels if there was content above
   if (repo.labels.length > 0 && diffLines.length > startLength) {
     diffLines.push("");
   }
@@ -329,7 +305,6 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
-  // Blank line before variables if there was content above
   if ((repo.variables ?? []).length > 0 && diffLines.length > startLength) {
     diffLines.push("");
   }
@@ -348,6 +323,21 @@ export function renderRepoSettingsDiffLines(
     }
   }
 
+  if ((repo.secrets ?? []).length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  // Names only: secret values are write-only and must never reach output.
+  for (const secret of repo.secrets ?? []) {
+    if (secret.action === "create") {
+      diffLines.push(`+ secret "${secret.name}"`);
+    } else if (secret.action === "update") {
+      diffLines.push(`! secret "${secret.name}" (update, value write-only)`);
+    } else {
+      diffLines.push(`- secret "${secret.name}"`);
+    }
+  }
+
   if (repo.error) {
     diffLines.push(`- Error: ${repo.error}`);
   }
@@ -359,29 +349,18 @@ export function formatSettingsReportMarkdown(
 ): string {
   const lines: string[] = [];
 
-  // Title
   const title = dryRun ? "## xfg Plan" : "## xfg Apply";
   lines.push(title);
   lines.push("");
 
-  // Dry-run warning
   if (dryRun) {
     lines.push("> [!WARNING]");
     lines.push("> This was a dry run — no changes were applied");
     lines.push("");
   }
 
-  // Per-repo sections: heading + diff block
   for (const repo of report.repos) {
-    if (
-      repo.settings.length === 0 &&
-      repo.rulesets.length === 0 &&
-      repo.labels.length === 0 &&
-      (repo.variables ?? []).length === 0 &&
-      !repo.error
-    ) {
-      continue;
-    }
+    if (!hasRepoSettingsChanges(repo)) continue;
 
     lines.push(`### ${repo.repoName}`);
     lines.push("");
@@ -397,7 +376,6 @@ export function formatSettingsReportMarkdown(
     }
   }
 
-  // Summary
   lines.push(`**${formatSettingsSummary(report.totals)}**`);
 
   return lines.join("\n");

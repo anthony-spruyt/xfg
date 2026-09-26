@@ -1,6 +1,6 @@
 import { test, describe, before, after } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -37,9 +37,12 @@ async function getSecrets(): Promise<Secret[]> {
   return getSecretsFor(testRepo);
 }
 
+const SECRET_VALUE = "integration-test-secret";
+
 async function runSecretsSync(
   configPath: string,
-  extraArgs = ""
+  extraArgs = "",
+  summaryPath?: string
 ): Promise<string> {
   return exec(
     `node dist/cli.js secrets sync --config ${configPath} ${extraArgs}`.trim(),
@@ -47,7 +50,8 @@ async function runSecretsSync(
       cwd: projectRoot,
       env: {
         ...process.env,
-        XFG_TEST_SECRET_VALUE: "integration-test-secret",
+        XFG_TEST_SECRET_VALUE: SECRET_VALUE,
+        GITHUB_STEP_SUMMARY: summaryPath,
       },
     }
   );
@@ -134,7 +138,18 @@ repos:
 `
     );
 
-    await runSecretsSync(configPath);
+    const summaryPath = join(tmpDir, "upsert-summary.md");
+    const output = await runSecretsSync(configPath, "", summaryPath);
+
+    assert.ok(
+      output.includes('~ secret "XFG_TEST_SECRET" (update, value write-only)'),
+      `apply output should name the secret, got: ${output}`
+    );
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes("## xfg Apply"), summary);
+    assert.ok(summary.includes('! secret "XFG_TEST_SECRET"'), summary);
+    assert.ok(!output.includes(SECRET_VALUE), "value must not be logged");
+    assert.ok(!summary.includes(SECRET_VALUE), "value must not be summarized");
 
     await withTestRetry(
       async () => {
@@ -159,7 +174,17 @@ repos:
 `
     );
 
-    await runSecretsSync(configPath, "--dry-run");
+    const summaryPath = join(tmpDir, "dry-run-summary.md");
+    const output = await runSecretsSync(configPath, "--dry-run", summaryPath);
+
+    assert.ok(
+      output.includes('+ secret "XFG_DRY_RUN_SECRET"'),
+      `dry-run output should name the secret, got: ${output}`
+    );
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes("## xfg Plan"), summary);
+    assert.ok(summary.includes('+ secret "XFG_DRY_RUN_SECRET"'), summary);
+    assert.ok(!output.includes(SECRET_VALUE), "value must not be logged");
 
     const secrets = await getSecrets();
     const found = secrets.find((s) => s.name === "XFG_DRY_RUN_SECRET");
@@ -241,7 +266,11 @@ repos:
 `
     );
 
-    await runSecretsSync(configPath);
+    const output = await runSecretsSync(configPath);
+    assert.ok(
+      output.includes('- secret "XFG_TEST_SECRET"'),
+      `apply output should name the deleted secret, got: ${output}`
+    );
 
     await withTestRetry(
       async () => {
