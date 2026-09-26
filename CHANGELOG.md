@@ -1,5 +1,18 @@
 # Changelog
 
+## [7.2.0](https://github.com/anthony-spruyt/xfg/compare/v7.1.0...v7.2.0) (2026-09-26)
+
+
+### Features
+
+* **secrets:** GitHub App auth for secrets sync and action support ([#1028](https://github.com/anthony-spruyt/xfg/issues/1028)) ([7192a75](https://github.com/anthony-spruyt/xfg/commit/7192a751bc8cbb32de13a0136eb2b7f3a0512bc4))
+* **secrets:** list secret names per repo in secrets sync output ([#1029](https://github.com/anthony-spruyt/xfg/issues/1029)) ([b9bd38d](https://github.com/anthony-spruyt/xfg/commit/b9bd38de9466c7a7aa1113526a783bd166e0e57f))
+
+
+### Documentation
+
+* remove duplicated sources of truth ([#1023](https://github.com/anthony-spruyt/xfg/issues/1023)) ([9f2f0b8](https://github.com/anthony-spruyt/xfg/commit/9f2f0b832432d6d04cb460d59099977ba79fa3f5))
+
 ## [7.1.0](https://github.com/anthony-spruyt/xfg/compare/v7.0.0...v7.1.0) (2026-09-22)
 
 
