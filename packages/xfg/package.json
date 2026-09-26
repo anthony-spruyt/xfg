@@ -1,7 +1,7 @@
 {
   "name": "@aspruyt/xfg",
-  "version": "7.1.0",
-  "description": "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab \u2014 declaratively, from a single YAML config",
+  "version": "7.2.0",
+  "description": "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab — declaratively, from a single YAML config",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
