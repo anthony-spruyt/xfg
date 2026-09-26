@@ -24,28 +24,34 @@ let testRepo: string;
 let tmpDir: string;
 
 async function deleteRulesetIfExists(): Promise<void> {
-  try {
-    const rulesets = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
+  const rulesets = await execWithRetry(
+    `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
+  );
+  for (const id of rulesets.split("\n").filter(Boolean)) {
+    console.log(`  Deleting ruleset ID: ${id}`);
+    await execWithRetry(
+      `gh api --method DELETE repos/${testRepo}/rulesets/${id}`
     );
-    if (rulesets) {
-      for (const id of rulesets.split("\n").filter(Boolean)) {
-        console.log(`  Deleting ruleset ID: ${id}`);
-        await execWithRetry(
-          `gh api --method DELETE repos/${testRepo}/rulesets/${id}`
-        );
-      }
-    }
-  } catch {
-    console.log("  No existing rulesets to delete");
   }
+}
+
+async function waitForNoRuleset(): Promise<void> {
+  await withTestRetry(
+    async () => {
+      const count = await execWithRetry(
+        `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
+      );
+      assert.equal(count, "0", "Expected no ruleset before");
+    },
+    { description: "ruleset absent", retries: 5, baseDelayMs: 3000 }
+  );
 }
 
 async function waitForRulesetVisible(rulesetId: number): Promise<void> {
   await waitForRulesetVisibleBase(testRepo, rulesetId);
 }
 
-function makeConfig(): string {
+function makeConfig(requiredApprovingReviewCount = 1): string {
   return writeConfig(
     tmpDir,
     `id: integration-test-github-rulesets
@@ -65,7 +71,7 @@ settings:
       rules:
         - type: pull_request
           parameters:
-            requiredApprovingReviewCount: 1
+            requiredApprovingReviewCount: ${requiredApprovingReviewCount}
 repos:
   - git: https://github.com/${OWNER}/${repoName}.git
     files:
@@ -96,10 +102,7 @@ describe("GitHub Settings Integration Test", () => {
     const configPath = makeConfig();
 
     console.log("Verifying no ruleset exists...");
-    const rulesetsBefore = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
-    );
-    assert.equal(rulesetsBefore, "0", "Expected no ruleset before");
+    await waitForNoRuleset();
 
     console.log("\nRunning xfg sync...");
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
@@ -151,23 +154,26 @@ describe("GitHub Settings Integration Test", () => {
     );
     await waitForRulesetVisible(rulesetBefore.id);
 
-    console.log("\nRunning xfg sync again (update)...");
-    await exec(`node dist/cli.js sync --config ${configPath}`, {
+    console.log("\nRunning xfg sync with updated review count...");
+    const updateConfigPath = makeConfig(2);
+    await exec(`node dist/cli.js sync --config ${updateConfigPath}`, {
       cwd: projectRoot,
     });
 
     await withTestRetry(
       async () => {
-        const str = await exec(
-          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}")'`
+        const ids = await exec(
+          `gh api repos/${testRepo}/rulesets --jq '.[] | select(.name == "${RULESET_NAME}") | .id'`
         );
-        if (!str.trim()) throw new Error("Ruleset not visible after update");
-        const rulesetAfter = JSON.parse(str) as { id: number };
         assert.equal(
-          rulesetAfter.id,
-          rulesetBefore.id,
+          ids.trim(),
+          String(rulesetBefore.id),
           "Same ID = update not recreate"
         );
+        const reviewCount = await exec(
+          `gh api repos/${testRepo}/rulesets/${rulesetBefore.id} --jq '.rules[] | select(.type == "pull_request") | .parameters.required_approving_review_count'`
+        );
+        assert.equal(reviewCount.trim(), "2", "Review count should be 2");
       },
       { description: "ruleset updated", retries: 5, baseDelayMs: 3000 }
     );
@@ -362,10 +368,7 @@ repos:
   test("settings dry-run shows changes without applying", async () => {
     const configPath = makeConfig();
 
-    const rulesetsBefore = await execWithRetry(
-      `gh api repos/${testRepo}/rulesets --jq '[.[] | select(.name == "${RULESET_NAME}")] | length'`
-    );
-    assert.equal(rulesetsBefore, "0");
+    await waitForNoRuleset();
 
     const output = await exec(
       `node dist/cli.js sync --config ${configPath} --dry-run`,

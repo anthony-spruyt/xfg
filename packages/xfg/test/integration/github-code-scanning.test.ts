@@ -4,6 +4,7 @@ import { mkdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  exec,
   execWithRetry,
   projectRoot,
   generateRepoName,
@@ -33,7 +34,7 @@ async function getCodeScanningSetup(): Promise<CodeScanningDefaultSetup> {
 }
 
 async function runSync(configPath: string, extraArgs = ""): Promise<string> {
-  return execWithRetry(
+  return exec(
     `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
     { cwd: projectRoot }
   );
@@ -48,7 +49,6 @@ async function resetCodeScanning(): Promise<void> {
   } catch {
     // May already be not-configured or endpoint may 409 — safe to ignore
   }
-  // Wait for async operation to settle
   await withTestRetry(
     async () => {
       const setup = await getCodeScanningSetup();
@@ -116,7 +116,6 @@ repos:
   });
 
   test("should update query suite to extended", async () => {
-    // First enable with default
     const defaultConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-code-scanning
@@ -148,7 +147,6 @@ repos:
       }
     );
 
-    // Now update to extended
     const extendedConfigPath = writeConfig(
       tmpDir,
       `id: integration-test-code-scanning
@@ -207,7 +205,6 @@ repos:
       `Expected dry-run output, got: ${output}`
     );
 
-    // Verify no changes were applied
     await withTestRetry(
       async () => {
         const setup = await getCodeScanningSetup();
@@ -226,7 +223,6 @@ repos:
   });
 
   test("should report no changes when settings match", async () => {
-    // Enable code scanning
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-code-scanning
@@ -258,11 +254,15 @@ repos:
       }
     );
 
-    // Run again - should report no changes
     const output = await runSync(configPath);
     assert.ok(
-      output.includes("No changes") || output.includes("unchanged"),
-      `Expected no changes, got: ${output}`
+      output.includes("Code Scanning: No changes needed"),
+      `Expected code scanning to report no changes, got: ${output}`
+    );
+    // The marker file's PR is never merged, so file sync still plans it; check code scanning only
+    assert.ok(
+      !output.includes("codeScanning."),
+      `Expected no code scanning changes in idempotent run, got: ${output}`
     );
   });
 });

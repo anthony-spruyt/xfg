@@ -63,7 +63,6 @@ repos:
     );
     console.log(output);
 
-    // Verify repo was created
     assert.ok(
       await repoExists(OWNER, repoName),
       `Repo ${repoName} should exist after sync`
@@ -114,16 +113,19 @@ repos:
     );
     console.log(output);
 
-    // Verify repo was created
     assert.ok(
       await repoExists(OWNER, repoName),
       `Repo ${repoName} should exist after sync`
     );
 
-    // Verify it's a fork of the source
-    assert.ok(
-      await isForkedFrom(OWNER, repoName, FORK_SOURCE),
-      `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
+    await withTestRetry(
+      async () => {
+        assert.ok(
+          await isForkedFrom(OWNER, repoName, FORK_SOURCE),
+          `Repo ${repoName} should be a fork of ${FORK_SOURCE}`
+        );
+      },
+      { description: "verify fork parent", retries: 5, baseDelayMs: 3000 }
     );
 
     console.log("  Fork lifecycle test passed");
@@ -131,7 +133,7 @@ repos:
 
   test("create dry-run: shows CREATE but doesn't actually create repo", async () => {
     const repoName = generateRepoName();
-    // Do NOT add to reposToDelete — repo should not exist
+    reposToDelete.push(repoName);
 
     const configPath = writeConfig(
       tmpDir,
@@ -152,13 +154,11 @@ repos:
     );
     console.log(output);
 
-    // Verify output shows CREATE
     assert.ok(
       output.includes("CREATE"),
       "Dry-run output should include CREATE"
     );
 
-    // Verify repo was NOT actually created
     assert.ok(
       !(await repoExistsNoRetry(OWNER, repoName)),
       `Repo ${repoName} should NOT exist after dry-run`
@@ -198,17 +198,15 @@ repos:
       );
       console.log(output);
 
-      // Verify repo was created
       assert.ok(
         await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after migrate`
       );
 
-      // Verify it's NOT a fork (migrated repos are standalone)
-      assert.ok(
-        !(await isForkedFrom(OWNER, repoName, "aspruyt/fxg-test")),
-        `Repo ${repoName} should not be a fork`
+      const isFork = await execWithRetry(
+        `gh api repos/${OWNER}/${repoName} --jq '.fork'`
       );
+      assert.equal(isFork, "false", `Repo ${repoName} should not be a fork`);
 
       console.log("  Migrate lifecycle test passed");
     }
@@ -242,7 +240,6 @@ repos:
     );
     console.log(output);
 
-    // Verify repo was created
     assert.ok(
       await repoExists(OWNER, repoName),
       `Repo ${repoName} should exist after sync`
@@ -397,13 +394,11 @@ repos:
     );
     console.log(firstOutput);
 
-    // First run should show CREATE
     assert.ok(
       firstOutput.includes("CREATE"),
       "First sync should include CREATE"
     );
 
-    // Second run - update file content to trigger a change
     const configPath2 = writeConfig(
       tmpDir,
       `id: lifecycle-existed-test
@@ -423,7 +418,6 @@ repos:
     );
     console.log(secondOutput);
 
-    // Second run should NOT show CREATE (repo already exists)
     assert.ok(
       !secondOutput.includes("CREATE"),
       "Second sync should NOT include CREATE (repo already existed)"
@@ -434,7 +428,7 @@ repos:
 
   test("fork dry-run: shows FORK but doesn't create repo", async () => {
     const repoName = generateRepoName();
-    // Do NOT add to reposToDelete — repo should not exist
+    reposToDelete.push(repoName);
 
     const configPath = writeConfig(
       tmpDir,
@@ -456,10 +450,8 @@ repos:
     );
     console.log(output);
 
-    // Verify output shows FORK
     assert.ok(output.includes("FORK"), "Dry-run output should include FORK");
 
-    // Verify repo was NOT actually created
     assert.ok(
       !(await repoExistsNoRetry(OWNER, repoName)),
       `Repo ${repoName} should NOT exist after dry-run`
@@ -473,7 +465,7 @@ repos:
     { skip: !HAS_ADO_CREDS },
     async () => {
       const repoName = generateRepoName();
-      // Do NOT add to reposToDelete — repo should not exist
+      reposToDelete.push(repoName);
 
       const configPath = writeConfig(
         tmpDir,
@@ -495,13 +487,11 @@ repos:
       );
       console.log(output);
 
-      // Verify output shows MIGRATE
       assert.ok(
         output.includes("MIGRATE"),
         "Dry-run output should include MIGRATE"
       );
 
-      // Verify repo was NOT actually created
       assert.ok(
         !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`

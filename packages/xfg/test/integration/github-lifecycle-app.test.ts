@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   exec,
+  execWithRetry,
   projectRoot,
   generateRepoName,
   deleteRepo,
@@ -20,7 +21,6 @@ const FORK_SOURCE = "octocat/Spoon-Knife";
 const ADO_MIGRATE_SOURCE = "https://dev.azure.com/aspruyt/fxg/_git/fxg-test";
 const HAS_ADO_CREDS = !!process.env.AZURE_DEVOPS_EXT_PAT;
 
-// Skip all tests if GitHub App credentials are not set
 const SKIP_TESTS =
   !process.env.XFG_GITHUB_CLIENT_ID || !process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
@@ -83,13 +83,11 @@ repos:
       );
       console.log(output);
 
-      // Verify repo was created (using GH_TOKEN for verification)
       assert.ok(
         await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
-      // Verify file was pushed
       await withTestRetry(
         async () => {
           const fileContent = await exec(
@@ -146,13 +144,11 @@ repos:
       );
       console.log(output);
 
-      // Verify repo was created
       assert.ok(
         await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
-      // Verify file modes via the Git tree API
       await withTestRetry(
         async () => {
           const treeJson = await exec(
@@ -230,13 +226,11 @@ repos:
       );
       console.log(output);
 
-      // Verify repo was created
       assert.ok(
         await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
-      // Verify it's a fork of the source
       await withTestRetry(
         async () => {
           assert.ok(
@@ -256,7 +250,7 @@ repos:
 
     test("create dry-run: shows CREATE but doesn't actually create repo (App auth)", async () => {
       const repoName = generateRepoName();
-      // Do NOT add to reposToDelete — repo should not exist
+      reposToDelete.push(repoName);
 
       const configPath = writeConfig(
         tmpDir,
@@ -279,13 +273,11 @@ repos:
       );
       console.log(output);
 
-      // Verify output shows CREATE
       assert.ok(
         output.includes("CREATE"),
         "Dry-run output should include CREATE"
       );
 
-      // Verify repo was NOT actually created
       assert.ok(
         !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
@@ -325,26 +317,15 @@ repos:
         );
         console.log(output);
 
-        // Verify repo was created (using GH_TOKEN for verification)
         assert.ok(
           await repoExists(OWNER, repoName),
           `Repo ${repoName} should exist after migrate`
         );
 
-        // Verify it's NOT a fork (migrated repos are standalone)
-        await withTestRetry(
-          async () => {
-            assert.ok(
-              !(await isForkedFrom(OWNER, repoName, "aspruyt/fxg-test")),
-              `Repo ${repoName} should not be a fork`
-            );
-          },
-          {
-            description: "verify migrated repo is not a fork",
-            retries: 5,
-            baseDelayMs: 3000,
-          }
+        const isFork = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName} --jq '.fork'`
         );
+        assert.equal(isFork, "false", `Repo ${repoName} should not be a fork`);
 
         console.log("  Migrate lifecycle test (App) passed");
       }
@@ -378,13 +359,11 @@ repos:
       );
       console.log(output);
 
-      // Verify repo was created (using GH_TOKEN for verification)
       assert.ok(
         await repoExists(OWNER, repoName),
         `Repo ${repoName} should exist after sync`
       );
 
-      // Verify description was applied (using GH_TOKEN for verification)
       await withTestRetry(
         async () => {
           const description = await exec(
@@ -546,13 +525,11 @@ repos:
       );
       console.log(firstOutput);
 
-      // First run should show CREATE
       assert.ok(
         firstOutput.includes("CREATE"),
         "First sync should include CREATE"
       );
 
-      // Second run - update file content to trigger a change
       const configPath2 = writeConfig(
         tmpDir,
         `id: lifecycle-existed-app-test
@@ -574,7 +551,6 @@ repos:
       );
       console.log(secondOutput);
 
-      // Second run should NOT show CREATE (repo already exists)
       assert.ok(
         !secondOutput.includes("CREATE"),
         "Second sync should NOT include CREATE (repo already existed)"
@@ -585,7 +561,7 @@ repos:
 
     test("fork dry-run: shows FORK but doesn't create repo (App auth)", async () => {
       const repoName = generateRepoName();
-      // Do NOT add to reposToDelete — repo should not exist
+      reposToDelete.push(repoName);
 
       const configPath = writeConfig(
         tmpDir,
@@ -609,10 +585,8 @@ repos:
       );
       console.log(output);
 
-      // Verify output shows FORK
       assert.ok(output.includes("FORK"), "Dry-run output should include FORK");
 
-      // Verify repo was NOT actually created
       assert.ok(
         !(await repoExistsNoRetry(OWNER, repoName)),
         `Repo ${repoName} should NOT exist after dry-run`
@@ -626,7 +600,7 @@ repos:
       { skip: !HAS_ADO_CREDS },
       async () => {
         const repoName = generateRepoName();
-        // Do NOT add to reposToDelete — repo should not exist
+        reposToDelete.push(repoName);
 
         const configPath = writeConfig(
           tmpDir,
@@ -650,13 +624,11 @@ repos:
         );
         console.log(output);
 
-        // Verify output shows MIGRATE
         assert.ok(
           output.includes("MIGRATE"),
           "Dry-run output should include MIGRATE"
         );
 
-        // Verify repo was NOT actually created
         assert.ok(
           !(await repoExistsNoRetry(OWNER, repoName)),
           `Repo ${repoName} should NOT exist after dry-run`

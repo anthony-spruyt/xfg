@@ -12,6 +12,7 @@ import {
   createRepo,
   deleteRepo,
   withTestRetry,
+  isNotFoundError,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -76,7 +77,8 @@ async function getSecuritySettings(): Promise<{
   try {
     await execWithRetry(`gh api repos/${testRepo}/vulnerability-alerts`);
     vulnerabilityAlerts = true;
-  } catch {
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error;
     vulnerabilityAlerts = false;
   }
 
@@ -86,7 +88,8 @@ async function getSecuritySettings(): Promise<{
       `gh api repos/${testRepo}/automated-security-fixes`
     );
     automatedSecurityFixes = JSON.parse(r).enabled === true;
-  } catch {
+  } catch (error) {
+    if (!isNotFoundError(error)) throw error;
     automatedSecurityFixes = false;
   }
 
@@ -146,11 +149,26 @@ describe("GitHub Repo Settings Integration Test", () => {
   beforeEach(async () => {
     await resetRepoSettings();
     await resetSecuritySettings();
+    await withTestRetry(
+      async () => {
+        const sec = await getSecuritySettings();
+        assert.equal(sec.vulnerabilityAlerts, false);
+        assert.equal(sec.automatedSecurityFixes, false);
+        assert.equal(sec.privateVulnerabilityReporting, false);
+      },
+      { description: "security settings reset visible" }
+    );
   });
 
   test("settings dry-run shows planned repo settings changes", async () => {
     const configPath = createConfigFile();
-    const settingsBefore = await getRepoSettings();
+    await withTestRetry(
+      async () => {
+        const s = await getRepoSettings();
+        assert.equal(s.has_wiki, GITHUB_DEFAULTS.has_wiki);
+      },
+      { description: "repo settings reset visible" }
+    );
 
     const output = await exec(
       `node dist/cli.js sync --config ${configPath} --dry-run`,
@@ -159,7 +177,7 @@ describe("GitHub Repo Settings Integration Test", () => {
     assert.ok(output.includes("DRY RUN") || output.includes("dry-run"));
 
     const settingsAfter = await getRepoSettings();
-    assert.equal(settingsAfter.has_wiki, settingsBefore.has_wiki);
+    assert.equal(settingsAfter.has_wiki, GITHUB_DEFAULTS.has_wiki);
   });
 
   test("settings applies repo settings changes", async () => {
@@ -207,9 +225,7 @@ describe("GitHub Repo Settings Integration Test", () => {
       cwd: projectRoot,
     });
 
-    // Security settings have eventual consistency on the GitHub API — a second
-    // sync run immediately after the first can read stale state and plan a
-    // non-zero diff. Retry until the idempotent run reports no changes.
+    // Security settings reads are eventually consistent, so an immediate rerun can plan a stale diff
     await withTestRetry(
       async () => {
         const output = await exec(
@@ -219,10 +235,15 @@ describe("GitHub Repo Settings Integration Test", () => {
           }
         );
         assert.ok(
-          output.includes("No changes needed") ||
-            output.includes("0 to add, 0 to change"),
+          output.includes("Repo Settings: No changes needed"),
           `expected idempotent sync to report no changes; got:\n${output}`
         );
+        for (const action of ["to create", "to update", "to delete"]) {
+          assert.ok(
+            !output.includes(action),
+            `expected no "${action}" in idempotent run; got:\n${output}`
+          );
+        }
       },
       {
         description: "idempotent sync reports no changes",

@@ -12,6 +12,7 @@ import {
   deleteRepo,
   writeConfig,
   withTestRetry,
+  isNotFoundError,
 } from "./test-helpers.js";
 
 const OWNER = "spruyt-labs";
@@ -27,14 +28,10 @@ let testRepo: string;
 let tmpDir: string;
 
 async function getLabels(): Promise<Label[]> {
-  try {
-    const output = await execWithRetry(
-      `gh api repos/${testRepo}/labels --paginate`
-    );
-    return JSON.parse(output) as Label[];
-  } catch {
-    return [];
-  }
+  const output = await execWithRetry(
+    `gh api repos/${testRepo}/labels --paginate`
+  );
+  return JSON.parse(output) as Label[];
 }
 
 function findLabel(labels: Label[], name: string): Label | undefined {
@@ -43,6 +40,17 @@ function findLabel(labels: Label[], name: string): Label | undefined {
 
 async function getXfgLabels(): Promise<Label[]> {
   return (await getLabels()).filter((l) => l.name.startsWith("xfg-test-"));
+}
+
+async function waitForBaseLabels(): Promise<void> {
+  await withTestRetry(
+    async () => {
+      const labels = await getLabels();
+      assert.ok(findLabel(labels, "xfg-test-bug"));
+      assert.ok(findLabel(labels, "xfg-test-feature"));
+    },
+    { retries: 3, baseDelayMs: 2000, description: "base labels visible" }
+  );
 }
 
 async function runSync(configPath: string, extraArgs = ""): Promise<string> {
@@ -91,23 +99,26 @@ describe("GitHub Labels Integration Test", () => {
   });
 
   beforeEach(async () => {
-    // Delete xfg-test-* labels to start clean each test.
-    // Retry up to 3 times since GitHub API deletions can be eventually consistent.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const labels = (await getLabels()).filter((l) =>
-        l.name.startsWith("xfg-test-")
-      );
-      if (labels.length === 0) break;
-      for (const label of labels) {
-        try {
-          await execWithRetry(
-            `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
-          );
-        } catch (e) {
-          console.warn(`Failed to delete label ${label.name}: ${e}`);
+    await withTestRetry(
+      async () => {
+        for (const label of await getXfgLabels()) {
+          try {
+            await execWithRetry(
+              `gh api --method DELETE repos/${testRepo}/labels/${encodeURIComponent(label.name)}`
+            );
+          } catch (error) {
+            // A stale list can return labels that are already deleted
+            if (!isNotFoundError(error)) throw error;
+          }
         }
-      }
-    }
+        assert.equal(
+          (await getXfgLabels()).length,
+          0,
+          "xfg-test-* labels still present after cleanup"
+        );
+      },
+      { description: "xfg-test-* labels cleared" }
+    );
   });
 
   test("settings creates labels in the test repository", async () => {
@@ -144,6 +155,7 @@ describe("GitHub Labels Integration Test", () => {
   test("settings updates label color and description", async () => {
     const baseConfig = makeBaseConfig();
     await runSync(baseConfig);
+    await waitForBaseLabels();
 
     const updateConfig = writeConfig(
       tmpDir,
@@ -187,6 +199,7 @@ repos:
   test("settings renames a label", async () => {
     const baseConfig = makeBaseConfig();
     await runSync(baseConfig);
+    await waitForBaseLabels();
 
     const renameConfig = writeConfig(
       tmpDir,
@@ -228,10 +241,19 @@ repos:
   test("settings is idempotent when labels already match", async () => {
     const configPath = makeBaseConfig();
     await runSync(configPath);
+    await waitForBaseLabels();
 
     const output = await runSync(configPath);
-    const lower = output.toLowerCase();
-    assert.ok(lower.includes("no changes") || lower.includes("up to date"));
+    assert.ok(
+      output.includes("Labels: No changes needed"),
+      `Expected labels to report no changes, got: ${output}`
+    );
+    for (const action of ["to create", "to update", "to delete"]) {
+      assert.ok(
+        !output.includes(action),
+        `Expected no "${action}" in idempotent run, got: ${output}`
+      );
+    }
   });
 
   test("settings dry-run shows changes without applying", async () => {
@@ -276,19 +298,7 @@ repos:
     );
 
     await runSync(phase1Config);
-
-    await withTestRetry(
-      async () => {
-        const labelsPhase1 = await getLabels();
-        assert.ok(findLabel(labelsPhase1, "xfg-test-bug"));
-        assert.ok(findLabel(labelsPhase1, "xfg-test-feature"));
-      },
-      {
-        retries: 3,
-        baseDelayMs: 2000,
-        description: "label create consistency (phase 1)",
-      }
-    );
+    await waitForBaseLabels();
 
     const phase2Config = writeConfig(
       tmpDir,

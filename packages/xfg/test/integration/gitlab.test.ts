@@ -1,7 +1,14 @@
 import { test, describe, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { join } from "node:path";
-import { exec, execWithRetry, projectRoot, repoRoot } from "./test-helpers.js";
+import {
+  exec,
+  execWithRetry,
+  isNotFoundError,
+  projectRoot,
+  repoRoot,
+  withTestRetry,
+} from "./test-helpers.js";
 
 const fixturesDir = join(projectRoot, "test", "fixtures");
 
@@ -12,6 +19,13 @@ const PROJECT_PATH = `${TEST_NAMESPACE}/${TEST_REPO}`;
 const TARGET_FILE = "my.config.json";
 const BRANCH_NAME = "chore/sync-my-config";
 
+interface MergeRequest {
+  iid: number;
+  title: string;
+  web_url: string;
+  state: string;
+}
+
 // Helper to call GitLab API via glab cli
 async function glabApi(
   method: string,
@@ -20,7 +34,6 @@ async function glabApi(
 ): Promise<string> {
   let cmd = `glab api --method ${method}`;
   if (body) {
-    // Pass each field as a separate -f flag
     for (const [key, value] of Object.entries(body)) {
       const strValue =
         typeof value === "string" ? value : JSON.stringify(value);
@@ -31,38 +44,48 @@ async function glabApi(
   return await execWithRetry(cmd);
 }
 
-// Helper to get file content from GitLab repo
 async function getFileContent(
   path: string,
   branch?: string
 ): Promise<{ content: string } | null> {
+  const encodedPath = encodeURIComponent(path);
+  const ref = branch || (await getDefaultBranch());
   try {
-    const encodedPath = encodeURIComponent(path);
     const result = await glabApi(
       "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/files/${encodedPath}?ref=${branch || (await getDefaultBranch())}`
+      `projects/${encodeURIComponent(PROJECT_PATH)}/repository/files/${encodedPath}?ref=${encodeURIComponent(ref)}`
     );
     const json = JSON.parse(result);
     // GitLab returns base64 encoded content
     const content = Buffer.from(json.content, "base64").toString("utf-8");
     return { content };
-  } catch {
-    return null;
+  } catch (error) {
+    if (isNotFoundError(error)) return null;
+    throw error;
   }
 }
 
-// Helper to get default branch name
+async function waitForFileContent(
+  path: string,
+  branch: string
+): Promise<{ content: string }> {
+  return withTestRetry(
+    async () => {
+      const fileInfo = await getFileContent(path, branch);
+      if (!fileInfo) throw new Error(`${path} not visible on ${branch} yet`);
+      return fileInfo;
+    },
+    { description: `${path} visible on ${branch}` }
+  );
+}
+
 async function getDefaultBranch(): Promise<string> {
-  try {
-    const result = await glabApi(
-      "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}`
-    );
-    const json = JSON.parse(result);
-    return json.default_branch || "main";
-  } catch {
-    return "main";
-  }
+  const result = await glabApi(
+    "GET",
+    `projects/${encodeURIComponent(PROJECT_PATH)}`
+  );
+  const json = JSON.parse(result);
+  return json.default_branch || "main";
 }
 
 // Helper to push a file change (create/update/delete)
@@ -76,7 +99,6 @@ async function pushFileChange(
   const projectId = encodeURIComponent(PROJECT_PATH);
 
   if (content === null) {
-    // Delete file
     await glabApi(
       "DELETE",
       `projects/${projectId}/repository/files/${encodedPath}`,
@@ -86,54 +108,52 @@ async function pushFileChange(
       }
     );
   } else {
-    // Check if file exists to determine create vs update
     const exists = await getFileContent(path, branch);
-    if (exists) {
-      // Update file
-      await glabApi(
-        "PUT",
-        `projects/${projectId}/repository/files/${encodedPath}`,
-        {
-          branch,
-          content,
-          commit_message: message,
-        }
-      );
-    } else {
-      // Create file
-      await glabApi(
-        "POST",
-        `projects/${projectId}/repository/files/${encodedPath}`,
-        {
-          branch,
-          content,
-          commit_message: message,
-        }
-      );
-    }
+    await glabApi(
+      exists ? "PUT" : "POST",
+      `projects/${projectId}/repository/files/${encodedPath}`,
+      {
+        branch,
+        content,
+        commit_message: message,
+      }
+    );
   }
 }
 
-// Helper to get MR by source branch
-async function getMRByBranch(sourceBranch: string): Promise<{
-  iid: number;
-  title: string;
-  web_url: string;
-  state: string;
-} | null> {
-  try {
-    const result = await glabApi(
-      "GET",
-      `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?source_branch=${encodeURIComponent(sourceBranch)}&state=opened`
-    );
-    const mrs = JSON.parse(result);
-    if (mrs && mrs.length > 0) {
-      return mrs[0];
-    }
-    return null;
-  } catch {
-    return null;
-  }
+async function listOpenMRs(sourceBranch?: string): Promise<MergeRequest[]> {
+  const branchFilter = sourceBranch
+    ? `&source_branch=${encodeURIComponent(sourceBranch)}`
+    : "";
+  const result = await glabApi(
+    "GET",
+    `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests?state=opened${branchFilter}`
+  );
+  return JSON.parse(result) as MergeRequest[];
+}
+
+async function getMRByBranch(
+  sourceBranch: string
+): Promise<MergeRequest | null> {
+  const mrs = await listOpenMRs(sourceBranch);
+  return mrs[0] ?? null;
+}
+
+async function waitForOpenMR(
+  sourceBranch: string,
+  excludeIid?: number
+): Promise<MergeRequest> {
+  return withTestRetry(
+    async () => {
+      const mr = await getMRByBranch(sourceBranch);
+      if (!mr) throw new Error(`No open MR on ${sourceBranch} yet`);
+      if (mr.iid === excludeIid) {
+        throw new Error(`Open MR on ${sourceBranch} is still !${excludeIid}`);
+      }
+      return mr;
+    },
+    { description: `open MR on ${sourceBranch}` }
+  );
 }
 
 const RESET_SCRIPT = join(
@@ -155,18 +175,14 @@ describe("GitLab Integration Test", () => {
   test("sync creates a MR in the test repository", async () => {
     const configPath = join(fixturesDir, "integration-test-config-gitlab.yaml");
 
-    // Run the sync tool
     console.log("Running xfg...");
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
-    // Verify MR was created
     console.log("\nVerifying MR was created...");
-    const mr = await getMRByBranch(BRANCH_NAME);
-
-    assert.ok(mr, "Expected a MR to be created");
+    const mr = await waitForOpenMR(BRANCH_NAME);
 
     console.log(`  MR !${mr.iid}: ${mr.title}`);
     console.log(`  URL: ${mr.web_url}`);
@@ -174,20 +190,14 @@ describe("GitLab Integration Test", () => {
     assert.ok(mr.iid, "MR should have an IID");
     assert.ok(mr.title.includes("sync"), "MR title should mention sync");
 
-    // Verify the file exists in the MR branch
     console.log("\nVerifying file exists in MR branch...");
-    const fileInfo = await getFileContent(TARGET_FILE, BRANCH_NAME);
+    const fileInfo = await waitForFileContent(TARGET_FILE, BRANCH_NAME);
 
-    assert.ok(fileInfo, "File should exist in MR branch");
-
-    // Parse and verify the merged JSON content
     const json = JSON.parse(fileInfo.content);
     console.log("  File content:", JSON.stringify(json, null, 2));
 
-    // Verify overlay property overrides base
     assert.equal(json.prop1, "main", "Overlay should override base prop1");
 
-    // Verify base properties are inherited
     assert.equal(
       json.baseOnly,
       "inherited-from-root",
@@ -199,14 +209,12 @@ describe("GitLab Integration Test", () => {
       "Base prop2 should be inherited"
     );
 
-    // Verify overlay adds new properties
     assert.equal(
       json.addedByOverlay,
       true,
       "Overlay should add new properties"
     );
 
-    // Verify nested base properties are preserved
     assert.ok(
       json.prop4?.prop5?.length === 2,
       "Nested arrays from base should be preserved"
@@ -217,54 +225,50 @@ describe("GitLab Integration Test", () => {
   });
 
   test("re-sync closes existing MR and creates fresh one", async () => {
-    // Arrange — create initial MR by running xfg
     const configPath = join(fixturesDir, "integration-test-config-gitlab.yaml");
     console.log("Creating initial MR...");
     await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
 
-    // Get the current MR IID before re-sync
     console.log("Getting current MR IID...");
-    const mrBefore = await getMRByBranch(BRANCH_NAME);
-    const mrIidBefore = mrBefore?.iid ?? null;
+    const mrIidBefore = (await waitForOpenMR(BRANCH_NAME)).iid;
     console.log(`  Current MR: !${mrIidBefore}`);
-
     assert.ok(mrIidBefore, "Expected a MR to exist after initial sync");
 
-    // Run the sync tool again
     console.log("\nRunning xfg again (re-sync)...");
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
     });
     console.log(output);
 
-    // Verify a MR exists (should be a new one after closing the old)
     console.log("\nVerifying MR state after re-sync...");
-    const mrAfter = await getMRByBranch(BRANCH_NAME);
-
-    assert.ok(mrAfter, "Expected a MR to exist after re-sync");
+    const mrAfter = await waitForOpenMR(BRANCH_NAME, mrIidBefore);
     console.log(`  MR after re-sync: !${mrAfter.iid}`);
+    assert.notEqual(
+      mrAfter.iid,
+      mrIidBefore,
+      "Re-sync should create a fresh MR"
+    );
 
-    // The old MR should be closed
     console.log("\nVerifying old MR was closed...");
-    try {
-      const oldMRResult = await glabApi(
-        "GET",
-        `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests/${mrIidBefore}`
-      );
-      const oldMR = JSON.parse(oldMRResult);
-      console.log(`  Old MR !${mrIidBefore} state: ${oldMR.state}`);
-      assert.equal(
-        oldMR.state,
-        "closed",
-        "Old MR should be closed after re-sync"
-      );
-    } catch {
-      console.log(
-        `  Old MR !${mrIidBefore} appears to have been deleted or closed`
-      );
-    }
+    const oldMRState = await withTestRetry(
+      async () => {
+        const oldMR = JSON.parse(
+          await glabApi(
+            "GET",
+            `projects/${encodeURIComponent(PROJECT_PATH)}/merge_requests/${mrIidBefore}`
+          )
+        ) as MergeRequest;
+        if (oldMR.state !== "closed") {
+          throw new Error(`MR !${mrIidBefore} state is ${oldMR.state}`);
+        }
+        return oldMR.state;
+      },
+      { description: `MR !${mrIidBefore} closed` }
+    );
+    console.log(`  Old MR !${mrIidBefore} state: ${oldMRState}`);
+    assert.equal(oldMRState, "closed", "Old MR should be closed after re-sync");
 
     console.log("\n=== Re-sync test passed ===\n");
   });
@@ -275,7 +279,6 @@ describe("GitLab Integration Test", () => {
 
     console.log("\n=== Setting up createOnly test ===\n");
 
-    // Create the file on main branch (simulating it already exists)
     console.log(`Creating ${createOnlyFile} on main branch...`);
     const existingContent = JSON.stringify({ existing: true }, null, 2);
     const defaultBranch = await getDefaultBranch();
@@ -288,7 +291,6 @@ describe("GitLab Integration Test", () => {
     );
     console.log("  File created on main");
 
-    // Run sync with createOnly config
     console.log("\nRunning xfg with createOnly config...");
     const configPath = join(
       fixturesDir,
@@ -299,35 +301,45 @@ describe("GitLab Integration Test", () => {
     });
     console.log(output);
 
-    // Verify the behavior - output should indicate skipping
     assert.ok(
       output.includes("createOnly") || output.includes("skip"),
       "Output should mention createOnly or skip"
     );
 
-    // Check if a MR was created - with createOnly the file should be skipped
     console.log("\nVerifying createOnly behavior...");
-    try {
-      const mr = await getMRByBranch(createOnlyBranch);
-      if (mr) {
-        console.log(`  MR was created: !${mr.iid}`);
-        const fileInfo = await getFileContent(createOnlyFile, createOnlyBranch);
-        if (fileInfo) {
-          const json = JSON.parse(fileInfo.content);
-          console.log("  File content in MR branch:", JSON.stringify(json));
-          assert.equal(
-            json.existing,
-            true,
-            "File should retain original content when createOnly skips"
-          );
-        }
-      } else {
-        console.log(
-          "  No MR was created (all files skipped) - this is correct"
-        );
-      }
-    } catch {
-      console.log("  No MR was created - expected if all files were skipped");
+    const mainFileInfo = await waitForFileContent(
+      createOnlyFile,
+      defaultBranch
+    );
+    const mainJson = JSON.parse(mainFileInfo.content);
+    console.log("  File content on main:", JSON.stringify(mainJson));
+    assert.equal(
+      mainJson.existing,
+      true,
+      "File on main should retain original content"
+    );
+
+    const mr = await getMRByBranch(createOnlyBranch);
+    if (mr) {
+      console.log(`  MR was created: !${mr.iid}`);
+      const fileInfo = await waitForFileContent(
+        createOnlyFile,
+        createOnlyBranch
+      );
+      const json = JSON.parse(fileInfo.content);
+      console.log("  File content in MR branch:", JSON.stringify(json));
+      assert.equal(
+        json.existing,
+        true,
+        "File should retain original content when createOnly skips"
+      );
+      assert.equal(
+        json.newContent,
+        undefined,
+        "createOnly content must not overwrite the existing file"
+      );
+    } else {
+      console.log("  No MR was created (all files skipped) - this is correct");
     }
 
     console.log("\n=== createOnly test passed ===\n");
@@ -340,7 +352,6 @@ describe("GitLab Integration Test", () => {
 
     console.log("\n=== Setting up unchanged files test (issue #90) ===\n");
 
-    // Create the "unchanged" file on main branch with content that matches config
     console.log(
       `Creating ${unchangedFile} on main branch (will NOT change)...`
     );
@@ -356,7 +367,6 @@ describe("GitLab Integration Test", () => {
     );
     console.log("  File created with content matching config");
 
-    // Run sync with the test config
     console.log("\nRunning xfg with unchanged files config...");
     const configPath = join(
       fixturesDir,
@@ -367,11 +377,8 @@ describe("GitLab Integration Test", () => {
     });
     console.log(output);
 
-    // Get the MR and check its title
     console.log("\nVerifying MR title...");
-    const mr = await getMRByBranch(testBranch);
-
-    assert.ok(mr, "Expected a MR to be created");
+    const mr = await waitForOpenMR(testBranch);
     console.log(`  MR !${mr.iid}: ${mr.title}`);
 
     // THE KEY ASSERTION: MR title should only mention the changed file
@@ -392,7 +399,6 @@ describe("GitLab Integration Test", () => {
 
     console.log("\n=== Setting up direct mode test (issue #134) ===\n");
 
-    // Run sync with direct mode config
     console.log("\nRunning xfg with direct mode config...");
     const configPath = join(fixturesDir, "integration-test-direct-gitlab.yaml");
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
@@ -400,24 +406,20 @@ describe("GitLab Integration Test", () => {
     });
     console.log(output);
 
-    // Verify the output mentions direct push
     assert.ok(
       output.includes("Pushed directly") || output.includes("direct"),
       "Output should mention direct push"
     );
 
-    // Verify NO MR was created
+    // beforeEach closes all open MRs, so any open MR here came from this sync
     console.log("\nVerifying no MR was created...");
-    const mr = await getMRByBranch("chore/sync-direct-test");
-    assert.ok(!mr, "No MR should be created in direct mode");
-    console.log("  No MR found - this is correct for direct mode");
+    const openMRs = await listOpenMRs();
+    assert.equal(openMRs.length, 0, "No MR should be created in direct mode");
+    console.log("  No open MRs - this is correct for direct mode");
 
-    // Verify the file exists directly on main branch
     console.log("\nVerifying file exists on main branch...");
     const defaultBranch = await getDefaultBranch();
-    const fileInfo = await getFileContent(directFile, defaultBranch);
-
-    assert.ok(fileInfo, "File should exist on main branch");
+    const fileInfo = await waitForFileContent(directFile, defaultBranch);
     const json = JSON.parse(fileInfo.content);
     console.log("  File content:", JSON.stringify(json, null, 2));
 
