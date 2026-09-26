@@ -69,7 +69,7 @@ digraph loop {
 
 ## Subagent Dispatch
 
-### Review Phase (3 subagents in parallel via single Task tool message)
+### Review Phase (3 subagents in parallel via a single message with 3 Agent tool calls)
 
 | #   | Subagent Type               | Model   | Prompt essence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | --- | --------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -81,21 +81,18 @@ digraph loop {
 
 | Subagent Type     | Model   | Prompt essence                                                                                                                                                                                                                                                                        |
 | ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. After fixing, verify with: `npm test`, `npx tsc --noEmit`, and `./lint.sh`. All three must pass before committing. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
+| `general-purpose` | default | Fix ALL issues below on branch {branch}. Prioritize CRITICAL > IMPORTANT > MINOR. After fixing, verify with `npm test`, `npx tsc --noEmit`, `npm run test:typecheck`, and `npm run docs:check` (run from `packages/xfg/`), and `./lint.sh` (run from the repo root). All five must pass before committing. Commit and **push**. Report what was fixed and what remains. `{combined_issues}` |
 
 ## Controller Rules
 
-**You are the controller. You MUST NOT:**
+You are the controller: you dispatch subagents and track the loop, and you don't read code, edit files, run tests/lint/build, commit, or fix anything yourself - not even one small thing. Keeping the controller out of the code keeps each reviewer's context fresh and independent.
 
-- Read source code, edit files, run tests/lint/build, make commits, or fix anything yourself
-- ALL work goes through subagents. No exceptions, not even for "one small thing."
-
-**You MUST:**
-
-- Dispatch all 3 review subagents in parallel (single message, 3 Task calls)
-- Dispatch fixer only after collecting ALL review results
-- Track iteration count and report progress between iterations
-- Stop at max iterations (default 10) and report remaining issues
+- Dispatch all 3 review subagents in parallel (single message, 3 Agent calls), every iteration - comments and CI results can appear mid-loop.
+- Dispatch the fixer only after collecting ALL review results, then loop back to a fresh review even if the fixer reports done.
+- Treat every comment as actionable, including bot comments (coverage, lint, security).
+- If a reviewer returns unusable output, dispatch it again rather than interpreting it.
+- Track the iteration count and report progress between iterations.
+- Stop at max iterations (default 10, change only with user consent) and report remaining issues.
 
 **Between iterations, report:**
 
@@ -105,15 +102,3 @@ Iteration {n}/{max}: {summary}
 - CI/CodeQL: {n} issues
 - Comments: {n} items
 ```
-
-## Red Flags
-
-| Thought                                     | Reality                                                                |
-| ------------------------------------------- | ---------------------------------------------------------------------- |
-| "Let me just quickly read/fix this"         | NO. Dispatch a subagent. You are the controller.                       |
-| "One review source is enough"               | NO. Always dispatch all 3 in parallel.                                 |
-| "The fixer said it's done, skip re-review"  | NO. Loop back. Fresh eyes every time.                                  |
-| "3 iterations is enough"                    | Default is 10. Don't reduce without user consent.                      |
-| "I'll skip comments, no one reviewed yet"   | NO. Always check. Comments may appear mid-loop.                        |
-| "Reviewer returned junk, I'll interpret it" | NO. Dispatch the reviewer again.                                       |
-| "It's just a bot comment, not actionable"   | NO. Bot comments ARE actionable. Coverage, lint, security — all of it. |

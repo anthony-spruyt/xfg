@@ -20,7 +20,7 @@ The npm package lives in `packages/xfg/` — run npm commands from there. `./lin
 cd packages/xfg
 npm run build    # Compile TypeScript
 npm test         # Run unit tests
-npm run dev      # Run CLI via ts-node
+npm run dev      # Run CLI via tsx
 npm run docs:generate  # Regenerate generated doc tables
 ```
 
@@ -52,7 +52,7 @@ See `DEVELOPMENT.md` → Releases.
 
 ## Architecture Principles
 
-This codebase follows SOLID principles strictly. Do NOT violate these:
+This codebase follows SOLID principles strictly:
 
 - **Dependency Injection**: Never import singletons (e.g. `logger`) in shared utilities or library code. Accept dependencies via constructor or function parameters. Only CLI entry points and composition roots may import singletons directly.
 - **Interfaces for testability**: Every collaborator is injected via an interface. Single-impl interfaces are correct and intentional — do NOT inline them or couple to concrete classes.
@@ -82,7 +82,7 @@ Paths are relative to `packages/xfg/`.
 
 - `conditions.ref_name` requires both `include` and `exclude` arrays (even if empty)
 - `pull_request` rules require ALL parameters - provide defaults for missing ones
-- Test locally with: `node dist/index.js sync --config <config.yaml>`
+- Test locally (from `packages/xfg/`, after `npm run build`): `node dist/cli.js sync --config <config.yaml>`
 
 ## Linting Gotchas
 
