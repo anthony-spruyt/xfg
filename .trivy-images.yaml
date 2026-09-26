@@ -1,3 +1,0 @@
-# Container images to scan daily with Trivy (empty list = skip image scanning)
-
-images: []

@@ -44,7 +44,6 @@
         ".secretlintignore",
         ".shellcheckrc",
         ".sonarcloud.properties",
-        ".trivy-images.yaml",
         ".trivyignore.yaml",
         ".vscode/settings.json",
         ".yamllint.yml",

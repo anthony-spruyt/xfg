@@ -15,3 +15,5 @@ jobs:
     uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-fs.yaml@main"
   scan-image:
     uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-img.yaml@main"
+    secrets:
+      GHCR_READ_TOKEN: "${{ secrets.GHCR_READ_TOKEN }}"
