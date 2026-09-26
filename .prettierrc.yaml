@@ -6,3 +6,16 @@ tabWidth: 2
 semi: true
 singleQuote: false
 proseWrap: "preserve"
+overrides:
+  - files:
+      - "*.md"
+      - "*.json5"
+      - "*.yaml"
+      - "*.yml"
+    options:
+      requirePragma: true
+  - files:
+      - "*.json"
+    options:
+      parser: "json5"
+      requirePragma: true

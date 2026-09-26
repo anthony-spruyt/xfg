@@ -56,9 +56,7 @@ merge_protections:
       - "base = main"
       - "label=autorelease: pending"
     success_conditions:
-      - or:
-          - "author = repo-operator-release-bot[bot]"
-          - "author = xfg-release-bot[bot]"
+      - "author = repo-operator-release-bot[bot]"
       - "head~=^release-please--branches--"
       - "files~=^\\.release-please-manifest\\.json$"
   - name: "revert-approved"
