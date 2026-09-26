@@ -27,14 +27,10 @@ let scopedTestRepo: string;
 let tmpDir: string;
 
 async function getSecretsFor(repo: string): Promise<Secret[]> {
-  try {
-    const output = await execWithRetry(
-      `gh api repos/${repo}/actions/secrets --jq '.secrets'`
-    );
-    return JSON.parse(output) as Secret[];
-  } catch {
-    return [];
-  }
+  const output = await execWithRetry(
+    `gh api repos/${repo}/actions/secrets --jq '.secrets'`
+  );
+  return JSON.parse(output) as Secret[];
 }
 
 async function getSecrets(): Promise<Secret[]> {

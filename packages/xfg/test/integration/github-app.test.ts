@@ -13,6 +13,8 @@ import {
   writeConfig,
   resetTestRepo,
   waitForCommitVerified,
+  waitForFileDeleted,
+  waitForFileVisible,
   waitForPrVisible,
   withTestRetry,
 } from "./test-helpers.js";
@@ -198,6 +200,11 @@ repos:
       xfgEnv
     );
     console.log(dryRunOutput);
+    assert.ok(
+      !dryRunOutput.includes("to update") &&
+        !dryRunOutput.includes("to create"),
+      `Second run should report no ruleset changes, got: ${dryRunOutput}`
+    );
   });
 
   test("deleteOrphaned removes orphan files", async () => {
@@ -222,7 +229,8 @@ repos:
     );
 
     await exec(`node dist/cli.js sync --config ${config1}`, xfgEnv);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await waitForFileVisible(testRepo, "app-orphan-test.json");
+    await waitForFileVisible(testRepo, "app-keep-test.json");
 
     const config2 = writeConfig(
       tmpDir,
@@ -241,6 +249,8 @@ repos:
     );
 
     await exec(`node dist/cli.js sync --config ${config2}`, xfgEnv);
+    await waitForFileDeleted(testRepo, "app-orphan-test.json");
+    await waitForFileVisible(testRepo, "app-keep-test.json");
   });
 });
 

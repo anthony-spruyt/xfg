@@ -18,8 +18,6 @@ export interface JsonSchema {
 
 const PREFIX = "schema:";
 
-
-
 export function anchorFor(name: string): string {
   return `#${name.toLowerCase()}`;
 }
@@ -82,7 +80,10 @@ function propertyDetails(schema: JsonSchema): string[] {
   return Object.entries(schema.properties ?? {})
     .map(([name, property]): [string, string] => {
       const description = escapeCell(property.description);
-      return [name, description.slice(firstSentence(description).length).trim()];
+      return [
+        name,
+        description.slice(firstSentence(description).length).trim(),
+      ];
     })
     .filter(([, rest]) => rest.length > 0)
     .map(([name, rest]) => `- \`${name}\` — ${rest}`);

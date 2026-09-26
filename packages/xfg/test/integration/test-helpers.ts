@@ -358,7 +358,10 @@ export async function waitForFileDeleted(
         ) {
           throw error;
         }
-        // exec() threw — file is gone (404)
+        const stderr = (error as { stderr?: string }).stderr ?? "";
+        if (!/HTTP 404|Not Found/i.test(stderr)) {
+          throw error;
+        }
         console.log(`  File ${filePath} confirmed deleted`);
       }
     },

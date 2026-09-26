@@ -508,17 +508,7 @@ jobs:
       - name: Assert — verify secret was created
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          REPO: spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}
-        run: |
-          for _ in 1 2 3 4 5; do
-            if gh api "repos/${REPO}/actions/secrets" --jq '.secrets[].name' | grep -qx XFG_ACTION_APP_SECRET; then
-              echo "Secret created successfully"
-              exit 0
-            fi
-            sleep 3
-          done
-          echo "ERROR: Secret XFG_ACTION_APP_SECRET was not created"
-          exit 1
+        run: .github/scripts/wait-for-secret.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "XFG_ACTION_APP_SECRET"
 
       - name: Cleanup — delete ephemeral repo
         if: always()
