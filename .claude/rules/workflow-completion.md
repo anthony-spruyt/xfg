@@ -2,13 +2,7 @@
 
 ## Commit and Push Automatically
 
-When you complete code changes and verification passes (build/test/lint), **commit and push immediately without asking**. This is not optional. Do not:
-
-- Ask "want me to commit?"
-- Ask "should I push?"
-- Say "want me to commit and push?"
-- Wait for explicit instruction to commit
-- Wait for explicit instruction to push
+When you complete code changes and verification passes (build/test/lint), **commit and push immediately** - don't ask whether to, and don't wait to be told.
 
 The workflow is: fix → verify → commit → push → report done. All one motion.
 
@@ -17,4 +11,4 @@ The workflow is: fix → verify → commit → push → report done. All one mot
 - Force push
 - Destructive git operations
 
-Feature branch commit+push after green CI is NEVER a confirmation-worthy action.
+Committing and pushing a feature branch never needs confirmation.
