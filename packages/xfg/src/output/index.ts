@@ -7,9 +7,11 @@ export {
   type LifecycleReport,
   type LifecycleAction,
 } from "./lifecycle-report.js";
+export { formatCountEntry } from "../shared/count-format.js";
 export {
-  formatCountEntry,
+  formatSettingsCountEntries,
   formatSettingsReportCLI,
+  hasRepoSettingsChanges,
   renderRepoSettingsDiffLines,
   formatSettingsReportMarkdown,
   writeSettingsReportSummary,

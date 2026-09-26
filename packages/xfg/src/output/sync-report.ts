@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import { formatCountEntry } from "./settings-report.js";
+import { formatCountEntry } from "../shared/count-format.js";
 import { formatDiffLine } from "../shared/diff-format.js";
 import type { MergeMode } from "../config/index.js";
 import type { ActiveAction } from "../settings/index.js";
@@ -43,10 +43,8 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
       continue;
     }
 
-    // Repo header
     lines.push(chalk.yellow(`~ ${repo.repoName}`));
 
-    // Files
     for (const file of repo.files) {
       if (file.action === "create") {
         lines.push(chalk.green(`    + ${file.path}`));
@@ -56,7 +54,6 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
         lines.push(chalk.red(`    - ${file.path}`));
       }
 
-      // Content diff for structured data files
       if (file.diffLines) {
         for (const diffLine of file.diffLines) {
           lines.push(`      ${formatDiffLine(diffLine)}`);
@@ -64,15 +61,13 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
       }
     }
 
-    // Error
     if (repo.error) {
       lines.push(chalk.red(`    Error: ${repo.error}`));
     }
 
-    lines.push(""); // Blank line between repos
+    lines.push("");
   }
 
-  // Summary
   lines.push(formatSyncSummary(report.totals));
 
   return lines;
@@ -84,19 +79,16 @@ export function formatSyncReportMarkdown(
 ): string {
   const lines: string[] = [];
 
-  // Title
   const title = dryRun ? "## xfg Plan" : "## xfg Apply";
   lines.push(title);
   lines.push("");
 
-  // Dry-run warning
   if (dryRun) {
     lines.push("> [!WARNING]");
     lines.push("> This was a dry run — no changes were applied");
     lines.push("");
   }
 
-  // Per-repo sections: heading + diff block
   for (const repo of report.repos) {
     if (repo.files.length === 0 && !repo.error) {
       continue;
@@ -115,7 +107,6 @@ export function formatSyncReportMarkdown(
     }
   }
 
-  // Summary
   lines.push(`**${formatSyncSummary(report.totals)}**`);
 
   return lines.join("\n");
