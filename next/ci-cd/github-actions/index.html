@@ -2860,6 +2860,12 @@
 </thead>
 <tbody>
 <tr>
+<td><code>command</code></td>
+<td>No</td>
+<td><code>sync</code></td>
+<td>xfg command to run (sync/secrets-sync). secrets-sync ignores branch, merge, merge-strategy, and delete-branch</td>
+</tr>
+<tr>
 <td><code>config</code></td>
 <td>Yes</td>
 <td>-</td>
@@ -2953,6 +2959,7 @@
 </table>
 <!-- xfg:generated:end -->
 
+<p>Each input is passed to xfg as exactly one argument. Put extra flags in their own inputs, not inside another input's value.</p>
 <h3 id="multi-platform-example">Multi-Platform Example<a class="headerlink" href="#multi-platform-example" title="Permanent link">&para;</a></h3>
 <p>Sync configs across GitHub, Azure DevOps, and GitLab repositories:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v7</span><span class="w"> </span><span class="c1"># x-release-please-major</span>

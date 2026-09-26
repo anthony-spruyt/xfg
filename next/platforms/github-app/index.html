@@ -2929,6 +2929,7 @@
 <li>Caches tokens to minimize API calls</li>
 <li>Skips repositories without app access (with a warning)</li>
 </ul>
+<p>The same inputs work with <code>command: secrets-sync</code>. Grant the app <strong>Secrets: Read and write</strong> for that. Unlike <code>sync</code>, secrets sync fails (rather than skips) repos without app access.</p>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When GitHub App credentials are provided, xfg:</p>
 <ol>
