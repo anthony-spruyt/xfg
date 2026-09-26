@@ -2847,6 +2847,8 @@
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">github-token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{ secrets.GH_PAT }}</span><span class="w"> </span><span class="c1"># PAT with repo scope for cross-repo access</span>
 </span></code></pre></div>
 <h3 id="action-inputs">Action Inputs<a class="headerlink" href="#action-inputs" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated action:inputs -->
+
 <table>
 <thead>
 <tr>
@@ -2857,6 +2859,12 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>command</code></td>
+<td>No</td>
+<td><code>sync</code></td>
+<td>xfg command to run (sync/secrets-sync). secrets-sync ignores branch, merge, merge-strategy, and delete-branch</td>
+</tr>
 <tr>
 <td><code>config</code></td>
 <td>Yes</td>
@@ -2891,13 +2899,13 @@
 <td><code>merge</code></td>
 <td>No</td>
 <td>-</td>
-<td>PR merge mode (<code>manual</code>/<code>auto</code>/<code>force</code>/<code>direct</code>)</td>
+<td>PR merge mode (manual/auto/force/direct)</td>
 </tr>
 <tr>
 <td><code>merge-strategy</code></td>
 <td>No</td>
 <td>-</td>
-<td>Merge strategy (<code>merge</code>/<code>squash</code>/<code>rebase</code>)</td>
+<td>Merge strategy (merge/squash/rebase)</td>
 </tr>
 <tr>
 <td><code>delete-branch</code></td>
@@ -2912,18 +2920,6 @@
 <td>GitHub token for authentication</td>
 </tr>
 <tr>
-<td><code>github-client-id</code></td>
-<td>No</td>
-<td>-</td>
-<td>GitHub App Client ID for installation token generation</td>
-</tr>
-<tr>
-<td><code>github-app-private-key</code></td>
-<td>No</td>
-<td>-</td>
-<td>GitHub App private key (PEM) for JWT signing</td>
-</tr>
-<tr>
 <td><code>azure-devops-token</code></td>
 <td>No</td>
 <td>-</td>
@@ -2936,13 +2932,34 @@
 <td>GitLab token for authentication</td>
 </tr>
 <tr>
+<td><code>github-client-id</code></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub App Client ID (generates installation tokens automatically)</td>
+</tr>
+<tr>
+<td><code>github-app-private-key</code></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub App private key (PEM format) for JWT signing</td>
+</tr>
+<tr>
 <td><code>no-delete</code></td>
 <td>No</td>
 <td><code>false</code></td>
-<td>Skip deletion of orphaned resources</td>
+<td>Skip deletion of orphaned resources even if deleteOrphaned is configured</td>
+</tr>
+<tr>
+<td><code>xfg-package</code></td>
+<td>No</td>
+<td>-</td>
+<td>Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release.</td>
 </tr>
 </tbody>
 </table>
+<!-- xfg:generated:end -->
+
+<p>Each input is passed to xfg as exactly one argument. Put extra flags in their own inputs, not inside another input's value.</p>
 <h3 id="multi-platform-example">Multi-Platform Example<a class="headerlink" href="#multi-platform-example" title="Permanent link">&para;</a></h3>
 <p>Sync configs across GitHub, Azure DevOps, and GitLab repositories:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v7</span><span class="w"> </span><span class="c1"># x-release-please-major</span>
