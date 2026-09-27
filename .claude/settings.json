@@ -82,10 +82,6 @@
       }
     ]
   },
-  "statusLine": {
-    "type": "command",
-    "command": "bash -c 'input=$(cat); project_dir=$(echo \"$input\" | jq -r \".workspace.project_dir\"); bash \"$project_dir/.claude/statusline.sh\" <<< \"$input\"'"
-  },
   "enabledPlugins": {
     "hookify-plus@aspruyt-plugins": true,
     "security-hooks@aspruyt-plugins": true,
