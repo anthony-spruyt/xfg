@@ -63,10 +63,7 @@ else
 
   LINT_EXIT_CODE=0
 
-  # Inside a WSL2 devcontainer (nested userns), rootless podman's newuidmap
-  # fails because the outer namespace did not delegate subuid ranges. Use
-  # `sudo podman` with --network=host so no slirp4netns / subuid setup is
-  # required. The container still runs linters as the invoking user via -u.
+  # Devcontainer podman is rootful; linters still run as the invoking user via -u.
   if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
     runner=(sudo -n podman)
     network_arg=(--network=host --uts=host)

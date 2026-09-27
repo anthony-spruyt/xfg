@@ -7,7 +7,7 @@ Standardized development container synced across repos via repo-operator. Edits 
 The heavy lifting is baked into `ghcr.io/anthony-spruyt/devcontainer-common` (built from `container-images/devcontainer-common/`). That image includes:
 
 - Python, Node, GitHub CLI, pre-commit
-- Podman + podman-docker, fuse-overlayfs, uidmap, slirp4netns
+- Podman, with `podman`/`docker` wrappers at `/usr/local/bin` that run it via `sudo`
 - safe-chain supply-chain protection
 - `agent-run` policy-enforcing podman wrapper at `/usr/local/bin/agent-run`
 - `devcontainer-post-create` runtime config script at `/usr/local/bin/devcontainer-post-create`
@@ -28,7 +28,7 @@ Repo-operator syncs a thin layer on top.
 2. safe-chain shell setup (shims)
 3. pre-commit hook installation
 4. Claude Code CLI install
-5. Podman storage config (auto-detects Kata vs WSL2)
+5. Podman storage config (mounts the Coder containers disk when present)
 6. Registry allow-list (enforcing short-name mode)
 7. Calls `setup-devcontainer.sh` for repo-specific setup
 8. Runs verification tests
@@ -36,11 +36,10 @@ Repo-operator syncs a thin layer on top.
 ## Security posture
 
 - Non-root by default (`USER vscode`).
-- Rootless Podman via `podman-docker` (`docker` CLI → `podman`).
-- `/dev/fuse` injected so rootful path uses `fuse-overlayfs` (not `vfs`).
+- Rootful Podman by design. Rootless cannot run nested (no cgroup delegation, no `/dev/net/tun`), and `vscode` has passwordless sudo anyway. Isolation comes from the devcontainer itself (WSL2) or the Kata VM (Coder).
 - Registry allow-list with `short-name-mode = "enforcing"` — typo-squat pulls fail.
 - Seccomp profile narrows host syscall surface vs `seccomp=unconfined`.
-- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, pids/memory/cpu limits.
+- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, and a private bridge network. It is a guardrail against hostile images, not a boundary against the agent. No pids/memory/cpu limits: cgroups are not delegated.
 
 ## Seccomp profile updates
 
@@ -49,4 +48,4 @@ Repo-operator manages `podman-seccomp.json` updates via Renovate. The updated JS
 ## Troubleshooting
 
 - `podman info` reports `vfs` driver: `/etc/containers/storage.conf` missing or graphroot was populated by vfs — remove it (`sudo rm -rf /var/lib/containers/storage`) and rebuild the devcontainer.
-- Rootless `newuidmap: exit status 1` in WSL2: outer namespace lacks delegated subuid ranges. Use `sudo podman`; `lint.sh` handles this automatically.
+- `newuidmap: exit status 1`: something called `/usr/bin/podman` directly (rootless). Use `podman` from `PATH`, which resolves to the `/usr/local/bin` wrapper.
