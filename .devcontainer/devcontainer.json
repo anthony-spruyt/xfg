@@ -31,7 +31,7 @@
       "version": "44.105.0"
     },
     "ghcr.io/devcontainers/features/azure-cli": {
-      "version": "2.86.0"
+      "version": "2.90.0"
     }
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
