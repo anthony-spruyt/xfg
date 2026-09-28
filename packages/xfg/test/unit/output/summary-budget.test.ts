@@ -8,6 +8,7 @@ import {
 function repoBlock(name: string, lineCount: number) {
   return {
     heading: `### ${name}`,
+    repos: [name],
     diffLines: Array.from({ length: lineCount }, (_, i) => `+ line ${i}`),
   };
 }
@@ -34,8 +35,8 @@ describe("fitSummary", () => {
       {
         header: ["## T", ""],
         blocks: [
-          { heading: "### a", diffLines: ["+x"] },
-          { diffLines: ["-y"] },
+          { heading: "### a", diffLines: ["+x"], repos: ["a"] },
+          { diffLines: ["-y"], repos: ["b"] },
         ],
         footer: "**F**",
       },
@@ -65,7 +66,9 @@ describe("fitSummary", () => {
     assert.ok(markdown.includes("### org/repo-0"));
     assert.ok(markdown.includes("... cut to fit GitHub's 1 MiB summary limit"));
     assert.ok(
-      markdown.includes("_... 5 more repos not shown. See the job log._")
+      markdown.includes(
+        "_5 more repos not shown, see the job log:_ `org/repo-5`, `org/repo-6`"
+      )
     );
     assert.ok(!markdown.includes("### org/repo-9"));
     assert.equal((markdown.match(/^```/gm) ?? []).length % 2, 0);
@@ -111,7 +114,7 @@ describe("fitSummary", () => {
   test("renders whole at the exact byte length and cuts one byte below", () => {
     const parts = {
       header: summaryHeader(true),
-      blocks: [repoBlock("org/a", 3), { diffLines: ["+ ```"] }],
+      blocks: [repoBlock("org/a", 3), { diffLines: ["+ ```"], repos: ["b"] }],
       footer: "**F**",
     };
     const whole = fitSummary(parts, 1_000_000);
@@ -128,17 +131,54 @@ describe("fitSummary", () => {
         blocks: [
           {
             diffLines: Array.from({ length: 30 }, (_, i) => `+ CREATE ${i}`),
-            count: 10,
+            repos: Array.from({ length: 10 }, (_, i) => `r${i}`),
           },
         ],
         footer: "**F**",
       },
-      150
+      100
     );
 
-    assert.equal(
-      markdown,
-      "_... 10 more repos not shown. See the job log._\n\n**F**"
+    assert.ok(
+      markdown.startsWith("_10 more repos not shown, see the job log:_ `r0`")
     );
+    assert.ok(markdown.includes(", …\n\n**F**"));
+    assert.ok(Buffer.byteLength(markdown) <= 100);
+  });
+
+  test("cuts a line that alone is too long instead of hiding the repo", () => {
+    const markdown = fitSummary(
+      {
+        header: [],
+        blocks: [
+          {
+            heading: "### org/a",
+            diffLines: ["+" + "x".repeat(5000)],
+            repos: ["org/a"],
+          },
+        ],
+        footer: "**F**",
+      },
+      1000
+    );
+
+    assert.ok(Buffer.byteLength(markdown) <= 1000);
+    assert.ok(markdown.includes("### org/a"));
+    assert.ok(markdown.includes("+xxx"));
+    assert.ok(markdown.includes("cut to fit"));
+  });
+
+  test("never splits a multi-byte character when cutting a line", () => {
+    const markdown = fitSummary(
+      {
+        header: [],
+        blocks: [{ diffLines: ["+" + "é".repeat(3000)], repos: ["org/a"] }],
+        footer: "**F**",
+      },
+      1001
+    );
+
+    assert.ok(Buffer.byteLength(markdown) <= 1001);
+    assert.ok(!markdown.includes("\uFFFD"));
   });
 });

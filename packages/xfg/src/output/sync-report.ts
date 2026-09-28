@@ -8,6 +8,7 @@ import {
   writeGitHubStepSummary,
 } from "./github-summary.js";
 import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
 
 export interface ReportFileChange {
   path: string;
@@ -87,6 +88,7 @@ export function formatSyncReportMarkdown(
     .map((repo) => ({
       heading: `### ${repo.repoName}`,
       diffLines: renderSyncLines(repo),
+      repos: [repo.repoName],
     }));
 
   return fitSummary(
@@ -101,6 +103,14 @@ export function formatSyncReportMarkdown(
 
 // Stops one huge file from using up the summary space the other files need.
 export const SUMMARY_DIFF_LINE_LIMIT = 500;
+// Same idea for single long lines, e.g. minified JSON.
+export const SUMMARY_LINE_MAX_CHARS = 1000;
+
+function shortenLine(line: string): string {
+  return line.length > SUMMARY_LINE_MAX_CHARS
+    ? line.slice(0, SUMMARY_LINE_MAX_CHARS) + "…"
+    : line;
+}
 
 export function renderSyncLines(
   syncRepo: RepoFileChanges,
@@ -121,7 +131,7 @@ export function renderSyncLines(
 
     const diffLines = file.diffLines ?? [];
     const shown = Math.min(diffLines.length, SUMMARY_DIFF_LINE_LIMIT);
-    for (let j = 0; j < shown; j++) lines.push(diffLines[j]);
+    for (let j = 0; j < shown; j++) lines.push(shortenLine(diffLines[j]));
     if (diffLines.length > shown) {
       lines.push(`... ${diffLines.length - shown} more lines not shown`);
     }
@@ -137,10 +147,12 @@ export function renderSyncLines(
 export function writeSyncReportSummary(
   report: SyncReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
   writeGitHubStepSummary(
     (maxBytes) => formatSyncReportMarkdown(report, dryRun, maxBytes),
-    summaryPath
+    summaryPath,
+    log
   );
 }

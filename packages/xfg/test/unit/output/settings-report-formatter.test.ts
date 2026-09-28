@@ -1435,6 +1435,26 @@ describe("writeSettingsReportSummary", () => {
     assert.ok(content.includes("xfg Apply"));
   });
 
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeSettingsReportSummary(
+      {
+        repos: [],
+        totals: {
+          settings: { create: 0, update: 0 },
+          rulesets: { create: 0, update: 0, delete: 0 },
+          labels: { create: 0, update: 0, delete: 0 },
+        },
+      },
+      false,
+      join(tempDir, "x".repeat(300)),
+      { debug: (msg: string) => debugMessages.push(msg) }
+    );
+
+    assert.equal(debugMessages.length, 1);
+  });
+
   test("no-ops when summaryPath not set", () => {
     const report: SettingsReport = {
       repos: [],

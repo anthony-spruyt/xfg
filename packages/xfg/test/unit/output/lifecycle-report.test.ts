@@ -299,6 +299,7 @@ describe("formatLifecycleReportMarkdown", () => {
     const markdown = formatLifecycleReportMarkdown(report, false, 180);
 
     assert.ok(markdown.includes("10 more repos not shown"));
+    assert.ok(markdown.includes("`org/repo-0`"));
   });
 
   test("escapes newlines in descriptions so they stay on one line", () => {
@@ -550,6 +551,22 @@ describe("writeLifecycleReportSummary", () => {
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("Lifecycle Summary"));
+  });
+
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeLifecycleReportSummary(
+      {
+        actions: [{ repoName: "org/repo", action: "created" }],
+        totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+      },
+      false,
+      join(tempDir, "x".repeat(300)),
+      { debug: (msg: string) => debugMessages.push(msg) }
+    );
+
+    assert.equal(debugMessages.length, 1);
   });
 
   test("no-ops when summaryPath not set", () => {

@@ -4,6 +4,7 @@ import {
   writeGitHubStepSummary,
 } from "./github-summary.js";
 import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
@@ -116,7 +117,9 @@ export function formatLifecycleReportMarkdown(
       blocks: [
         {
           diffLines: renderActionDiffLines(report.actions),
-          count: report.actions.filter((a) => a.action !== "existed").length,
+          repos: report.actions
+            .filter((a) => a.action !== "existed")
+            .map((a) => a.repoName),
         },
       ],
       footer: `**${formatLifecycleSummary(report.totals)}**`,
@@ -128,10 +131,12 @@ export function formatLifecycleReportMarkdown(
 export function writeLifecycleReportSummary(
   report: LifecycleReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
   writeGitHubStepSummary(
     (maxBytes) => formatLifecycleReportMarkdown(report, dryRun, maxBytes),
-    summaryPath
+    summaryPath,
+    log
   );
 }

@@ -182,7 +182,7 @@ export function formatUnifiedSummaryMarkdown(
       renderRepoSettingsDiffLines(settingsRepo, diffLines);
     });
 
-    blocks.push({ heading: `### ${repoName}`, diffLines });
+    blocks.push({ heading: `### ${repoName}`, diffLines, repos: [repoName] });
   }
 
   return fitSummary(

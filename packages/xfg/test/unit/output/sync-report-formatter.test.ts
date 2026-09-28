@@ -397,6 +397,27 @@ describe("writeSyncReportSummary", () => {
     assert.ok(content.includes("xfg Apply"));
   });
 
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeSyncReportSummary(
+      {
+        repos: [
+          {
+            repoName: "org/repo",
+            files: [{ path: "a.txt", action: "create" }],
+          },
+        ],
+        totals: { files: { create: 1, update: 0, delete: 0 } },
+      },
+      false,
+      join(tempDir, "x".repeat(300)),
+      { debug: (msg: string) => debugMessages.push(msg) }
+    );
+
+    assert.equal(debugMessages.length, 1);
+  });
+
   test("no-ops when summaryPath not set", () => {
     const report: SyncReport = {
       repos: [],

@@ -26,6 +26,9 @@ export function appendDiffBlock(lines: string[], diffLines: string[]): void {
 
 export function inlineCode(text: string): string {
   const fence = "`".repeat(longestBacktickRun(text) + 1);
-  const pad = text.startsWith("`") || text.endsWith("`") ? " " : "";
+  // CommonMark strips one space from each end when both ends are spaces.
+  const bothSpaces = /^ .* $/s.test(text) && text.trim() !== "";
+  const pad =
+    text.startsWith("`") || text.endsWith("`") || bothSpaces ? " " : "";
   return `${fence}${pad}${text}${pad}${fence}`;
 }

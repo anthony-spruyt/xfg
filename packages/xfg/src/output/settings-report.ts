@@ -10,6 +10,7 @@ import {
   writeGitHubStepSummary,
 } from "./github-summary.js";
 import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
 import { formatScalarValue, quoted } from "../shared/string-utils.js";
 import {
   formatActionCountEntry,
@@ -363,7 +364,11 @@ export function formatSettingsReportMarkdown(
   const blocks = report.repos.filter(hasRepoSettingsChanges).map((repo) => {
     const diffLines: string[] = [];
     renderRepoSettingsDiffLines(repo, diffLines);
-    return { heading: `### ${repo.repoName}`, diffLines };
+    return {
+      heading: `### ${repo.repoName}`,
+      diffLines,
+      repos: [repo.repoName],
+    };
   });
 
   return fitSummary(
@@ -379,10 +384,12 @@ export function formatSettingsReportMarkdown(
 export function writeSettingsReportSummary(
   report: SettingsReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
   writeGitHubStepSummary(
     (maxBytes) => formatSettingsReportMarkdown(report, dryRun, maxBytes),
-    summaryPath
+    summaryPath,
+    log
   );
 }

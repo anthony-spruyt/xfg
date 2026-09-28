@@ -53,4 +53,10 @@ describe("inlineCode", () => {
     assert.equal(inlineCode("`a"), "`` `a ``");
     assert.equal(inlineCode("a`"), "`` a` ``");
   });
+
+  test("pads when the text starts and ends with a space, so both survive", () => {
+    assert.equal(inlineCode(" a "), "`  a  `");
+    assert.equal(inlineCode(" a"), "` a`");
+    assert.equal(inlineCode("  "), "`  `");
+  });
 });

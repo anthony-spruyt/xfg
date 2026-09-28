@@ -1,10 +1,14 @@
-import { appendDiffBlock, diffFence } from "../shared/markdown-fence.js";
+import {
+  appendDiffBlock,
+  diffFence,
+  inlineCode,
+} from "../shared/markdown-fence.js";
 
 export interface SummaryBlock {
   heading?: string;
   diffLines: string[];
-  // Repos in this block, for the "not shown" note. Defaults to 1.
-  count?: number;
+  // Named in the "not shown" note when the block does not fit.
+  repos: string[];
 }
 
 export interface SummaryParts {
@@ -14,8 +18,10 @@ export interface SummaryParts {
 }
 
 const CUT_NOTE = "... cut to fit GitHub's 1 MiB summary limit";
-// Room kept for the "more repos not shown" line.
-const NOTE_RESERVE_BYTES = 100;
+// Room kept for the "more repos not shown" line when something is cut.
+const NOTE_RESERVE_BYTES = 1000;
+// Shorter leftovers of a cut line are not worth showing.
+const MIN_CUT_LINE_BYTES = 40;
 
 export function summaryHeader(
   dryRun: boolean,
@@ -50,16 +56,44 @@ function blockOverhead(block: SummaryBlock): number {
   return heading + fence + 5 + fence + 1 + 1;
 }
 
+function truncateBytes(text: string, maxBytes: number): string {
+  const buf = Buffer.from(text);
+  if (buf.length <= maxBytes) return text;
+  let end = Math.max(0, maxBytes);
+  while (end > 0 && (buf[end] & 0xc0) === 0x80) end--;
+  return buf.subarray(0, end).toString();
+}
+
 function cutToFit(diffLines: string[], room: number): string[] {
   const kept: string[] = [];
   let used = lineBytes(CUT_NOTE);
   for (const line of diffLines) {
-    used += lineBytes(line);
-    if (used > room) break;
+    const left = room - used;
+    if (lineBytes(line) > left) {
+      const part = truncateBytes(line, left - 1 - Buffer.byteLength("…"));
+      if (Buffer.byteLength(part) >= MIN_CUT_LINE_BYTES) kept.push(part + "…");
+      break;
+    }
     kept.push(line);
+    used += lineBytes(line);
   }
   if (kept.length > 0) kept.push(CUT_NOTE);
   return kept;
+}
+
+function hiddenNote(repos: string[], maxBytes: number): string {
+  const prefix = `_${repos.length} more ${repos.length === 1 ? "repo" : "repos"} not shown, see the job log:_`;
+  const more = ", …";
+  let note = prefix;
+  for (let i = 0; i < repos.length; i++) {
+    const name = `${i === 0 ? " " : ", "}${inlineCode(repos[i])}`;
+    const tail = i < repos.length - 1 ? Buffer.byteLength(more) : 0;
+    if (Buffer.byteLength(note + name) + tail > maxBytes) {
+      return i === 0 ? prefix : note + more;
+    }
+    note += name;
+  }
+  return note;
 }
 
 // Priority: footer, then header, then whole blocks, then cut blocks with what is left.
@@ -79,7 +113,9 @@ export function fitSummary(parts: SummaryParts, maxBytes: number): string {
     (block, i) => overheads[i] + linesBytes(block.diffLines)
   );
   const allFit = used + sizes.reduce((a, b) => a + b, 0) <= maxBytes;
-  const reserve = allFit ? 0 : NOTE_RESERVE_BYTES;
+  const reserve = allFit
+    ? 0
+    : Math.min(NOTE_RESERVE_BYTES, Math.floor((maxBytes - used) / 2));
   const room = () => maxBytes - used - reserve;
   const shown: (string[] | undefined)[] = [];
 
@@ -98,22 +134,20 @@ export function fitSummary(parts: SummaryParts, maxBytes: number): string {
     used += overheads[i] + linesBytes(kept);
   });
 
-  let hidden = 0;
+  const hidden: string[] = [];
   parts.blocks.forEach((block, i) => {
     const diffLines = shown[i];
     if (!diffLines) {
-      hidden += block.count ?? 1;
+      for (const repo of block.repos) hidden.push(repo);
       return;
     }
     if (block.heading !== undefined) lines.push(block.heading, "");
     appendDiffBlock(lines, diffLines);
   });
 
-  if (hidden > 0 && maxBytes - used >= NOTE_RESERVE_BYTES) {
-    lines.push(
-      `_... ${hidden} more ${hidden === 1 ? "repo" : "repos"} not shown. See the job log._`,
-      ""
-    );
+  if (hidden.length > 0) {
+    const note = hiddenNote(hidden, maxBytes - used - 2);
+    if (lineBytes(note) + 1 <= maxBytes - used) lines.push(note, "");
   }
 
   lines.push(parts.footer);

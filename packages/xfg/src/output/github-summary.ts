@@ -1,4 +1,4 @@
-import { closeSync, fstatSync, openSync, writeSync } from "node:fs";
+import { appendFileSync, closeSync, fstatSync, openSync } from "node:fs";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { DebugLog } from "../shared/logger.js";
 
@@ -19,11 +19,19 @@ export function writeGitHubStepSummary(
     fd = openSync(summaryPath, "a");
     const maxBytes = STEP_SUMMARY_MAX_BYTES - fstatSync(fd).size - 2;
     const markdown = render(maxBytes);
-    if (!markdown || Buffer.byteLength(markdown) > maxBytes) return;
-    writeSync(fd, "\n" + markdown + "\n");
+    if (markdown && Buffer.byteLength(markdown) <= maxBytes) {
+      appendFileSync(fd, "\n" + markdown + "\n");
+    }
+    closeSync(fd);
+    fd = undefined;
   } catch (error) {
     log?.debug(`Failed to write GitHub step summary: ${toErrorMessage(error)}`);
-  } finally {
-    if (fd !== undefined) closeSync(fd);
+    if (fd !== undefined) {
+      try {
+        closeSync(fd);
+      } catch {
+        // Already reporting the first error.
+      }
+    }
   }
 }

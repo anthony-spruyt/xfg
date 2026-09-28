@@ -16,6 +16,7 @@ import {
 import {
   renderSyncLines,
   SUMMARY_DIFF_LINE_LIMIT,
+  SUMMARY_LINE_MAX_CHARS,
 } from "../../../src/output/sync-report.js";
 import { STEP_SUMMARY_MAX_BYTES } from "../../../src/output/github-summary.js";
 import type { LifecycleReport } from "../../../src/output/lifecycle-report.js";
@@ -1252,6 +1253,24 @@ describe("formatUnifiedSummaryMarkdown byte budget", () => {
 });
 
 describe("renderSyncLines with diffLines", () => {
+  test("cuts very long lines so small files after them still show", () => {
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [
+        {
+          path: "min.json",
+          action: "update",
+          diffLines: ["+" + "x".repeat(50_000)],
+        },
+        { path: "small.txt", action: "update", diffLines: ["+ok"] },
+      ],
+    });
+
+    assert.ok(result[1].length <= SUMMARY_LINE_MAX_CHARS + 1);
+    assert.ok(result[1].endsWith("…"));
+    assert.ok(result.includes("+ok"));
+  });
+
   test("caps diff lines per file and says how many were left out", () => {
     const diffLines = Array.from(
       { length: SUMMARY_DIFF_LINE_LIMIT + 5 },
