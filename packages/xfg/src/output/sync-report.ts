@@ -4,6 +4,7 @@ import { formatCountEntry } from "../shared/count-format.js";
 import { formatDiffLine } from "../shared/diff-format.js";
 import type { MergeMode } from "../config/index.js";
 import type { ActiveAction } from "../settings/index.js";
+import { fencedCodeBlock } from "../shared/markdown-fence.js";
 
 export interface ReportFileChange {
   path: string;
@@ -100,9 +101,7 @@ export function formatSyncReportMarkdown(
     const diffLines = renderSyncLines(repo);
 
     if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
+      lines.push(...fencedCodeBlock("diff", diffLines));
       lines.push("");
     }
   }

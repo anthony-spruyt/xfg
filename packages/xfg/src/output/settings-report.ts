@@ -11,6 +11,7 @@ import {
   formatActionCountEntry,
   type ActionTotals,
 } from "../shared/count-format.js";
+import { fencedCodeBlock } from "../shared/markdown-fence.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -369,9 +370,7 @@ export function formatSettingsReportMarkdown(
     renderRepoSettingsDiffLines(repo, diffLines);
 
     if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
+      lines.push(...fencedCodeBlock("diff", diffLines));
       lines.push("");
     }
   }

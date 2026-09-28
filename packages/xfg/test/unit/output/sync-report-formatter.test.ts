@@ -248,6 +248,29 @@ describe("formatSyncReportMarkdown with diffLines", () => {
     assert.ok(markdown.includes("-old"));
     assert.ok(markdown.includes("+new"));
   });
+
+  test("keeps diff lines containing code fences inside the diff block", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "README.md",
+              action: "update",
+              diffLines: ["@@ -1,1 +1,1 @@", "-```", "+```bash"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, true);
+
+    assert.ok(markdown.includes("````diff\n"));
+    assert.ok(markdown.includes("+```bash\n````\n"));
+  });
 });
 
 describe("formatSyncReportMarkdown", () => {

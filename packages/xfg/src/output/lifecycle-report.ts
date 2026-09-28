@@ -3,6 +3,7 @@ import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
+import { fencedCodeBlock } from "../shared/markdown-fence.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -118,9 +119,7 @@ export function formatLifecycleReportMarkdown(
   const diffLines = renderActionDiffLines(report.actions);
 
   if (diffLines.length > 0) {
-    lines.push("```diff");
-    lines.push(...diffLines);
-    lines.push("```");
+    lines.push(...fencedCodeBlock("diff", diffLines));
     lines.push("");
   }
 

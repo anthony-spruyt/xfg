@@ -13,6 +13,7 @@ import {
   type RepoChanges,
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
+import { fencedCodeBlock } from "../shared/markdown-fence.js";
 
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
@@ -184,9 +185,7 @@ export function formatUnifiedSummaryMarkdown(
     });
 
     if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
+      lines.push(...fencedCodeBlock("diff", diffLines));
       lines.push("");
     }
   }
