@@ -2,6 +2,7 @@ import chalk from "chalk";
 import type { LabelChange, LabelAction } from "./diff.js";
 import type { Label } from "../../config/index.js";
 import { countActions } from "../base-processor.js";
+import { formatScalarValue, quoted } from "../../shared/string-utils.js";
 
 export interface LabelsPlanEntry {
   name: string;
@@ -24,9 +25,6 @@ export interface LabelsPlanResult {
   entries: LabelsPlanEntry[];
 }
 
-/**
- * Format label changes as a Terraform-style plan.
- */
 export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   const lines: string[] = [];
   const entries: LabelsPlanEntry[] = [];
@@ -48,16 +46,19 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
     grouped[c.action].push(c);
   }
 
-  // Format creates
   if (grouped.create.length > 0) {
     lines.push(chalk.bold("  Create:"));
     for (const change of grouped.create) {
-      lines.push(chalk.green(`    + label "${change.name}"`));
+      lines.push(chalk.green(`    + label ${quoted(change.name)}`));
       if (change.desired) {
-        lines.push(chalk.green(`        color: "${change.desired.color}"`));
+        lines.push(
+          chalk.green(`        color: ${quoted(change.desired.color)}`)
+        );
         if (change.desired.description !== undefined) {
           lines.push(
-            chalk.green(`        description: "${change.desired.description}"`)
+            chalk.green(
+              `        description: ${quoted(change.desired.description)}`
+            )
           );
         }
       }
@@ -70,31 +71,32 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
     }
   }
 
-  // Format updates
   if (grouped.update.length > 0) {
     lines.push(chalk.bold("  Update:"));
     for (const change of grouped.update) {
       if (change.newName) {
         lines.push(
           chalk.yellow(
-            `    ~ label "${change.name}" \u2192 "${change.newName}"`
+            `    ~ label ${quoted(change.name)} \u2192 ${quoted(change.newName)}`
           )
         );
       } else {
-        lines.push(chalk.yellow(`    ~ label "${change.name}"`));
+        lines.push(chalk.yellow(`    ~ label ${quoted(change.name)}`));
       }
       if (change.propertyChanges) {
         for (const prop of change.propertyChanges) {
-          if (prop.property === "new_name") continue; // shown in header
+          if (prop.property === "new_name") continue;
           if (prop.oldValue !== undefined) {
             lines.push(
               chalk.yellow(
-                `        ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+                `        ${prop.property}: ${formatScalarValue(prop.oldValue)} \u2192 ${formatScalarValue(prop.newValue)}`
               )
             );
           } else {
             lines.push(
-              chalk.yellow(`        ${prop.property}: "${prop.newValue}"`)
+              chalk.yellow(
+                `        ${prop.property}: ${formatScalarValue(prop.newValue)}`
+              )
             );
           }
         }
@@ -109,22 +111,19 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
     }
   }
 
-  // Format deletes
   if (grouped.delete.length > 0) {
     lines.push(chalk.bold("  Delete:"));
     for (const change of grouped.delete) {
-      lines.push(chalk.red(`    - label "${change.name}"`));
+      lines.push(chalk.red(`    - label ${quoted(change.name)}`));
       entries.push({ name: change.name, action: "delete" });
     }
     lines.push("");
   }
 
-  // Unchanged (entries only, no output lines)
   for (const change of grouped.unchanged) {
     entries.push({ name: change.name, action: "unchanged" });
   }
 
-  // Summary line
   const total = creates + updates + deletes;
   if (total > 0) {
     const parts: string[] = [];

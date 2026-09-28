@@ -15,7 +15,6 @@ import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
-// Helper to create a mock repo info for tests
 function createMockRepoInfo(
   overrides: Partial<GitHubRepoInfo> = {}
 ): GitHubRepoInfo {
@@ -71,10 +70,15 @@ describe("formatPRBody", () => {
   test("preserves markdown formatting", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
-    // Should contain markdown headers or formatting
     assert.ok(
       result.includes("##") || result.includes("*") || result.includes("-")
     );
+  });
+
+  test("keeps file names containing backticks as inline code", () => {
+    const files: FileAction[] = [{ fileName: "we`ird.md", action: "create" }];
+    const result = formatPRBody(files, repoInfo);
+    assert.ok(result.includes("- Created ``we`ird.md``"));
   });
 
   test("handles multiple files", () => {
@@ -176,25 +180,20 @@ describe("formatPRTitle", () => {
 });
 
 describe("loadPRTemplate (via formatPRBody)", () => {
-  // Get the expected path for PR.md
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const templatePath = join(__dirname, "..", "..", "..", "PR.md");
   const repoInfo = createMockRepoInfo();
 
   test("loads PR.md template when file exists", () => {
-    // Verify PR.md exists in the project
     assert.ok(
       existsSync(templatePath),
       `PR.md should exist at ${templatePath}`
     );
 
-    // formatPRBody should use content from PR.md
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // The actual PR.md has specific content we can verify
-    // It should contain markdown formatting from the template
     assert.ok(result.length > 50, "Template should have substantial content");
   });
 
@@ -202,7 +201,6 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // PR.md should have summary section and automation note
     assert.ok(
       result.includes("xfg") ||
         result.includes("Summary") ||
@@ -212,18 +210,13 @@ describe("loadPRTemplate (via formatPRBody)", () => {
   });
 
   test("fallback template structure is valid", () => {
-    // The fallback template (in case PR.md is missing) has a specific structure
-    // We verify by checking that formatPRBody always returns valid content
     const files: FileAction[] = [{ fileName: "test.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // Should have the filename
     assert.ok(result.includes("test.json"));
 
-    // Should have the action text
     assert.ok(result.includes("Created"));
 
-    // Should have some structure (markdown headers or bullets)
     assert.ok(
       result.includes("#") || result.includes("-") || result.includes("*"),
       "Should have markdown formatting"
@@ -261,7 +254,6 @@ describe("skip action handling", () => {
         { fileName: "skipped.json", action: "skip" },
       ];
       const result = formatPRBody(files, repoInfo);
-      // Should still return valid markdown, even if empty changes
       assert.ok(typeof result === "string");
     });
 
@@ -310,7 +302,6 @@ describe("skip action handling", () => {
         { fileName: "skipped2.json", action: "skip" },
       ];
       const result = formatPRTitle(files);
-      // 4 actual changes, 2 skipped - title should show 4
       assert.strictEqual(result, "chore: sync 4 config files");
     });
 
@@ -320,7 +311,6 @@ describe("skip action handling", () => {
         { fileName: "b.json", action: "skip" },
       ];
       const result = formatPRTitle(files);
-      // Edge case: no actual changes - should handle gracefully
       assert.ok(typeof result === "string");
     });
   });

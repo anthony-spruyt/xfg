@@ -73,6 +73,19 @@ describe("formatLifecycleAction", () => {
     assert.ok(lines.some((l) => l.includes('description: "Test repo"')));
   });
 
+  test("escapes newlines in the description", () => {
+    const result: LifecycleResult = {
+      repoInfo: mockRepoInfo,
+      action: "created",
+    };
+
+    const lines = formatLifecycleAction(result, {
+      settings: { description: "a\nb" },
+    });
+
+    assert.ok(lines.includes('    description: "a\\nb"'));
+  });
+
   test("includes only visibility when no description", () => {
     const result: LifecycleResult = {
       repoInfo: mockRepoInfo,

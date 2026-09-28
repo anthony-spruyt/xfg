@@ -6,7 +6,7 @@ import {
   type RulesetAction,
 } from "./diff.js";
 import type { Ruleset } from "../../config/index.js";
-import { formatScalarValue } from "../../shared/string-utils.js";
+import { formatScalarValue, quoted } from "../../shared/string-utils.js";
 import {
   computePropertyDiffs,
   type DiffAction,
@@ -44,9 +44,6 @@ interface TreeNode {
   children: Map<string, TreeNode>;
 }
 
-/**
- * Build a tree structure from flat property diffs.
- */
 function buildTree(diffs: PropertyDiff[]): TreeNode {
   const root: TreeNode = { name: "", children: new Map() };
 
@@ -71,7 +68,6 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
         child.oldValue = diff.oldValue;
         child.newValue = diff.newValue;
       } else {
-        // Intermediate node - mark as change if any child changes
         if (!child.action) {
           child.action = "change";
         }
@@ -84,9 +80,6 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
   return root;
 }
 
-/**
- * Format a value for inline display (scalars and simple arrays only).
- */
 function formatValue(val: unknown): string {
   const scalar = formatScalarValue(val);
   if (scalar !== undefined) return scalar;
@@ -104,9 +97,6 @@ function formatValue(val: unknown): string {
   return String(val);
 }
 
-/**
- * Render a nested value (object or array) as indented tree lines.
- */
 function renderNestedValue(
   val: unknown,
   action: DiffAction,
@@ -177,9 +167,6 @@ function renderNestedObject(
   return lines;
 }
 
-/**
- * Get the symbol and color for an action.
- */
 function getActionStyle(action: DiffAction): {
   symbol: string;
   color: (s: string) => string;
@@ -264,9 +251,6 @@ function renderLeafNode(
   return [renderSimpleLeaf(child, style, indentStr)];
 }
 
-/**
- * Recursively render tree nodes to formatted lines.
- */
 function renderTree(node: TreeNode, indent: number = 0): string[] {
   const lines: string[] = [];
   const indentStr = "    ".repeat(indent);
@@ -278,7 +262,6 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
     const hasChildren = child.children.size > 0;
 
     if (hasChildren) {
-      // Intermediate node
       lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
       lines.push(...renderTree(child, indent + 1));
     } else {
@@ -289,9 +272,6 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
   return lines;
 }
 
-/**
- * Format property diffs as an indented tree structure.
- */
 export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
   if (diffs.length === 0) {
     return [];
@@ -301,24 +281,16 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
   return renderTree(tree);
 }
 
-/**
- * Format a full ruleset config as tree lines (for create action).
- * Delegates to renderNestedObject which handles recursive rendering.
- */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
   // Object.entries works on any object; the cast avoids a double assertion
   const entries = Object.entries(ruleset) as [string, unknown][];
   return renderNestedObject(Object.fromEntries(entries), "add", indent);
 }
 
-/**
- * Format ruleset changes as a Terraform-style plan.
- */
 export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const lines: string[] = [];
   const entries: RulesetPlanEntry[] = [];
 
-  // Group by action in a single pass
   const grouped: Record<RulesetAction, RulesetChange[]> = {
     create: [],
     update: [],
@@ -333,7 +305,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(chalk.bold("  Create:"));
   }
   for (const change of grouped.create) {
-    lines.push(chalk.green(`    + ruleset "${change.name}"`));
+    lines.push(chalk.green(`    + ruleset ${quoted(change.name)}`));
     if (change.desired) {
       lines.push(...formatFullConfig(change.desired, 2));
     }
@@ -353,7 +325,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(chalk.bold("  Update:"));
   }
   for (const change of grouped.update) {
-    lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
+    lines.push(chalk.yellow(`    ~ ruleset ${quoted(change.name)}`));
     if (change.current && change.desired) {
       const currentNorm = normalizeRuleset(change.current);
       const desiredNorm = normalizeRuleset(change.desired);
@@ -385,7 +357,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   if (grouped.delete.length > 0) {
     lines.push(chalk.bold("  Delete:"));
     for (const change of grouped.delete) {
-      lines.push(chalk.red(`    - ruleset "${change.name}"`));
+      lines.push(chalk.red(`    - ruleset ${quoted(change.name)}`));
       entries.push({ name: change.name, action: "delete" });
     }
     lines.push("");

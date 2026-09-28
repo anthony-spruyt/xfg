@@ -3,7 +3,6 @@ import { strict as assert } from "node:assert";
 import { formatLabelsPlan } from "../../../../src/settings/labels/formatter.js";
 import type { LabelChange } from "../../../../src/settings/labels/diff.js";
 
-// Strip ANSI escape codes for assertion
 function stripAnsi(str: string): string {
   return str.replace(
     new RegExp(`${String.fromCharCode(0x1b)}\\[[0-9;]*m`, "g"),
@@ -12,6 +11,29 @@ function stripAnsi(str: string): string {
 }
 
 describe("formatLabelsPlan", () => {
+  test("escapes newlines in names and values so each stays on one line", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "create",
+        name: "a\nb",
+        desired: { color: "0e8a16", description: "c\nd" },
+      },
+      {
+        action: "update",
+        name: "e",
+        propertyChanges: [
+          { property: "description", oldValue: "f\ng", newValue: "^h\\(" },
+        ],
+      },
+    ];
+
+    const plain = formatLabelsPlan(changes).lines.map(stripAnsi);
+
+    assert.ok(plain.includes('    + label "a\\nb"'));
+    assert.ok(plain.includes('        description: "c\\nd"'));
+    assert.ok(plain.includes('        description: "f\\ng" \u2192 "^h\\("'));
+  });
+
   test("formats create action", () => {
     const changes: LabelChange[] = [
       {
@@ -110,7 +132,6 @@ describe("formatLabelsPlan", () => {
     const result = formatLabelsPlan(changes);
 
     assert.equal(result.updates, 1);
-    // Should show property with only newValue (no arrow)
     const descLine = result.lines.find((l) =>
       stripAnsi(l).includes("description:")
     );
@@ -140,7 +161,6 @@ describe("formatLabelsPlan", () => {
     const result = formatLabelsPlan(changes);
 
     assert.equal(result.updates, 1);
-    // Should show label name without arrow
     const labelLine = result.lines.find((l) =>
       stripAnsi(l).includes('label "bug"')
     );

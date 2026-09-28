@@ -1,3 +1,9 @@
+import { STEP_SUMMARY_MAX_BYTES } from "../output/github-summary.js";
+import {
+  fitSummary,
+  summaryHeader,
+  type SummaryBlock,
+} from "../output/summary-budget.js";
 import {
   hasLifecycleChanges,
   writeGitHubStepSummary,
@@ -13,6 +19,8 @@ import {
   type RepoChanges,
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
+import { quoted } from "../shared/string-utils.js";
+import type { DebugLog } from "../shared/logger.js";
 
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
@@ -20,6 +28,7 @@ interface UnifiedSummaryInput {
   settings?: SettingsReport;
   dryRun: boolean;
   summaryPath?: string | undefined;
+  log?: DebugLog;
 }
 
 function selectLabel(
@@ -104,28 +113,19 @@ function renderLifecycleLines(
       diffLines.push(`+   visibility: ${lcAction.settings.visibility}`);
     }
     if (lcAction.settings.description) {
-      diffLines.push(`+   description: "${lcAction.settings.description}"`);
+      diffLines.push(
+        `+   description: ${quoted(lcAction.settings.description)}`
+      );
     }
   }
 }
 
 export function formatUnifiedSummaryMarkdown(
-  input: UnifiedSummaryInput
+  input: UnifiedSummaryInput,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
   if (!hasAnyChanges(input)) {
     return "";
-  }
-
-  const lines: string[] = [];
-
-  const title = input.dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (input.dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
   }
 
   const lifecycleByRepo = new Map(
@@ -151,6 +151,8 @@ export function formatUnifiedSummaryMarkdown(
   for (const r of input.sync?.repos ?? []) addRepo(r.repoName);
   for (const r of input.settings?.repos ?? []) addRepo(r.repoName);
 
+  const blocks: SummaryBlock[] = [];
+
   for (const repoName of allRepos) {
     const lcAction = lifecycleByRepo.get(repoName);
     const syncRepo = syncByRepo.get(repoName);
@@ -165,16 +167,13 @@ export function formatUnifiedSummaryMarkdown(
 
     if (!hasLcChange && !hasSyncChanges && !repoHasSettingsChanges) continue;
 
-    lines.push(`### ${repoName}`);
-    lines.push("");
-
     const diffLines: string[] = [];
 
     if (lcAction) renderLifecycleLines(lcAction, diffLines);
 
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
-    if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
+    if (syncRepo) renderSyncLines(syncRepo, diffLines);
 
     if (hasSyncChanges && repoHasSettingsChanges) diffLines.push("");
 
@@ -183,21 +182,23 @@ export function formatUnifiedSummaryMarkdown(
       renderRepoSettingsDiffLines(settingsRepo, diffLines);
     });
 
-    if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
-      lines.push("");
-    }
+    blocks.push({ heading: `### ${repoName}`, diffLines, repos: [repoName] });
   }
 
-  lines.push(`**${formatCombinedSummary(input)}**`);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(input.dryRun),
+      blocks,
+      footer: `**${formatCombinedSummary(input)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
-  const markdown = formatUnifiedSummaryMarkdown(input);
-  if (!markdown) return;
-  writeGitHubStepSummary(markdown, input.summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatUnifiedSummaryMarkdown(input, maxBytes),
+    input.summaryPath,
+    input.log
+  );
 }

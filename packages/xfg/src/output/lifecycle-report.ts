@@ -1,8 +1,14 @@
 import chalk from "chalk";
-import { writeGitHubStepSummary } from "./github-summary.js";
+import {
+  STEP_SUMMARY_MAX_BYTES,
+  writeGitHubStepSummary,
+} from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
+import { quoted } from "../shared/string-utils.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -73,7 +79,7 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
         lines.push(`    visibility: ${action.settings.visibility}`);
       }
       if (action.settings.description) {
-        lines.push(`    description: "${action.settings.description}"`);
+        lines.push(`    description: ${quoted(action.settings.description)}`);
       }
     }
   }
@@ -97,44 +103,40 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
 
 export function formatLifecycleReportMarkdown(
   report: LifecycleReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
   if (!hasLifecycleChanges(report)) {
     return "";
   }
 
-  const lines: string[] = [];
-
-  const titleSuffix = dryRun ? " (Dry Run)" : "";
-  lines.push(`## Lifecycle Summary${titleSuffix}`);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  const diffLines = renderActionDiffLines(report.actions);
-
-  if (diffLines.length > 0) {
-    lines.push("```diff");
-    lines.push(...diffLines);
-    lines.push("```");
-    lines.push("");
-  }
-
-  lines.push(`**${formatLifecycleSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  const title = `## Lifecycle Summary${dryRun ? " (Dry Run)" : ""}`;
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun, title),
+      blocks: [
+        {
+          diffLines: renderActionDiffLines(report.actions),
+          repos: report.actions
+            .filter((a) => a.action !== "existed")
+            .map((a) => a.repoName),
+        },
+      ],
+      footer: `**${formatLifecycleSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeLifecycleReportSummary(
   report: LifecycleReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
-  const markdown = formatLifecycleReportMarkdown(report, dryRun);
-  if (!markdown) return;
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatLifecycleReportMarkdown(report, dryRun, maxBytes),
+    summaryPath,
+    log
+  );
 }

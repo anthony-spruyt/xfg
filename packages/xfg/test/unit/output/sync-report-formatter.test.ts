@@ -1,7 +1,6 @@
-// test/unit/sync-report-formatter.test.ts
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -160,7 +159,6 @@ describe("formatSyncReportCLI", () => {
     const output = lines.join("\n");
 
     assert.ok(output.includes("org/repo"), "should include repo name");
-    // PR info is optional in CLI output - just verify no crash
     assert.ok(output.includes("README.md"), "should include file");
   });
 });
@@ -186,7 +184,6 @@ describe("formatSyncReportCLI with diffLines", () => {
     const lines = formatSyncReportCLI(report);
     const output = lines.join("\n");
 
-    // Strip ANSI codes for assertion
     const ansiRegex = new RegExp(
       String.fromCharCode(0x1b) + "\\[[0-9;]*m",
       "g"
@@ -247,6 +244,29 @@ describe("formatSyncReportMarkdown with diffLines", () => {
     assert.ok(markdown.includes("@@ -1,1 +1,1 @@"));
     assert.ok(markdown.includes("-old"));
     assert.ok(markdown.includes("+new"));
+  });
+
+  test("keeps diff lines containing code fences inside the diff block", () => {
+    const report: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "README.md",
+              action: "update",
+              diffLines: ["@@ -1,3 +1,3 @@", " ```", "-old", "+new", " ```"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const markdown = formatSyncReportMarkdown(report, true);
+
+    assert.ok(markdown.includes("````diff\n! README.md\n@@"));
+    assert.ok(markdown.includes("+new\n ```\n````\n"));
   });
 });
 
@@ -346,15 +366,15 @@ describe("formatSyncReportMarkdown", () => {
 });
 
 describe("writeSyncReportSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `sync-report-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "sync-report-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {
@@ -375,6 +395,27 @@ describe("writeSyncReportSummary", () => {
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("xfg Apply"));
+  });
+
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeSyncReportSummary(
+      {
+        repos: [
+          {
+            repoName: "org/repo",
+            files: [{ path: "a.txt", action: "create" }],
+          },
+        ],
+        totals: { files: { create: 1, update: 0, delete: 0 } },
+      },
+      false,
+      join(tempDir, "x".repeat(300)),
+      { debug: (msg: string) => debugMessages.push(msg) }
+    );
+
+    assert.equal(debugMessages.length, 1);
   });
 
   test("no-ops when summaryPath not set", () => {

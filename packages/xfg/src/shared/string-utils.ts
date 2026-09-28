@@ -1,8 +1,10 @@
-/**
- * Convert a camelCase string to snake_case.
- */
 export function camelToSnake(str: string): string {
   return str.replace(/([A-Z])/g, "_$1").toLowerCase();
+}
+
+// Escapes only line breaks: JSON-style escaping would double user-written backslashes (^feat\( -> ^feat\\().
+export function quoted(text: string): string {
+  return `"${text.replace(/\r/g, "\\r").replace(/\n/g, "\\n")}"`;
 }
 
 /**
@@ -13,7 +15,7 @@ export function camelToSnake(str: string): string {
 export function formatScalarValue(val: unknown): string | undefined {
   if (val === null) return "null";
   if (val === undefined) return "undefined";
-  if (typeof val === "string") return `"${val}"`;
+  if (typeof val === "string") return quoted(val);
   if (typeof val === "boolean") return val ? "true" : "false";
   return undefined;
 }
