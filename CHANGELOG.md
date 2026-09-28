@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.1](https://github.com/anthony-spruyt/xfg/compare/v7.2.0...v7.2.1) (2026-09-28)
+
+
+### Dependencies
+
+* **deps:** update dependency tsx to v4.23.15 ([#1036](https://github.com/anthony-spruyt/xfg/issues/1036)) ([196e8df](https://github.com/anthony-spruyt/xfg/commit/196e8dfe44ab65fc67648497a92176e6e0dfd2be))
+
 ## [7.2.0](https://github.com/anthony-spruyt/xfg/compare/v7.1.0...v7.2.0) (2026-09-26)
 
 
