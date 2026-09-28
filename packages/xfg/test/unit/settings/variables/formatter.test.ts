@@ -41,29 +41,24 @@ describe("formatVariablesPlan", () => {
 
     const plain = result.lines.map((l) => stripAnsi(l));
 
-    // Section headers
     assert.ok(plain.some((l) => l.includes("Create:")));
     assert.ok(plain.some((l) => l.includes("Update:")));
     assert.ok(plain.some((l) => l.includes("Delete:")));
 
-    // Create entry content
     assert.ok(
       plain.some((l) => l.includes("+") && l.includes('variable "NEW_VAR"'))
     );
     assert.ok(plain.some((l) => l.includes('value: "val"')));
 
-    // Update entry content
     assert.ok(
       plain.some((l) => l.includes("~") && l.includes('variable "UPD_VAR"'))
     );
     assert.ok(plain.some((l) => l.includes('"old"') && l.includes('"new"')));
 
-    // Delete entry content
     assert.ok(
       plain.some((l) => l.includes("-") && l.includes('variable "OLD_VAR"'))
     );
 
-    // Summary line
     assert.ok(
       plain.some(
         (l) =>

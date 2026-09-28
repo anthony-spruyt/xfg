@@ -1,9 +1,12 @@
 import chalk from "chalk";
-import { writeGitHubStepSummary } from "./github-summary.js";
+import {
+  STEP_SUMMARY_MAX_BYTES,
+  writeGitHubStepSummary,
+} from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
-import { appendDiffBlock } from "../shared/markdown-fence.js";
 import { quoted } from "../shared/string-utils.js";
 
 export interface LifecycleReport {
@@ -99,31 +102,22 @@ export function formatLifecycleReportCLI(report: LifecycleReport): string[] {
 
 export function formatLifecycleReportMarkdown(
   report: LifecycleReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
   if (!hasLifecycleChanges(report)) {
     return "";
   }
 
-  const lines: string[] = [];
-
-  const titleSuffix = dryRun ? " (Dry Run)" : "";
-  lines.push(`## Lifecycle Summary${titleSuffix}`);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  const diffLines = renderActionDiffLines(report.actions);
-
-  appendDiffBlock(lines, diffLines);
-
-  lines.push(`**${formatLifecycleSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  const title = `## Lifecycle Summary${dryRun ? " (Dry Run)" : ""}`;
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun, title),
+      blocks: [{ diffLines: renderActionDiffLines(report.actions) }],
+      footer: `**${formatLifecycleSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeLifecycleReportSummary(
@@ -131,7 +125,8 @@ export function writeLifecycleReportSummary(
   dryRun: boolean,
   summaryPath: string | undefined
 ): void {
-  const markdown = formatLifecycleReportMarkdown(report, dryRun);
-  if (!markdown) return;
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatLifecycleReportMarkdown(report, dryRun, maxBytes),
+    summaryPath
+  );
 }

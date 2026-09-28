@@ -4,29 +4,22 @@ import type { DebugLog } from "../shared/logger.js";
 
 export const STEP_SUMMARY_MAX_BYTES = 1024 * 1024;
 
-const TOO_LARGE_NOTE =
-  "\n> [!WARNING]\n> xfg summary too large to show (GitHub limit is 1 MiB). See the job log.\n";
-
-// The limit covers the whole file, and earlier steps may have written to it already.
-export function summaryBytesLeft(summaryPath: string): number {
-  const used = statSync(summaryPath, { throwIfNoEntry: false })?.size ?? 0;
-  return STEP_SUMMARY_MAX_BYTES - used - 2;
-}
-
+/**
+ * Append markdown to GITHUB_STEP_SUMMARY. Never throws: the summary is best effort.
+ * render gets the bytes left, since the 1 MiB limit covers what earlier steps wrote too.
+ */
 export function writeGitHubStepSummary(
-  markdown: string,
+  render: (maxBytes: number) => string,
   summaryPath: string | undefined,
   log?: DebugLog
 ): void {
   if (!summaryPath) return;
   try {
-    const left = summaryBytesLeft(summaryPath);
-    let content = "\n" + markdown + "\n";
-    if (Buffer.byteLength(markdown) > left) {
-      if (Buffer.byteLength(TOO_LARGE_NOTE) > left + 2) return;
-      content = TOO_LARGE_NOTE;
-    }
-    appendFileSync(summaryPath, content);
+    const used = statSync(summaryPath, { throwIfNoEntry: false })?.size ?? 0;
+    const maxBytes = STEP_SUMMARY_MAX_BYTES - used - 2;
+    const markdown = render(maxBytes);
+    if (!markdown || Buffer.byteLength(markdown) > maxBytes) return;
+    appendFileSync(summaryPath, "\n" + markdown + "\n");
   } catch (error) {
     log?.debug(`Failed to write GitHub step summary: ${toErrorMessage(error)}`);
   }

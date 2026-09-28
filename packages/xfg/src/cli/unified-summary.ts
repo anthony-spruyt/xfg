@@ -1,7 +1,9 @@
+import { STEP_SUMMARY_MAX_BYTES } from "../output/github-summary.js";
 import {
-  STEP_SUMMARY_MAX_BYTES,
-  summaryBytesLeft,
-} from "../output/github-summary.js";
+  fitSummary,
+  summaryHeader,
+  type SummaryBlock,
+} from "../output/summary-budget.js";
 import {
   hasLifecycleChanges,
   writeGitHubStepSummary,
@@ -17,7 +19,6 @@ import {
   type RepoChanges,
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
-import { appendDiffBlock } from "../shared/markdown-fence.js";
 import { quoted } from "../shared/string-utils.js";
 
 interface UnifiedSummaryInput {
@@ -117,50 +118,12 @@ function renderLifecycleLines(
   }
 }
 
-const CUT_NOTE = "... cut to fit GitHub's 1 MiB summary limit";
-// Room kept for the "more repos not shown" line.
-const NOTE_RESERVE_BYTES = 100;
-
-function lineBytes(line: string): number {
-  return Buffer.byteLength(line) + 1;
-}
-
-function totalBytes(lines: string[]): number {
-  let total = 0;
-  for (const line of lines) total += lineBytes(line);
-  return total;
-}
-
-function cutToFit(diffLines: string[], room: number): string[] {
-  const kept: string[] = [];
-  let used = lineBytes(CUT_NOTE);
-  for (const line of diffLines) {
-    used += lineBytes(line);
-    if (used > room) break;
-    kept.push(line);
-  }
-  if (kept.length > 0) kept.push(CUT_NOTE);
-  return kept;
-}
-
 export function formatUnifiedSummaryMarkdown(
   input: UnifiedSummaryInput,
   maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
   if (!hasAnyChanges(input)) {
     return "";
-  }
-
-  const lines: string[] = [];
-
-  const title = input.dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (input.dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
   }
 
   const lifecycleByRepo = new Map(
@@ -186,9 +149,7 @@ export function formatUnifiedSummaryMarkdown(
   for (const r of input.sync?.repos ?? []) addRepo(r.repoName);
   for (const r of input.settings?.repos ?? []) addRepo(r.repoName);
 
-  const footer = `**${formatCombinedSummary(input)}**`;
-  let used = totalBytes(lines) + lineBytes(footer) + NOTE_RESERVE_BYTES;
-  const blocks: { heading: string[]; diffLines: string[] }[] = [];
+  const blocks: SummaryBlock[] = [];
 
   for (const repoName of allRepos) {
     const lcAction = lifecycleByRepo.get(repoName);
@@ -210,9 +171,7 @@ export function formatUnifiedSummaryMarkdown(
 
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
-    if (syncRepo) {
-      for (const line of renderSyncLines(syncRepo)) diffLines.push(line);
-    }
+    if (syncRepo) renderSyncLines(syncRepo, diffLines);
 
     if (hasSyncChanges && repoHasSettingsChanges) diffLines.push("");
 
@@ -221,48 +180,22 @@ export function formatUnifiedSummaryMarkdown(
       renderRepoSettingsDiffLines(settingsRepo, diffLines);
     });
 
-    blocks.push({ heading: [`### ${repoName}`, ""], diffLines });
+    blocks.push({ heading: `### ${repoName}`, diffLines });
   }
 
-  for (let i = 0; i < blocks.length; i++) {
-    const { heading, diffLines } = blocks[i];
-    const block = [...heading];
-    appendDiffBlock(block, diffLines);
-    const blockBytes = totalBytes(block);
-
-    if (used + blockBytes <= maxBytes) {
-      for (const line of block) lines.push(line);
-      used += blockBytes;
-      continue;
-    }
-
-    const overhead = blockBytes - totalBytes(diffLines);
-    const kept = cutToFit(diffLines, maxBytes - used - overhead);
-    if (kept.length > 0) {
-      for (const line of heading) lines.push(line);
-      appendDiffBlock(lines, kept);
-    }
-    const hidden = blocks.length - i - (kept.length > 0 ? 1 : 0);
-    if (hidden > 0) {
-      lines.push(
-        `_... ${hidden} more ${hidden === 1 ? "repo" : "repos"} not shown. See the job log._`,
-        ""
-      );
-    }
-    break;
-  }
-
-  lines.push(footer);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(input.dryRun),
+      blocks,
+      footer: `**${formatCombinedSummary(input)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
-  if (!input.summaryPath) return;
-  const markdown = formatUnifiedSummaryMarkdown(
-    input,
-    summaryBytesLeft(input.summaryPath)
+  writeGitHubStepSummary(
+    (maxBytes) => formatUnifiedSummaryMarkdown(input, maxBytes),
+    input.summaryPath
   );
-  if (!markdown) return;
-  writeGitHubStepSummary(markdown, input.summaryPath);
 }

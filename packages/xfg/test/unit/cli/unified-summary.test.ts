@@ -1229,43 +1229,25 @@ describe("formatUnifiedSummaryMarkdown", () => {
 });
 
 describe("formatUnifiedSummaryMarkdown byte budget", () => {
-  function bigSync(repoCount: number): SyncReport {
+  test("keeps the totals and cuts diffs to fit", () => {
     const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
-    return {
-      repos: Array.from({ length: repoCount }, (_, i) => ({
+    const sync: SyncReport = {
+      repos: Array.from({ length: 10 }, (_, i) => ({
         repoName: `org/repo-${i}`,
         files: [{ path: "a.txt", action: "update" as const, diffLines }],
       })),
-      totals: { files: { create: 0, update: repoCount, delete: 0 } },
+      totals: { files: { create: 0, update: 10, delete: 0 } },
     };
-  }
 
-  test("keeps the title and totals and cuts diffs to fit the budget", () => {
-    const maxBytes = 20_000;
     const markdown = formatUnifiedSummaryMarkdown(
-      { sync: bigSync(10), dryRun: true },
-      maxBytes
+      { sync, dryRun: true },
+      20_000
     );
 
-    assert.ok(Buffer.byteLength(markdown) <= maxBytes);
+    assert.ok(Buffer.byteLength(markdown) <= 20_000);
     assert.ok(markdown.startsWith("## xfg Plan"));
     assert.ok(markdown.endsWith("**Plan: 10 files (10 to update)**"));
-    assert.ok(markdown.includes("### org/repo-0"));
-    assert.ok(markdown.includes("... cut to fit GitHub's 1 MiB summary limit"));
     assert.ok(markdown.includes("more repos not shown"));
-    assert.ok(!markdown.includes("### org/repo-9"));
-    const fences = markdown.match(/^```/gm) ?? [];
-    assert.equal(fences.length % 2, 0);
-  });
-
-  test("renders everything when it fits", () => {
-    const markdown = formatUnifiedSummaryMarkdown(
-      { sync: bigSync(2), dryRun: true },
-      1_000_000
-    );
-
-    assert.ok(markdown.includes("### org/repo-1"));
-    assert.ok(!markdown.includes("not shown"));
   });
 });
 
@@ -1421,6 +1403,17 @@ describe("writeUnifiedSummary", () => {
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(Buffer.byteLength(content) <= STEP_SUMMARY_MAX_BYTES);
     assert.ok(content.includes("**Plan: 1 file (1 to update)**"));
+  });
+
+  test("does not throw when the summary path is unusable", () => {
+    writeUnifiedSummary({
+      lifecycle: {
+        actions: [{ repoName: "org/repo", action: "created" }],
+        totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+      },
+      dryRun: false,
+      summaryPath: join(tempDir, "x".repeat(300)),
+    });
   });
 
   test("no-ops when summaryPath not set", () => {

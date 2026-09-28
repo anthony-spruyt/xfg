@@ -44,9 +44,6 @@ interface TreeNode {
   children: Map<string, TreeNode>;
 }
 
-/**
- * Build a tree structure from flat property diffs.
- */
 function buildTree(diffs: PropertyDiff[]): TreeNode {
   const root: TreeNode = { name: "", children: new Map() };
 
@@ -71,7 +68,6 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
         child.oldValue = diff.oldValue;
         child.newValue = diff.newValue;
       } else {
-        // Intermediate node - mark as change if any child changes
         if (!child.action) {
           child.action = "change";
         }
@@ -104,9 +100,6 @@ function formatValue(val: unknown): string {
   return String(val);
 }
 
-/**
- * Render a nested value (object or array) as indented tree lines.
- */
 function renderNestedValue(
   val: unknown,
   action: DiffAction,
@@ -177,9 +170,6 @@ function renderNestedObject(
   return lines;
 }
 
-/**
- * Get the symbol and color for an action.
- */
 function getActionStyle(action: DiffAction): {
   symbol: string;
   color: (s: string) => string;
@@ -264,9 +254,6 @@ function renderLeafNode(
   return [renderSimpleLeaf(child, style, indentStr)];
 }
 
-/**
- * Recursively render tree nodes to formatted lines.
- */
 function renderTree(node: TreeNode, indent: number = 0): string[] {
   const lines: string[] = [];
   const indentStr = "    ".repeat(indent);
@@ -288,9 +275,6 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
   return lines;
 }
 
-/**
- * Format property diffs as an indented tree structure.
- */
 export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
   if (diffs.length === 0) {
     return [];
@@ -300,19 +284,12 @@ export function formatPropertyTree(diffs: PropertyDiff[]): string[] {
   return renderTree(tree);
 }
 
-/**
- * Format a full ruleset config as tree lines (for create action).
- * Delegates to renderNestedObject which handles recursive rendering.
- */
 function formatFullConfig(ruleset: Ruleset, indent: number = 2): string[] {
   // Object.entries works on any object; the cast avoids a double assertion
   const entries = Object.entries(ruleset) as [string, unknown][];
   return renderNestedObject(Object.fromEntries(entries), "add", indent);
 }
 
-/**
- * Format ruleset changes as a Terraform-style plan.
- */
 export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const lines: string[] = [];
   const entries: RulesetPlanEntry[] = [];

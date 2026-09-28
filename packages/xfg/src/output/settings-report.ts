@@ -5,13 +5,16 @@ import type {
   SecretsPlanEntry,
 } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
-import { writeGitHubStepSummary } from "./github-summary.js";
+import {
+  STEP_SUMMARY_MAX_BYTES,
+  writeGitHubStepSummary,
+} from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
 import { formatScalarValue, quoted } from "../shared/string-utils.js";
 import {
   formatActionCountEntry,
   type ActionTotals,
 } from "../shared/count-format.js";
-import { appendDiffBlock } from "../shared/markdown-fence.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -243,9 +246,7 @@ export function renderRepoSettingsDiffLines(
     if (ruleset.action === "create") {
       diffLines.push(`+ ruleset ${quoted(ruleset.name)}`);
       if (ruleset.config) {
-        for (const line of formatRulesetConfigPlain(ruleset.config)) {
-          diffLines.push(line);
-        }
+        diffLines.push(...formatRulesetConfigPlain(ruleset.config));
       }
     } else if (ruleset.action === "update") {
       diffLines.push(`! ruleset ${quoted(ruleset.name)}`);
@@ -280,7 +281,7 @@ export function renderRepoSettingsDiffLines(
     if (label.action === "create") {
       diffLines.push(`+ label ${quoted(label.name)}`);
       if (label.config) {
-        diffLines.push(`+   color: "${label.config.color}"`);
+        diffLines.push(`+   color: ${quoted(label.config.color)}`);
         if (label.config.description !== undefined) {
           diffLines.push(
             `+   description: ${quoted(label.config.description)}`
@@ -356,35 +357,23 @@ export function renderRepoSettingsDiffLines(
 
 export function formatSettingsReportMarkdown(
   report: SettingsReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
-  const lines: string[] = [];
-
-  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  for (const repo of report.repos) {
-    if (!hasRepoSettingsChanges(repo)) continue;
-
-    lines.push(`### ${repo.repoName}`);
-    lines.push("");
-
+  const blocks = report.repos.filter(hasRepoSettingsChanges).map((repo) => {
     const diffLines: string[] = [];
     renderRepoSettingsDiffLines(repo, diffLines);
+    return { heading: `### ${repo.repoName}`, diffLines };
+  });
 
-    appendDiffBlock(lines, diffLines);
-  }
-
-  lines.push(`**${formatSettingsSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun),
+      blocks,
+      footer: `**${formatSettingsSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeSettingsReportSummary(
@@ -392,6 +381,8 @@ export function writeSettingsReportSummary(
   dryRun: boolean,
   summaryPath: string | undefined
 ): void {
-  const markdown = formatSettingsReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatSettingsReportMarkdown(report, dryRun, maxBytes),
+    summaryPath
+  );
 }

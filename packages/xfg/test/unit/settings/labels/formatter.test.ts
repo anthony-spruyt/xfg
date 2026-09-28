@@ -3,7 +3,6 @@ import { strict as assert } from "node:assert";
 import { formatLabelsPlan } from "../../../../src/settings/labels/formatter.js";
 import type { LabelChange } from "../../../../src/settings/labels/diff.js";
 
-// Strip ANSI escape codes for assertion
 function stripAnsi(str: string): string {
   return str.replace(
     new RegExp(`${String.fromCharCode(0x1b)}\\[[0-9;]*m`, "g"),
@@ -133,7 +132,6 @@ describe("formatLabelsPlan", () => {
     const result = formatLabelsPlan(changes);
 
     assert.equal(result.updates, 1);
-    // Should show property with only newValue (no arrow)
     const descLine = result.lines.find((l) =>
       stripAnsi(l).includes("description:")
     );
@@ -163,7 +161,6 @@ describe("formatLabelsPlan", () => {
     const result = formatLabelsPlan(changes);
 
     assert.equal(result.updates, 1);
-    // Should show label name without arrow
     const labelLine = result.lines.find((l) =>
       stripAnsi(l).includes('label "bug"')
     );

@@ -179,7 +179,6 @@ describe("computePropertyDiffs", () => {
 
       const diffs = computePropertyDiffs(current, desired);
 
-      // Should show a change at the parameter level, not the whole rules array
       assert.equal(diffs.length, 1);
       assert.deepEqual(diffs[0].path, [
         "rules",
@@ -228,7 +227,6 @@ describe("computePropertyDiffs", () => {
 
       const diffs = computePropertyDiffs(current, desired);
 
-      // Should detect change at actor_type level, not whole array
       assert.ok(
         diffs.some(
           (d) => d.path.includes("actor_type") && d.action === "change"
@@ -284,7 +282,6 @@ describe("formatPropertyTree", () => {
     const lines = formatPropertyTree(diffs);
 
     assert.equal(lines.length, 1);
-    // Line should contain: ~ enforcement: disabled → active
     assert.ok(lines[0].includes("enforcement"));
     assert.ok(lines[0].includes("disabled"));
     assert.ok(lines[0].includes("active"));
@@ -302,10 +299,6 @@ describe("formatPropertyTree", () => {
 
     const lines = formatPropertyTree(diffs);
 
-    // Should produce tree structure:
-    // ~ rules:
-    //     ~ pull_request:
-    //         ~ required_approving_review_count: 1 → 2
     assert.ok(lines.some((l) => l.includes("rules")));
     assert.ok(lines.some((l) => l.includes("pull_request")));
     assert.ok(lines.some((l) => l.includes("required_approving_review_count")));
@@ -318,7 +311,6 @@ describe("formatPropertyTree", () => {
 
     const lines = formatPropertyTree(diffs);
 
-    // Should show: + enforcement: active
     assert.ok(lines[0].includes("+") || lines[0].includes("add"));
     assert.ok(lines[0].includes("enforcement"));
     assert.ok(lines[0].includes("active"));
@@ -331,7 +323,6 @@ describe("formatPropertyTree", () => {
 
     const lines = formatPropertyTree(diffs);
 
-    // Should show: - enforcement (was: active)
     assert.ok(lines[0].includes("-") || lines[0].includes("remove"));
     assert.ok(lines[0].includes("enforcement"));
   });
@@ -357,7 +348,6 @@ describe("formatPropertyTree", () => {
     const lines = formatPropertyTree(diffs);
 
     const output = lines.join("\n");
-    // Primitive arrays should render inline
     assert.ok(output.includes("branches"));
     assert.ok(output.includes("main"));
   });
@@ -374,9 +364,7 @@ describe("formatPropertyTree", () => {
     const lines = formatPropertyTree(diffs);
 
     const output = lines.join("\n");
-    // Should NOT collapse to {...}
     assert.ok(!output.includes("{...}"));
-    // Should show nested properties
     assert.ok(output.includes("nested"));
     assert.ok(output.includes("value"));
     assert.ok(output.includes("count"));
@@ -507,7 +495,6 @@ describe("formatRulesetPlan", () => {
     assert.equal(result.creates, 1);
     assert.equal(result.updates, 0);
     assert.equal(result.deletes, 0);
-    // Should contain ruleset name and full config
     const output = result.lines.join("\n");
     assert.ok(output.includes("branch-protection"));
     assert.ok(output.includes("enforcement"));
@@ -538,7 +525,6 @@ describe("formatRulesetPlan", () => {
     assert.equal(result.updates, 1);
     const output = result.lines.join("\n");
     assert.ok(output.includes("branch-protection"));
-    // Should show the diff: disabled → active
     assert.ok(output.includes("disabled") || output.includes("active"));
   });
 
@@ -562,7 +548,6 @@ describe("formatRulesetPlan", () => {
     assert.equal(result.deletes, 1);
     const output = result.lines.join("\n");
     assert.ok(output.includes("old-ruleset"));
-    // Should NOT show full config for deletes
     assert.ok(
       !output.includes("enforcement") || output.split("enforcement").length <= 2
     );
@@ -587,7 +572,6 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     assert.equal(result.unchanged, 1);
-    // Unchanged should not appear in output
     const output = result.lines.join("\n");
     assert.ok(!output.includes("stable-ruleset"));
   });
@@ -611,7 +595,6 @@ describe("formatRulesetPlan", () => {
 
     assert.equal(result.creates, 1);
     const output = result.lines.join("\n");
-    // Should show empty array as []
     assert.ok(output.includes("[]"));
   });
 
@@ -638,7 +621,6 @@ describe("formatRulesetPlan", () => {
 
     assert.equal(result.creates, 1);
     const output = result.lines.join("\n");
-    // Should show rules array with objects
     assert.ok(output.includes("rules"));
     assert.ok(output.includes("pull_request") || output.includes("type"));
   });
@@ -678,7 +660,6 @@ describe("formatRulesetPlan", () => {
 
     assert.equal(result.updates, 1);
     const output = result.lines.join("\n");
-    // Should show the change in the include array
     assert.ok(output.includes("include") || output.includes("ref_name"));
   });
 
@@ -788,9 +769,7 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     const output = result.lines.join("\n");
-    // Should show the real change
     assert.ok(output.includes("enforcement"));
-    // Should NOT show read-only fields as removals
     assert.ok(!output.includes("node_id"));
     assert.ok(!output.includes("_links"));
     assert.ok(!output.includes("created_at"));
@@ -838,9 +817,7 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     const output = result.lines.join("\n");
-    // Should show the real change
     assert.ok(output.includes("required_approving_review_count"));
-    // Should NOT show extra API params as removals
     assert.ok(!output.includes("dismiss_stale_reviews_on_push"));
     assert.ok(!output.includes("require_last_push_approval"));
   });
@@ -1084,12 +1061,10 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     const output = result.lines.join("\n");
-    // Should NOT contain collapsed objects
     assert.ok(
       !output.includes("{...}"),
       `Output should not contain {…}: ${output}`
     );
-    // Should show rule details
     assert.ok(output.includes("pull_request"));
     assert.ok(output.includes("required_signatures"));
     assert.ok(

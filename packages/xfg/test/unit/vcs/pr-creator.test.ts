@@ -215,13 +215,10 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     const files: FileAction[] = [{ fileName: "test.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // Should have the filename
     assert.ok(result.includes("test.json"));
 
-    // Should have the action text
     assert.ok(result.includes("Created"));
 
-    // Should have some structure (markdown headers or bullets)
     assert.ok(
       result.includes("#") || result.includes("-") || result.includes("*"),
       "Should have markdown formatting"
@@ -259,7 +256,6 @@ describe("skip action handling", () => {
         { fileName: "skipped.json", action: "skip" },
       ];
       const result = formatPRBody(files, repoInfo);
-      // Should still return valid markdown, even if empty changes
       assert.ok(typeof result === "string");
     });
 
@@ -308,7 +304,6 @@ describe("skip action handling", () => {
         { fileName: "skipped2.json", action: "skip" },
       ];
       const result = formatPRTitle(files);
-      // 4 actual changes, 2 skipped - title should show 4
       assert.strictEqual(result, "chore: sync 4 config files");
     });
 
@@ -318,7 +313,6 @@ describe("skip action handling", () => {
         { fileName: "b.json", action: "skip" },
       ];
       const result = formatPRTitle(files);
-      // Edge case: no actual changes - should handle gracefully
       assert.ok(typeof result === "string");
     });
   });

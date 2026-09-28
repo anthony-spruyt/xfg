@@ -185,7 +185,6 @@ describe("formatSyncReportCLI with diffLines", () => {
     const lines = formatSyncReportCLI(report);
     const output = lines.join("\n");
 
-    // Strip ANSI codes for assertion
     const ansiRegex = new RegExp(
       String.fromCharCode(0x1b) + "\\[[0-9;]*m",
       "g"

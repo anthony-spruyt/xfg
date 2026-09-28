@@ -25,9 +25,6 @@ export interface LabelsPlanResult {
   entries: LabelsPlanEntry[];
 }
 
-/**
- * Format label changes as a Terraform-style plan.
- */
 export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
   const lines: string[] = [];
   const entries: LabelsPlanEntry[] = [];
@@ -54,7 +51,9 @@ export function formatLabelsPlan(changes: LabelChange[]): LabelsPlanResult {
     for (const change of grouped.create) {
       lines.push(chalk.green(`    + label ${quoted(change.name)}`));
       if (change.desired) {
-        lines.push(chalk.green(`        color: "${change.desired.color}"`));
+        lines.push(
+          chalk.green(`        color: ${quoted(change.desired.color)}`)
+        );
         if (change.desired.description !== undefined) {
           lines.push(
             chalk.green(

@@ -4,7 +4,8 @@ import { formatCountEntry } from "../shared/count-format.js";
 import { formatDiffLine } from "../shared/diff-format.js";
 import type { MergeMode } from "../config/index.js";
 import type { ActiveAction } from "../settings/index.js";
-import { appendDiffBlock } from "../shared/markdown-fence.js";
+import { STEP_SUMMARY_MAX_BYTES } from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
 
 export interface ReportFileChange {
   path: string;
@@ -76,44 +77,33 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
 
 export function formatSyncReportMarkdown(
   report: SyncReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
-  const lines: string[] = [];
+  const blocks = report.repos
+    .filter((repo) => repo.files.length > 0 || repo.error)
+    .map((repo) => ({
+      heading: `### ${repo.repoName}`,
+      diffLines: renderSyncLines(repo),
+    }));
 
-  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  for (const repo of report.repos) {
-    if (repo.files.length === 0 && !repo.error) {
-      continue;
-    }
-
-    lines.push(`### ${repo.repoName}`);
-    lines.push("");
-
-    const diffLines = renderSyncLines(repo);
-
-    appendDiffBlock(lines, diffLines);
-  }
-
-  lines.push(`**${formatSyncSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun),
+      blocks,
+      footer: `**${formatSyncSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
 // Keeps a few huge files from pushing the step summary past GitHub's 1 MiB limit.
 export const SUMMARY_DIFF_LINE_LIMIT = 500;
 
-export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
-  const lines: string[] = [];
-
+export function renderSyncLines(
+  syncRepo: RepoFileChanges,
+  lines: string[] = []
+): string[] {
   for (let i = 0; i < syncRepo.files.length; i++) {
     const file = syncRepo.files[i];
 
@@ -147,6 +137,8 @@ export function writeSyncReportSummary(
   dryRun: boolean,
   summaryPath: string | undefined
 ): void {
-  const markdown = formatSyncReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatSyncReportMarkdown(report, dryRun, maxBytes),
+    summaryPath
+  );
 }
