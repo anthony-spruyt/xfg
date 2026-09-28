@@ -39,7 +39,8 @@ Repo-operator syncs a thin layer on top.
 - Rootful Podman by design. Rootless cannot run nested (no cgroup delegation, no `/dev/net/tun`), and `vscode` has passwordless sudo anyway. Isolation comes from the devcontainer itself (WSL2) or the Kata VM (Coder).
 - Registry allow-list with `short-name-mode = "enforcing"` — typo-squat pulls fail.
 - Seccomp profile narrows host syscall surface vs `seccomp=unconfined`.
-- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, and a private bridge network. It is a guardrail against hostile images, not a boundary against the agent. No pids/memory/cpu limits: cgroups are not delegated.
+- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, and a private bridge network. It is a guardrail against hostile images, not a boundary against the agent. No pids/memory/cpu limits: cgroups are not delegated. Coder only: the WSL devcontainer has no `CAP_SYS_ADMIN`, so there run trusted images with `sudo podman run --network=host --uts=host`. The `warn-raw-container-run` hookify rule reminds agents of this once per session.
+- `docker` is Podman (a symlink to the wrapper), so scripts written for CI's Docker run unchanged. Docker-only commands such as `docker buildx` do not work.
 
 ## Seccomp profile updates
 
