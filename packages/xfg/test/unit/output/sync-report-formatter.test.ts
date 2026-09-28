@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -159,7 +159,6 @@ describe("formatSyncReportCLI", () => {
     const output = lines.join("\n");
 
     assert.ok(output.includes("org/repo"), "should include repo name");
-    // PR info is optional in CLI output - just verify no crash
     assert.ok(output.includes("README.md"), "should include file");
   });
 });
@@ -367,15 +366,15 @@ describe("formatSyncReportMarkdown", () => {
 });
 
 describe("writeSyncReportSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `sync-report-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "sync-report-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {

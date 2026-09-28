@@ -27,13 +27,9 @@ interface PROptions {
   dryRun?: boolean;
   /** Number of retries for API operations (default: 3) */
   retries?: number;
-  /** Custom PR body template */
   prTemplate?: string;
-  /** Command executor for shell commands */
   executor: ICommandExecutor;
-  /** GitHub App installation token for authentication */
   token?: string;
-  /** Labels to apply to the created PR */
   labels?: string[];
   /** Optional logger for PR strategy debug/warn/info messages */
   log?: IPRStrategyLogger;
@@ -196,9 +192,7 @@ interface MergePROptions {
   workDir: string;
   dryRun?: boolean;
   retries?: number;
-  /** Command executor for shell commands */
   executor: ICommandExecutor;
-  /** GitHub App installation token for authentication */
   token?: string;
   /** Optional logger for PR strategy debug/warn/info messages */
   log?: IPRStrategyLogger;

@@ -14,10 +14,6 @@ interface FormatOptions {
   };
 }
 
-/**
- * Format lifecycle action for output (used in both dry-run and real execution).
- * Returns empty array if action is "existed" (no output needed).
- */
 export function formatLifecycleAction(
   result: LifecycleResult,
   options?: FormatOptions

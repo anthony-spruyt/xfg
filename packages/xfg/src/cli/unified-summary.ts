@@ -20,6 +20,7 @@ import {
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
 import { quoted } from "../shared/string-utils.js";
+import type { DebugLog } from "../shared/logger.js";
 
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
@@ -27,6 +28,7 @@ interface UnifiedSummaryInput {
   settings?: SettingsReport;
   dryRun: boolean;
   summaryPath?: string | undefined;
+  log?: DebugLog;
 }
 
 function selectLabel(
@@ -196,6 +198,7 @@ export function formatUnifiedSummaryMarkdown(
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
   writeGitHubStepSummary(
     (maxBytes) => formatUnifiedSummaryMarkdown(input, maxBytes),
-    input.summaryPath
+    input.summaryPath,
+    input.log
   );
 }

@@ -210,8 +210,6 @@ describe("loadPRTemplate (via formatPRBody)", () => {
   });
 
   test("fallback template structure is valid", () => {
-    // The fallback template (in case PR.md is missing) has a specific structure
-    // We verify by checking that formatPRBody always returns valid content
     const files: FileAction[] = [{ fileName: "test.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 

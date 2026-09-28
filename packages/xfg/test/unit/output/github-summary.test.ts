@@ -49,7 +49,7 @@ describe("writeGitHubStepSummary", () => {
     assert.ok(content.includes("# New Summary"));
   });
 
-  test("passes the bytes left after earlier steps to render", () => {
+  test("passes the bytes left in this step's summary file to render", () => {
     writeFileSync(tmpFile, "abc");
     let maxBytes = 0;
 
@@ -72,7 +72,7 @@ describe("writeGitHubStepSummary", () => {
   test("writes nothing when render returns an empty string", () => {
     writeGitHubStepSummary(() => "", tmpFile);
 
-    assert.ok(!existsSync(tmpFile));
+    assert.equal(readFileSync(tmpFile, "utf-8"), "");
   });
 
   test("wraps content with newlines", () => {
@@ -92,7 +92,20 @@ describe("writeGitHubStepSummary", () => {
     assert.ok(debugMessages[0].includes("Failed to write GitHub step summary"));
   });
 
-  test("does not throw without a logger", () => {
-    writeGitHubStepSummary(() => "# Test", "/nonexistent-dir/file.md");
+  test("logs instead of throwing when render throws", () => {
+    const debugMessages: string[] = [];
+    const log = { debug: (msg: string) => debugMessages.push(msg) };
+
+    writeGitHubStepSummary(
+      () => {
+        throw new Error("boom");
+      },
+      tmpFile,
+      log
+    );
+
+    assert.equal(debugMessages.length, 1);
+    assert.ok(debugMessages[0].includes("boom"));
+    assert.equal(readFileSync(tmpFile, "utf-8"), "");
   });
 });

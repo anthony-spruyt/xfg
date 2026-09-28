@@ -3,6 +3,8 @@ import { appendDiffBlock, diffFence } from "../shared/markdown-fence.js";
 export interface SummaryBlock {
   heading?: string;
   diffLines: string[];
+  // Repos in this block, for the "not shown" note. Defaults to 1.
+  count?: number;
 }
 
 export interface SummaryParts {
@@ -62,7 +64,7 @@ function cutToFit(diffLines: string[], room: number): string[] {
 
 // Priority: footer, then header, then whole blocks, then cut blocks with what is left.
 export function fitSummary(parts: SummaryParts, maxBytes: number): string {
-  let used = lineBytes(parts.footer);
+  let used = Buffer.byteLength(parts.footer);
   if (used > maxBytes) return "";
 
   const lines: string[] = [];
@@ -72,16 +74,19 @@ export function fitSummary(parts: SummaryParts, maxBytes: number): string {
     used += headerBytes;
   }
 
-  const room = () => maxBytes - used - NOTE_RESERVE_BYTES;
+  const overheads = parts.blocks.map(blockOverhead);
+  const sizes = parts.blocks.map(
+    (block, i) => overheads[i] + linesBytes(block.diffLines)
+  );
+  const allFit = used + sizes.reduce((a, b) => a + b, 0) <= maxBytes;
+  const reserve = allFit ? 0 : NOTE_RESERVE_BYTES;
+  const room = () => maxBytes - used - reserve;
   const shown: (string[] | undefined)[] = [];
-  const overheads: number[] = [];
 
   parts.blocks.forEach((block, i) => {
-    overheads[i] = blockOverhead(block);
-    const bytes = overheads[i] + linesBytes(block.diffLines);
-    if (bytes <= room()) {
+    if (sizes[i] <= room()) {
       shown[i] = block.diffLines;
-      used += bytes;
+      used += sizes[i];
     }
   });
 
@@ -97,7 +102,7 @@ export function fitSummary(parts: SummaryParts, maxBytes: number): string {
   parts.blocks.forEach((block, i) => {
     const diffLines = shown[i];
     if (!diffLines) {
-      hidden++;
+      hidden += block.count ?? 1;
       return;
     }
     if (block.heading !== undefined) lines.push(block.heading, "");

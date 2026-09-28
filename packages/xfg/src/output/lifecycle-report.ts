@@ -113,7 +113,12 @@ export function formatLifecycleReportMarkdown(
   return fitSummary(
     {
       header: summaryHeader(dryRun, title),
-      blocks: [{ diffLines: renderActionDiffLines(report.actions) }],
+      blocks: [
+        {
+          diffLines: renderActionDiffLines(report.actions),
+          count: report.actions.filter((a) => a.action !== "existed").length,
+        },
+      ],
       footer: `**${formatLifecycleSummary(report.totals)}**`,
     },
     maxBytes

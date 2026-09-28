@@ -80,9 +80,6 @@ function buildTree(diffs: PropertyDiff[]): TreeNode {
   return root;
 }
 
-/**
- * Format a value for inline display (scalars and simple arrays only).
- */
 function formatValue(val: unknown): string {
   const scalar = formatScalarValue(val);
   if (scalar !== undefined) return scalar;

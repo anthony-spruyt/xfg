@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -1393,15 +1393,15 @@ describe("formatSettingsReportMarkdown", () => {
 });
 
 describe("writeSettingsReportSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `settings-report-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "settings-report-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {

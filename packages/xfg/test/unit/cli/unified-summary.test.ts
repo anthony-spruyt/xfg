@@ -1382,7 +1382,7 @@ describe("writeUnifiedSummary", () => {
     assert.ok(content.includes("xfg Apply"));
   });
 
-  test("fits in the room left by earlier steps and keeps the totals", () => {
+  test("fits in the room left in the summary file and keeps the totals", () => {
     writeFileSync(tempFile, "e".repeat(STEP_SUMMARY_MAX_BYTES - 5000));
     const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
 
@@ -1405,7 +1405,9 @@ describe("writeUnifiedSummary", () => {
     assert.ok(content.includes("**Plan: 1 file (1 to update)**"));
   });
 
-  test("does not throw when the summary path is unusable", () => {
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
     writeUnifiedSummary({
       lifecycle: {
         actions: [{ repoName: "org/repo", action: "created" }],
@@ -1413,7 +1415,10 @@ describe("writeUnifiedSummary", () => {
       },
       dryRun: false,
       summaryPath: join(tempDir, "x".repeat(300)),
+      log: { debug: (msg) => debugMessages.push(msg) },
     });
+
+    assert.equal(debugMessages.length, 1);
   });
 
   test("no-ops when summaryPath not set", () => {
@@ -1433,6 +1438,6 @@ describe("writeUnifiedSummary", () => {
       dryRun: false,
       summaryPath: tempFile,
     });
-    assert.ok(!existsSync(tempFile));
+    assert.equal(readFileSync(tempFile, "utf-8"), "");
   });
 });

@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { buildLifecycleReport } from "../../../src/cli/lifecycle-report-builder.js";
@@ -287,6 +287,20 @@ describe("formatLifecycleReportCLI", () => {
 });
 
 describe("formatLifecycleReportMarkdown", () => {
+  test("counts every hidden repo when the actions do not fit", () => {
+    const report: LifecycleReport = {
+      actions: Array.from({ length: 10 }, (_, i) => ({
+        repoName: `org/repo-${i}`,
+        action: "created" as const,
+      })),
+      totals: { created: 10, forked: 0, migrated: 0, existed: 0 },
+    };
+
+    const markdown = formatLifecycleReportMarkdown(report, false, 180);
+
+    assert.ok(markdown.includes("10 more repos not shown"));
+  });
+
   test("escapes newlines in descriptions so they stay on one line", () => {
     const report: LifecycleReport = {
       actions: [
@@ -514,15 +528,15 @@ describe("formatLifecycleReportMarkdown", () => {
 });
 
 describe("writeLifecycleReportSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `lifecycle-report-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "lifecycle-report-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {
@@ -557,6 +571,6 @@ describe("writeLifecycleReportSummary", () => {
 
     writeLifecycleReportSummary(report, false, tempFile);
 
-    assert.ok(!existsSync(tempFile), "should not create file when all existed");
+    assert.equal(readFileSync(tempFile, "utf-8"), "");
   });
 });

@@ -664,7 +664,6 @@ describe("formatRulesetPlan", () => {
   });
 
   test("formats create with mixed array (objects with primitive-like items)", () => {
-    // This tests the code path where array items are not all objects
     const changes: RulesetChange[] = [
       {
         action: "create",
@@ -1027,7 +1026,6 @@ describe("formatRulesetPlan", () => {
 
     const result = formatRulesetPlan(changes);
 
-    // Should have zero property diffs — data is identical after normalization
     assert.ok(result.entries[0].propertyChanges);
     const total =
       result.entries[0].propertyChanges!.added +

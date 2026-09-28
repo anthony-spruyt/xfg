@@ -107,4 +107,38 @@ describe("fitSummary", () => {
 
     assert.equal(markdown, "**F**");
   });
+
+  test("renders whole at the exact byte length and cuts one byte below", () => {
+    const parts = {
+      header: summaryHeader(true),
+      blocks: [repoBlock("org/a", 3), { diffLines: ["+ ```"] }],
+      footer: "**F**",
+    };
+    const whole = fitSummary(parts, 1_000_000);
+    const length = Buffer.byteLength(whole);
+
+    assert.equal(fitSummary(parts, length), whole);
+    assert.notEqual(fitSummary(parts, length - 1), whole);
+  });
+
+  test("counts every repo in a block when it is hidden", () => {
+    const markdown = fitSummary(
+      {
+        header: [],
+        blocks: [
+          {
+            diffLines: Array.from({ length: 30 }, (_, i) => `+ CREATE ${i}`),
+            count: 10,
+          },
+        ],
+        footer: "**F**",
+      },
+      150
+    );
+
+    assert.equal(
+      markdown,
+      "_... 10 more repos not shown. See the job log._\n\n**F**"
+    );
+  });
 });
