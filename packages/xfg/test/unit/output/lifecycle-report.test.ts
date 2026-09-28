@@ -288,6 +288,24 @@ describe("formatLifecycleReportCLI", () => {
 });
 
 describe("formatLifecycleReportMarkdown", () => {
+  test("keeps a description containing a code fence inside the diff block", () => {
+    const report: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/repo1",
+          action: "created",
+          settings: { description: "a\n```" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+
+    const markdown = formatLifecycleReportMarkdown(report, false);
+
+    assert.ok(markdown.includes("````diff\n+ CREATE org/repo1"));
+    assert.ok(markdown.includes('\n```"\n````\n'));
+  });
+
   test("returns empty string when all actions are existed", () => {
     const report: LifecycleReport = {
       actions: [{ repoName: "org/repo1", action: "existed" }],

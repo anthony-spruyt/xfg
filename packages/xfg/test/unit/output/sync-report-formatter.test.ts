@@ -258,7 +258,7 @@ describe("formatSyncReportMarkdown with diffLines", () => {
             {
               path: "README.md",
               action: "update",
-              diffLines: ["@@ -1,1 +1,1 @@", "-```", "+```bash"],
+              diffLines: ["@@ -1,3 +1,3 @@", " ```", "-old", "+new", " ```"],
             },
           ],
         },
@@ -268,8 +268,8 @@ describe("formatSyncReportMarkdown with diffLines", () => {
 
     const markdown = formatSyncReportMarkdown(report, true);
 
-    assert.ok(markdown.includes("````diff\n"));
-    assert.ok(markdown.includes("+```bash\n````\n"));
+    assert.ok(markdown.includes("````diff\n! README.md\n@@"));
+    assert.ok(markdown.includes("+new\n ```\n````\n"));
   });
 });
 

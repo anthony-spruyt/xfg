@@ -801,6 +801,35 @@ describe("formatSettingsReportCLI", () => {
 });
 
 describe("formatSettingsReportMarkdown", () => {
+  test("keeps a label description containing a code fence inside the diff block", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a", description: "a\n```" },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('````diff\n+ label "bug"'));
+    assert.ok(markdown.includes('\n```"\n````\n'));
+  });
+
   test("includes dry run warning when dryRun=true", () => {
     const report: SettingsReport = {
       repos: [
