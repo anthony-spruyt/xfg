@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -801,6 +801,101 @@ describe("formatSettingsReportCLI", () => {
 });
 
 describe("formatSettingsReportMarkdown", () => {
+  test("escapes newlines in label descriptions so they stay on one line", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a", description: "a\n```" },
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 1, update: 0, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('+   description: "a\\n```"\n'));
+  });
+
+  test("escapes newlines in label, ruleset, and array item text", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "r\n1",
+              action: "create",
+              config: {
+                target: "branch",
+                conditions: { refName: { include: ["a\nb"], exclude: [] } },
+              },
+            },
+          ],
+          labels: [
+            { name: "l\n1", action: "update", newName: "l\n2" },
+            { name: "l\n3", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('+ ruleset "r\\n1"'));
+    assert.ok(markdown.includes('include: ["a\\nb"]'));
+    assert.ok(markdown.includes('! label "l\\n1" \u2192 "l\\n2"'));
+    assert.ok(markdown.includes('- label "l\\n3"'));
+  });
+
+  test("escapes newlines in label property changes", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              propertyChanges: [
+                { property: "description", oldValue: "a\nb", newValue: "c\nd" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('!   description: "a\\nb" \u2192 "c\\nd"\n'));
+  });
+
   test("includes dry run warning when dryRun=true", () => {
     const report: SettingsReport = {
       repos: [
@@ -1298,15 +1393,15 @@ describe("formatSettingsReportMarkdown", () => {
 });
 
 describe("writeSettingsReportSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `settings-report-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "settings-report-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {
@@ -1338,6 +1433,26 @@ describe("writeSettingsReportSummary", () => {
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("xfg Apply"));
+  });
+
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeSettingsReportSummary(
+      {
+        repos: [],
+        totals: {
+          settings: { create: 0, update: 0 },
+          rulesets: { create: 0, update: 0, delete: 0 },
+          labels: { create: 0, update: 0, delete: 0 },
+        },
+      },
+      false,
+      join(tempDir, "x".repeat(300)),
+      { debug: (msg: string) => debugMessages.push(msg) }
+    );
+
+    assert.equal(debugMessages.length, 1);
   });
 
   test("no-ops when summaryPath not set", () => {

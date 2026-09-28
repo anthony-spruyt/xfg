@@ -1,13 +1,24 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
   formatUnifiedSummaryMarkdown,
   writeUnifiedSummary,
 } from "../../../src/cli/unified-summary.js";
-import { renderSyncLines } from "../../../src/output/sync-report.js";
+import {
+  renderSyncLines,
+  SUMMARY_DIFF_LINE_LIMIT,
+  SUMMARY_LINE_MAX_CHARS,
+} from "../../../src/output/sync-report.js";
+import { STEP_SUMMARY_MAX_BYTES } from "../../../src/output/github-summary.js";
 import type { LifecycleReport } from "../../../src/output/lifecycle-report.js";
 import type { SyncReport } from "../../../src/output/sync-report.js";
 import type { SettingsReport } from "../../../src/output/settings-report.js";
@@ -129,6 +140,85 @@ describe("formatUnifiedSummaryMarkdown", () => {
     assert.ok(markdown.includes("+ .github/ci.yml"));
     assert.ok(markdown.includes("! README.md"));
     assert.ok(markdown.includes("**Applied: 2 files (1 created, 1 updated)**"));
+  });
+
+  test("keeps sync diff lines containing code fences inside the diff block", () => {
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "README.md",
+              action: "update",
+              diffLines: ["@@ -1,3 +1,3 @@", " ```", "-old", "+new", " ```"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+    const markdown = formatUnifiedSummaryMarkdown({ sync, dryRun: true });
+
+    assert.ok(markdown.includes("````diff\n! README.md\n@@"));
+    assert.ok(markdown.includes("+new\n ```\n````\n"));
+  });
+
+  test("keeps lifecycle, sync, and settings content intact in one block", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/repo",
+          action: "created",
+          settings: { description: "a\n```" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "README.md",
+              action: "update",
+              diffLines: ["@@ -1,1 +1,1 @@", " ```"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+    const settings: SettingsReport = {
+      ...emptySettings(),
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a", description: "b\n```" },
+            },
+          ],
+        },
+      ],
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync,
+      settings,
+      dryRun: true,
+    });
+
+    assert.ok(
+      markdown.includes('````diff\n+ CREATE\n+   description: "a\\n```"\n')
+    );
+    assert.ok(markdown.includes(' ```\n\n+ label "bug"'));
+    assert.ok(markdown.includes('+   description: "b\\n```"\n````\n'));
   });
 
   test("renders combined lifecycle + sync for same repo", () => {
@@ -1139,7 +1229,79 @@ describe("formatUnifiedSummaryMarkdown", () => {
   });
 });
 
+describe("formatUnifiedSummaryMarkdown byte budget", () => {
+  test("keeps the totals and cuts diffs to fit", () => {
+    const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
+    const sync: SyncReport = {
+      repos: Array.from({ length: 10 }, (_, i) => ({
+        repoName: `org/repo-${i}`,
+        files: [{ path: "a.txt", action: "update" as const, diffLines }],
+      })),
+      totals: { files: { create: 0, update: 10, delete: 0 } },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown(
+      { sync, dryRun: true },
+      20_000
+    );
+
+    assert.ok(Buffer.byteLength(markdown) <= 20_000);
+    assert.ok(markdown.startsWith("## xfg Plan"));
+    assert.ok(markdown.endsWith("**Plan: 10 files (10 to update)**"));
+    assert.ok(markdown.includes("more repos not shown"));
+  });
+});
+
 describe("renderSyncLines with diffLines", () => {
+  test("cuts very long lines so small files after them still show", () => {
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [
+        {
+          path: "min.json",
+          action: "update",
+          diffLines: ["+" + "x".repeat(50_000)],
+        },
+        { path: "small.txt", action: "update", diffLines: ["+ok"] },
+      ],
+    });
+
+    assert.ok(result[1].length <= SUMMARY_LINE_MAX_CHARS + 1);
+    assert.ok(result[1].endsWith("…"));
+    assert.ok(result.includes("+ok"));
+  });
+
+  test("caps diff lines per file and says how many were left out", () => {
+    const diffLines = Array.from(
+      { length: SUMMARY_DIFF_LINE_LIMIT + 5 },
+      (_, i) => `+${i}`
+    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [{ path: "big.txt", action: "update", diffLines }],
+    });
+
+    assert.equal(result.length, SUMMARY_DIFF_LINE_LIMIT + 2);
+    assert.equal(
+      result[SUMMARY_DIFF_LINE_LIMIT],
+      `+${SUMMARY_DIFF_LINE_LIMIT - 1}`
+    );
+    assert.equal(result.at(-1), "... 5 more lines not shown");
+  });
+
+  test("does not add a note when the diff fits", () => {
+    const diffLines = Array.from(
+      { length: SUMMARY_DIFF_LINE_LIMIT },
+      (_, i) => `+${i}`
+    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [{ path: "big.txt", action: "update", diffLines }],
+    });
+
+    assert.equal(result.length, SUMMARY_DIFF_LINE_LIMIT + 1);
+  });
+
   test("appends diff lines after file path for updates", () => {
     const result = renderSyncLines({
       repoName: "org/repo",
@@ -1210,15 +1372,15 @@ describe("renderSyncLines with diffLines", () => {
 });
 
 describe("writeUnifiedSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `unified-summary-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "unified-summary-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {
@@ -1239,6 +1401,45 @@ describe("writeUnifiedSummary", () => {
     assert.ok(content.includes("xfg Apply"));
   });
 
+  test("fits in the room left in the summary file and keeps the totals", () => {
+    writeFileSync(tempFile, "e".repeat(STEP_SUMMARY_MAX_BYTES - 5000));
+    const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
+
+    writeUnifiedSummary({
+      sync: {
+        repos: [
+          {
+            repoName: "org/repo",
+            files: [{ path: "a.txt", action: "update", diffLines }],
+          },
+        ],
+        totals: { files: { create: 0, update: 1, delete: 0 } },
+      },
+      dryRun: true,
+      summaryPath: tempFile,
+    });
+
+    const content = readFileSync(tempFile, "utf-8");
+    assert.ok(Buffer.byteLength(content) <= STEP_SUMMARY_MAX_BYTES);
+    assert.ok(content.includes("**Plan: 1 file (1 to update)**"));
+  });
+
+  test("logs instead of throwing when the summary path is unusable", () => {
+    const debugMessages: string[] = [];
+
+    writeUnifiedSummary({
+      lifecycle: {
+        actions: [{ repoName: "org/repo", action: "created" }],
+        totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+      },
+      dryRun: false,
+      summaryPath: join(tempDir, "x".repeat(300)),
+      log: { debug: (msg) => debugMessages.push(msg) },
+    });
+
+    assert.equal(debugMessages.length, 1);
+  });
+
   test("no-ops when summaryPath not set", () => {
     writeUnifiedSummary({
       lifecycle: emptyLifecycle(),
@@ -1256,6 +1457,6 @@ describe("writeUnifiedSummary", () => {
       dryRun: false,
       summaryPath: tempFile,
     });
-    assert.ok(!existsSync(tempFile));
+    assert.equal(readFileSync(tempFile, "utf-8"), "");
   });
 });

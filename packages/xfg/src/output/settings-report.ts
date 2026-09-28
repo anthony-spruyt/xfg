@@ -5,8 +5,13 @@ import type {
   SecretsPlanEntry,
 } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
-import { writeGitHubStepSummary } from "./github-summary.js";
-import { formatScalarValue } from "../shared/string-utils.js";
+import {
+  STEP_SUMMARY_MAX_BYTES,
+  writeGitHubStepSummary,
+} from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
+import { formatScalarValue, quoted } from "../shared/string-utils.js";
 import {
   formatActionCountEntry,
   type ActionTotals,
@@ -98,7 +103,7 @@ function renderRulesetConfig(
         lines.push(
           formatLine(
             depth,
-            `+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+            `+ ${key}: [${value.map(formatValuePlain).join(", ")}]`
           )
         );
       } else {
@@ -240,12 +245,12 @@ export function renderRepoSettingsDiffLines(
     if (i > 0) diffLines.push("");
 
     if (ruleset.action === "create") {
-      diffLines.push(`+ ruleset "${ruleset.name}"`);
+      diffLines.push(`+ ruleset ${quoted(ruleset.name)}`);
       if (ruleset.config) {
         diffLines.push(...formatRulesetConfigPlain(ruleset.config));
       }
     } else if (ruleset.action === "update") {
-      diffLines.push(`! ruleset "${ruleset.name}"`);
+      diffLines.push(`! ruleset ${quoted(ruleset.name)}`);
       if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
         for (const diff of ruleset.propertyDiffs) {
           const path = diff.path.join(".");
@@ -265,7 +270,7 @@ export function renderRepoSettingsDiffLines(
         }
       }
     } else if (ruleset.action === "delete") {
-      diffLines.push(`- ruleset "${ruleset.name}"`);
+      diffLines.push(`- ruleset ${quoted(ruleset.name)}`);
     }
   }
 
@@ -275,33 +280,39 @@ export function renderRepoSettingsDiffLines(
 
   for (const label of repo.labels) {
     if (label.action === "create") {
-      diffLines.push(`+ label "${label.name}"`);
+      diffLines.push(`+ label ${quoted(label.name)}`);
       if (label.config) {
-        diffLines.push(`+   color: "${label.config.color}"`);
+        diffLines.push(`+   color: ${quoted(label.config.color)}`);
         if (label.config.description !== undefined) {
-          diffLines.push(`+   description: "${label.config.description}"`);
+          diffLines.push(
+            `+   description: ${quoted(label.config.description)}`
+          );
         }
       }
     } else if (label.action === "update") {
       if (label.newName) {
-        diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
+        diffLines.push(
+          `! label ${quoted(label.name)} \u2192 ${quoted(label.newName)}`
+        );
       } else {
-        diffLines.push(`! label "${label.name}"`);
+        diffLines.push(`! label ${quoted(label.name)}`);
       }
       if (label.propertyChanges) {
         for (const prop of label.propertyChanges) {
           if (prop.property === "new_name") continue;
           if (prop.oldValue !== undefined) {
             diffLines.push(
-              `!   ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+              `!   ${prop.property}: ${formatValuePlain(prop.oldValue)} \u2192 ${formatValuePlain(prop.newValue)}`
             );
           } else {
-            diffLines.push(`!   ${prop.property}: "${prop.newValue}"`);
+            diffLines.push(
+              `!   ${prop.property}: ${formatValuePlain(prop.newValue)}`
+            );
           }
         }
       }
     } else if (label.action === "delete") {
-      diffLines.push(`- label "${label.name}"`);
+      diffLines.push(`- label ${quoted(label.name)}`);
     }
   }
 
@@ -312,14 +323,14 @@ export function renderRepoSettingsDiffLines(
   for (const variable of repo.variables ?? []) {
     if (variable.action === "create") {
       diffLines.push(
-        `+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`
+        `+ variable ${quoted(variable.name)}: ${formatValuePlain(variable.newValue)}`
       );
     } else if (variable.action === "update") {
       diffLines.push(
-        `! variable "${variable.name}": ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`
+        `! variable ${quoted(variable.name)}: ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`
       );
     } else if (variable.action === "delete") {
-      diffLines.push(`- variable "${variable.name}"`);
+      diffLines.push(`- variable ${quoted(variable.name)}`);
     }
   }
 
@@ -330,11 +341,13 @@ export function renderRepoSettingsDiffLines(
   // Names only: secret values are write-only and must never reach output.
   for (const secret of repo.secrets ?? []) {
     if (secret.action === "create") {
-      diffLines.push(`+ secret "${secret.name}"`);
+      diffLines.push(`+ secret ${quoted(secret.name)}`);
     } else if (secret.action === "update") {
-      diffLines.push(`! secret "${secret.name}" (update, value write-only)`);
+      diffLines.push(
+        `! secret ${quoted(secret.name)} (update, value write-only)`
+      );
     } else {
-      diffLines.push(`- secret "${secret.name}"`);
+      diffLines.push(`- secret ${quoted(secret.name)}`);
     }
   }
 
@@ -345,47 +358,38 @@ export function renderRepoSettingsDiffLines(
 
 export function formatSettingsReportMarkdown(
   report: SettingsReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
-  const lines: string[] = [];
-
-  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  for (const repo of report.repos) {
-    if (!hasRepoSettingsChanges(repo)) continue;
-
-    lines.push(`### ${repo.repoName}`);
-    lines.push("");
-
+  const blocks = report.repos.filter(hasRepoSettingsChanges).map((repo) => {
     const diffLines: string[] = [];
     renderRepoSettingsDiffLines(repo, diffLines);
+    return {
+      heading: `### ${repo.repoName}`,
+      diffLines,
+      repos: [repo.repoName],
+    };
+  });
 
-    if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
-      lines.push("");
-    }
-  }
-
-  lines.push(`**${formatSettingsSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun),
+      blocks,
+      footer: `**${formatSettingsSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
 export function writeSettingsReportSummary(
   report: SettingsReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
-  const markdown = formatSettingsReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatSettingsReportMarkdown(report, dryRun, maxBytes),
+    summaryPath,
+    log
+  );
 }

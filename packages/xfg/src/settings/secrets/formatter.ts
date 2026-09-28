@@ -1,4 +1,5 @@
 import chalk from "chalk";
+import { quoted } from "../../shared/string-utils.js";
 import type { SecretChange } from "./diff.js";
 import {
   countActions,
@@ -27,13 +28,13 @@ const ACTION_ORDER: Record<ActiveAction, number> = {
 function formatEntry(entry: SecretsPlanEntry): string {
   switch (entry.action) {
     case "create":
-      return chalk.green(`    + secret "${entry.name}"`);
+      return chalk.green(`    + secret ${quoted(entry.name)}`);
     case "update":
       return chalk.yellow(
-        `    ~ secret "${entry.name}" (update, value write-only)`
+        `    ~ secret ${quoted(entry.name)} (update, value write-only)`
       );
     case "delete":
-      return chalk.red(`    - secret "${entry.name}"`);
+      return chalk.red(`    - secret ${quoted(entry.name)}`);
   }
 }
 

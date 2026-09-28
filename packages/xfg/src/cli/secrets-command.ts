@@ -194,6 +194,7 @@ export async function runSecretsSync(
     settings: buildSettingsReport(reportResults),
     dryRun: dryRun ?? false,
     summaryPath: process.env.GITHUB_STEP_SUMMARY,
+    log: logger,
   });
 
   if (hasErrors) {

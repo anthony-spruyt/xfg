@@ -1,9 +1,14 @@
 import chalk from "chalk";
-import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import { formatDiffLine } from "../shared/diff-format.js";
 import type { MergeMode } from "../config/index.js";
 import type { ActiveAction } from "../settings/index.js";
+import {
+  STEP_SUMMARY_MAX_BYTES,
+  writeGitHubStepSummary,
+} from "./github-summary.js";
+import { fitSummary, summaryHeader } from "./summary-budget.js";
+import type { DebugLog } from "../shared/logger.js";
 
 export interface ReportFileChange {
   path: string;
@@ -75,46 +80,42 @@ export function formatSyncReportCLI(report: SyncReport): string[] {
 
 export function formatSyncReportMarkdown(
   report: SyncReport,
-  dryRun: boolean
+  dryRun: boolean,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
-  const lines: string[] = [];
+  const blocks = report.repos
+    .filter((repo) => repo.files.length > 0 || repo.error)
+    .map((repo) => ({
+      heading: `### ${repo.repoName}`,
+      diffLines: renderSyncLines(repo),
+      repos: [repo.repoName],
+    }));
 
-  const title = dryRun ? "## xfg Plan" : "## xfg Apply";
-  lines.push(title);
-  lines.push("");
-
-  if (dryRun) {
-    lines.push("> [!WARNING]");
-    lines.push("> This was a dry run — no changes were applied");
-    lines.push("");
-  }
-
-  for (const repo of report.repos) {
-    if (repo.files.length === 0 && !repo.error) {
-      continue;
-    }
-
-    lines.push(`### ${repo.repoName}`);
-    lines.push("");
-
-    const diffLines = renderSyncLines(repo);
-
-    if (diffLines.length > 0) {
-      lines.push("```diff");
-      lines.push(...diffLines);
-      lines.push("```");
-      lines.push("");
-    }
-  }
-
-  lines.push(`**${formatSyncSummary(report.totals)}**`);
-
-  return lines.join("\n");
+  return fitSummary(
+    {
+      header: summaryHeader(dryRun),
+      blocks,
+      footer: `**${formatSyncSummary(report.totals)}**`,
+    },
+    maxBytes
+  );
 }
 
-export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
-  const lines: string[] = [];
+// Stops one huge file from using up the summary space the other files need.
+export const SUMMARY_DIFF_LINE_LIMIT = 500;
+// Same idea for single long lines, e.g. minified JSON.
+export const SUMMARY_LINE_MAX_CHARS = 1000;
 
+function shortenLine(line: string): string {
+  return line.length > SUMMARY_LINE_MAX_CHARS
+    ? line.slice(0, SUMMARY_LINE_MAX_CHARS) + "…"
+    : line;
+}
+
+export function renderSyncLines(
+  syncRepo: RepoFileChanges,
+  lines: string[] = []
+): string[] {
   for (let i = 0; i < syncRepo.files.length; i++) {
     const file = syncRepo.files[i];
 
@@ -128,8 +129,11 @@ export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
       lines.push(`- ${file.path}`);
     }
 
-    if (file.diffLines) {
-      lines.push(...file.diffLines);
+    const diffLines = file.diffLines ?? [];
+    const shown = Math.min(diffLines.length, SUMMARY_DIFF_LINE_LIMIT);
+    for (let j = 0; j < shown; j++) lines.push(shortenLine(diffLines[j]));
+    if (diffLines.length > shown) {
+      lines.push(`... ${diffLines.length - shown} more lines not shown`);
     }
   }
 
@@ -143,8 +147,12 @@ export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
 export function writeSyncReportSummary(
   report: SyncReport,
   dryRun: boolean,
-  summaryPath: string | undefined
+  summaryPath: string | undefined,
+  log?: DebugLog
 ): void {
-  const markdown = formatSyncReportMarkdown(report, dryRun);
-  writeGitHubStepSummary(markdown, summaryPath);
+  writeGitHubStepSummary(
+    (maxBytes) => formatSyncReportMarkdown(report, dryRun, maxBytes),
+    summaryPath,
+    log
+  );
 }

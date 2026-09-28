@@ -3,6 +3,7 @@ import type { LifecycleResult } from "./types.js";
 import { getRepoDisplayName } from "../repo/index.js";
 import { SyncError } from "../shared/errors.js";
 import type { RepoVisibility } from "../config/index.js";
+import { quoted } from "../shared/string-utils.js";
 
 interface FormatOptions {
   upstream?: string;
@@ -13,10 +14,6 @@ interface FormatOptions {
   };
 }
 
-/**
- * Format lifecycle action for output (used in both dry-run and real execution).
- * Returns empty array if action is "existed" (no output needed).
- */
 export function formatLifecycleAction(
   result: LifecycleResult,
   options?: FormatOptions
@@ -55,13 +52,12 @@ export function formatLifecycleAction(
     }
   }
 
-  // Add settings details if provided
   if (options?.settings) {
     if (options.settings.visibility) {
       lines.push(`    visibility: ${options.settings.visibility}`);
     }
     if (options.settings.description) {
-      lines.push(`    description: "${options.settings.description}"`);
+      lines.push(`    description: ${quoted(options.settings.description)}`);
     }
   }
 

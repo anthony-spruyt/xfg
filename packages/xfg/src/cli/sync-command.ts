@@ -80,6 +80,7 @@ function displayReports(
     settings: settingsReport,
     dryRun,
     summaryPath: process.env.GITHUB_STEP_SUMMARY,
+    log: logger,
   });
 }
 

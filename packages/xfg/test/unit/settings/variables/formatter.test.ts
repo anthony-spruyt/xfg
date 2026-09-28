@@ -12,6 +12,18 @@ function stripAnsi(str: string): string {
 }
 
 describe("formatVariablesPlan", () => {
+  test("escapes newlines in values so each stays on one line", () => {
+    const changes: VariableChange[] = [
+      { action: "create", name: "A", newValue: "x\ny" },
+      { action: "update", name: "B", oldValue: "p\nq", newValue: "^r\\(" },
+    ];
+
+    const plain = formatVariablesPlan(changes).lines.map(stripAnsi);
+
+    assert.ok(plain.includes('        value: "x\\ny"'));
+    assert.ok(plain.includes('        value: "p\\nq" → "^r\\("'));
+  });
+
   test("formats creates, updates, deletes, and unchanged", () => {
     const changes: VariableChange[] = [
       { action: "delete", name: "OLD_VAR" },
@@ -29,29 +41,24 @@ describe("formatVariablesPlan", () => {
 
     const plain = result.lines.map((l) => stripAnsi(l));
 
-    // Section headers
     assert.ok(plain.some((l) => l.includes("Create:")));
     assert.ok(plain.some((l) => l.includes("Update:")));
     assert.ok(plain.some((l) => l.includes("Delete:")));
 
-    // Create entry content
     assert.ok(
       plain.some((l) => l.includes("+") && l.includes('variable "NEW_VAR"'))
     );
     assert.ok(plain.some((l) => l.includes('value: "val"')));
 
-    // Update entry content
     assert.ok(
       plain.some((l) => l.includes("~") && l.includes('variable "UPD_VAR"'))
     );
     assert.ok(plain.some((l) => l.includes('"old"') && l.includes('"new"')));
 
-    // Delete entry content
     assert.ok(
       plain.some((l) => l.includes("-") && l.includes('variable "OLD_VAR"'))
     );
 
-    // Summary line
     assert.ok(
       plain.some(
         (l) =>
