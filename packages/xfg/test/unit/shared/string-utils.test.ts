@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   camelToSnake,
   formatScalarValue,
+  quoted,
 } from "../../../src/shared/string-utils.js";
 
 describe("camelToSnake", () => {
@@ -19,9 +20,23 @@ describe("camelToSnake", () => {
   });
 });
 
+describe("quoted", () => {
+  test("wraps text in double quotes", () => {
+    assert.equal(quoted("bug"), '"bug"');
+  });
+
+  test("escapes \\n and \\r so the text stays on one line", () => {
+    assert.equal(quoted("a\r\nb\nc"), '"a\\r\\nb\\nc"');
+  });
+
+  test("keeps backslashes and quotes as written", () => {
+    assert.equal(quoted('^feat\\("'), '"^feat\\(""');
+  });
+});
+
 describe("formatScalarValue", () => {
-  test("escapes newlines and quotes in strings", () => {
-    assert.equal(formatScalarValue('a\n"b"'), '"a\\n\\"b\\""');
+  test("escapes line breaks but keeps backslashes and quotes as written", () => {
+    assert.equal(formatScalarValue('^feat\\(\n"x"'), '"^feat\\(\\n"x""');
   });
 
   test("formats null", () => {

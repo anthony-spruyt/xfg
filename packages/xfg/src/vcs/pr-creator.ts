@@ -44,7 +44,6 @@ interface PROptions {
 export type { PRResult } from "./types.js";
 
 function loadDefaultTemplate(): string {
-  // Try to find PR.md in the project root
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const templatePath = join(__dirname, "..", "PR.md");
@@ -53,7 +52,6 @@ function loadDefaultTemplate(): string {
     return readFileSync(templatePath, "utf-8");
   }
 
-  // Fallback template
   return `## Summary
 
 Automated sync of configuration files to \${xfg:repo.fullName}.
@@ -124,7 +122,6 @@ export function formatPRBody(
   const changedFiles = files.filter((f) => f.action !== "skip");
   const title = formatPRTitle(files);
 
-  // Create context with PR-specific variables
   const result = interpolateXfgContent(template, {
     repoInfo,
     fileName: "PR.md",
@@ -182,7 +179,6 @@ export function createPR(options: PROptions): Promise<PRResult> {
     });
   }
 
-  // Get the appropriate strategy and execute via workflow executor
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
   const workflow = new PRWorkflowExecutor(resolvedStrategy, log);
@@ -243,7 +239,6 @@ export function mergePR(options: MergePROptions): Promise<MergeResult> {
     });
   }
 
-  // Get the appropriate strategy and execute merge
   const resolvedStrategy =
     options.strategy ?? createPRStrategy(repoInfo, executor, log);
   return resolvedStrategy.merge({

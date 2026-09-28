@@ -4,6 +4,7 @@ import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
 import { appendDiffBlock } from "../shared/markdown-fence.js";
+import { quoted } from "../shared/string-utils.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -74,9 +75,7 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
         lines.push(`    visibility: ${action.settings.visibility}`);
       }
       if (action.settings.description) {
-        lines.push(
-          `    description: ${JSON.stringify(action.settings.description)}`
-        );
+        lines.push(`    description: ${quoted(action.settings.description)}`);
       }
     }
   }

@@ -12,6 +12,29 @@ function stripAnsi(str: string): string {
 }
 
 describe("formatLabelsPlan", () => {
+  test("escapes newlines in names and values so each stays on one line", () => {
+    const changes: LabelChange[] = [
+      {
+        action: "create",
+        name: "a\nb",
+        desired: { color: "0e8a16", description: "c\nd" },
+      },
+      {
+        action: "update",
+        name: "e",
+        propertyChanges: [
+          { property: "description", oldValue: "f\ng", newValue: "^h\\(" },
+        ],
+      },
+    ];
+
+    const plain = formatLabelsPlan(changes).lines.map(stripAnsi);
+
+    assert.ok(plain.includes('    + label "a\\nb"'));
+    assert.ok(plain.includes('        description: "c\\nd"'));
+    assert.ok(plain.includes('        description: "f\\ng" \u2192 "^h\\("'));
+  });
+
   test("formats create action", () => {
     const changes: LabelChange[] = [
       {

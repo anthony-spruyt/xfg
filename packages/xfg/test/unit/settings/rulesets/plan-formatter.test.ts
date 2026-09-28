@@ -1,4 +1,3 @@
-// test/unit/ruleset-plan-formatter.test.ts
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import type { RulesetChange } from "../../../../src/settings/rulesets/diff.js";
@@ -480,6 +479,14 @@ describe("formatPropertyTree", () => {
 });
 
 describe("formatRulesetPlan", () => {
+  test("escapes newlines in ruleset names", () => {
+    const changes: RulesetChange[] = [{ action: "delete", name: "a\nb" }];
+
+    const result = formatRulesetPlan(changes);
+
+    assert.ok(result.lines.some((l) => l.includes('- ruleset "a\\nb"')));
+  });
+
   test("formats create action with full config", () => {
     const changes: RulesetChange[] = [
       {

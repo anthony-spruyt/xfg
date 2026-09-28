@@ -7,7 +7,10 @@ import {
   formatUnifiedSummaryMarkdown,
   writeUnifiedSummary,
 } from "../../../src/cli/unified-summary.js";
-import { renderSyncLines } from "../../../src/output/sync-report.js";
+import {
+  renderSyncLines,
+  SUMMARY_DIFF_LINE_LIMIT,
+} from "../../../src/output/sync-report.js";
 import type { LifecycleReport } from "../../../src/output/lifecycle-report.js";
 import type { SyncReport } from "../../../src/output/sync-report.js";
 import type { SettingsReport } from "../../../src/output/settings-report.js";
@@ -38,23 +41,6 @@ function emptySettings(): SettingsReport {
 }
 
 describe("formatUnifiedSummaryMarkdown", () => {
-  test("renders diffs too large to spread into push()", () => {
-    const diffLines = Array.from({ length: 500_000 }, (_, i) => `+${i}`);
-    const sync: SyncReport = {
-      repos: [
-        {
-          repoName: "org/repo",
-          files: [{ path: "big.txt", action: "update", diffLines }],
-        },
-      ],
-      totals: { files: { create: 0, update: 1, delete: 0 } },
-    };
-
-    const markdown = formatUnifiedSummaryMarkdown({ sync, dryRun: true });
-
-    assert.ok(markdown.includes("+499999\n```"));
-  });
-
   test("returns empty string when no changes at all", () => {
     const markdown = formatUnifiedSummaryMarkdown({
       lifecycle: emptyLifecycle(),
@@ -1236,6 +1222,37 @@ describe("formatUnifiedSummaryMarkdown", () => {
 });
 
 describe("renderSyncLines with diffLines", () => {
+  test("caps diff lines per file and says how many were left out", () => {
+    const diffLines = Array.from(
+      { length: SUMMARY_DIFF_LINE_LIMIT + 5 },
+      (_, i) => `+${i}`
+    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [{ path: "big.txt", action: "update", diffLines }],
+    });
+
+    assert.equal(result.length, SUMMARY_DIFF_LINE_LIMIT + 2);
+    assert.equal(
+      result[SUMMARY_DIFF_LINE_LIMIT],
+      `+${SUMMARY_DIFF_LINE_LIMIT - 1}`
+    );
+    assert.equal(result.at(-1), "... 5 more lines not shown");
+  });
+
+  test("does not add a note when the diff fits", () => {
+    const diffLines = Array.from(
+      { length: SUMMARY_DIFF_LINE_LIMIT },
+      (_, i) => `+${i}`
+    );
+    const result = renderSyncLines({
+      repoName: "org/repo",
+      files: [{ path: "big.txt", action: "update", diffLines }],
+    });
+
+    assert.equal(result.length, SUMMARY_DIFF_LINE_LIMIT + 1);
+  });
+
   test("appends diff lines after file path for updates", () => {
     const result = renderSyncLines({
       repoName: "org/repo",

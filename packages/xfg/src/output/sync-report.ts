@@ -108,6 +108,9 @@ export function formatSyncReportMarkdown(
   return lines.join("\n");
 }
 
+// Keeps a few huge files from pushing the step summary past GitHub's 1 MiB limit.
+export const SUMMARY_DIFF_LINE_LIMIT = 500;
+
 export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
   const lines: string[] = [];
 
@@ -124,7 +127,12 @@ export function renderSyncLines(syncRepo: RepoFileChanges): string[] {
       lines.push(`- ${file.path}`);
     }
 
-    for (const diffLine of file.diffLines ?? []) lines.push(diffLine);
+    const diffLines = file.diffLines ?? [];
+    const shown = Math.min(diffLines.length, SUMMARY_DIFF_LINE_LIMIT);
+    for (let j = 0; j < shown; j++) lines.push(diffLines[j]);
+    if (diffLines.length > shown) {
+      lines.push(`... ${diffLines.length - shown} more lines not shown`);
+    }
   }
 
   if (syncRepo.error) {

@@ -15,7 +15,6 @@ import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
 const stubExecutor: ICommandExecutor = { exec: async () => "" };
 
-// Helper to create a mock repo info for tests
 function createMockRepoInfo(
   overrides: Partial<GitHubRepoInfo> = {}
 ): GitHubRepoInfo {
@@ -71,7 +70,6 @@ describe("formatPRBody", () => {
   test("preserves markdown formatting", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
-    // Should contain markdown headers or formatting
     assert.ok(
       result.includes("##") || result.includes("*") || result.includes("-")
     );
@@ -182,25 +180,20 @@ describe("formatPRTitle", () => {
 });
 
 describe("loadPRTemplate (via formatPRBody)", () => {
-  // Get the expected path for PR.md
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const templatePath = join(__dirname, "..", "..", "..", "PR.md");
   const repoInfo = createMockRepoInfo();
 
   test("loads PR.md template when file exists", () => {
-    // Verify PR.md exists in the project
     assert.ok(
       existsSync(templatePath),
       `PR.md should exist at ${templatePath}`
     );
 
-    // formatPRBody should use content from PR.md
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // The actual PR.md has specific content we can verify
-    // It should contain markdown formatting from the template
     assert.ok(result.length > 50, "Template should have substantial content");
   });
 
@@ -208,7 +201,6 @@ describe("loadPRTemplate (via formatPRBody)", () => {
     const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // PR.md should have summary section and automation note
     assert.ok(
       result.includes("xfg") ||
         result.includes("Summary") ||

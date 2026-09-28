@@ -829,6 +829,43 @@ describe("formatSettingsReportMarkdown", () => {
     assert.ok(markdown.includes('+   description: "a\\n```"\n'));
   });
 
+  test("escapes newlines in label, ruleset, and array item text", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [
+            {
+              name: "r\n1",
+              action: "create",
+              config: {
+                target: "branch",
+                conditions: { refName: { include: ["a\nb"], exclude: [] } },
+              },
+            },
+          ],
+          labels: [
+            { name: "l\n1", action: "update", newName: "l\n2" },
+            { name: "l\n3", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 1, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 1 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('+ ruleset "r\\n1"'));
+    assert.ok(markdown.includes('include: ["a\\nb"]'));
+    assert.ok(markdown.includes('! label "l\\n1" \u2192 "l\\n2"'));
+    assert.ok(markdown.includes('- label "l\\n3"'));
+  });
+
   test("escapes newlines in label property changes", () => {
     const report: SettingsReport = {
       repos: [

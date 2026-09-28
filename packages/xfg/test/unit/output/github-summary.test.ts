@@ -3,7 +3,10 @@ import { strict as assert } from "node:assert";
 import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { writeGitHubStepSummary } from "../../../src/output/github-summary.js";
+import {
+  writeGitHubStepSummary,
+  STEP_SUMMARY_MAX_BYTES,
+} from "../../../src/output/github-summary.js";
 
 describe("writeGitHubStepSummary", () => {
   const tmpFile = join(tmpdir(), `github-summary-test-${Date.now()}.md`);
@@ -35,6 +38,22 @@ describe("writeGitHubStepSummary", () => {
     assert.ok(existsSync(tmpFile));
     const content = readFileSync(tmpFile, "utf-8");
     assert.ok(content.includes("# New Summary"));
+  });
+
+  test("writes a short note instead of a summary GitHub would reject", () => {
+    const debugMessages: string[] = [];
+    const log = { debug: (msg: string) => debugMessages.push(msg) };
+
+    writeGitHubStepSummary(
+      "x".repeat(STEP_SUMMARY_MAX_BYTES + 1),
+      tmpFile,
+      log
+    );
+
+    const content = readFileSync(tmpFile, "utf-8");
+    assert.ok(content.length < 1000);
+    assert.ok(content.includes("too large"));
+    assert.equal(debugMessages.length, 1);
   });
 
   test("wraps content with newlines", () => {

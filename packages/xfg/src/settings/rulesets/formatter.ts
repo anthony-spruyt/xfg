@@ -6,7 +6,7 @@ import {
   type RulesetAction,
 } from "./diff.js";
 import type { Ruleset } from "../../config/index.js";
-import { formatScalarValue } from "../../shared/string-utils.js";
+import { formatScalarValue, quoted } from "../../shared/string-utils.js";
 import {
   computePropertyDiffs,
   type DiffAction,
@@ -318,7 +318,6 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   const lines: string[] = [];
   const entries: RulesetPlanEntry[] = [];
 
-  // Group by action in a single pass
   const grouped: Record<RulesetAction, RulesetChange[]> = {
     create: [],
     update: [],
@@ -333,7 +332,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(chalk.bold("  Create:"));
   }
   for (const change of grouped.create) {
-    lines.push(chalk.green(`    + ruleset "${change.name}"`));
+    lines.push(chalk.green(`    + ruleset ${quoted(change.name)}`));
     if (change.desired) {
       lines.push(...formatFullConfig(change.desired, 2));
     }
@@ -353,7 +352,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
     lines.push(chalk.bold("  Update:"));
   }
   for (const change of grouped.update) {
-    lines.push(chalk.yellow(`    ~ ruleset "${change.name}"`));
+    lines.push(chalk.yellow(`    ~ ruleset ${quoted(change.name)}`));
     if (change.current && change.desired) {
       const currentNorm = normalizeRuleset(change.current);
       const desiredNorm = normalizeRuleset(change.desired);
@@ -385,7 +384,7 @@ export function formatRulesetPlan(changes: RulesetChange[]): RulesetPlanResult {
   if (grouped.delete.length > 0) {
     lines.push(chalk.bold("  Delete:"));
     for (const change of grouped.delete) {
-      lines.push(chalk.red(`    - ruleset "${change.name}"`));
+      lines.push(chalk.red(`    - ruleset ${quoted(change.name)}`));
       entries.push({ name: change.name, action: "delete" });
     }
     lines.push("");

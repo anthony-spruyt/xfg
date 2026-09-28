@@ -6,7 +6,7 @@ import type {
 } from "../settings/index.js";
 import type { Ruleset, Label } from "../config/index.js";
 import { writeGitHubStepSummary } from "./github-summary.js";
-import { formatScalarValue } from "../shared/string-utils.js";
+import { formatScalarValue, quoted } from "../shared/string-utils.js";
 import {
   formatActionCountEntry,
   type ActionTotals,
@@ -99,7 +99,7 @@ function renderRulesetConfig(
         lines.push(
           formatLine(
             depth,
-            `+ ${key}: [${value.map((v) => (typeof v === "string" ? `"${v}"` : String(v))).join(", ")}]`
+            `+ ${key}: [${value.map(formatValuePlain).join(", ")}]`
           )
         );
       } else {
@@ -241,12 +241,12 @@ export function renderRepoSettingsDiffLines(
     if (i > 0) diffLines.push("");
 
     if (ruleset.action === "create") {
-      diffLines.push(`+ ruleset "${ruleset.name}"`);
+      diffLines.push(`+ ruleset ${quoted(ruleset.name)}`);
       if (ruleset.config) {
         diffLines.push(...formatRulesetConfigPlain(ruleset.config));
       }
     } else if (ruleset.action === "update") {
-      diffLines.push(`! ruleset "${ruleset.name}"`);
+      diffLines.push(`! ruleset ${quoted(ruleset.name)}`);
       if (ruleset.propertyDiffs && ruleset.propertyDiffs.length > 0) {
         for (const diff of ruleset.propertyDiffs) {
           const path = diff.path.join(".");
@@ -266,7 +266,7 @@ export function renderRepoSettingsDiffLines(
         }
       }
     } else if (ruleset.action === "delete") {
-      diffLines.push(`- ruleset "${ruleset.name}"`);
+      diffLines.push(`- ruleset ${quoted(ruleset.name)}`);
     }
   }
 
@@ -276,37 +276,39 @@ export function renderRepoSettingsDiffLines(
 
   for (const label of repo.labels) {
     if (label.action === "create") {
-      diffLines.push(`+ label "${label.name}"`);
+      diffLines.push(`+ label ${quoted(label.name)}`);
       if (label.config) {
         diffLines.push(`+   color: "${label.config.color}"`);
         if (label.config.description !== undefined) {
           diffLines.push(
-            `+   description: ${JSON.stringify(label.config.description)}`
+            `+   description: ${quoted(label.config.description)}`
           );
         }
       }
     } else if (label.action === "update") {
       if (label.newName) {
-        diffLines.push(`! label "${label.name}" \u2192 "${label.newName}"`);
+        diffLines.push(
+          `! label ${quoted(label.name)} \u2192 ${quoted(label.newName)}`
+        );
       } else {
-        diffLines.push(`! label "${label.name}"`);
+        diffLines.push(`! label ${quoted(label.name)}`);
       }
       if (label.propertyChanges) {
         for (const prop of label.propertyChanges) {
           if (prop.property === "new_name") continue;
           if (prop.oldValue !== undefined) {
             diffLines.push(
-              `!   ${prop.property}: ${JSON.stringify(prop.oldValue)} \u2192 ${JSON.stringify(prop.newValue)}`
+              `!   ${prop.property}: ${formatValuePlain(prop.oldValue)} \u2192 ${formatValuePlain(prop.newValue)}`
             );
           } else {
             diffLines.push(
-              `!   ${prop.property}: ${JSON.stringify(prop.newValue)}`
+              `!   ${prop.property}: ${formatValuePlain(prop.newValue)}`
             );
           }
         }
       }
     } else if (label.action === "delete") {
-      diffLines.push(`- label "${label.name}"`);
+      diffLines.push(`- label ${quoted(label.name)}`);
     }
   }
 
@@ -317,14 +319,14 @@ export function renderRepoSettingsDiffLines(
   for (const variable of repo.variables ?? []) {
     if (variable.action === "create") {
       diffLines.push(
-        `+ variable "${variable.name}": ${formatValuePlain(variable.newValue)}`
+        `+ variable ${quoted(variable.name)}: ${formatValuePlain(variable.newValue)}`
       );
     } else if (variable.action === "update") {
       diffLines.push(
-        `! variable "${variable.name}": ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`
+        `! variable ${quoted(variable.name)}: ${formatValuePlain(variable.oldValue)} → ${formatValuePlain(variable.newValue)}`
       );
     } else if (variable.action === "delete") {
-      diffLines.push(`- variable "${variable.name}"`);
+      diffLines.push(`- variable ${quoted(variable.name)}`);
     }
   }
 
@@ -335,11 +337,13 @@ export function renderRepoSettingsDiffLines(
   // Names only: secret values are write-only and must never reach output.
   for (const secret of repo.secrets ?? []) {
     if (secret.action === "create") {
-      diffLines.push(`+ secret "${secret.name}"`);
+      diffLines.push(`+ secret ${quoted(secret.name)}`);
     } else if (secret.action === "update") {
-      diffLines.push(`! secret "${secret.name}" (update, value write-only)`);
+      diffLines.push(
+        `! secret ${quoted(secret.name)} (update, value write-only)`
+      );
     } else {
-      diffLines.push(`- secret "${secret.name}"`);
+      diffLines.push(`- secret ${quoted(secret.name)}`);
     }
   }
 

@@ -14,6 +14,7 @@ import {
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
 import { appendDiffBlock } from "../shared/markdown-fence.js";
+import { quoted } from "../shared/string-utils.js";
 
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
@@ -106,7 +107,7 @@ function renderLifecycleLines(
     }
     if (lcAction.settings.description) {
       diffLines.push(
-        `+   description: ${JSON.stringify(lcAction.settings.description)}`
+        `+   description: ${quoted(lcAction.settings.description)}`
       );
     }
   }

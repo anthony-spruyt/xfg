@@ -12,6 +12,18 @@ function stripAnsi(str: string): string {
 }
 
 describe("formatVariablesPlan", () => {
+  test("escapes newlines in values so each stays on one line", () => {
+    const changes: VariableChange[] = [
+      { action: "create", name: "A", newValue: "x\ny" },
+      { action: "update", name: "B", oldValue: "p\nq", newValue: "^r\\(" },
+    ];
+
+    const plain = formatVariablesPlan(changes).lines.map(stripAnsi);
+
+    assert.ok(plain.includes('        value: "x\\ny"'));
+    assert.ok(plain.includes('        value: "p\\nq" → "^r\\("'));
+  });
+
   test("formats creates, updates, deletes, and unchanged", () => {
     const changes: VariableChange[] = [
       { action: "delete", name: "OLD_VAR" },
