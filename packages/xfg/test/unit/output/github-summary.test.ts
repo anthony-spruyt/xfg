@@ -1,10 +1,11 @@
-import { test, describe, afterEach } from "node:test";
+import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   existsSync,
+  mkdtempSync,
   readFileSync,
+  rmSync,
   statSync,
-  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -16,12 +17,15 @@ import {
 } from "../../../src/output/github-summary.js";
 
 describe("writeGitHubStepSummary", () => {
-  const tmpFile = join(tmpdir(), `github-summary-test-${Date.now()}.md`);
+  let tmpDir: string;
+  let tmpFile: string;
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "github-summary-test-"));
+    tmpFile = join(tmpDir, "summary.md");
+  });
 
   afterEach(() => {
-    if (existsSync(tmpFile)) {
-      unlinkSync(tmpFile);
-    }
+    rmSync(tmpDir, { recursive: true, force: true });
   });
 
   test("no-op when summaryPath is undefined", () => {
@@ -63,7 +67,7 @@ describe("writeGitHubStepSummary", () => {
     const content = readFileSync(tmpFile, "utf-8");
     assert.ok(content.includes("too large"));
     assert.ok(!content.includes("xx"));
-    assert.ok(statSync(tmpFile).size <= STEP_SUMMARY_MAX_BYTES);
+    assert.ok(Buffer.byteLength(content) <= STEP_SUMMARY_MAX_BYTES);
   });
 
   test("writes nothing when even the note would go over the limit", () => {

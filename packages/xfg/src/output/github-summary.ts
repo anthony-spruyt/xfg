@@ -1,4 +1,4 @@
-import { appendFileSync, existsSync, statSync } from "node:fs";
+import { appendFileSync, statSync } from "node:fs";
 import { toErrorMessage } from "../shared/type-guards.js";
 import type { DebugLog } from "../shared/logger.js";
 
@@ -9,7 +9,7 @@ const TOO_LARGE_NOTE =
 
 // The limit covers the whole file, and earlier steps may have written to it already.
 export function summaryBytesLeft(summaryPath: string): number {
-  const used = existsSync(summaryPath) ? statSync(summaryPath).size : 0;
+  const used = statSync(summaryPath, { throwIfNoEntry: false })?.size ?? 0;
   return STEP_SUMMARY_MAX_BYTES - used - 2;
 }
 

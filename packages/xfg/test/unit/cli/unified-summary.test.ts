@@ -2,9 +2,9 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   existsSync,
+  mkdtempSync,
   readFileSync,
-  statSync,
-  unlinkSync,
+  rmSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -1371,15 +1371,15 @@ describe("renderSyncLines with diffLines", () => {
 });
 
 describe("writeUnifiedSummary", () => {
+  let tempDir: string;
   let tempFile: string;
   beforeEach(() => {
-    tempFile = join(tmpdir(), `unified-summary-test-${Date.now()}.md`);
+    tempDir = mkdtempSync(join(tmpdir(), "unified-summary-test-"));
+    tempFile = join(tempDir, "summary.md");
   });
 
   afterEach(() => {
-    if (existsSync(tempFile)) {
-      unlinkSync(tempFile);
-    }
+    rmSync(tempDir, { recursive: true, force: true });
   });
 
   test("writes markdown to summaryPath", () => {
@@ -1418,8 +1418,8 @@ describe("writeUnifiedSummary", () => {
       summaryPath: tempFile,
     });
 
-    assert.ok(statSync(tempFile).size <= STEP_SUMMARY_MAX_BYTES);
     const content = readFileSync(tempFile, "utf-8");
+    assert.ok(Buffer.byteLength(content) <= STEP_SUMMARY_MAX_BYTES);
     assert.ok(content.includes("**Plan: 1 file (1 to update)**"));
   });
 
