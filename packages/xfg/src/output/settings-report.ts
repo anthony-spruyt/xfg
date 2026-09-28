@@ -243,7 +243,9 @@ export function renderRepoSettingsDiffLines(
     if (ruleset.action === "create") {
       diffLines.push(`+ ruleset ${quoted(ruleset.name)}`);
       if (ruleset.config) {
-        diffLines.push(...formatRulesetConfigPlain(ruleset.config));
+        for (const line of formatRulesetConfigPlain(ruleset.config)) {
+          diffLines.push(line);
+        }
       }
     } else if (ruleset.action === "update") {
       diffLines.push(`! ruleset ${quoted(ruleset.name)}`);

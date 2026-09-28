@@ -278,7 +278,6 @@ function renderTree(node: TreeNode, indent: number = 0): string[] {
     const hasChildren = child.children.size > 0;
 
     if (hasChildren) {
-      // Intermediate node
       lines.push(style.color(`${indentStr}${style.symbol} ${child.name}:`));
       lines.push(...renderTree(child, indent + 1));
     } else {

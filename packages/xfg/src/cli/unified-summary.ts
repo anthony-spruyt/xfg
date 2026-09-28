@@ -1,4 +1,8 @@
 import {
+  STEP_SUMMARY_MAX_BYTES,
+  summaryBytesLeft,
+} from "../output/github-summary.js";
+import {
   hasLifecycleChanges,
   writeGitHubStepSummary,
   renderSyncLines,
@@ -113,8 +117,35 @@ function renderLifecycleLines(
   }
 }
 
+const CUT_NOTE = "... cut to fit GitHub's 1 MiB summary limit";
+// Room kept for the "more repos not shown" line.
+const NOTE_RESERVE_BYTES = 100;
+
+function lineBytes(line: string): number {
+  return Buffer.byteLength(line) + 1;
+}
+
+function totalBytes(lines: string[]): number {
+  let total = 0;
+  for (const line of lines) total += lineBytes(line);
+  return total;
+}
+
+function cutToFit(diffLines: string[], room: number): string[] {
+  const kept: string[] = [];
+  let used = lineBytes(CUT_NOTE);
+  for (const line of diffLines) {
+    used += lineBytes(line);
+    if (used > room) break;
+    kept.push(line);
+  }
+  if (kept.length > 0) kept.push(CUT_NOTE);
+  return kept;
+}
+
 export function formatUnifiedSummaryMarkdown(
-  input: UnifiedSummaryInput
+  input: UnifiedSummaryInput,
+  maxBytes: number = STEP_SUMMARY_MAX_BYTES
 ): string {
   if (!hasAnyChanges(input)) {
     return "";
@@ -155,6 +186,10 @@ export function formatUnifiedSummaryMarkdown(
   for (const r of input.sync?.repos ?? []) addRepo(r.repoName);
   for (const r of input.settings?.repos ?? []) addRepo(r.repoName);
 
+  const footer = `**${formatCombinedSummary(input)}**`;
+  let used = totalBytes(lines) + lineBytes(footer) + NOTE_RESERVE_BYTES;
+  const blocks: { heading: string[]; diffLines: string[] }[] = [];
+
   for (const repoName of allRepos) {
     const lcAction = lifecycleByRepo.get(repoName);
     const syncRepo = syncByRepo.get(repoName);
@@ -168,9 +203,6 @@ export function formatUnifiedSummaryMarkdown(
     const repoHasSettingsChanges = settingsRepos.length > 0;
 
     if (!hasLcChange && !hasSyncChanges && !repoHasSettingsChanges) continue;
-
-    lines.push(`### ${repoName}`);
-    lines.push("");
 
     const diffLines: string[] = [];
 
@@ -189,16 +221,48 @@ export function formatUnifiedSummaryMarkdown(
       renderRepoSettingsDiffLines(settingsRepo, diffLines);
     });
 
-    appendDiffBlock(lines, diffLines);
+    blocks.push({ heading: [`### ${repoName}`, ""], diffLines });
   }
 
-  lines.push(`**${formatCombinedSummary(input)}**`);
+  for (let i = 0; i < blocks.length; i++) {
+    const { heading, diffLines } = blocks[i];
+    const block = [...heading];
+    appendDiffBlock(block, diffLines);
+    const blockBytes = totalBytes(block);
+
+    if (used + blockBytes <= maxBytes) {
+      for (const line of block) lines.push(line);
+      used += blockBytes;
+      continue;
+    }
+
+    const overhead = blockBytes - totalBytes(diffLines);
+    const kept = cutToFit(diffLines, maxBytes - used - overhead);
+    if (kept.length > 0) {
+      for (const line of heading) lines.push(line);
+      appendDiffBlock(lines, kept);
+    }
+    const hidden = blocks.length - i - (kept.length > 0 ? 1 : 0);
+    if (hidden > 0) {
+      lines.push(
+        `_... ${hidden} more ${hidden === 1 ? "repo" : "repos"} not shown. See the job log._`,
+        ""
+      );
+    }
+    break;
+  }
+
+  lines.push(footer);
 
   return lines.join("\n");
 }
 
 export function writeUnifiedSummary(input: UnifiedSummaryInput): void {
-  const markdown = formatUnifiedSummaryMarkdown(input);
+  if (!input.summaryPath) return;
+  const markdown = formatUnifiedSummaryMarkdown(
+    input,
+    summaryBytesLeft(input.summaryPath)
+  );
   if (!markdown) return;
   writeGitHubStepSummary(markdown, input.summaryPath);
 }

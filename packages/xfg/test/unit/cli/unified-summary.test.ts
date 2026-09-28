@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import {
+  existsSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -11,6 +17,7 @@ import {
   renderSyncLines,
   SUMMARY_DIFF_LINE_LIMIT,
 } from "../../../src/output/sync-report.js";
+import { STEP_SUMMARY_MAX_BYTES } from "../../../src/output/github-summary.js";
 import type { LifecycleReport } from "../../../src/output/lifecycle-report.js";
 import type { SyncReport } from "../../../src/output/sync-report.js";
 import type { SettingsReport } from "../../../src/output/settings-report.js";
@@ -1221,6 +1228,47 @@ describe("formatUnifiedSummaryMarkdown", () => {
   });
 });
 
+describe("formatUnifiedSummaryMarkdown byte budget", () => {
+  function bigSync(repoCount: number): SyncReport {
+    const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
+    return {
+      repos: Array.from({ length: repoCount }, (_, i) => ({
+        repoName: `org/repo-${i}`,
+        files: [{ path: "a.txt", action: "update" as const, diffLines }],
+      })),
+      totals: { files: { create: 0, update: repoCount, delete: 0 } },
+    };
+  }
+
+  test("keeps the title and totals and cuts diffs to fit the budget", () => {
+    const maxBytes = 20_000;
+    const markdown = formatUnifiedSummaryMarkdown(
+      { sync: bigSync(10), dryRun: true },
+      maxBytes
+    );
+
+    assert.ok(Buffer.byteLength(markdown) <= maxBytes);
+    assert.ok(markdown.startsWith("## xfg Plan"));
+    assert.ok(markdown.endsWith("**Plan: 10 files (10 to update)**"));
+    assert.ok(markdown.includes("### org/repo-0"));
+    assert.ok(markdown.includes("... cut to fit GitHub's 1 MiB summary limit"));
+    assert.ok(markdown.includes("more repos not shown"));
+    assert.ok(!markdown.includes("### org/repo-9"));
+    const fences = markdown.match(/^```/gm) ?? [];
+    assert.equal(fences.length % 2, 0);
+  });
+
+  test("renders everything when it fits", () => {
+    const markdown = formatUnifiedSummaryMarkdown(
+      { sync: bigSync(2), dryRun: true },
+      1_000_000
+    );
+
+    assert.ok(markdown.includes("### org/repo-1"));
+    assert.ok(!markdown.includes("not shown"));
+  });
+});
+
 describe("renderSyncLines with diffLines", () => {
   test("caps diff lines per file and says how many were left out", () => {
     const diffLines = Array.from(
@@ -1350,6 +1398,29 @@ describe("writeUnifiedSummary", () => {
     assert.ok(existsSync(tempFile));
     const content = readFileSync(tempFile, "utf-8");
     assert.ok(content.includes("xfg Apply"));
+  });
+
+  test("fits in the room left by earlier steps and keeps the totals", () => {
+    writeFileSync(tempFile, "e".repeat(STEP_SUMMARY_MAX_BYTES - 5000));
+    const diffLines = Array.from({ length: 400 }, (_, i) => `+ line ${i}`);
+
+    writeUnifiedSummary({
+      sync: {
+        repos: [
+          {
+            repoName: "org/repo",
+            files: [{ path: "a.txt", action: "update", diffLines }],
+          },
+        ],
+        totals: { files: { create: 0, update: 1, delete: 0 } },
+      },
+      dryRun: true,
+      summaryPath: tempFile,
+    });
+
+    assert.ok(statSync(tempFile).size <= STEP_SUMMARY_MAX_BYTES);
+    const content = readFileSync(tempFile, "utf-8");
+    assert.ok(content.includes("**Plan: 1 file (1 to update)**"));
   });
 
   test("no-ops when summaryPath not set", () => {
