@@ -11,7 +11,7 @@ import {
   formatActionCountEntry,
   type ActionTotals,
 } from "../shared/count-format.js";
-import { fencedCodeBlock } from "../shared/markdown-fence.js";
+import { appendDiffBlock } from "../shared/markdown-fence.js";
 
 export interface SettingsReport {
   repos: RepoChanges[];
@@ -280,7 +280,9 @@ export function renderRepoSettingsDiffLines(
       if (label.config) {
         diffLines.push(`+   color: "${label.config.color}"`);
         if (label.config.description !== undefined) {
-          diffLines.push(`+   description: "${label.config.description}"`);
+          diffLines.push(
+            `+   description: ${JSON.stringify(label.config.description)}`
+          );
         }
       }
     } else if (label.action === "update") {
@@ -294,10 +296,12 @@ export function renderRepoSettingsDiffLines(
           if (prop.property === "new_name") continue;
           if (prop.oldValue !== undefined) {
             diffLines.push(
-              `!   ${prop.property}: "${prop.oldValue}" \u2192 "${prop.newValue}"`
+              `!   ${prop.property}: ${JSON.stringify(prop.oldValue)} \u2192 ${JSON.stringify(prop.newValue)}`
             );
           } else {
-            diffLines.push(`!   ${prop.property}: "${prop.newValue}"`);
+            diffLines.push(
+              `!   ${prop.property}: ${JSON.stringify(prop.newValue)}`
+            );
           }
         }
       }
@@ -369,10 +373,7 @@ export function formatSettingsReportMarkdown(
     const diffLines: string[] = [];
     renderRepoSettingsDiffLines(repo, diffLines);
 
-    if (diffLines.length > 0) {
-      lines.push(...fencedCodeBlock("diff", diffLines));
-      lines.push("");
-    }
+    appendDiffBlock(lines, diffLines);
   }
 
   lines.push(`**${formatSettingsSummary(report.totals)}**`);

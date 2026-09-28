@@ -14,6 +14,7 @@ import type {
 } from "./types.js";
 import { interpolateXfgContent } from "../shared/xfg-template.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
+import { inlineCode } from "../shared/markdown-fence.js";
 
 export type { FileAction };
 
@@ -98,7 +99,7 @@ function formatFileChanges(files: FileAction[]): string {
           throw new Error(`Unexpected action: ${_exhaustive}`);
         }
       }
-      return `- ${actionText} \`${f.fileName}\``;
+      return `- ${actionText} ${inlineCode(f.fileName)}`;
     })
     .join("\n");
 }

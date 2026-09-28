@@ -801,7 +801,7 @@ describe("formatSettingsReportCLI", () => {
 });
 
 describe("formatSettingsReportMarkdown", () => {
-  test("keeps a label description containing a code fence inside the diff block", () => {
+  test("escapes newlines in label descriptions so they stay on one line", () => {
     const report: SettingsReport = {
       repos: [
         {
@@ -826,8 +826,37 @@ describe("formatSettingsReportMarkdown", () => {
 
     const markdown = formatSettingsReportMarkdown(report, false);
 
-    assert.ok(markdown.includes('````diff\n+ label "bug"'));
-    assert.ok(markdown.includes('\n```"\n````\n'));
+    assert.ok(markdown.includes('+   description: "a\\n```"\n'));
+  });
+
+  test("escapes newlines in label property changes", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "update",
+              propertyChanges: [
+                { property: "description", oldValue: "a\nb", newValue: "c\nd" },
+              ],
+            },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 1, delete: 0 },
+      },
+    };
+
+    const markdown = formatSettingsReportMarkdown(report, false);
+
+    assert.ok(markdown.includes('!   description: "a\\nb" \u2192 "c\\nd"\n'));
   });
 
   test("includes dry run warning when dryRun=true", () => {

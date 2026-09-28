@@ -20,6 +20,10 @@ describe("camelToSnake", () => {
 });
 
 describe("formatScalarValue", () => {
+  test("escapes newlines and quotes in strings", () => {
+    assert.equal(formatScalarValue('a\n"b"'), '"a\\n\\"b\\""');
+  });
+
   test("formats null", () => {
     assert.equal(formatScalarValue(null), "null");
   });

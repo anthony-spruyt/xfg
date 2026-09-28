@@ -77,6 +77,12 @@ describe("formatPRBody", () => {
     );
   });
 
+  test("keeps file names containing backticks as inline code", () => {
+    const files: FileAction[] = [{ fileName: "we`ird.md", action: "create" }];
+    const result = formatPRBody(files, repoInfo);
+    assert.ok(result.includes("- Created ``we`ird.md``"));
+  });
+
   test("handles multiple files", () => {
     const files: FileAction[] = [
       { fileName: "config.json", action: "create" },

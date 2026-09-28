@@ -13,7 +13,7 @@ import {
   type RepoChanges,
 } from "../output/index.js";
 import { formatActionCountEntry } from "../shared/count-format.js";
-import { fencedCodeBlock } from "../shared/markdown-fence.js";
+import { appendDiffBlock } from "../shared/markdown-fence.js";
 
 interface UnifiedSummaryInput {
   lifecycle?: LifecycleReport;
@@ -105,7 +105,9 @@ function renderLifecycleLines(
       diffLines.push(`+   visibility: ${lcAction.settings.visibility}`);
     }
     if (lcAction.settings.description) {
-      diffLines.push(`+   description: "${lcAction.settings.description}"`);
+      diffLines.push(
+        `+   description: ${JSON.stringify(lcAction.settings.description)}`
+      );
     }
   }
 }
@@ -175,7 +177,9 @@ export function formatUnifiedSummaryMarkdown(
 
     if (hasLcChange && hasSyncChanges) diffLines.push("");
 
-    if (syncRepo) diffLines.push(...renderSyncLines(syncRepo));
+    if (syncRepo) {
+      for (const line of renderSyncLines(syncRepo)) diffLines.push(line);
+    }
 
     if (hasSyncChanges && repoHasSettingsChanges) diffLines.push("");
 
@@ -184,10 +188,7 @@ export function formatUnifiedSummaryMarkdown(
       renderRepoSettingsDiffLines(settingsRepo, diffLines);
     });
 
-    if (diffLines.length > 0) {
-      lines.push(...fencedCodeBlock("diff", diffLines));
-      lines.push("");
-    }
+    appendDiffBlock(lines, diffLines);
   }
 
   lines.push(`**${formatCombinedSummary(input)}**`);

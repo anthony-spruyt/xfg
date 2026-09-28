@@ -3,7 +3,7 @@ import { writeGitHubStepSummary } from "./github-summary.js";
 import { formatCountEntry } from "../shared/count-format.js";
 import type { LifecycleActionKind } from "../lifecycle/index.js";
 import type { RepoVisibility } from "../config/index.js";
-import { fencedCodeBlock } from "../shared/markdown-fence.js";
+import { appendDiffBlock } from "../shared/markdown-fence.js";
 
 export interface LifecycleReport {
   actions: LifecycleAction[];
@@ -74,7 +74,9 @@ function renderActionDiffLines(actions: LifecycleAction[]): string[] {
         lines.push(`    visibility: ${action.settings.visibility}`);
       }
       if (action.settings.description) {
-        lines.push(`    description: "${action.settings.description}"`);
+        lines.push(
+          `    description: ${JSON.stringify(action.settings.description)}`
+        );
       }
     }
   }
@@ -118,10 +120,7 @@ export function formatLifecycleReportMarkdown(
 
   const diffLines = renderActionDiffLines(report.actions);
 
-  if (diffLines.length > 0) {
-    lines.push(...fencedCodeBlock("diff", diffLines));
-    lines.push("");
-  }
+  appendDiffBlock(lines, diffLines);
 
   lines.push(`**${formatLifecycleSummary(report.totals)}**`);
 

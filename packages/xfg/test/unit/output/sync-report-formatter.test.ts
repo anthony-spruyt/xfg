@@ -1,4 +1,3 @@
-// test/unit/sync-report-formatter.test.ts
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
@@ -274,6 +273,23 @@ describe("formatSyncReportMarkdown with diffLines", () => {
 });
 
 describe("formatSyncReportMarkdown", () => {
+  test("renders diffs too large to spread into push()", () => {
+    const diffLines = Array.from({ length: 500_000 }, (_, i) => `+${i}`);
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: "big.txt", action: "update", diffLines }],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const markdown = formatSyncReportMarkdown(sync, true);
+
+    assert.ok(markdown.includes("+499999\n```"));
+  });
+
   test("includes dry run warning when dryRun=true", () => {
     const report: SyncReport = {
       repos: [

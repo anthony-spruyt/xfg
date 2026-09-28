@@ -38,6 +38,23 @@ function emptySettings(): SettingsReport {
 }
 
 describe("formatUnifiedSummaryMarkdown", () => {
+  test("renders diffs too large to spread into push()", () => {
+    const diffLines = Array.from({ length: 500_000 }, (_, i) => `+${i}`);
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [{ path: "big.txt", action: "update", diffLines }],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+
+    const markdown = formatUnifiedSummaryMarkdown({ sync, dryRun: true });
+
+    assert.ok(markdown.includes("+499999\n```"));
+  });
+
   test("returns empty string when no changes at all", () => {
     const markdown = formatUnifiedSummaryMarkdown({
       lifecycle: emptyLifecycle(),
@@ -151,6 +168,63 @@ describe("formatUnifiedSummaryMarkdown", () => {
 
     assert.ok(markdown.includes("````diff\n! README.md\n@@"));
     assert.ok(markdown.includes("+new\n ```\n````\n"));
+  });
+
+  test("keeps lifecycle, sync, and settings content intact in one block", () => {
+    const lifecycle: LifecycleReport = {
+      actions: [
+        {
+          repoName: "org/repo",
+          action: "created",
+          settings: { description: "a\n```" },
+        },
+      ],
+      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
+    };
+    const sync: SyncReport = {
+      repos: [
+        {
+          repoName: "org/repo",
+          files: [
+            {
+              path: "README.md",
+              action: "update",
+              diffLines: ["@@ -1,1 +1,1 @@", " ```"],
+            },
+          ],
+        },
+      ],
+      totals: { files: { create: 0, update: 1, delete: 0 } },
+    };
+    const settings: SettingsReport = {
+      ...emptySettings(),
+      repos: [
+        {
+          repoName: "org/repo",
+          settings: [],
+          rulesets: [],
+          labels: [
+            {
+              name: "bug",
+              action: "create",
+              config: { color: "d73a4a", description: "b\n```" },
+            },
+          ],
+        },
+      ],
+    };
+    const markdown = formatUnifiedSummaryMarkdown({
+      lifecycle,
+      sync,
+      settings,
+      dryRun: true,
+    });
+
+    assert.ok(
+      markdown.includes('````diff\n+ CREATE\n+   description: "a\\n```"\n')
+    );
+    assert.ok(markdown.includes(' ```\n\n+ label "bug"'));
+    assert.ok(markdown.includes('+   description: "b\\n```"\n````\n'));
   });
 
   test("renders combined lifecycle + sync for same repo", () => {

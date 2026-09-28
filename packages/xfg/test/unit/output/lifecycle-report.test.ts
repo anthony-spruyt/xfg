@@ -1,4 +1,3 @@
-// test/unit/lifecycle-report.test.ts
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import { existsSync, readFileSync, unlinkSync } from "node:fs";
@@ -288,7 +287,7 @@ describe("formatLifecycleReportCLI", () => {
 });
 
 describe("formatLifecycleReportMarkdown", () => {
-  test("keeps a description containing a code fence inside the diff block", () => {
+  test("escapes newlines in descriptions so they stay on one line", () => {
     const report: LifecycleReport = {
       actions: [
         {
@@ -302,8 +301,7 @@ describe("formatLifecycleReportMarkdown", () => {
 
     const markdown = formatLifecycleReportMarkdown(report, false);
 
-    assert.ok(markdown.includes("````diff\n+ CREATE org/repo1"));
-    assert.ok(markdown.includes('\n```"\n````\n'));
+    assert.ok(markdown.includes('    description: "a\\n```"\n'));
   });
 
   test("returns empty string when all actions are existed", () => {
