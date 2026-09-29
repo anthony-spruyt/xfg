@@ -20,6 +20,7 @@ Repo-operator syncs a thin layer on top.
 - `Dockerfile` — thin layer on `devcontainer-common` adding Nexus apt proxy when `NEXUS_URL` is set.
 - `setup-devcontainer.sh` — repo-specific tooling install hook (called by `devcontainer-post-create`).
 - `initialize.sh` — host-side SSH agent socket setup (runs before container creation).
+- `update-claude-plugins.sh` (`claude` group only) — refreshes plugin marketplaces and updates user-scope and this repo's Claude Code plugins on every container start, before Claude launches. `~/.claude` persists across rebuilds (host bind mount locally, home PVC on Coder), so `claude plugin install` alone never upgrades them.
 - `podman-seccomp.json` — vendored podman default seccomp profile, synced by repo-operator. Applied to the outer container via `runArgs: --security-opt seccomp=<path>`.
 
 ## What `devcontainer-post-create` does at runtime
@@ -39,7 +40,8 @@ Repo-operator syncs a thin layer on top.
 - Rootful Podman by design. Rootless cannot run nested (no cgroup delegation, no `/dev/net/tun`), and `vscode` has passwordless sudo anyway. Isolation comes from the devcontainer itself (WSL2) or the Kata VM (Coder).
 - Registry allow-list with `short-name-mode = "enforcing"` — typo-squat pulls fail.
 - Seccomp profile narrows host syscall surface vs `seccomp=unconfined`.
-- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, and a private bridge network. It is a guardrail against hostile images, not a boundary against the agent. No pids/memory/cpu limits: cgroups are not delegated. Coder only: the WSL devcontainer has no `CAP_SYS_ADMIN`, so `devcontainer-podman-config` defaults podman to the host network and UTS namespaces there. Plain `docker run` / `docker build` work; use them for trusted images only. The `warn-raw-container-run` hookify rule reminds agents of this once per session.
+- `agent-run` wrapper enforces `--userns=auto`, `--read-only`, cap-drop ALL, `--no-new-privileges`, and a private bridge network. It is a guardrail against hostile images, not a boundary against the agent. No pids/memory/cpu limits: cgroups are not delegated. Coder only: the WSL devcontainer has no `CAP_SYS_ADMIN`, so `devcontainer-podman-config` defaults podman to the host network and UTS
+  namespaces there. Plain `docker run` / `docker build` work; use them for trusted images only. The `warn-raw-container-run` hookify rule reminds agents of this once per session.
 - `docker` is Podman (a symlink to the wrapper), so scripts written for CI's Docker run unchanged. Docker-only commands such as `docker buildx` do not work.
 
 ## Seccomp profile updates
