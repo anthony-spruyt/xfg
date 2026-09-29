@@ -36,6 +36,8 @@
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
   "postCreateCommand": "bash -lc \"cd ${containerWorkspaceFolder} && devcontainer-post-create\"",
+  "waitFor": "postStartCommand",
+  "postStartCommand": "bash -lc \"cd ${containerWorkspaceFolder} && bash .devcontainer/post-start.sh\"",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -48,7 +50,5 @@
         "github.vscode-github-actions"
       ]
     }
-  },
-  "waitFor": "postStartCommand",
-  "postStartCommand": "bash -lc \"cd ${containerWorkspaceFolder} && bash .devcontainer/update-claude-plugins.sh\""
+  }
 }

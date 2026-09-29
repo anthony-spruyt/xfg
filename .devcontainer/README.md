@@ -20,7 +20,8 @@ Repo-operator syncs a thin layer on top.
 - `Dockerfile` — thin layer on `devcontainer-common` adding Nexus apt proxy when `NEXUS_URL` is set.
 - `setup-devcontainer.sh` — repo-specific tooling install hook (called by `devcontainer-post-create`).
 - `initialize.sh` — host-side SSH agent socket setup (runs before container creation).
-- `update-claude-plugins.sh` (`claude` group only) — refreshes plugin marketplaces and updates user-scope and this repo's Claude Code plugins on every container start, before Claude launches. `~/.claude` persists across rebuilds (host bind mount locally, home PVC on Coder), so `claude plugin install` alone never upgrades them.
+- `post-start.sh` — runs every `post-start.d/*.sh` on each container start, before the editor or Claude attaches. Groups add hooks by syncing a file into `post-start.d/`. A failing hook only warns.
+- `post-start.d/claude-plugins.sh` (`claude` group) — refreshes plugin marketplaces and updates user-scope and this repo's Claude Code plugins. `~/.claude` persists across rebuilds (host bind mount locally, home PVC on Coder), so `claude plugin install` alone never upgrades them.
 - `podman-seccomp.json` — vendored podman default seccomp profile, synced by repo-operator. Applied to the outer container via `runArgs: --security-opt seccomp=<path>`.
 
 ## What `devcontainer-post-create` does at runtime
