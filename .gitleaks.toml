@@ -2,7 +2,6 @@
 # https://github.com/gitleaks/gitleaks
 
 [extend]
-# Extend the default gitleaks config
 # https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
 useDefault = true
 
@@ -37,3 +36,14 @@ id = "private-ip-rfc1918-192"
 description = "RFC1918 private IP address (192.168.x.x)"
 regex = '''(?:^|[^0-9])192\.168\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9]{1,2})(?:/[0-9]{1,2})?(?:[^0-9]|$)'''
 tags = ["ip-leakage"]
+
+# --- Generated Secrets ---
+# Must match spruyt-labs LiteLLM secret_masking.py and `task sops:gen-key`.
+
+[[rules]]
+id = "spruyt-labs-secret"
+description = "Spruyt Labs generated secret (sl_ prefix)"
+regex = '''(?:^|[^A-Za-z0-9_])(sl_[A-Za-z0-9]{29,})(?:[^A-Za-z0-9]|$)'''
+secretGroup = 1
+keywords = ["sl_"]
+tags = ["secret"]
