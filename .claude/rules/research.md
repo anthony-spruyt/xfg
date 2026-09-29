@@ -11,7 +11,7 @@
 | 2    | **GitHub**    | Issues, PRs, code  | `gh search issues "error" --repo org/repo`                     |
 | 3    | **Codebase**  | Existing patterns  | Grep, Glob, Read                                               |
 | 4    | **WebFetch**  | Official docs URLs | raw.githubusercontent.com, allowed domains                     |
-| 5    | **WebSearch** | LAST RESORT ONLY   | Only after steps 1-4 fail                                      |
+| 5    | **WebSearch** | Last resort        | Only after steps 1-4 fail                                      |
 
 ## Research Decision Flow
 
