@@ -15,6 +15,7 @@ import type {
   RepoConfig,
   FileContent,
   ContentValue,
+  AiConfig,
   PRMergeOptions,
   RepoPROptions,
   RepoSettings,
@@ -112,31 +113,37 @@ function normalizeHeader(
   return header;
 }
 
+// lastAi remembers the ai object hidden by `ai: false` so a later `ai: true` can re-enable it.
+type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
+
 /**
  * Merges PR options: per-repo overrides global defaults.
  * Returns undefined if no options are set.
  */
 function mergePROptions(
-  global: PRMergeOptions | undefined,
+  global: MergedPROptions | undefined,
   perRepo: PRMergeOptions | undefined
-): PRMergeOptions | undefined {
+): MergedPROptions | undefined {
   if (!global && !perRepo) return undefined;
   if (!global) return perRepo;
   if (!perRepo) return global;
 
-  const merged = { ...global, ...perRepo };
+  const lastAi = typeof global.ai === "object" ? global.ai : global.lastAi;
+  const merged: MergedPROptions = { ...global, ...perRepo, lastAi: undefined };
+  if (merged.ai === true && lastAi) merged.ai = lastAi;
+  if (merged.ai === false) merged.lastAi = lastAi;
   const result = Object.fromEntries(
     Object.entries(merged).filter(([, v]) => v !== undefined)
-  ) as PRMergeOptions;
+  ) as MergedPROptions;
 
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
 function normalizeAiOption(
-  prOptions: PRMergeOptions | undefined
+  prOptions: MergedPROptions | undefined
 ): RepoPROptions | undefined {
   if (prOptions === undefined) return undefined;
-  const { ai, ...rest } = prOptions;
+  const { ai, lastAi: _lastAi, ...rest } = prOptions;
   if (ai === true) return { ...rest, ai: { provider: "anthropic" } };
   if (ai)
     return { ...rest, ai: { ...ai, provider: ai.provider ?? "anthropic" } };
@@ -512,8 +519,8 @@ function mergeGroupPROptions(
   rootPR: PRMergeOptions | undefined,
   groupNames: string[],
   groupDefs: Record<string, RawGroupConfig>
-): PRMergeOptions | undefined {
-  let accumulated = rootPR;
+): MergedPROptions | undefined {
+  let accumulated: MergedPROptions | undefined = rootPR;
   for (const name of groupNames) {
     const group = groupDefs[name];
     if (group?.prOptions) {
@@ -674,13 +681,13 @@ function evaluateWhenClause(
  */
 function mergeConditionalGroups(
   accumulatedFiles: Record<string, RawFileConfig>,
-  accumulatedPROptions: PRMergeOptions | undefined,
+  accumulatedPROptions: MergedPROptions | undefined,
   accumulatedSettings: RawRootSettings | undefined,
   effectiveGroups: ReadonlySet<string>,
   conditionalGroups: RawConditionalGroupConfig[]
 ): {
   files: Record<string, RawFileConfig>;
-  prOptions: PRMergeOptions | undefined;
+  prOptions: MergedPROptions | undefined;
   settings: RawRootSettings | undefined;
 } {
   let files = structuredClone(accumulatedFiles);
@@ -760,7 +767,7 @@ interface NormalizeRepoEntryContext {
   effectiveRootFiles: Record<string, RawFileConfig>;
   fileNames: string[];
   repoOnlyFileNames: string[];
-  effectivePROptions: PRMergeOptions | undefined;
+  effectivePROptions: MergedPROptions | undefined;
   effectiveSettings: RawRootSettings | undefined;
   globalDeleteOrphaned: boolean | undefined;
   env: Record<string, string | undefined>;

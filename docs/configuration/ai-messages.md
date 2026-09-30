@@ -50,7 +50,7 @@ prOptions:
 | `prompt`       | Extra instructions appended to the built-in prompt                                                         | -                                      |
 | `maxDiffChars` | Maximum diff characters sent. Small diffs are sent whole; large diffs share what is left and get truncated | `20000`                                |
 
-`ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level replaces the one above it (it is not deep-merged). Set `ai: false` on a repo or group to turn it off there.
+`ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level replaces the one above it (it is not deep-merged). Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above.
 
 ## Providers
 

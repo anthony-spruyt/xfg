@@ -230,6 +230,42 @@ describe("prOptions.ai normalization", () => {
     assert.deepEqual(result.repos[0].prOptions?.ai, { provider: "anthropic" });
   });
 
+  test("ai: true re-enables the inherited ai object", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: { ai: { provider: "openai", model: "gpt" } },
+        groups: { g: { prOptions: { ai: false } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["g"],
+            prOptions: { ai: true },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions, {
+      ai: { provider: "openai", model: "gpt" },
+    });
+  });
+
+  test("ai: true keeps an ai object set above it", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: { ai: { provider: "openai", model: "gpt" } },
+        repos: [
+          { git: "git@github.com:org/repo.git", prOptions: { ai: true } },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "openai",
+      model: "gpt",
+    });
+  });
+
   test("ai unset leaves prOptions untouched", () => {
     const result = normalizeConfig(
       baseConfig({ prOptions: { merge: "manual" } }),
