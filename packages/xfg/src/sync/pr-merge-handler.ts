@@ -24,6 +24,8 @@ export class PRMergeHandler implements IPRMergeHandler {
       repoName,
       diffStats,
       fileChanges,
+      prTitle,
+      prSummary,
     } = input;
     this.log.info("Creating pull request...");
     const strategy = options.dryRun
@@ -43,6 +45,8 @@ export class PRMergeHandler implements IPRMergeHandler {
       labels: prOptions?.labels,
       log: this.log,
       strategy,
+      title: prTitle,
+      aiSummary: prSummary,
     });
 
     const mergeMode = prOptions?.merge ?? "auto";

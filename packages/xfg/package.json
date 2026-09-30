@@ -42,6 +42,7 @@
     "test:integration:github": "npm run build && node --import tsx --test test/integration/github.test.ts",
     "test:integration:ado": "npm run build && node --import tsx --test test/integration/ado.test.ts",
     "test:integration:gitlab": "npm run build && node --import tsx --test test/integration/gitlab.test.ts",
+    "test:integration:github-ai": "npm run build && node --import tsx --test test/integration/github-ai.test.ts",
     "test:integration:github-app": "npm run build && node --import tsx --test test/integration/github-app.test.ts",
     "test:integration:github-rulesets": "npm run build && node --import tsx --test test/integration/github-rulesets.test.ts",
     "test:integration:github-secrets": "npm run build && node --import tsx --test test/integration/github-secrets.test.ts",

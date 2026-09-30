@@ -28,6 +28,7 @@ import type {
   GitHubRepoSettings,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
+import { resolveAiOptions } from "../ai/options.js";
 
 /**
  * Clone content, stripping merge directives from object content.
@@ -51,24 +52,20 @@ function resolveFileContent(
   repoOverride: RawRepoFileOverride | undefined,
   mergeStrategy: ArrayMergeStrategy
 ): ContentValue | null {
-  // Override mode: use only repo content
   if (repoOverride?.override) {
     return repoOverride.content !== undefined
       ? cloneContent(repoOverride.content)
       : null;
   }
 
-  // Root has no content — use repo content if provided, otherwise empty
   if (rootContent === undefined) {
     return repoOverride?.content ? cloneContent(repoOverride.content) : null;
   }
 
-  // No repo override — use root content as-is
   if (!repoOverride?.content) {
     return structuredClone(rootContent);
   }
 
-  // Both exist — merge
   return mergeContentPair(rootContent, repoOverride.content, mergeStrategy);
 }
 
@@ -93,7 +90,6 @@ function mergeContentPair(
     );
     return stripMergeDirectives(merged);
   }
-  // Type mismatch — overlay wins
   return overlay;
 }
 
@@ -134,6 +130,16 @@ function mergePROptions(
   ) as PRMergeOptions;
 
   return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function normalizeAiOption(
+  prOptions: PRMergeOptions | undefined
+): PRMergeOptions | undefined {
+  if (prOptions?.ai === undefined) return prOptions;
+  const { ai: _ai, ...rest } = prOptions;
+  const ai = resolveAiOptions(prOptions);
+  if (ai) return { ...rest, ai };
+  return Object.keys(rest).length > 0 ? rest : undefined;
 }
 
 /**
@@ -304,7 +310,6 @@ export function mergeSettings(
 
   const result: RepoSettings = {};
 
-  // Merge rulesets by name - each ruleset is deep merged
   const rootRulesets = root?.rulesets ?? {};
   const repoRulesets = perRepo?.rulesets ?? {};
 
@@ -321,12 +326,10 @@ export function mergeSettings(
       const rootRuleset = rootRulesets[name];
       const repoRuleset = repoRulesets[name];
 
-      // Skip if repo explicitly opts out of this ruleset
       if (repoRuleset === false) {
         continue;
       }
 
-      // Skip root rulesets if inherit: false (unless repo has override)
       if (!inheritRulesets && !repoRuleset && rootRuleset) {
         continue;
       }
@@ -340,13 +343,11 @@ export function mergeSettings(
       ) as Ruleset;
     }
 
-    // Clean up empty rulesets object
     if (Object.keys(result.rulesets).length === 0) {
       delete result.rulesets;
     }
   }
 
-  // deleteOrphaned: per-repo overrides root
   const deleteOrphaned =
     perRepo?.deleteOrphaned !== undefined
       ? perRepo.deleteOrphaned
@@ -370,7 +371,6 @@ export function mergeSettings(
     }
   }
 
-  // Merge labels by name
   const mergedLabels = mergeLabels(root?.labels, perRepo?.labels);
   if (mergedLabels) {
     result.labels = mergedLabels;
@@ -564,7 +564,6 @@ function mergeRawSettings(
 
   const result: RawRootSettings = base ? structuredClone(base) : {};
 
-  // Merge rulesets
   if (overlay.rulesets) {
     result.rulesets = mergeNamedEntries(
       result.rulesets,
@@ -576,7 +575,6 @@ function mergeRawSettings(
     );
   }
 
-  // Merge repo settings: overlay replaces base (shallow merge, same as mergeSettings)
   if (overlay.repo !== undefined) {
     if (overlay.repo === false) {
       result.repo = false;
@@ -588,7 +586,6 @@ function mergeRawSettings(
     }
   }
 
-  // Merge labels
   if (overlay.labels) {
     result.labels = mergeNamedEntries(
       result.labels,
@@ -623,7 +620,6 @@ function mergeRawSettings(
     ) as typeof result.secrets;
   }
 
-  // deleteOrphaned: overlay wins
   if (overlay.deleteOrphaned !== undefined) {
     result.deleteOrphaned = overlay.deleteOrphaned;
   }
@@ -659,7 +655,6 @@ function evaluateWhenClause(
   when: RawConditionalGroupWhen,
   effectiveGroups: ReadonlySet<string>
 ): boolean {
-  // Defensive: if no condition is specified, don't match
   if (!when.allOf && !when.anyOf && !when.noneOf) return false;
 
   const allOfSatisfied =
@@ -700,12 +695,10 @@ function mergeConditionalGroups(
       files = applyFileLayer(files, cg.files);
     }
 
-    // Merge prOptions
     if (cg.prOptions) {
       prOptions = mergePROptions(prOptions, cg.prOptions);
     }
 
-    // Merge settings
     if (cg.settings) {
       settings = mergeRawSettings(settings, cg.settings);
     }
@@ -805,9 +798,8 @@ function normalizeRepoEntry(ctx: NormalizeRepoEntryContext): RepoConfig {
     if (entry) files.push(entry);
   }
 
-  const prOptions = mergePROptions(
-    ctx.effectivePROptions,
-    ctx.rawRepo.prOptions
+  const prOptions = normalizeAiOption(
+    mergePROptions(ctx.effectivePROptions, ctx.rawRepo.prOptions)
   );
   const settings = mergeSettings(ctx.effectiveSettings, ctx.rawRepo.settings);
 
@@ -834,12 +826,10 @@ export function normalizeConfig(
   for (const rawRepo of raw.repos) {
     const gitUrls = Array.isArray(rawRepo.git) ? rawRepo.git : [rawRepo.git];
 
-    // Phase 0: Expand extends chains
     const expandedGroups = rawRepo.groups?.length
       ? expandRepoGroups(rawRepo.groups, raw.groups ?? {})
       : [];
 
-    // Phase 1: Resolve groups - build effective root files/prOptions/settings by merging group layers
     let effectiveRootFiles = expandedGroups.length
       ? mergeGroupFiles(raw.files ?? {}, expandedGroups, raw.groups ?? {})
       : (raw.files ?? {});
@@ -852,7 +842,6 @@ export function normalizeConfig(
       ? mergeGroupSettings(raw.settings, expandedGroups, raw.groups ?? {})
       : raw.settings;
 
-    // Phase 2 + 3: Evaluate and merge conditional groups
     if (raw.conditionalGroups?.length) {
       const effectiveGroups = new Set(expandedGroups);
       const merged = mergeConditionalGroups(
@@ -869,7 +858,6 @@ export function normalizeConfig(
 
     const fileNames = Object.keys(effectiveRootFiles);
 
-    // Collect repo-only file names (defined at repo level but not in root/groups)
     const repoOnlyFileNames: string[] = [];
     if (rawRepo.files) {
       for (const name of Object.keys(rawRepo.files)) {

@@ -15,6 +15,7 @@ import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
+import { splitCommitMessage } from "./commit-message-parts.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -267,9 +268,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           branchName,
         },
         expectedHeadOid,
-        message: {
-          headline: message,
-        },
+        message: splitCommitMessage(message),
         fileChanges,
       },
     };
@@ -394,7 +393,6 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
     let cleanMessage: string;
 
     if (originalMessage.startsWith("Command failed:")) {
-      // Extract stderr: everything after the first newline
       const newlineIndex = originalMessage.indexOf("\n");
       cleanMessage =
         newlineIndex >= 0

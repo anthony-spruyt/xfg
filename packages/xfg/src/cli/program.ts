@@ -75,6 +75,18 @@ export function parseMergeStrategy(value: string): MergeStrategy {
   return value as MergeStrategy;
 }
 
+// Commander stores --no-x as x: false; map to the noX fields runSync expects.
+export function toSyncOptions(
+  opts: Record<string, unknown> & { config: string }
+): SyncOptions {
+  const { delete: del, ai, ...rest } = opts;
+  return {
+    ...rest,
+    noDelete: del === false,
+    noAi: ai === false,
+  } as SyncOptions;
+}
+
 // =============================================================================
 // CLI Program
 // =============================================================================
@@ -85,7 +97,6 @@ program
     "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab"
   );
 
-// Sync command (file synchronization)
 const syncCommand = new Command("sync")
   .description("Sync configuration files across repositories")
   .option(
@@ -103,13 +114,13 @@ const syncCommand = new Command("sync")
     parseMergeStrategy
   )
   .option("--delete-branch", "Delete source branch after merge")
+  .option(
+    "--no-ai",
+    "Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured"
+  )
   .action(async (opts) => {
     try {
-      const options = {
-        ...opts,
-        noDelete: opts.delete === false,
-      } as SyncOptions;
-      await runSync(options);
+      await runSync(toSyncOptions(opts));
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);

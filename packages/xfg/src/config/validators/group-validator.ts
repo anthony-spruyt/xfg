@@ -7,6 +7,7 @@ import { resolveExtendsChain } from "../extends-resolver.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
 import { validateBranchName } from "../../shared/branch-validation.js";
+import { validateAiOption } from "./ai-validator.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -171,6 +172,7 @@ export function validateGroups(config: RawConfig): void {
     if (group.prOptions?.branch !== undefined) {
       validateBranchName(group.prOptions.branch);
     }
+    validateAiOption(group.prOptions?.ai);
   }
 
   validateNoCircularExtends(config.groups);
@@ -258,5 +260,6 @@ export function validateConditionalGroups(config: RawConfig): void {
     if (entry.prOptions?.branch !== undefined) {
       validateBranchName(entry.prOptions.branch);
     }
+    validateAiOption(entry.prOptions?.ai);
   }
 }

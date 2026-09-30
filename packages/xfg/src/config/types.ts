@@ -3,6 +3,17 @@ import type { ArrayMergeStrategy } from "./merge.js";
 export type MergeMode = "manual" | "auto" | "force" | "direct";
 export type MergeStrategy = "merge" | "squash" | "rebase";
 
+export type AiProvider = "anthropic" | "openai";
+
+export interface AiConfig {
+  provider?: AiProvider;
+  model?: string;
+  baseUrl?: string;
+  apiKeyEnv?: string;
+  prompt?: string;
+  maxDiffChars?: number;
+}
+
 export interface PRMergeOptions {
   merge?: MergeMode;
   mergeStrategy?: MergeStrategy;
@@ -10,6 +21,8 @@ export interface PRMergeOptions {
   bypassReason?: string;
   labels?: string[];
   branch?: string;
+  /** After normalization this is always an AiConfig with provider set, or absent. */
+  ai?: boolean | AiConfig;
 }
 
 export type RulesetTarget = "branch" | "tag";
@@ -135,7 +148,6 @@ interface MaxFileSizeParameters {
   maxFileSize?: number;
 }
 
-// Rule type definitions
 export interface PullRequestRule {
   type: "pull_request";
   parameters?: PullRequestRuleParameters;
@@ -407,10 +419,8 @@ export interface RepoSettings {
   deleteOrphaned?: boolean;
 }
 
-// Content can be object (JSON/YAML), string (text), or string[] (text lines)
 export type ContentValue = Record<string, unknown> | string | string[];
 
-// Per-file configuration at root level
 export interface RawFileConfig {
   content?: ContentValue;
   mergeStrategy?: ArrayMergeStrategy;
@@ -423,7 +433,6 @@ export interface RawFileConfig {
   deleteOrphaned?: boolean;
 }
 
-// Per-repo file override
 export interface RawRepoFileOverride {
   content?: ContentValue;
   override?: boolean;
@@ -499,7 +508,6 @@ export interface RawRepoSettings {
   deleteOrphaned?: boolean;
 }
 
-// Repo configuration
 // files can map to false to exclude, or an object to override
 // inherit: false skips all root files
 export interface RawRepoConfig {
@@ -514,7 +522,6 @@ export interface RawRepoConfig {
   source?: string;
 }
 
-// Root config structure
 export interface RawConfig {
   id: string;
   files?: Record<string, RawFileConfig>;
@@ -528,7 +535,6 @@ export interface RawConfig {
   settings?: RawRootSettings;
 }
 
-// File content for a single file in a repo
 export interface FileContent {
   fileName: string;
   content: ContentValue | null;
@@ -541,7 +547,6 @@ export interface FileContent {
   deleteOrphaned?: boolean;
 }
 
-// Normalized repo config with all files to sync
 export interface RepoConfig {
   git: string;
   files: FileContent[];
@@ -553,7 +558,6 @@ export interface RepoConfig {
   source?: string;
 }
 
-// Normalized config
 export interface Config {
   id: string;
   repos: RepoConfig[];

@@ -235,6 +235,42 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
+    test("splits a multi-line message into headline and body", async () => {
+      mockExecutor.responses.set("git fetch", "");
+      mockExecutor.responses.set("git rev-parse", "abc123def456789");
+      let graphqlCallCount = 0;
+      mockExecutor.responses.set("gh api graphql", () => {
+        graphqlCallCount++;
+        if (graphqlCallCount === 1) {
+          return JSON.stringify({
+            data: { repository: { id: "R_test", ref: { id: "REF_test" } } },
+          });
+        }
+        return JSON.stringify({
+          data: { createCommitOnBranch: { commit: { oid: "sha" } } },
+        });
+      });
+
+      const strategy = new GraphQLCommitStrategy(mockExecutor.mock);
+      await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "ci: pin checkout\n\nLine one.\nLine two.",
+        fileChanges: [{ path: "file1.txt", content: "content1" }],
+        workDir: testDir,
+        gitOps: createMockGitOps(),
+      });
+
+      const commitCall = mockExecutor.calls.find((c) =>
+        c.options?.input?.includes("createCommitOnBranch")
+      );
+      const payload = JSON.parse(commitCall!.options!.input!);
+      assert.deepEqual(payload.variables.input.message, {
+        headline: "ci: pin checkout",
+        body: "Line one.\nLine two.",
+      });
+    });
+
     test("does not include empty deletions array in payload", async () => {
       mockExecutor.responses.set("git fetch", "");
       mockExecutor.responses.set("git rev-parse", "abc123");

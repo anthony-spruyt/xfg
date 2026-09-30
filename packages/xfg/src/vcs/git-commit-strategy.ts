@@ -1,6 +1,7 @@
 import type { ICommitStrategy, CommitOptions, CommitResult } from "./types.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { withRetry } from "../shared/retry-utils.js";
+import { splitCommitMessage } from "./commit-message-parts.js";
 
 /**
  * Git-based commit strategy using standard git commands (add, commit, push).
@@ -30,15 +31,14 @@ export class GitCommitStrategy implements ICommitStrategy {
       gitOps,
     } = options;
 
-    // Commit with the message (--no-verify to skip pre-commit hooks)
-    // Staging is handled by CommitPushManager before calling commit()
+    // Staging is done by CommitPushManager before commit() is called.
+    const { headline, body } = splitCommitMessage(message);
     await this.executor.exec(
       "git",
-      ["commit", "--no-verify", "-m", message],
+      ["commit", "--no-verify", "-m", headline, ...(body ? ["-m", body] : [])],
       workDir
     );
 
-    // Push with authentication via gitOps if available
     if (gitOps) {
       await gitOps.push(branchName, { force });
     } else {

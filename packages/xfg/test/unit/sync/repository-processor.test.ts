@@ -1045,6 +1045,41 @@ describe("RepositoryProcessor", () => {
       );
     });
 
+    test("uses injected changeDescriber for the commit message when prOptions.ai is set", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { gitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+        changedFiles: ["config.json"],
+      });
+      const trackingExecutor = createTrackingMockExecutor();
+      const processor = new RepositoryProcessor(() => gitOps, mockLogger, {
+        changeDescriber: {
+          async describe() {
+            return { subject: "build(config): add key", prSummary: "s" };
+          },
+        },
+      });
+
+      await processor.process(
+        { ...mockRepoConfig, prOptions: { ai: { provider: "anthropic" } } },
+        mockRepoInfo,
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, `ai-msg-${Date.now()}`),
+          configId: "test-config",
+          dryRun: false,
+          executor: trackingExecutor,
+        }
+      );
+
+      assert.equal(
+        trackingExecutor.lastCommitMessage,
+        "build(config): add key"
+      );
+    });
+
     test("should format commit message for more than 3 files with count", async () => {
       const { mock: mockLogger } = createMockLogger();
       const { gitOps } = createMockAuthenticatedGitOps({

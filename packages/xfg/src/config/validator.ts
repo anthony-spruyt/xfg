@@ -10,6 +10,7 @@ import { validateFileName } from "./validators/file-validator.js";
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 import { validateBranchName } from "../shared/branch-validation.js";
+import { validateAiOption } from "./validators/ai-validator.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -158,6 +159,8 @@ function validatePrOptions(config: RawConfig): void {
   if (config.prOptions?.branch !== undefined) {
     validateBranchName(config.prOptions.branch);
   }
+
+  validateAiOption(config.prOptions?.ai);
 
   if (config.prOptions?.labels === undefined) return;
 
@@ -334,7 +337,6 @@ export function validateForSync(config: RawConfig): void {
     );
   }
 
-  // Validate variable names across all settings
   for (const settings of collectAllSettings(config)) {
     if (!settings?.variables) continue;
     const vars = settings.variables as Record<string, unknown>;
@@ -359,7 +361,6 @@ export function validateForSync(config: RawConfig): void {
       }
     }
 
-    // Reject duplicate case-insensitive variable names
     const seenVarNames = new Map<string, string>();
     for (const name of Object.keys(settings.variables)) {
       if (VARIABLE_RESERVED_KEYS.has(name)) continue;
@@ -374,7 +375,6 @@ export function validateForSync(config: RawConfig): void {
     }
   }
 
-  // Validate secret names and configs
   validateSecretsConfig(config);
 }
 
@@ -517,7 +517,6 @@ function validateSecretsLayer(secrets: Record<string, unknown>): void {
     );
   }
 
-  // Reject duplicate case-insensitive secret names
   const seen = new Map<string, string>();
   for (const name of Object.keys(secrets)) {
     if (SECRET_RESERVED_KEYS.has(name)) continue;

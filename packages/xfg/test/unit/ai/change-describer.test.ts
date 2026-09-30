@@ -1,0 +1,320 @@
+import { test, describe } from "node:test";
+import { strict as assert } from "node:assert";
+import {
+  AiChangeDescriber,
+  buildUserPrompt,
+  isConventionalSubject,
+  parseDescription,
+} from "../../../src/ai/change-describer.js";
+import type {
+  AiOptions,
+  IAiClient,
+  JsonSchema,
+} from "../../../src/ai/types.js";
+import type { FileChangeDetail } from "../../../src/sync/types.js";
+
+interface Call {
+  system: string;
+  user: string;
+  schema?: JsonSchema;
+}
+
+function fakeClient(responses: Array<string | Error>): {
+  client: IAiClient;
+  calls: Call[];
+} {
+  const calls: Call[] = [];
+  return {
+    calls,
+    client: {
+      async complete(system, user, schema) {
+        calls.push({ system, user, schema });
+        const next = responses.shift() ?? responses[responses.length - 1];
+        if (next instanceof Error) throw next;
+        return next;
+      },
+    },
+  };
+}
+
+function fakeLog() {
+  const warnings: string[] = [];
+  return {
+    warnings,
+    log: { debug() {}, warn: (m: string) => warnings.push(m) },
+  };
+}
+
+const OPTIONS: AiOptions = { provider: "anthropic" };
+
+const FILES: FileChangeDetail[] = [
+  {
+    path: ".github/workflows/ci.yaml",
+    action: "update",
+    diffLines: [
+      "@@ -1,1 +1,1 @@",
+      "-uses: actions/checkout@v4",
+      "+uses: actions/checkout@v5",
+    ],
+  },
+];
+
+const VALID = JSON.stringify({
+  subject: "ci(workflows): pin actions/checkout to v5",
+  body: "Bumps checkout from v4 to v5.",
+  prSummary: "Updates the CI workflow to use actions/checkout v5.",
+});
+
+describe("isConventionalSubject", () => {
+  test("accepts valid subjects", () => {
+    for (const s of [
+      "feat: add thing",
+      "fix(api): handle null",
+      "build(devcontainer): bump node to 22",
+      "chore!: drop node 18",
+      "ci(workflows)!: require checks",
+      "revert: undo x",
+    ]) {
+      assert.ok(isConventionalSubject(s), s);
+    }
+  });
+
+  test("rejects invalid subjects", () => {
+    for (const s of [
+      "update stuff",
+      "Feat: add thing",
+      "feature: add thing",
+      "fix:missing space",
+      "fix: ",
+      "fix(): empty scope",
+      `feat: ${"x".repeat(80)}`,
+      "fix: line\nbreak",
+    ]) {
+      assert.ok(!isConventionalSubject(s), s);
+    }
+  });
+});
+
+describe("parseDescription", () => {
+  test("parses valid JSON", () => {
+    assert.deepEqual(parseDescription(VALID), {
+      subject: "ci(workflows): pin actions/checkout to v5",
+      body: "Bumps checkout from v4 to v5.",
+      prSummary: "Updates the CI workflow to use actions/checkout v5.",
+    });
+  });
+
+  test("strips a markdown code fence", () => {
+    const result = parseDescription("```json\n" + VALID + "\n```");
+    assert.equal(result.subject, "ci(workflows): pin actions/checkout to v5");
+  });
+
+  test("drops empty body", () => {
+    const result = parseDescription(
+      JSON.stringify({ subject: "fix: x", body: "  ", prSummary: "s" })
+    );
+    assert.equal(result.body, undefined);
+  });
+
+  test("trims the subject", () => {
+    const result = parseDescription(
+      JSON.stringify({ subject: " fix: x ", prSummary: "s" })
+    );
+    assert.equal(result.subject, "fix: x");
+  });
+
+  test("throws on non-conventional subject", () => {
+    assert.throws(
+      () =>
+        parseDescription(
+          JSON.stringify({ subject: "Update files", prSummary: "s" })
+        ),
+      /conventional commit/
+    );
+  });
+
+  test("throws on missing prSummary", () => {
+    assert.throws(
+      () => parseDescription(JSON.stringify({ subject: "fix: x" })),
+      /prSummary/
+    );
+  });
+
+  test("throws on non-object JSON", () => {
+    assert.throws(() => parseDescription("[]"), /JSON object/);
+  });
+
+  test("throws on invalid JSON", () => {
+    assert.throws(() => parseDescription("not json"));
+  });
+});
+
+describe("buildUserPrompt", () => {
+  test("includes paths, actions and diffs", () => {
+    const prompt = buildUserPrompt(FILES, 20000);
+    assert.match(prompt, /update \.github\/workflows\/ci\.yaml/);
+    assert.match(prompt, /\+uses: actions\/checkout@v5/);
+  });
+
+  test("notes files without a text diff", () => {
+    const prompt = buildUserPrompt(
+      [{ path: "logo.png", action: "create" }],
+      20000
+    );
+    assert.match(prompt, /logo\.png/);
+    assert.match(prompt, /no text diff/);
+  });
+
+  test("respects the diff cap and truncates fairly", () => {
+    const big = (n: number) =>
+      Array.from({ length: n }, (_, i) => `+line ${i}`);
+    const files: FileChangeDetail[] = [
+      { path: "small.txt", action: "create", diffLines: ["+tiny"] },
+      { path: "a.txt", action: "create", diffLines: big(2000) },
+      { path: "b.txt", action: "create", diffLines: big(2000) },
+    ];
+    const prompt = buildUserPrompt(files, 1000);
+    const diffChars = prompt.length;
+    assert.ok(diffChars < 1000 + 600, `prompt too long: ${diffChars}`);
+    assert.match(prompt, /\+tiny/);
+    assert.match(prompt, /a\.txt/);
+    assert.match(prompt, /b\.txt/);
+    assert.match(prompt, /\+line 0/);
+    assert.match(prompt, /truncated/);
+    const aStart = prompt.indexOf("a.txt");
+    const bStart = prompt.indexOf("b.txt");
+    const aLen = bStart - aStart;
+    const bLen = prompt.length - bStart;
+    assert.ok(Math.abs(aLen - bLen) < 100, `unfair split: ${aLen} vs ${bLen}`);
+  });
+});
+
+describe("AiChangeDescriber", () => {
+  test("returns parsed description and sends schema", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+
+    const result = await describer.describe({
+      files: FILES,
+      options: OPTIONS,
+      retries: 0,
+    });
+
+    assert.equal(result?.subject, "ci(workflows): pin actions/checkout to v5");
+    assert.equal(calls.length, 1);
+    assert.ok(calls[0].schema);
+    assert.match(calls[0].user, /actions\/checkout@v5/);
+  });
+
+  test("appends custom prompt to the system prompt", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    await describer.describe({
+      files: FILES,
+      options: { ...OPTIONS, prompt: "Mention the ticket XFG-1." },
+      retries: 0,
+    });
+    assert.match(calls[0].system, /conventional commit/i);
+    assert.match(calls[0].system, /Mention the ticket XFG-1\.$/);
+  });
+
+  test("returns null and warns on non-conventional subject", async () => {
+    const { client } = fakeClient([
+      JSON.stringify({ subject: "Update files", prSummary: "x" }),
+    ]);
+    const { log, warnings } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    const result = await describer.describe({
+      files: FILES,
+      options: OPTIONS,
+      retries: 0,
+    });
+    assert.equal(result, null);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /AI commit message generation failed/);
+  });
+
+  test("returns null when the client throws", async () => {
+    const { client } = fakeClient([new Error("Anthropic API 400: bad")]);
+    const { log, warnings } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    const result = await describer.describe({
+      files: FILES,
+      options: OPTIONS,
+      retries: 0,
+    });
+    assert.equal(result, null);
+    assert.match(warnings[0], /400/);
+  });
+
+  test("returns null when the client factory throws", async () => {
+    const { log, warnings } = fakeLog();
+    const describer = new AiChangeDescriber(() => {
+      throw new Error("ANTHROPIC_API_KEY is not set");
+    }, log);
+    const result = await describer.describe({
+      files: FILES,
+      options: OPTIONS,
+      retries: 0,
+    });
+    assert.equal(result, null);
+    assert.match(warnings[0], /ANTHROPIC_API_KEY/);
+  });
+
+  test("retries transient errors", async () => {
+    const { client, calls } = fakeClient([
+      new Error("Anthropic API 503: overloaded"),
+      VALID,
+    ]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    const result = await describer.describe({
+      files: FILES,
+      options: OPTIONS,
+      retries: 1,
+    });
+    assert.ok(result);
+    assert.equal(calls.length, 2);
+  });
+
+  test("cache hit makes no second call", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    const input = { files: FILES, options: OPTIONS, retries: 0 };
+
+    const first = await describer.describe(input);
+    const second = await describer.describe({ ...input, files: [...FILES] });
+
+    assert.deepEqual(first, second);
+    assert.equal(calls.length, 1);
+  });
+
+  test("different options miss the cache", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    await describer.describe({ files: FILES, options: OPTIONS, retries: 0 });
+    await describer.describe({
+      files: FILES,
+      options: { ...OPTIONS, model: "claude-sonnet-5-5" },
+      retries: 0,
+    });
+    assert.equal(calls.length, 2);
+  });
+
+  test("failures are not cached", async () => {
+    const { client, calls } = fakeClient([
+      new Error("Anthropic API 400"),
+      VALID,
+    ]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    const input = { files: FILES, options: OPTIONS, retries: 0 };
+    assert.equal(await describer.describe(input), null);
+    assert.ok(await describer.describe(input));
+    assert.equal(calls.length, 2);
+  });
+});

@@ -2,6 +2,11 @@ import type { RepoConfig } from "../config/index.js";
 import { type RepoInfo, getRepoDisplayName } from "../repo/index.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type { DebugInfoLog } from "../shared/logger.js";
+import {
+  resolveAiOptions,
+  type ChangeDescription,
+  type IChangeDescriber,
+} from "../ai/index.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -11,6 +16,7 @@ import type {
   ICommitPushManager,
   IPRMergeHandler,
   ProcessorOptions,
+  WorkResult,
   ProcessorResult,
   SessionContext,
   RunContext,
@@ -27,6 +33,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     private readonly branchManager: IBranchManager,
     private readonly commitPushManager: ICommitPushManager,
     private readonly prMergeHandler: IPRMergeHandler,
+    private readonly changeDescriber: IChangeDescriber,
     private readonly log: DebugInfoLog
   ) {}
 
@@ -94,13 +101,23 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
+      const description = await this.describeChanges(
+        repoConfig,
+        options,
+        runCtx,
+        workResult
+      );
+      const commitMessage = description
+        ? [description.subject, description.body].filter(Boolean).join("\n\n")
+        : workResult.commitMessage;
+
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush({
         ...runCtx,
         repoInfo,
         gitOps: session.gitOps,
         fileChanges: workResult.fileChanges,
-        commitMessage: workResult.commitMessage,
+        commitMessage,
         pushBranch,
         baseBranch: session.baseBranch,
         isDirectMode,
@@ -146,6 +163,8 @@ export class SyncWorkflow implements ISyncWorkflow {
         repoName,
         diffStats: workResult.diffStats,
         fileChanges: workResult.fileChangeDetails,
+        prTitle: description?.subject,
+        prSummary: description?.prSummary,
       });
     } finally {
       if (session) {
@@ -153,5 +172,25 @@ export class SyncWorkflow implements ISyncWorkflow {
         safeCleanup(() => s.cleanup(), "session teardown failed", this.log);
       }
     }
+  }
+
+  private async describeChanges(
+    repoConfig: RepoConfig,
+    options: ProcessorOptions,
+    runCtx: RunContext,
+    workResult: WorkResult
+  ): Promise<ChangeDescription | null> {
+    const aiOptions = resolveAiOptions(repoConfig.prOptions);
+    if (!aiOptions || options.noAi) return null;
+    if (runCtx.dryRun) {
+      this.log.info(`Would generate AI commit message (${aiOptions.provider})`);
+      return null;
+    }
+    this.log.info("Generating AI commit message...");
+    return this.changeDescriber.describe({
+      files: workResult.fileChangeDetails,
+      options: aiOptions,
+      retries: runCtx.retries,
+    });
   }
 }

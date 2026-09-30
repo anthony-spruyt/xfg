@@ -12,8 +12,15 @@ import type {
   IPRMergeHandler,
   IWorkStrategy,
   WorkResult,
+  CreateAndMergeInput,
+  ProcessorOptions,
 } from "../../../src/sync/index.js";
 import type { RepoConfig } from "../../../src/config/index.js";
+import type {
+  ChangeDescription,
+  DescribeInput,
+  IChangeDescriber,
+} from "../../../src/ai/index.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import {
   createMockLogger,
@@ -102,12 +109,21 @@ describe("SyncWorkflow", () => {
       },
     };
 
+    const changeDescriber: IChangeDescriber & { calls: DescribeInput[] } = {
+      calls: [],
+      async describe(input) {
+        this.calls.push(input);
+        return null;
+      },
+    };
+
     return {
       authOptionsBuilder,
       repositorySession,
       branchManager,
       commitPushManager,
       prMergeHandler,
+      changeDescriber,
       callOrder,
     };
   }
@@ -131,6 +147,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -166,6 +183,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -201,6 +219,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -248,6 +267,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -303,6 +323,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -353,6 +374,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -415,6 +437,7 @@ describe("SyncWorkflow", () => {
       components.branchManager,
       components.commitPushManager,
       components.prMergeHandler,
+      components.changeDescriber,
       mockLogger
     );
 
@@ -451,5 +474,146 @@ describe("SyncWorkflow", () => {
 
     assert.equal(result.skipped, true);
     assert.ok(result.message.includes("No changes detected after staging"));
+  });
+
+  describe("AI commit messages", () => {
+    const AI_DESCRIPTION = {
+      subject: "ci(workflows): pin actions/checkout to v5",
+      body: "Bumps checkout from v4 to v5.",
+      prSummary: "Updates checkout to v5.",
+    };
+
+    function aiWorkResult(): WorkResult {
+      return {
+        fileChanges: new Map([
+          ["ci.yaml", { fileName: "ci.yaml", content: "x", action: "update" }],
+        ]),
+        changedFiles: [{ fileName: "ci.yaml", action: "update" }],
+        commitMessage: "chore: sync ci.yaml",
+        fileChangeDetails: [
+          { path: "ci.yaml", action: "update", diffLines: ["+x"] },
+        ],
+      };
+    }
+
+    function setup(describeResult: ChangeDescription | null) {
+      const components = createMockComponents();
+      const commitMessages: string[] = [];
+      const prInputs: CreateAndMergeInput[] = [];
+      components.commitPushManager.commitAndPush = async (opts) => {
+        commitMessages.push(opts.commitMessage);
+        return { success: true };
+      };
+      components.prMergeHandler.createAndMerge = async (input) => {
+        prInputs.push(input);
+        return { success: true, repoName: "test/repo", message: "PR" };
+      };
+      components.changeDescriber.describe = async function (input) {
+        components.changeDescriber.calls.push(input);
+        return describeResult;
+      };
+      const { mock: mockLogger, messages } = createMockLogger();
+      const workflow = new SyncWorkflow(
+        components.authOptionsBuilder,
+        components.repositorySession,
+        components.branchManager,
+        components.commitPushManager,
+        components.prMergeHandler,
+        components.changeDescriber,
+        mockLogger
+      );
+      const strategy: IWorkStrategy = {
+        async execute() {
+          return aiWorkResult();
+        },
+      };
+      return {
+        components,
+        workflow,
+        strategy,
+        commitMessages,
+        prInputs,
+        messages,
+      };
+    }
+
+    function run(
+      ctx: ReturnType<typeof setup>,
+      prOptions: RepoConfig["prOptions"],
+      extra: Partial<ProcessorOptions> = {}
+    ) {
+      return ctx.workflow.execute(
+        { ...mockRepoConfig, prOptions },
+        mockRepoInfo,
+        {
+          branchName: "test",
+          workDir,
+          configId: "test",
+          executor: createMockExecutor().mock,
+          retries: 2,
+          ...extra,
+        },
+        ctx.strategy
+      );
+    }
+
+    test("PR mode: overrides commit message and passes PR title/summary", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { merge: "manual", ai: { provider: "anthropic" } });
+
+      assert.deepEqual(ctx.commitMessages, [
+        "ci(workflows): pin actions/checkout to v5\n\nBumps checkout from v4 to v5.",
+      ]);
+      assert.equal(ctx.prInputs[0].prTitle, AI_DESCRIPTION.subject);
+      assert.equal(ctx.prInputs[0].prSummary, AI_DESCRIPTION.prSummary);
+      const call = ctx.components.changeDescriber.calls[0];
+      assert.deepEqual(call.options, { provider: "anthropic" });
+      assert.equal(call.retries, 2);
+      assert.deepEqual(call.files, aiWorkResult().fileChangeDetails);
+    });
+
+    test("subject-only description commits just the subject", async () => {
+      const ctx = setup({ subject: "fix: x", prSummary: "s" });
+      await run(ctx, { ai: { provider: "anthropic" } });
+      assert.deepEqual(ctx.commitMessages, ["fix: x"]);
+    });
+
+    test("direct mode uses the AI message", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { merge: "direct", ai: { provider: "anthropic" } });
+      assert.match(ctx.commitMessages[0], /^ci\(workflows\): pin/);
+      assert.equal(ctx.prInputs.length, 0);
+    });
+
+    test("describer returning null keeps the default message", async () => {
+      const ctx = setup(null);
+      await run(ctx, { ai: { provider: "anthropic" } });
+      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+      assert.equal(ctx.prInputs[0].prTitle, undefined);
+      assert.equal(ctx.prInputs[0].prSummary, undefined);
+    });
+
+    test("ai unset: describer not called", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { merge: "manual" });
+      assert.equal(ctx.components.changeDescriber.calls.length, 0);
+      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+    });
+
+    test("noAi: describer not called", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { ai: { provider: "anthropic" } }, { noAi: true });
+      assert.equal(ctx.components.changeDescriber.calls.length, 0);
+      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+    });
+
+    test("dry run: describer not called, logs intent", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { ai: { provider: "anthropic" } }, { dryRun: true });
+      assert.equal(ctx.components.changeDescriber.calls.length, 0);
+      assert.ok(
+        ctx.messages.some((m) => m.includes("Would generate AI commit message"))
+      );
+    });
   });
 });

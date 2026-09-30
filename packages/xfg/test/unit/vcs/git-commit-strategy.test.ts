@@ -128,6 +128,30 @@ describe("GitCommitStrategy", () => {
       );
     });
 
+    test("passes subject and body as separate -m flags", async () => {
+      mockExecutor.responses.set("git rev-parse HEAD", "abc123def456");
+      const strategy = new GitCommitStrategy(mockExecutor.mock);
+      await strategy.commit({
+        repoInfo: githubRepoInfo,
+        branchName: "test-branch",
+        message: "ci: pin checkout\n\nBody text.",
+        fileChanges: [{ path: "file1.txt", content: "content1" }],
+        workDir: testDir,
+        retries: 0,
+      });
+      const commitCall = mockExecutor.calls.find(
+        (c) => c.executable === "git" && c.args.includes("commit")
+      );
+      assert.deepEqual(commitCall!.args, [
+        "commit",
+        "--no-verify",
+        "-m",
+        "ci: pin checkout",
+        "-m",
+        "Body text.",
+      ]);
+    });
+
     test("uses retry for push failures", async () => {
       // First push fails, second succeeds
       let pushAttempts = 0;

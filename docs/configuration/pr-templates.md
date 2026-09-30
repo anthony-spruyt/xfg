@@ -41,15 +41,16 @@ repos:
 
 PR templates support all [templating variables](templating.md), plus PR-specific variables:
 
-| Variable                | Description                         | Example Output                                             |
-| ----------------------- | ----------------------------------- | ---------------------------------------------------------- |
-| `${xfg:pr.fileChanges}` | Bulleted list of files with actions | `- Created \`config.json\`\\n- Updated \`settings.yaml\`\` |
-| `${xfg:pr.fileCount}`   | Number of changed files             | `3`                                                        |
-| `${xfg:pr.title}`       | The generated PR title              | `chore: sync config.json, settings.yaml`                   |
-| `${xfg:repo.name}`      | Repository name                     | `my-repo`                                                  |
-| `${xfg:repo.owner}`     | Repository owner                    | `my-org`                                                   |
-| `${xfg:repo.fullName}`  | Full repository path                | `my-org/my-repo`                                           |
-| `${xfg:repo.platform}`  | Platform type                       | `github`, `azure-devops`, `gitlab`                         |
+| Variable                | Description                                                       | Example Output                                             |
+| ----------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
+| `${xfg:pr.fileChanges}` | Bulleted list of files with actions                               | `- Created \`config.json\`\\n- Updated \`settings.yaml\`\` |
+| `${xfg:pr.fileCount}`   | Number of changed files                                           | `3`                                                        |
+| `${xfg:pr.title}`       | The generated PR title                                            | `chore: sync config.json, settings.yaml`                   |
+| `${xfg:pr.aiSummary}`   | [AI summary](ai-messages.md) of the changes. Empty when AI is off | `Pins actions/checkout to v5.`                             |
+| `${xfg:repo.name}`      | Repository name                                                   | `my-repo`                                                  |
+| `${xfg:repo.owner}`     | Repository owner                                                  | `my-org`                                                   |
+| `${xfg:repo.fullName}`  | Full repository path                                              | `my-org/my-repo`                                           |
+| `${xfg:repo.platform}`  | Platform type                                                     | `github`, `azure-devops`, `gitlab`                         |
 
 ## Default Template
 
@@ -60,6 +61,8 @@ If `prTemplate` is not specified, xfg uses a built-in template:
 
 Automated sync of configuration files to ${xfg:repo.fullName}.
 
+${xfg:pr.aiSummary}
+
 ## Changes
 
 ${xfg:pr.fileChanges}
@@ -68,6 +71,8 @@ ${xfg:pr.fileChanges}
 
 Configuration synced using [xfg](https://github.com/anthony-spruyt/xfg).
 ```
+
+When [AI commit messages](ai-messages.md) are on and a custom template does not use `${xfg:pr.aiSummary}`, the summary is appended at the end under `## AI Summary`.
 
 ## Example Template
 

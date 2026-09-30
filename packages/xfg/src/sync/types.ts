@@ -187,6 +187,8 @@ export interface ProcessorOptions {
   token?: string;
   /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
+  /** Disables prOptions.ai for this run */
+  noAi?: boolean;
 }
 
 export interface FileChangeDetail {
@@ -248,6 +250,10 @@ export interface CreateAndMergeInput {
   repoName: string;
   diffStats?: DiffStats;
   fileChanges?: FileChangeDetail[];
+  /** AI-generated PR title; falls back to the default title when unset */
+  prTitle?: string;
+  /** AI-generated summary for the PR body */
+  prSummary?: string;
 }
 
 export interface IPRMergeHandler {
