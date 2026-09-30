@@ -48,6 +48,7 @@ Thumbs.db
 
 # Worktrees
 .worktrees/
+.claude/worktrees/
 
 # Desloppify (ephemeral artifacts; state + query are tracked)
 .desloppify/external_review_sessions/
