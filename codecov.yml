@@ -24,7 +24,7 @@ ignore:
   - "packages/xfg/src/cli/types.ts"
   - "packages/xfg/src/config/types.ts"
   - "packages/xfg/src/lifecycle/types.ts"
-  - "packages/xfg/src/output/types.ts"
+  - "packages/xfg/src/repo/types.ts"
   - "packages/xfg/src/sync/types.ts"
   - "packages/xfg/src/vcs/types.ts"
   - "packages/xfg/src/settings/rulesets/types.ts"
@@ -32,7 +32,8 @@ ignore:
   - "packages/xfg/src/settings/code-scanning/types.ts"
   - "packages/xfg/src/settings/labels/types.ts"
   - "packages/xfg/src/settings/variables/types.ts"
-  - "packages/xfg/src/secrets/types.ts"
+  - "packages/xfg/src/settings/secrets/types.ts"
+  - "packages/xfg/src/ai/types.ts"
 
   # Re-export index files (no logic, just exports)
   - "packages/xfg/src/cli/index.ts"
@@ -40,14 +41,16 @@ ignore:
   - "packages/xfg/src/lifecycle/index.ts"
   - "packages/xfg/src/sync/index.ts"
   - "packages/xfg/src/vcs/index.ts"
-  - "packages/xfg/src/shared/index.ts"
   - "packages/xfg/src/output/index.ts"
   - "packages/xfg/src/settings/index.ts"
   - "packages/xfg/src/settings/rulesets/index.ts"
   - "packages/xfg/src/settings/repo-settings/index.ts"
   - "packages/xfg/src/settings/code-scanning/index.ts"
   - "packages/xfg/src/settings/variables/index.ts"
-  - "packages/xfg/src/secrets/index.ts"
+  - "packages/xfg/src/settings/secrets/index.ts"
+  - "packages/xfg/src/settings/labels/index.ts"
+  - "packages/xfg/src/repo/index.ts"
+  - "packages/xfg/src/ai/index.ts"
 
   # Test utilities
   - "packages/xfg/test/mocks/**"

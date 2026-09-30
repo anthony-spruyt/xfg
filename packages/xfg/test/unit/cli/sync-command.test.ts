@@ -1277,6 +1277,35 @@ repos:
       assert.equal(options.branchName, "chore/custom-branch");
     });
 
+    test("passes noAi option to processor", async () => {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+prOptions:
+  ai: true
+repos:
+  - git: https://github.com/test/repo
+`
+      );
+
+      const mockProcessor = createMockProcessor();
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir, noAi: true },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const processMock = mockProcessor.process as MockFn;
+      const options = processMock.mock.calls[0].arguments[2] as {
+        noAi?: boolean;
+      };
+      assert.equal(options.noAi, true);
+    });
+
     test("per-repo prOptions.branch overrides global", async () => {
       writeFileSync(
         testConfigPath,

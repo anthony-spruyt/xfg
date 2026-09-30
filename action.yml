@@ -59,6 +59,10 @@ inputs:
     description: "Skip deletion of orphaned resources even if deleteOrphaned is configured"
     required: false
     default: "false"
+  no-ai:
+    description: "Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured (sync only)"
+    required: false
+    default: "false"
   xfg-package:
     description: "Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release."
     required: false
@@ -151,6 +155,7 @@ runs:
         INPUT_MERGE: ${{ inputs.merge }}
         INPUT_MERGE_STRATEGY: ${{ inputs.merge-strategy }}
         INPUT_DELETE_BRANCH: ${{ inputs.delete-branch }}
+        INPUT_NO_AI: ${{ inputs.no-ai }}
       run: |
         case "${INPUT_COMMAND}" in
           sync) CMD=(xfg sync) ;;
@@ -185,6 +190,10 @@ runs:
 
           if [ "${INPUT_DELETE_BRANCH}" = "true" ]; then
             CMD+=(--delete-branch)
+          fi
+
+          if [ "${INPUT_NO_AI}" = "true" ]; then
+            CMD+=(--no-ai)
           fi
         fi
 

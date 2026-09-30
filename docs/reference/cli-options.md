@@ -21,6 +21,7 @@ xfg sync --config <path> [options]
 | `--merge`          | `-m`  | PR merge mode: manual, auto (default, merge when checks pass), force (bypass requirements), direct (push to default branch, no PR) | -            |
 | `--merge-strategy` |       | Merge strategy: merge, squash (default), rebase                                                                                    | -            |
 | `--delete-branch`  |       | Delete source branch after merge                                                                                                   | `false`      |
+| `--no-ai`          |       | Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured                                        | `false`      |
 | `--dry-run`        | `-d`  | Show what would be done without making changes                                                                                     | `false`      |
 | `--work-dir`       | `-w`  | Temporary directory for cloning                                                                                                    | `./tmp`      |
 | `--retries`        | `-r`  | Number of retries for network operations (0 to disable)                                                                            | `3`          |

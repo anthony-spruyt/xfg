@@ -77,6 +77,7 @@ nav:
       - Multi-File Config: configuration/multi-file.md
       - PR Options: configuration/pr-options.md
       - PR Templates: configuration/pr-templates.md
+      - AI Commit Messages: configuration/ai-messages.md
       - Repo Lifecycle: configuration/lifecycle.md
       - Repository Settings: configuration/repo-settings.md
       - GitHub Rulesets: configuration/rulesets.md

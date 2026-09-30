@@ -4,6 +4,8 @@
 
 Automated sync of configuration files to ${xfg:repo.fullName}.
 
+${xfg:pr.aiSummary}
+
 ## Changes
 
 ${xfg:pr.fileChanges}

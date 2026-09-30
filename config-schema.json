@@ -282,6 +282,59 @@
           "type": "string",
           "minLength": 1,
           "description": "Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI --branch flag overrides all."
+        },
+        "ai": {
+          "description": "AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo). Falls back to the default message on any AI error. Disabled by --no-ai.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/aiOptions"
+            }
+          ]
+        }
+      }
+    },
+    "aiOptions": {
+      "type": "object",
+      "description": "AI provider settings for generated commit messages and PR descriptions",
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "type": "string",
+          "enum": [
+            "anthropic",
+            "openai"
+          ],
+          "default": "anthropic",
+          "description": "'anthropic' uses the Claude Messages API. 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Model id. Default for anthropic: claude-haiku-4-5. Required for openai."
+        },
+        "baseUrl": {
+          "type": "string",
+          "minLength": 1,
+          "description": "API base URL, e.g. http://localhost:11434/v1 for Ollama. With openai, a baseUrl makes the API key optional."
+        },
+        "apiKeyEnv": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name of the env var holding the API key. Default: ANTHROPIC_API_KEY or OPENAI_API_KEY"
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Extra instructions appended to the built-in system prompt"
+        },
+        "maxDiffChars": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 20000,
+          "description": "Maximum diff characters sent to the provider, shared fairly across files. Default: 20000"
         }
       }
     },

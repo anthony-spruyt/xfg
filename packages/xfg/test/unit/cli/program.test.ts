@@ -3,7 +3,47 @@ import { strict as assert } from "node:assert";
 import {
   parseMergeMode,
   parseMergeStrategy,
+  toSecretsSyncOptions,
+  toSyncOptions,
 } from "../../../src/cli/program.js";
+
+describe("toSecretsSyncOptions", () => {
+  test("--no-delete sets noDelete without leaking delete", () => {
+    const options = toSecretsSyncOptions({
+      config: "c.yaml",
+      delete: false,
+    }) as unknown as Record<string, unknown>;
+    assert.equal(options.noDelete, true);
+    assert.equal(options.delete, undefined);
+  });
+});
+
+describe("toSyncOptions", () => {
+  test("--no-ai sets noAi", () => {
+    const options = toSyncOptions({ config: "c.yaml", ai: false });
+    assert.equal(options.noAi, true);
+  });
+
+  test("ai defaults to enabled", () => {
+    const options = toSyncOptions({ config: "c.yaml", ai: true });
+    assert.equal(options.noAi, false);
+  });
+
+  test("--no-delete sets noDelete", () => {
+    const options = toSyncOptions({ config: "c.yaml", delete: false });
+    assert.equal(options.noDelete, true);
+  });
+
+  test("does not leak raw commander negation keys", () => {
+    const options = toSyncOptions({
+      config: "c.yaml",
+      ai: false,
+      delete: false,
+    }) as unknown as Record<string, unknown>;
+    assert.equal(options.ai, undefined);
+    assert.equal(options.delete, undefined);
+  });
+});
 
 describe("parseMergeMode", () => {
   test("accepts 'manual'", () => {

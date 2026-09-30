@@ -1,7 +1,10 @@
-// Re-export all types
 export type {
   // PR Merge Options
   PRMergeOptions,
+  RepoPROptions,
+  AiConfig,
+  AiProvider,
+  ResolvedAiConfig,
   MergeMode,
   MergeStrategy,
   // Rulesets
@@ -47,10 +50,8 @@ export type {
   ContentValue,
 } from "./types.js";
 
-// Re-export values (non-type exports)
 export { RULESET_COMPARABLE_FIELDS } from "./types.js";
 
-// Re-export loading functions
 export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
 // Config formatting
