@@ -76,6 +76,17 @@ describe("formatPRBody pr.aiSummary", () => {
     assert.ok(body.trimEnd().endsWith(SUMMARY));
   });
 
+  test("an escaped placeholder does not count as using the var", () => {
+    const body = formatPRBody(
+      files,
+      repoInfo,
+      "Docs: $${xfg:pr.aiSummary}",
+      SUMMARY
+    );
+    assert.ok(body.startsWith("Docs: ${xfg:pr.aiSummary}"));
+    assert.ok(body.trimEnd().endsWith(SUMMARY));
+  });
+
   test("custom template without the var and no summary is unchanged", () => {
     assert.equal(formatPRBody(files, repoInfo, "Custom body"), "Custom body");
   });
