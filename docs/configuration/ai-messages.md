@@ -132,7 +132,7 @@ In PR mode the AI summary fills the [`${xfg:pr.aiSummary}`](pr-templates.md#avai
 
 If your custom `prTemplate` does not use `${xfg:pr.aiSummary}`, xfg appends it at the end under an `## AI Summary` heading.
 
-Existing PRs are not rewritten. The AI title and summary only apply when xfg opens a new PR.
+Each sync closes the previous xfg PR and opens a fresh one, so the title and summary always describe the latest change.
 
 ## Privacy
 
