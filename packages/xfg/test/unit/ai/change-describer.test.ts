@@ -234,7 +234,7 @@ describe("buildUserPrompt", () => {
     assert.match(diff, new RegExp(`truncated ${500 - kept} more lines`));
   });
 
-  test("a line cut partway counts as dropped", () => {
+  test("a line cut partway is reported as cut mid-line", () => {
     const prompt = buildUserPrompt(
       [
         {
@@ -245,7 +245,48 @@ describe("buildUserPrompt", () => {
       ],
       500
     );
-    assert.match(prompt, /truncated 1 more lines/);
+    assert.match(prompt, /\n\.\.\. \(truncated mid-line\)$/);
+  });
+
+  test("a line cut partway also counts the lines after it", () => {
+    const prompt = buildUserPrompt(
+      [
+        {
+          path: "min.js",
+          action: "create",
+          diffLines: ["+" + "x".repeat(5000), "+a", "+b"],
+        },
+      ],
+      500
+    );
+    assert.match(prompt, /truncated mid-line and 2 more lines/);
+  });
+
+  test("omits diffs whose share cannot fit the truncation note", () => {
+    const files: FileChangeDetail[] = Array.from({ length: 20 }, (_, i) => ({
+      path: `f${i}.txt`,
+      action: "update" as const,
+      diffLines: ["+" + "x".repeat(5000)],
+    }));
+    const prompt = buildUserPrompt(files, 100);
+    assert.doesNotMatch(prompt, /truncated/);
+    assert.equal(prompt.match(/\(diff omitted\)/g)?.length, 20);
+  });
+
+  test("keeps diff text plus notes within the cap", () => {
+    const lines = (n: number) =>
+      Array.from({ length: n }, (_, i) => `+line ${i}`);
+    const files: FileChangeDetail[] = Array.from({ length: 7 }, (_, i) => ({
+      path: `f${i}.txt`,
+      action: "update" as const,
+      diffLines: lines(300 + i * 50),
+    }));
+    const prompt = buildUserPrompt(files, 900);
+    const diffText = prompt
+      .split(/\n*### update f\d\.txt\n/)
+      .slice(1)
+      .join("");
+    assert.ok(diffText.length <= 900, `diff text too long: ${diffText.length}`);
   });
 
   test("respects the diff cap and truncates fairly", () => {

@@ -102,19 +102,27 @@ export function parseDescription(raw: string): ChangeDescription {
   return { subject, ...(body ? { body } : {}), prSummary };
 }
 
-function truncationNote(droppedLines: number): string {
-  return `\n... (truncated ${droppedLines} more lines)`;
+function truncationNote(droppedLines: number, midLine: boolean): string {
+  const lines = `${droppedLines} more lines`;
+  if (!midLine) return `\n... (truncated ${lines})`;
+  return droppedLines > 0
+    ? `\n... (truncated mid-line and ${lines})`
+    : "\n... (truncated mid-line)";
 }
 
 function truncateDiff(text: string, limit: number): string {
   if (text.length <= limit) return text;
   const totalLines = text.split("\n").length;
   // Reserve room for the longest note this diff could need.
-  const room = Math.max(0, limit - truncationNote(totalLines).length);
+  const room = limit - truncationNote(totalLines, true).length;
+  if (room <= 0) return "(diff omitted)";
   const cut = text.lastIndexOf("\n", room);
-  const keptLines = cut > 0 ? text.slice(0, cut).split("\n").length : 0;
-  const kept = text.slice(0, cut > 0 ? cut : room);
-  return `${kept}${truncationNote(totalLines - keptLines)}`;
+  if (cut === -1) {
+    return `${text.slice(0, room)}${truncationNote(totalLines - 1, true)}`;
+  }
+  const kept = text.slice(0, cut);
+  const keptLines = kept.split("\n").length;
+  return `${kept}${truncationNote(totalLines - keptLines, false)}`;
 }
 
 // Water-filling split: small diffs keep everything, large ones share what is left evenly.
