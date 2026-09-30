@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.3.0](https://github.com/anthony-spruyt/xfg/compare/v7.2.1...v7.3.0) (2026-09-30)
+
+
+### Features
+
+* AI-generated conventional commit messages and PR descriptions ([#1055](https://github.com/anthony-spruyt/xfg/issues/1055)) ([89ec502](https://github.com/anthony-spruyt/xfg/commit/89ec5021def0c9cbc8e279567734c894b4f8b109))
+
+
+### Bug Fixes
+
+* **output:** stop code fences in diffs from breaking the step summary ([#1043](https://github.com/anthony-spruyt/xfg/issues/1043)) ([78f27e4](https://github.com/anthony-spruyt/xfg/commit/78f27e4e673ac30c0aca034e8c221f5f1e8ef191))
+
 ## [7.2.1](https://github.com/anthony-spruyt/xfg/compare/v7.2.0...v7.2.1) (2026-09-28)
 
 
