@@ -8,8 +8,6 @@ Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab
 
 Define your organization's standards once. xfg creates PRs to sync config files, applies repository settings and rulesets via API, and can even create, fork, or migrate repositories — all from one config file.
 
-**[Full Documentation](https://anthony-spruyt.github.io/xfg/)**
-
 ## Quick Start
 
 ### GitHub Action
