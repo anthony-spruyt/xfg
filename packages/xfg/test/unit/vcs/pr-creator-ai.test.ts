@@ -80,6 +80,19 @@ describe("formatPRBody pr.aiSummary", () => {
     assert.equal(formatPRBody(files, repoInfo, "Custom body"), "Custom body");
   });
 
+  test("dropping the placeholder keeps adjacent lines apart", () => {
+    const cases: Array<[string, string]> = [
+      ["## A\n${xfg:pr.aiSummary}\n## B", "## A\n## B"],
+      ["A\n\n${xfg:pr.aiSummary}\n\nB", "A\n\nB"],
+      ["A\n\n${xfg:pr.aiSummary}\nB", "A\n\nB"],
+      ["A\n${xfg:pr.aiSummary}\n\nB", "A\n\nB"],
+      ["${xfg:pr.aiSummary}\n\nB", "B"],
+    ];
+    for (const [template, expected] of cases) {
+      assert.equal(formatPRBody(files, repoInfo, template), expected);
+    }
+  });
+
   test("pr.aiSummary is empty when AI is off", () => {
     assert.equal(formatPRBody(files, repoInfo, "[${xfg:pr.aiSummary}]"), "[]");
   });
