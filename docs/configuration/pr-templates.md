@@ -45,7 +45,7 @@ PR templates support all [templating variables](templating.md), plus PR-specific
 | ----------------------- | ----------------------------------------------------------------- | ---------------------------------------------------------- |
 | `${xfg:pr.fileChanges}` | Bulleted list of files with actions                               | `- Created \`config.json\`\\n- Updated \`settings.yaml\`\` |
 | `${xfg:pr.fileCount}`   | Number of changed files                                           | `3`                                                        |
-| `${xfg:pr.title}`       | The generated PR title                                            | `chore: sync config.json, settings.yaml`                   |
+| `${xfg:pr.title}`       | The PR title. The [AI subject](ai-messages.md) when AI is on      | `chore: sync config.json, settings.yaml`                   |
 | `${xfg:pr.aiSummary}`   | [AI summary](ai-messages.md) of the changes. Empty when AI is off | `Pins actions/checkout to v5.`                             |
 | `${xfg:repo.name}`      | Repository name                                                   | `my-repo`                                                  |
 | `${xfg:repo.owner}`     | Repository owner                                                  | `my-org`                                                   |
