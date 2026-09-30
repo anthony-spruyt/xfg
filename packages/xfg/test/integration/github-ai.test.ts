@@ -18,7 +18,8 @@ import {
 import { isConventionalSubject } from "../../src/ai/index.js";
 
 const OWNER = "spruyt-labs";
-const WORKFLOW_FILE = ".github/workflows/ci.yaml";
+// Not a workflow file - the CI PAT lacks the `workflow` scope.
+const TARGET_FILE = ".prettierrc.json";
 const PR_BRANCH = "chore/sync-ai-test";
 
 const KEY_ENV = "OPENROUTER_API_KEY";
@@ -35,23 +36,14 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function workflowConfig(merge: string, nodeVersion: string): string {
+function prettierConfig(merge: string, printWidth: number): string {
   return `id: integration-test-github-ai
 files:
-  ${WORKFLOW_FILE}:
+  ${TARGET_FILE}:
     content:
-      name: CI
-      on:
-        push:
-          branches: [main]
-      jobs:
-        test:
-          runs-on: ubuntu-latest
-          steps:
-            - uses: actions/checkout@v5
-            - uses: actions/setup-node@v4
-              with:
-                node-version: "${nodeVersion}"
+      printWidth: ${printWidth}
+      singleQuote: true
+      trailingComma: all
 prOptions:
   merge: ${merge}
   branch: ${PR_BRANCH}
@@ -95,7 +87,7 @@ describe("GitHub AI commit messages integration test", { skip }, () => {
   });
 
   test("direct mode commits with an AI conventional commit message", async () => {
-    const configPath = writeConfig(tmpDir, workflowConfig("direct", "22"));
+    const configPath = writeConfig(tmpDir, prettierConfig("direct", 100));
 
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
@@ -106,10 +98,10 @@ describe("GitHub AI commit messages integration test", { skip }, () => {
       "AI generation should not fall back"
     );
 
-    await waitForFileVisible(testRepo, WORKFLOW_FILE);
+    await waitForFileVisible(testRepo, TARGET_FILE);
 
     const message = await execWithRetry(
-      `gh api repos/${testRepo}/commits?path=${WORKFLOW_FILE} --jq '.[0].commit.message'`
+      `gh api repos/${testRepo}/commits?path=${TARGET_FILE} --jq '.[0].commit.message'`
     );
     const subject = message.split("\n")[0];
     console.log(`AI commit message:\n${message}`);
@@ -117,7 +109,7 @@ describe("GitHub AI commit messages integration test", { skip }, () => {
   });
 
   test("PR mode uses the AI subject as title and adds the AI summary", async () => {
-    const configPath = writeConfig(tmpDir, workflowConfig("manual", "24"));
+    const configPath = writeConfig(tmpDir, prettierConfig("manual", 120));
 
     const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
       cwd: projectRoot,
