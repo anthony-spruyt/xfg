@@ -1,7 +1,7 @@
-import type { AiConfig, AiProvider } from "../config/index.js";
+import type { ResolvedAiConfig } from "../config/index.js";
 import type { FileChangeDetail } from "../sync/types.js";
 
-export type AiOptions = AiConfig & { provider: AiProvider };
+export type AiOptions = ResolvedAiConfig;
 
 export type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 

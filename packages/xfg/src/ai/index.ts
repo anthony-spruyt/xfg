@@ -17,7 +17,6 @@ export {
   DEFAULT_OPENAI_BASE_URL,
 } from "./openai-compatible-client.js";
 export { createAiClient } from "./client-factory.js";
-export { resolveAiOptions } from "./options.js";
 export {
   AiChangeDescriber,
   DEFAULT_MAX_DIFF_CHARS,

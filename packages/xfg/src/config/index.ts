@@ -1,8 +1,10 @@
 export type {
   // PR Merge Options
   PRMergeOptions,
+  RepoPROptions,
   AiConfig,
   AiProvider,
+  ResolvedAiConfig,
   MergeMode,
   MergeStrategy,
   // Rulesets

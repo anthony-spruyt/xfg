@@ -2,11 +2,7 @@ import type { RepoConfig } from "../config/index.js";
 import { type RepoInfo, getRepoDisplayName } from "../repo/index.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type { DebugInfoLog } from "../shared/logger.js";
-import {
-  resolveAiOptions,
-  type ChangeDescription,
-  type IChangeDescriber,
-} from "../ai/index.js";
+import type { ChangeDescription, IChangeDescriber } from "../ai/index.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -186,7 +182,7 @@ export class SyncWorkflow implements ISyncWorkflow {
     runCtx: RunContext,
     workResult: WorkResult
   ): Promise<ChangeDescription | null> {
-    const aiOptions = resolveAiOptions(repoConfig.prOptions);
+    const aiOptions = repoConfig.prOptions?.ai;
     if (!aiOptions || options.noAi) return null;
     if (runCtx.dryRun) {
       this.log.info(`Would generate AI commit message (${aiOptions.provider})`);

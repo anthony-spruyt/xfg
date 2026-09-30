@@ -16,6 +16,7 @@ import type {
   FileContent,
   ContentValue,
   PRMergeOptions,
+  RepoPROptions,
   RepoSettings,
   RawRootSettings,
   RawRepoConfig,
@@ -28,7 +29,6 @@ import type {
   GitHubRepoSettings,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
-import { resolveAiOptions } from "../ai/options.js";
 
 /**
  * Clone content, stripping merge directives from object content.
@@ -134,11 +134,12 @@ function mergePROptions(
 
 function normalizeAiOption(
   prOptions: PRMergeOptions | undefined
-): PRMergeOptions | undefined {
-  if (prOptions?.ai === undefined) return prOptions;
-  const { ai: _ai, ...rest } = prOptions;
-  const ai = resolveAiOptions(prOptions);
-  if (ai) return { ...rest, ai };
+): RepoPROptions | undefined {
+  if (prOptions === undefined) return undefined;
+  const { ai, ...rest } = prOptions;
+  if (ai === true) return { ...rest, ai: { provider: "anthropic" } };
+  if (ai)
+    return { ...rest, ai: { ...ai, provider: ai.provider ?? "anthropic" } };
   return Object.keys(rest).length > 0 ? rest : undefined;
 }
 

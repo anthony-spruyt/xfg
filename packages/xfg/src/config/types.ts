@@ -14,6 +14,8 @@ export interface AiConfig {
   maxDiffChars?: number;
 }
 
+export type ResolvedAiConfig = AiConfig & { provider: AiProvider };
+
 export interface PRMergeOptions {
   merge?: MergeMode;
   mergeStrategy?: MergeStrategy;
@@ -21,9 +23,12 @@ export interface PRMergeOptions {
   bypassReason?: string;
   labels?: string[];
   branch?: string;
-  /** After normalization this is always an AiConfig with provider set, or absent. */
   ai?: boolean | AiConfig;
 }
+
+export type RepoPROptions = Omit<PRMergeOptions, "ai"> & {
+  ai?: ResolvedAiConfig;
+};
 
 export type RulesetTarget = "branch" | "tag";
 
@@ -550,7 +555,7 @@ export interface FileContent {
 export interface RepoConfig {
   git: string;
   files: FileContent[];
-  prOptions?: PRMergeOptions;
+  prOptions?: RepoPROptions;
   settings?: RepoSettings;
   /** Fork upstream repo if target doesn't exist */
   upstream?: string;
