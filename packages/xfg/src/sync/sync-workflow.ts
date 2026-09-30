@@ -98,16 +98,14 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      let pending: Promise<ChangeDescription | null> | undefined;
-      const describe = () =>
-        (pending ??= this.describeChanges(
+      let description: ChangeDescription | null | undefined;
+      const commitMessage = async (): Promise<CommitMessage> => {
+        description = await this.describeChanges(
           repoConfig,
           options,
           runCtx,
           workResult
-        ));
-      const commitMessage = async (): Promise<CommitMessage> => {
-        const description = await describe();
+        );
         if (!description) return { message: workResult.commitMessage };
         const { subject, body } = description;
         return body ? { message: subject, body } : { message: subject };
@@ -152,7 +150,6 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      const description = await describe();
       return await this.prMergeHandler.createAndMerge({
         repoInfo,
         prOptions: repoConfig.prOptions,
