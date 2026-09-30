@@ -179,6 +179,42 @@ describe("PRMergeHandler", () => {
       );
     });
 
+    test("passes AI title to createPR", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor, calls } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+
+      await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
+        prOptions: { merge: "manual" },
+        options: {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 1,
+          executor: mockExecutor,
+        },
+        changedFiles: [{ fileName: "config.json", action: "create" }],
+        repoName: "test/repo",
+        prTitle: "build(config): add config",
+        prSummary: "Adds config.",
+      });
+
+      const createCall = calls.find(
+        (c) => c.executable === "gh" && c.args.includes("create")
+      );
+      assert.ok(createCall);
+      const titleIdx = createCall.args.indexOf("--title");
+      assert.equal(createCall.args[titleIdx + 1], "build(config): add config");
+    });
+
     test("warns when merge operation fails", async () => {
       const { mock: mockLogger, warnings } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({

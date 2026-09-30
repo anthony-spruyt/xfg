@@ -16,6 +16,12 @@ import { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
 import { PRMergeHandler } from "./pr-merge-handler.js";
 import { FileSyncStrategy } from "./file-sync-strategy.js";
 import { SyncWorkflow } from "./sync-workflow.js";
+import {
+  AiChangeDescriber,
+  createAiClient,
+  type FetchFn,
+  type IChangeDescriber,
+} from "../ai/index.js";
 import type {
   IFileWriter,
   IManifestManager,
@@ -52,8 +58,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       fileSyncOrchestrator?: IFileSyncOrchestrator;
       prMergeHandler?: IPRMergeHandler;
       syncWorkflow?: ISyncWorkflow;
+      changeDescriber?: IChangeDescriber;
       tokenManager?: GitHubAppTokenManager | null;
       envToken?: string;
+      /** Environment the AI client reads API keys from */
+      aiEnv?: Record<string, string | undefined>;
+      fetch?: FetchFn;
     }
   ) {
     const factory: GitOpsFactory =
@@ -86,6 +96,18 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const prMergeHandler =
       components?.prMergeHandler ?? new PRMergeHandler(log);
 
+    const changeDescriber =
+      components?.changeDescriber ??
+      new AiChangeDescriber(
+        (opts) =>
+          createAiClient(
+            opts,
+            components?.aiEnv ?? {},
+            components?.fetch ?? globalThis.fetch
+          ),
+        log
+      );
+
     this.fileSyncOrchestrator =
       components?.fileSyncOrchestrator ??
       new FileSyncOrchestrator(fileWriter, manifestManager, log);
@@ -98,6 +120,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
         branchManager,
         commitPushManager,
         prMergeHandler,
+        changeDescriber,
         log
       );
   }

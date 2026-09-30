@@ -12,6 +12,7 @@ Configure how PRs are handled after creation.
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)                                        | -        |
 | `labels`        | Labels to apply to created PRs (GitHub only, more platforms coming)                                            | -        |
 | `branch`        | Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI `--branch` flag overrides all. | -        |
+| `ai`            | [AI-generated commit messages and PR descriptions](ai-messages.md). `true` or an options object                | -        |
 
 ## Merge Modes
 

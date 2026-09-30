@@ -133,6 +133,7 @@ export async function runSync(
     : new RepositoryProcessor(undefined, logger, {
         tokenManager,
         envToken: process.env.GH_TOKEN,
+        aiEnv: process.env,
       });
 
   const ctx: RepoIterationContext = {

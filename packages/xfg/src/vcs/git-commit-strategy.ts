@@ -24,21 +24,20 @@ export class GitCommitStrategy implements ICommitStrategy {
     const {
       branchName,
       message,
+      body,
       workDir,
       retries = 3,
       force = true,
       gitOps,
     } = options;
 
-    // Commit with the message (--no-verify to skip pre-commit hooks)
-    // Staging is handled by CommitPushManager before calling commit()
+    // Staging is done by CommitPushManager before commit() is called.
     await this.executor.exec(
       "git",
-      ["commit", "--no-verify", "-m", message],
+      ["commit", "--no-verify", "-m", message, ...(body ? ["-m", body] : [])],
       workDir
     );
 
-    // Push with authentication via gitOps if available
     if (gitOps) {
       await gitOps.push(branchName, { force });
     } else {

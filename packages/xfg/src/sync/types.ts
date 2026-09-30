@@ -1,7 +1,7 @@
 import type {
   FileContent,
   RepoConfig,
-  PRMergeOptions,
+  RepoPROptions,
 } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type { ActiveAction } from "../settings/index.js";
@@ -154,11 +154,17 @@ export interface IRepositorySession {
   setup(repoInfo: RepoInfo, options: SessionOptions): Promise<SessionContext>;
 }
 
+export interface CommitMessage {
+  message: string;
+  body?: string;
+}
+
 export interface CommitPushOptions extends RunContext {
   repoInfo: RepoInfo;
   gitOps: IGitOps;
   fileChanges: Map<string, FileWriteResult>;
-  commitMessage: string;
+  /** Called only once there is something to commit */
+  commitMessage: () => Promise<CommitMessage>;
   pushBranch: string;
   baseBranch: string;
   isDirectMode: boolean;
@@ -187,6 +193,8 @@ export interface ProcessorOptions {
   token?: string;
   /** True when using GraphQL commit strategy (GitHub App) */
   hasAppCredentials?: boolean;
+  /** Disables prOptions.ai for this run */
+  noAi?: boolean;
 }
 
 export interface FileChangeDetail {
@@ -242,12 +250,16 @@ export interface PRHandlerOptions extends RunContext {
 
 export interface CreateAndMergeInput {
   repoInfo: RepoInfo;
-  prOptions?: PRMergeOptions;
+  prOptions?: RepoPROptions;
   options: PRHandlerOptions;
   changedFiles: FileAction[];
   repoName: string;
   diffStats?: DiffStats;
   fileChanges?: FileChangeDetail[];
+  /** AI-generated PR title; falls back to the default title when unset */
+  prTitle?: string;
+  /** AI-generated summary for the PR body */
+  prSummary?: string;
 }
 
 export interface IPRMergeHandler {

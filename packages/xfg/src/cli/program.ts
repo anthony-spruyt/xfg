@@ -75,6 +75,28 @@ export function parseMergeStrategy(value: string): MergeStrategy {
   return value as MergeStrategy;
 }
 
+type CommanderOptions = Record<string, unknown> & { config: string };
+
+// Commander stores --no-x as x: false; map to the noX fields the runners expect.
+function withoutNegations(opts: CommanderOptions): CommanderOptions & {
+  noDelete: boolean;
+  noAi: boolean;
+} {
+  const { delete: del, ai, ...rest } = opts;
+  return { ...rest, noDelete: del === false, noAi: ai === false };
+}
+
+export function toSyncOptions(opts: CommanderOptions): SyncOptions {
+  return withoutNegations(opts) as SyncOptions;
+}
+
+export function toSecretsSyncOptions(
+  opts: CommanderOptions
+): SecretsSyncOptions {
+  const { noAi: _noAi, ...options } = withoutNegations(opts);
+  return options as SecretsSyncOptions;
+}
+
 // =============================================================================
 // CLI Program
 // =============================================================================
@@ -85,7 +107,6 @@ program
     "Manage files, settings, and repositories across GitHub, Azure DevOps, and GitLab"
   );
 
-// Sync command (file synchronization)
 const syncCommand = new Command("sync")
   .description("Sync configuration files across repositories")
   .option(
@@ -103,13 +124,13 @@ const syncCommand = new Command("sync")
     parseMergeStrategy
   )
   .option("--delete-branch", "Delete source branch after merge")
+  .option(
+    "--no-ai",
+    "Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured"
+  )
   .action(async (opts) => {
     try {
-      const options = {
-        ...opts,
-        noDelete: opts.delete === false,
-      } as SyncOptions;
-      await runSync(options);
+      await runSync(toSyncOptions(opts));
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);
@@ -142,11 +163,7 @@ const secretsSyncCommand = new Command("sync")
   )
   .action(async (opts) => {
     try {
-      const options = {
-        ...opts,
-        noDelete: opts.delete === false,
-      } as SecretsSyncOptions;
-      await runSecretsSync(options);
+      await runSecretsSync(toSecretsSyncOptions(opts));
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);

@@ -148,12 +148,39 @@ PR merge behavior options
 | `bypassReason`  | `string`                                  | No       | -        | Reason for bypassing policies (Azure DevOps only, required when merge=force)                                                                                                                                        |
 | `labels`        | `string[]`                                | No       | -        | Labels to apply to created PRs/MRs.                                                                                                                                                                                 |
 | `branch`        | `string`                                  | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
+| `ai`            | `boolean` \| [`aiOptions`](#aioptions)    | No       | -        | AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).                                                                                  |
 
 - `merge` — Default: auto
 - `mergeStrategy` — Default: squash
 - `deleteBranch` — Default: true
 - `labels` — Labels must exist on the target repository.
 - `branch` — Per-repo overrides group, group overrides global. CLI --branch flag overrides all.
+- `ai` — Falls back to the default message on any AI error. Disabled by --no-ai.
+
+<!-- xfg:generated:end -->
+
+### aiOptions
+
+See [AI Commit Messages](../configuration/ai-messages.md) for setup and privacy notes.
+
+<!-- xfg:generated schema:aiOptions -->
+
+AI provider settings for generated commit messages and PR descriptions
+
+| Field          | Type                    | Required | Default     | Description                                                               |
+| -------------- | ----------------------- | -------- | ----------- | ------------------------------------------------------------------------- |
+| `provider`     | `anthropic` \| `openai` | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                 |
+| `model`        | `string`                | No       | -           | Model id.                                                                 |
+| `baseUrl`      | `string`                | No       | -           | API base URL, e.g.                                                        |
+| `apiKeyEnv`    | `string`                | No       | -           | Name of the env var holding the API key.                                  |
+| `prompt`       | `string`                | No       | -           | Extra instructions appended to the built-in system prompt                 |
+| `maxDiffChars` | `integer`               | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files. |
+
+- `provider` — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic
+- `model` — Default for anthropic: claude-haiku-4-5. Required for openai.
+- `baseUrl` — `http://localhost:11434/v1` for Ollama. With openai, a baseUrl makes the API key optional.
+- `apiKeyEnv` — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY
+- `maxDiffChars` — Default: 20000
 
 <!-- xfg:generated:end -->
 

@@ -41,7 +41,7 @@ export class CommitPushManager implements ICommitPushManager {
 
     if (dryRun) {
       this.log.debug("Staging changes...");
-      this.log.info(`Would commit: ${commitMessage}`);
+      this.log.info(`Would commit: ${(await commitMessage()).message}`);
       this.log.info(`Would push to ${pushBranch}`);
       return { success: true };
     }
@@ -75,7 +75,7 @@ export class CommitPushManager implements ICommitPushManager {
         repoInfo,
         branchName: pushBranch,
         baseBranch: options.baseBranch,
-        message: commitMessage,
+        ...(await commitMessage()),
         fileChanges: changes,
         workDir,
         retries,

@@ -1,4 +1,5 @@
 export type {
+  CommitMessage,
   FileChangeDetail,
   GitOpsFactory,
   IAuthOptionsBuilder,
@@ -9,7 +10,9 @@ export type {
   IRepositoryProcessor,
   IRepositorySession,
   IWorkStrategy,
+  ProcessorOptions,
   ProcessorResult,
+  CreateAndMergeInput,
   SessionContext,
   WorkResult,
 } from "./types.js";

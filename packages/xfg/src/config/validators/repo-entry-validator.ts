@@ -5,6 +5,7 @@ import { isPlainObject } from "../../shared/type-guards.js";
 import { escapeRegExp } from "../../shared/regex-utils.js";
 import { ValidationError } from "../../shared/errors.js";
 import { validateBranchName } from "../../shared/branch-validation.js";
+import { validateAiOption } from "./ai-validator.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -242,6 +243,7 @@ function validateRepoPrOptions(repo: RawConfig["repos"][number]): void {
   if (repo.prOptions?.branch !== undefined) {
     validateBranchName(repo.prOptions.branch);
   }
+  validateAiOption(repo.prOptions?.ai);
 }
 
 export function validateRepoEntry(

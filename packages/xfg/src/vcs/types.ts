@@ -168,6 +168,7 @@ export interface CommitOptions {
   branchName: string;
   baseBranch?: string;
   message: string;
+  body?: string;
   fileChanges: FileChange[];
   workDir: string;
   retries?: number;
