@@ -177,6 +177,19 @@ describe("prOptions.ai normalization", () => {
     assert.equal(result.repos[0].prOptions?.ai, undefined);
   });
 
+  test("repo ai: false keeps other prOptions", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: { ai: true, merge: "direct" },
+        repos: [
+          { git: "git@github.com:org/repo.git", prOptions: { ai: false } },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions, { merge: "direct" });
+  });
+
   test("repo ai object replaces root ai object", () => {
     const result = normalizeConfig(
       baseConfig({

@@ -133,6 +133,13 @@ describe("parseDescription", () => {
     );
   });
 
+  test("throws on missing subject", () => {
+    assert.throws(
+      () => parseDescription(JSON.stringify({ prSummary: "s" })),
+      /conventional commit/
+    );
+  });
+
   test("throws on missing prSummary", () => {
     assert.throws(
       () => parseDescription(JSON.stringify({ subject: "fix: x" })),
@@ -163,6 +170,21 @@ describe("buildUserPrompt", () => {
     );
     assert.match(prompt, /logo\.png/);
     assert.match(prompt, /no text diff/);
+  });
+
+  test("truncates a single long line without newlines", () => {
+    const prompt = buildUserPrompt(
+      [
+        {
+          path: "min.js",
+          action: "create",
+          diffLines: ["+" + "x".repeat(5000)],
+        },
+      ],
+      500
+    );
+    assert.match(prompt, /truncated/);
+    assert.ok(prompt.length < 1500, `prompt too long: ${prompt.length}`);
   });
 
   test("respects the diff cap and truncates fairly", () => {

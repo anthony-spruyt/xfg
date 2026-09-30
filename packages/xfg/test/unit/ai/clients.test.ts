@@ -97,6 +97,23 @@ describe("AnthropicClient", () => {
     assert.equal(await client.complete("s", "u"), "ab");
   });
 
+  test("returns empty text when content or text is missing", async () => {
+    const noContent = fakeFetch(200, { stop_reason: "end_turn" });
+    const noText = fakeFetch(200, { content: [{ type: "text" }] });
+    const a = new AnthropicClient({
+      apiKey: "k",
+      model: "m",
+      fetch: noContent.fetch,
+    });
+    const b = new AnthropicClient({
+      apiKey: "k",
+      model: "m",
+      fetch: noText.fetch,
+    });
+    assert.equal(await a.complete("s", "u"), "");
+    assert.equal(await b.complete("s", "u"), "");
+  });
+
   test("throws with status code on non-2xx", async () => {
     const { fetch } = fakeFetch(429, { error: { message: "slow down" } });
     const client = new AnthropicClient({ apiKey: "k", model: "m", fetch });
