@@ -75,16 +75,26 @@ export function parseMergeStrategy(value: string): MergeStrategy {
   return value as MergeStrategy;
 }
 
-// Commander stores --no-x as x: false; map to the noX fields runSync expects.
-export function toSyncOptions(
-  opts: Record<string, unknown> & { config: string }
-): SyncOptions {
+type CommanderOptions = Record<string, unknown> & { config: string };
+
+// Commander stores --no-x as x: false; map to the noX fields the runners expect.
+function withoutNegations(opts: CommanderOptions): CommanderOptions & {
+  noDelete: boolean;
+  noAi: boolean;
+} {
   const { delete: del, ai, ...rest } = opts;
-  return {
-    ...rest,
-    noDelete: del === false,
-    noAi: ai === false,
-  } as SyncOptions;
+  return { ...rest, noDelete: del === false, noAi: ai === false };
+}
+
+export function toSyncOptions(opts: CommanderOptions): SyncOptions {
+  return withoutNegations(opts) as SyncOptions;
+}
+
+export function toSecretsSyncOptions(
+  opts: CommanderOptions
+): SecretsSyncOptions {
+  const { noAi: _noAi, ...options } = withoutNegations(opts);
+  return options as SecretsSyncOptions;
 }
 
 // =============================================================================
@@ -153,11 +163,7 @@ const secretsSyncCommand = new Command("sync")
   )
   .action(async (opts) => {
     try {
-      const options = {
-        ...opts,
-        noDelete: opts.delete === false,
-      } as SecretsSyncOptions;
-      await runSecretsSync(options);
+      await runSecretsSync(toSecretsSyncOptions(opts));
     } catch (error) {
       console.error("Fatal error:", error);
       return process.exit(1);

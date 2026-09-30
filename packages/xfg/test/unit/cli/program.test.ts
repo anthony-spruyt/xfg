@@ -3,8 +3,20 @@ import { strict as assert } from "node:assert";
 import {
   parseMergeMode,
   parseMergeStrategy,
+  toSecretsSyncOptions,
   toSyncOptions,
 } from "../../../src/cli/program.js";
+
+describe("toSecretsSyncOptions", () => {
+  test("--no-delete sets noDelete without leaking delete", () => {
+    const options = toSecretsSyncOptions({
+      config: "c.yaml",
+      delete: false,
+    }) as unknown as Record<string, unknown>;
+    assert.equal(options.noDelete, true);
+    assert.equal(options.delete, undefined);
+  });
+});
 
 describe("toSyncOptions", () => {
   test("--no-ai sets noAi", () => {
