@@ -15,7 +15,6 @@ import { toErrorMessage } from "../shared/type-guards.js";
 import { parseApiJson } from "../shared/json-utils.js";
 import { buildHostnameArgs, buildTokenEnv } from "../shared/gh-api-utils.js";
 import { ValidationError, GraphQLApiError } from "../shared/errors.js";
-import { splitCommitMessage } from "./commit-message-parts.js";
 
 /**
  * Maximum payload size for GitHub GraphQL API (50MB).
@@ -123,6 +122,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
       repoInfo,
       branchName,
       message,
+      body,
       fileChanges,
       workDir,
       retries = 3,
@@ -196,7 +196,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
         const result = await this.executeGraphQLMutation(
           repoInfo,
           branchName,
-          message,
+          { headline: message, ...(body ? { body } : {}) },
           headSha.trim(),
           additions,
           deletions,
@@ -229,7 +229,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
   private async executeGraphQLMutation(
     repoInfo: GitHubRepoInfo,
     branchName: string,
-    message: string,
+    message: { headline: string; body?: string },
     expectedHeadOid: string,
     additions: Array<{ path: string; content: string }>,
     deletions: Array<{ path: string; content: string | null }>,
@@ -268,7 +268,7 @@ export class GraphQLCommitStrategy implements ICommitStrategy {
           branchName,
         },
         expectedHeadOid,
-        message: splitCommitMessage(message),
+        message,
         fileChanges,
       },
     };

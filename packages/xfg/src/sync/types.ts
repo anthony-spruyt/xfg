@@ -154,12 +154,17 @@ export interface IRepositorySession {
   setup(repoInfo: RepoInfo, options: SessionOptions): Promise<SessionContext>;
 }
 
+export interface CommitMessage {
+  message: string;
+  body?: string;
+}
+
 export interface CommitPushOptions extends RunContext {
   repoInfo: RepoInfo;
   gitOps: IGitOps;
   fileChanges: Map<string, FileWriteResult>;
   /** Called only once there is something to commit */
-  commitMessage: () => Promise<string>;
+  commitMessage: () => Promise<CommitMessage>;
   pushBranch: string;
   baseBranch: string;
   isDirectMode: boolean;

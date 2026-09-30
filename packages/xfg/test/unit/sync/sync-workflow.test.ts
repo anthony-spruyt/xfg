@@ -12,6 +12,7 @@ import type {
   IPRMergeHandler,
   IWorkStrategy,
   WorkResult,
+  CommitMessage,
   CreateAndMergeInput,
   ProcessorOptions,
 } from "../../../src/sync/index.js";
@@ -498,7 +499,7 @@ describe("SyncWorkflow", () => {
 
     function setup(describeResult: ChangeDescription | null) {
       const components = createMockComponents();
-      const commitMessages: string[] = [];
+      const commitMessages: CommitMessage[] = [];
       const prInputs: CreateAndMergeInput[] = [];
       components.commitPushManager.commitAndPush = async (opts) => {
         commitMessages.push(await opts.commitMessage());
@@ -562,7 +563,10 @@ describe("SyncWorkflow", () => {
       await run(ctx, { merge: "manual", ai: { provider: "anthropic" } });
 
       assert.deepEqual(ctx.commitMessages, [
-        "ci(workflows): pin actions/checkout to v5\n\nBumps checkout from v4 to v5.",
+        {
+          message: "ci(workflows): pin actions/checkout to v5",
+          body: "Bumps checkout from v4 to v5.",
+        },
       ]);
       assert.equal(ctx.prInputs[0].prTitle, AI_DESCRIPTION.subject);
       assert.equal(ctx.prInputs[0].prSummary, AI_DESCRIPTION.prSummary);
@@ -575,20 +579,22 @@ describe("SyncWorkflow", () => {
     test("subject-only description commits just the subject", async () => {
       const ctx = setup({ subject: "fix: x", prSummary: "s" });
       await run(ctx, { ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, ["fix: x"]);
+      assert.deepEqual(ctx.commitMessages, [{ message: "fix: x" }]);
     });
 
     test("direct mode uses the AI message", async () => {
       const ctx = setup(AI_DESCRIPTION);
       await run(ctx, { merge: "direct", ai: { provider: "anthropic" } });
-      assert.match(ctx.commitMessages[0], /^ci\(workflows\): pin/);
+      assert.match(ctx.commitMessages[0].message, /^ci\(workflows\): pin/);
       assert.equal(ctx.prInputs.length, 0);
     });
 
     test("describer returning null keeps the default message", async () => {
       const ctx = setup(null);
       await run(ctx, { ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+      assert.deepEqual(ctx.commitMessages, [
+        { message: "chore: sync ci.yaml" },
+      ]);
       assert.equal(ctx.prInputs[0].prTitle, undefined);
       assert.equal(ctx.prInputs[0].prSummary, undefined);
     });
@@ -597,14 +603,18 @@ describe("SyncWorkflow", () => {
       const ctx = setup(AI_DESCRIPTION);
       await run(ctx, { merge: "manual" });
       assert.equal(ctx.components.changeDescriber.calls.length, 0);
-      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+      assert.deepEqual(ctx.commitMessages, [
+        { message: "chore: sync ci.yaml" },
+      ]);
     });
 
     test("noAi: describer not called", async () => {
       const ctx = setup(AI_DESCRIPTION);
       await run(ctx, { ai: { provider: "anthropic" } }, { noAi: true });
       assert.equal(ctx.components.changeDescriber.calls.length, 0);
-      assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+      assert.deepEqual(ctx.commitMessages, [
+        { message: "chore: sync ci.yaml" },
+      ]);
     });
 
     test("nothing staged: describer not called", async () => {

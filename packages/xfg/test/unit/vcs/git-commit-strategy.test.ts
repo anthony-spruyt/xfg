@@ -134,7 +134,8 @@ describe("GitCommitStrategy", () => {
       await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
-        message: "ci: pin checkout\n\nBody text.",
+        message: "ci: pin checkout",
+        body: "Body text.",
         fileChanges: [{ path: "file1.txt", content: "content1" }],
         workDir: testDir,
         retries: 0,

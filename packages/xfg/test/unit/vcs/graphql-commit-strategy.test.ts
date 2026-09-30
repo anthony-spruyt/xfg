@@ -235,7 +235,7 @@ describe("GraphQLCommitStrategy", () => {
       );
     });
 
-    test("splits a multi-line message into headline and body", async () => {
+    test("sends the message as headline and the body as body", async () => {
       mockExecutor.responses.set("git fetch", "");
       mockExecutor.responses.set("git rev-parse", "abc123def456789");
       let graphqlCallCount = 0;
@@ -255,7 +255,8 @@ describe("GraphQLCommitStrategy", () => {
       await strategy.commit({
         repoInfo: githubRepoInfo,
         branchName: "test-branch",
-        message: "ci: pin checkout\n\nLine one.\nLine two.",
+        message: "ci: pin checkout",
+        body: "Line one.\nLine two.",
         fileChanges: [{ path: "file1.txt", content: "content1" }],
         workDir: testDir,
         gitOps: createMockGitOps(),

@@ -1,4 +1,5 @@
 export type {
+  CommitMessage,
   FileChangeDetail,
   GitOpsFactory,
   IAuthOptionsBuilder,

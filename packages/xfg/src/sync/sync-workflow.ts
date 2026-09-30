@@ -12,6 +12,7 @@ import type {
   ICommitPushManager,
   IPRMergeHandler,
   ProcessorOptions,
+  CommitMessage,
   WorkResult,
   ProcessorResult,
   SessionContext,
@@ -105,11 +106,11 @@ export class SyncWorkflow implements ISyncWorkflow {
           runCtx,
           workResult
         ));
-      const commitMessage = async () => {
+      const commitMessage = async (): Promise<CommitMessage> => {
         const description = await describe();
-        return description
-          ? [description.subject, description.body].filter(Boolean).join("\n\n")
-          : workResult.commitMessage;
+        if (!description) return { message: workResult.commitMessage };
+        const { subject, body } = description;
+        return body ? { message: subject, body } : { message: subject };
       };
 
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
