@@ -273,9 +273,60 @@ describe("AdoPRStrategy with mock executor", () => {
         retries: 0,
       });
 
-      assert.equal(written.length, 4000);
+      assert.ok(written.length <= 4000, `too long: ${written.length}`);
+      assert.ok(written.length > 3900, `cut too much: ${written.length}`);
       assert.match(written, /truncated/);
     });
+
+    for (const [name, body, check] of [
+      [
+        "does not split a surrogate pair",
+        "😀".repeat(2100),
+        // A lone surrogate is written to the file as U+FFFD.
+        (w: string) => assert.doesNotMatch(w, /�/),
+      ],
+      [
+        "closes a code fence left open by the cut",
+        "intro\n```\n" + "line\n".repeat(1000) + "```\nafter",
+        (w: string) => assert.equal((w.match(/^```/gm) ?? []).length % 2, 0),
+      ],
+      [
+        "keeps the start and the appended AI summary",
+        "top\n" + "- file\n".repeat(1000) + "## AI Summary\n\nthe summary",
+        (w: string) => {
+          assert.ok(w.startsWith("top\n- file\n"));
+          assert.ok(w.endsWith("## AI Summary\n\nthe summary"));
+        },
+      ],
+      [
+        "reopens a fence the kept tail starts inside",
+        "a\n```\n" + "line\n".repeat(1000) + "end\n```\nb",
+        (w: string) => assert.match(w, /_\n\n```\nline\n/),
+      ],
+    ] as const) {
+      test(name, async () => {
+        let written = "";
+        mockExecutor.responses.set("az repos pr create", () => {
+          written = readFileSync(join(testDir, ".pr-description.md"), "utf-8");
+          return "123";
+        });
+
+        const strategy = new AdoPRStrategy(mockExecutor.mock);
+        await strategy.create({
+          repoInfo: azureRepoInfo,
+          title: "Test PR",
+          body,
+          branchName: "test-branch",
+          baseBranch: "main",
+          workDir: testDir,
+          retries: 0,
+        });
+
+        assert.ok(written.length <= 4000, `too long: ${written.length}`);
+        assert.match(written, /truncated/);
+        check(written);
+      });
+    }
 
     test("keeps descriptions at the limit unchanged", async () => {
       let written = "";

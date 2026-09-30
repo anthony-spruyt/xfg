@@ -22,14 +22,48 @@ import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
 const MAX_DESCRIPTION_CHARS = 4000;
-const TRUNCATION_NOTE = "\n\n_(description truncated)_";
+const TRUNCATION_NOTE = "\n\n_(description truncated)_\n\n";
+const FENCE = "```";
+const FENCE_LINE = /^```/gm;
+
+function isInsideFence(text: string): boolean {
+  return (text.match(FENCE_LINE) ?? []).length % 2 === 1;
+}
+
+function isHighSurrogate(code: number): boolean {
+  return code >= 0xd800 && code <= 0xdbff;
+}
+
+function headOf(body: string, budget: number): string {
+  const lineEnd = body.lastIndexOf("\n", budget);
+  if (lineEnd > 0) return body.slice(0, lineEnd);
+  const end = isHighSurrogate(body.charCodeAt(budget - 1))
+    ? budget - 1
+    : budget;
+  return body.slice(0, end);
+}
+
+function tailStartOf(body: string, budget: number): number {
+  const start = body.length - budget;
+  const lineStart = body.indexOf("\n", start - 1) + 1;
+  if (lineStart > 0) return lineStart;
+  return isHighSurrogate(body.charCodeAt(start - 1)) ? start + 1 : start;
+}
 
 // Azure DevOps rejects PR descriptions over 4000 characters.
+// Cuts the middle: the head has the file list, the tail has the appended AI summary.
 function fitDescription(body: string): string {
   if (body.length <= MAX_DESCRIPTION_CHARS) return body;
+  const fenceRoom = 2 * (FENCE.length + 1);
+  const room = MAX_DESCRIPTION_CHARS - TRUNCATION_NOTE.length - fenceRoom;
+  const head = headOf(body, Math.ceil(room / 2));
+  const tailStart = tailStartOf(body, Math.floor(room / 2));
   return (
-    body.slice(0, MAX_DESCRIPTION_CHARS - TRUNCATION_NOTE.length) +
-    TRUNCATION_NOTE
+    head +
+    (isInsideFence(head) ? `\n${FENCE}` : "") +
+    TRUNCATION_NOTE +
+    (isInsideFence(body.slice(0, tailStart)) ? `${FENCE}\n` : "") +
+    body.slice(tailStart)
   );
 }
 
