@@ -217,12 +217,12 @@ export class AdoPRStrategy extends BasePRStrategy {
     const {
       repoInfo,
       title,
-      body,
       branchName,
       baseBranch,
       workDir,
       retries = 3,
     } = options;
+    const body = fitDescription(options.body);
 
     assertAzureDevOpsRepo(repoInfo, "Azure PR strategy");
     const azureRepoInfo: AzureDevOpsRepoInfo = repoInfo;
@@ -230,7 +230,7 @@ export class AdoPRStrategy extends BasePRStrategy {
 
     const descFile = join(workDir, this.bodyFilePath);
     try {
-      writeFileSync(descFile, fitDescription(body), "utf-8");
+      writeFileSync(descFile, body, "utf-8");
     } catch (err) {
       throw new SyncError(
         `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
