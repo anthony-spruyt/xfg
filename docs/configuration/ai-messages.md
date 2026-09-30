@@ -109,7 +109,7 @@ prOptions:
     provider: openai
     baseUrl: https://openrouter.ai/api/v1
     apiKeyEnv: OPENROUTER_API_KEY
-    model: anthropic/claude-haiku-4.5
+    model: openai/gpt-4o-mini
 ```
 
 Needs `OPENROUTER_API_KEY`. Any [OpenRouter model](https://openrouter.ai/models) id works.
@@ -145,7 +145,7 @@ xfg sends only the paths, change types (create/update/delete) and diffs, capped 
 
 ## Cost and Caching
 
-- The default model is Claude Haiku 4.5, the cheapest Claude model.
+- The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as `openai/gpt-4o-mini` via [OpenRouter](#openrouter) cost several times less and write fine commit messages.
 - Diffs are capped at `maxDiffChars` (20,000 characters by default).
 - Responses are cached in memory for the run. The cache key is the prompt plus provider settings. When 50 repos get the exact same change, xfg makes one API call, not 50.
 - Transient errors (429, 5xx, timeouts) are retried with the same `--retries` setting as git operations.
