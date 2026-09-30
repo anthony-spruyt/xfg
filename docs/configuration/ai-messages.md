@@ -134,6 +134,8 @@ If your custom `prTemplate` does not use `${xfg:pr.aiSummary}`, xfg appends it a
 
 Each sync closes the previous xfg PR and opens a fresh one, so the title and summary always describe the latest change.
 
+The model's text is shaped by the diffs, so xfg defuses it before use: `@mentions` are wrapped in backticks and issue-closing keywords (`Fixes #42`, `Closes https://...`) become `Refs`. That stops an AI message from pinging people or closing issues.
+
 ## Privacy
 
 !!! warning "Diffs are sent to the provider"

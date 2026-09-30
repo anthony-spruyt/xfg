@@ -116,6 +116,39 @@ describe("parseDescription", () => {
     assert.equal(result.body, undefined);
   });
 
+  test("wraps @mentions in backticks so they do not notify", () => {
+    const result = parseDescription(
+      JSON.stringify({
+        subject: "chore: bump @types/node",
+        body: "Ask @alice or @org/platform-team.",
+        prSummary: "cc @bob, mail a@b.com, uses actions/checkout@v5",
+      })
+    );
+    assert.equal(result.subject, "chore: bump `@types/node`");
+    assert.equal(result.body, "Ask `@alice` or `@org/platform-team`.");
+    assert.equal(
+      result.prSummary,
+      "cc `@bob`, mail a@b.com, uses actions/checkout@v5"
+    );
+  });
+
+  test("turns issue-closing keywords into plain references", () => {
+    const result = parseDescription(
+      JSON.stringify({
+        subject: "fix: close #7",
+        body: "Fixes #42 and resolves: org/repo#9.",
+        prSummary:
+          "Closes https://github.com/org/repo/issues/3, fixed the fixes",
+      })
+    );
+    assert.equal(result.subject, "fix: refs #7");
+    assert.equal(result.body, "Refs #42 and refs: org/repo#9.");
+    assert.equal(
+      result.prSummary,
+      "Refs https://github.com/org/repo/issues/3, fixed the fixes"
+    );
+  });
+
   test("trims the subject", () => {
     const result = parseDescription(
       JSON.stringify({ subject: " fix: x ", prSummary: "s" })

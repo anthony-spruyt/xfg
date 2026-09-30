@@ -57,6 +57,17 @@ const AI_PERMANENT_ERROR_PATTERNS = [
   /\b400\b/,
 ];
 
+// GitHub and GitLab close issues on these keywords; the text is model output shaped by repo content.
+const CLOSING_KEYWORD =
+  /\b(?:clos(?:e[sd]?|ing)|fix(?:e[sd]|ing)?|resolv(?:e[sd]?|ing)|implement(?:s|ed|ing)?)\b(?=:?\s+(?:[\w.-]+\/[\w.-]+)?#\d|:?\s+https?:\/\/)/gi;
+const MENTION = /(^|[^\w`/.@-])@([a-z0-9][a-z0-9-]*(?:\/[\w-]+)?)/gi;
+
+export function neutralizeReferences(text: string): string {
+  return text
+    .replace(CLOSING_KEYWORD, (word) => (/^[A-Z]/.test(word) ? "Refs" : "refs"))
+    .replace(MENTION, "$1`@$2`");
+}
+
 export function isConventionalSubject(subject: string): boolean {
   return (
     subject.length <= MAX_SUBJECT_LENGTH && CONVENTIONAL_SUBJECT.test(subject)
@@ -73,19 +84,20 @@ export function parseDescription(raw: string): ChangeDescription {
     throw new Error("AI response is not a JSON object");
   }
 
-  const subject =
-    typeof parsed.subject === "string" ? parsed.subject.trim() : "";
+  const text = (value: unknown): string =>
+    typeof value === "string" ? neutralizeReferences(value.trim()) : "";
+
+  const subject = text(parsed.subject);
   if (!isConventionalSubject(subject)) {
     throw new Error(
       `AI subject is not a valid conventional commit: "${subject}"`
     );
   }
-  const prSummary =
-    typeof parsed.prSummary === "string" ? parsed.prSummary.trim() : "";
+  const prSummary = text(parsed.prSummary);
   if (!prSummary) {
     throw new Error("AI response is missing prSummary");
   }
-  const body = typeof parsed.body === "string" ? parsed.body.trim() : "";
+  const body = text(parsed.body);
 
   return { subject, ...(body ? { body } : {}), prSummary };
 }
