@@ -1092,6 +1092,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../configuration/ai-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Commit Messages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/lifecycle/" class="md-nav__link">
         
   
@@ -2312,6 +2340,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#aioptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aiOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#repofileoverride" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3150,6 +3189,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#aioptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aiOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#repofileoverride" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3941,6 +3991,13 @@
 <td>-</td>
 <td>Branch name for sync PRs.</td>
 </tr>
+<tr>
+<td><code>ai</code></td>
+<td><code>boolean</code> | <a href="#aioptions"><code>aiOptions</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).</td>
+</tr>
 </tbody>
 </table>
 <ul>
@@ -3949,6 +4006,76 @@
 <li><code>deleteBranch</code> — Default: true</li>
 <li><code>labels</code> — Labels must exist on the target repository.</li>
 <li><code>branch</code> — Per-repo overrides group, group overrides global. CLI --branch flag overrides all.</li>
+<li><code>ai</code> — Falls back to the default message on any AI error. Disabled by --no-ai.</li>
+</ul>
+<!-- xfg:generated:end -->
+
+<h3 id="aioptions">aiOptions<a class="headerlink" href="#aioptions" title="Permanent link">&para;</a></h3>
+<p>See <a href="../../configuration/ai-messages/">AI Commit Messages</a> for setup and privacy notes.</p>
+<!-- xfg:generated schema:aiOptions -->
+
+<p>AI provider settings for generated commit messages and PR descriptions</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td><code>anthropic</code> | <code>openai</code></td>
+<td>No</td>
+<td><code>anthropic</code></td>
+<td>'anthropic' uses the Claude Messages API.</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Model id.</td>
+</tr>
+<tr>
+<td><code>baseUrl</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>API base URL, e.g.</td>
+</tr>
+<tr>
+<td><code>apiKeyEnv</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Name of the env var holding the API key.</td>
+</tr>
+<tr>
+<td><code>prompt</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Extra instructions appended to the built-in system prompt</td>
+</tr>
+<tr>
+<td><code>maxDiffChars</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td><code>20000</code></td>
+<td>Maximum diff characters sent to the provider, shared fairly across files.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>provider</code> — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic</li>
+<li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
+<li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
+<li><code>apiKeyEnv</code> — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY</li>
+<li><code>maxDiffChars</code> — Default: 20000</li>
 </ul>
 <!-- xfg:generated:end -->
 

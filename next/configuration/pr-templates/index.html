@@ -16,7 +16,7 @@
         <link rel="prev" href="../pr-options/">
       
       
-        <link rel="next" href="../lifecycle/">
+        <link rel="next" href="../ai-messages/">
       
       
         
@@ -1185,6 +1185,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai-messages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Commit Messages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2723,8 +2751,13 @@
 </tr>
 <tr>
 <td><code>${xfg:pr.title}</code></td>
-<td>The generated PR title</td>
+<td>The PR title. The <a href="../ai-messages/">AI subject</a> when AI is on</td>
 <td><code>chore: sync config.json, settings.yaml</code></td>
+</tr>
+<tr>
+<td><code>${xfg:pr.aiSummary}</code></td>
+<td><a href="../ai-messages/">AI summary</a> of the changes. Empty when AI is off</td>
+<td><code>Pins actions/checkout to v5.</code></td>
 </tr>
 <tr>
 <td><code>${xfg:repo.name}</code></td>
@@ -2754,14 +2787,17 @@
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Automated sync of configuration files to ${xfg:repo.fullName}.
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="gu">## Changes</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>${xfg:pr.aiSummary}
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>${xfg:pr.fileChanges}
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="gu">## Changes</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="gu">## Source</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>${xfg:pr.fileChanges}
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>Configuration synced using [<span class="nt">xfg</span>](<span class="na">https://github.com/anthony-spruyt/xfg</span>).
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="gu">## Source</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>Configuration synced using [<span class="nt">xfg</span>](<span class="na">https://github.com/anthony-spruyt/xfg</span>).
 </span></code></pre></div>
+<p>When <a href="../ai-messages/">AI commit messages</a> are on and a custom template does not use <code>${xfg:pr.aiSummary}</code>, the summary is appended at the end under <code>## AI Summary</code>.</p>
 <h2 id="example-template">Example Template<a class="headerlink" href="#example-template" title="Permanent link">&para;</a></h2>
 <div class="language-markdown highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="gu">## Summary</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
