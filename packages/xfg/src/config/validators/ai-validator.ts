@@ -4,11 +4,21 @@ import type { AiProvider } from "../types.js";
 
 const VALID_PROVIDERS: AiProvider[] = ["anthropic", "openai"];
 const STRING_FIELDS = ["model", "baseUrl", "apiKeyEnv", "prompt"] as const;
+const KNOWN_KEYS = new Set<string>([
+  "provider",
+  "maxDiffChars",
+  ...STRING_FIELDS,
+]);
 
 export function validateAiOption(ai: unknown): void {
   if (ai === undefined || typeof ai === "boolean") return;
   if (!isPlainObject(ai)) {
     throw new ValidationError("prOptions.ai must be a boolean or an object");
+  }
+
+  const unknown = Object.keys(ai).find((key) => !KNOWN_KEYS.has(key));
+  if (unknown !== undefined) {
+    throw new ValidationError(`prOptions.ai has unknown key '${unknown}'`);
   }
 
   const provider = ai.provider;

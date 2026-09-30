@@ -115,6 +115,16 @@ describe("prOptions.ai validation", () => {
     }
   });
 
+  test("rejects unknown keys", () => {
+    const config = baseConfig({
+      prOptions: { ai: { model: "m", apiKey: "sk-secret" } },
+    } as unknown as Partial<RawConfig>);
+    assert.throws(
+      () => validateRawConfig(config),
+      /prOptions\.ai has unknown key 'apiKey'/
+    );
+  });
+
   test("validates ai in repo prOptions", () => {
     const config = baseConfig({
       repos: [
