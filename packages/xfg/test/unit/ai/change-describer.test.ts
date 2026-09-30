@@ -187,6 +187,34 @@ describe("buildUserPrompt", () => {
     assert.ok(prompt.length < 1500, `prompt too long: ${prompt.length}`);
   });
 
+  test("truncation note counts toward the cap", () => {
+    const lines = Array.from({ length: 500 }, (_, i) => `+line ${i}`);
+    const header = "Changed files:\n\n### create a.txt\n";
+    const prompt = buildUserPrompt(
+      [{ path: "a.txt", action: "create", diffLines: lines }],
+      1000
+    );
+    assert.ok(prompt.startsWith(header));
+    const diff = prompt.slice(header.length);
+    assert.ok(diff.length <= 1000, `diff too long: ${diff.length}`);
+    const kept = diff.split("\n").length - 1;
+    assert.match(diff, new RegExp(`truncated ${500 - kept} more lines`));
+  });
+
+  test("a line cut partway counts as dropped", () => {
+    const prompt = buildUserPrompt(
+      [
+        {
+          path: "min.js",
+          action: "create",
+          diffLines: ["+" + "x".repeat(5000)],
+        },
+      ],
+      500
+    );
+    assert.match(prompt, /truncated 1 more lines/);
+  });
+
   test("respects the diff cap and truncates fairly", () => {
     const big = (n: number) =>
       Array.from({ length: n }, (_, i) => `+line ${i}`);

@@ -90,12 +90,19 @@ export function parseDescription(raw: string): ChangeDescription {
   return { subject, ...(body ? { body } : {}), prSummary };
 }
 
+function truncationNote(droppedLines: number): string {
+  return `\n... (truncated ${droppedLines} more lines)`;
+}
+
 function truncateDiff(text: string, limit: number): string {
   if (text.length <= limit) return text;
-  const cut = text.lastIndexOf("\n", limit);
-  const kept = text.slice(0, cut > 0 ? cut : limit);
-  const droppedLines = text.slice(kept.length).split("\n").length - 1;
-  return `${kept}\n... (truncated ${droppedLines} more lines)`;
+  const totalLines = text.split("\n").length;
+  // Reserve room for the longest note this diff could need.
+  const room = Math.max(0, limit - truncationNote(totalLines).length);
+  const cut = text.lastIndexOf("\n", room);
+  const keptLines = cut > 0 ? text.slice(0, cut).split("\n").length : 0;
+  const kept = text.slice(0, cut > 0 ? cut : room);
+  return `${kept}${truncationNote(totalLines - keptLines)}`;
 }
 
 // Water-filling split: small diffs keep everything, large ones share what is left evenly.
