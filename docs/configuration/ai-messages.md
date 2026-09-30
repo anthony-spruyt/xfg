@@ -88,6 +88,32 @@ prOptions:
 
 No API key is needed when `baseUrl` is set. Diffs never leave your machine.
 
+### OpenRouter
+
+OpenRouter speaks both protocols. Keep the provider and change only the URL and key.
+
+```yaml
+prOptions:
+  ai:
+    provider: anthropic
+    baseUrl: https://openrouter.ai/api
+    apiKeyEnv: OPENROUTER_API_KEY
+    model: anthropic/claude-haiku-4.5
+```
+
+or
+
+```yaml
+prOptions:
+  ai:
+    provider: openai
+    baseUrl: https://openrouter.ai/api/v1
+    apiKeyEnv: OPENROUTER_API_KEY
+    model: anthropic/claude-haiku-4.5
+```
+
+Needs `OPENROUTER_API_KEY`. Any [OpenRouter model](https://openrouter.ai/models) id works.
+
 ### Azure OpenAI, LiteLLM and other gateways
 
 Any service that speaks the OpenAI Chat Completions API works with `provider: openai` and a `baseUrl`. If it needs a key, point `apiKeyEnv` at it.

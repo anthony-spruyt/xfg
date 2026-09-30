@@ -21,9 +21,15 @@ const OWNER = "spruyt-labs";
 const WORKFLOW_FILE = ".github/workflows/ci.yaml";
 const PR_BRANCH = "chore/sync-ai-test";
 
-const skip = process.env.ANTHROPIC_API_KEY
+const KEY_ENV = "OPENROUTER_API_KEY";
+
+// CI must never pass by skipping; locally a missing key just skips.
+if (process.env.CI && !process.env[KEY_ENV]) {
+  throw new Error(`${KEY_ENV} must be set in CI for AI integration tests`);
+}
+const skip = process.env[KEY_ENV]
   ? false
-  : "ANTHROPIC_API_KEY is not set - skipping AI integration tests";
+  : `${KEY_ENV} is not set - skipping AI integration tests`;
 
 let repoName: string;
 let testRepo: string;
@@ -51,7 +57,9 @@ prOptions:
   branch: ${PR_BRANCH}
   ai:
     provider: anthropic
-    model: claude-haiku-4-5
+    baseUrl: https://openrouter.ai/api
+    apiKeyEnv: ${KEY_ENV}
+    model: anthropic/claude-haiku-4.5
 repos:
   - git: https://github.com/${testRepo}.git
 `;

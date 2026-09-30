@@ -126,7 +126,7 @@ jobs:
       - name: Run GitHub AI commit message integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         working-directory: packages/xfg
         run: npm run test:integration:github-ai
 
