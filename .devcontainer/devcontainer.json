@@ -28,7 +28,7 @@
   ],
   "features": {
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
-      "version": "44.105.0"
+      "version": "44.108.2"
     },
     "ghcr.io/devcontainers/features/azure-cli": {
       "version": "2.90.0"
