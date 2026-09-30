@@ -1,6 +1,6 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { AdoPRStrategy } from "../../../src/vcs/ado-pr-strategy.js";
@@ -253,6 +253,49 @@ describe("AdoPRStrategy with mock executor", () => {
 
       const descFile = join(testDir, ".pr-description.md");
       assert.equal(existsSync(descFile), false);
+    });
+
+    test("truncates descriptions over the 4000 character limit", async () => {
+      let written = "";
+      mockExecutor.responses.set("az repos pr create", () => {
+        written = readFileSync(join(testDir, ".pr-description.md"), "utf-8");
+        return "123";
+      });
+
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
+      await strategy.create({
+        repoInfo: azureRepoInfo,
+        title: "Test PR",
+        body: "x".repeat(5000),
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(written.length, 4000);
+      assert.match(written, /truncated/);
+    });
+
+    test("keeps descriptions at the limit unchanged", async () => {
+      let written = "";
+      mockExecutor.responses.set("az repos pr create", () => {
+        written = readFileSync(join(testDir, ".pr-description.md"), "utf-8");
+        return "123";
+      });
+
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
+      await strategy.create({
+        repoInfo: azureRepoInfo,
+        title: "Test PR",
+        body: "x".repeat(4000),
+        branchName: "test-branch",
+        baseBranch: "main",
+        workDir: testDir,
+        retries: 0,
+      });
+
+      assert.equal(written, "x".repeat(4000));
     });
 
     test("cleans up description file after error", async () => {

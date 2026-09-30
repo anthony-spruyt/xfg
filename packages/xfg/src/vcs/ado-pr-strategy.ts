@@ -21,6 +21,18 @@ import { NO_OP_DEBUG_LOG } from "../shared/logger.js";
 import { sanitizeCredentials } from "../shared/sanitize-utils.js";
 import { getStderr } from "../shared/command-executor.js";
 
+const MAX_DESCRIPTION_CHARS = 4000;
+const TRUNCATION_NOTE = "\n\n_(description truncated)_";
+
+// Azure DevOps rejects PR descriptions over 4000 characters.
+function fitDescription(body: string): string {
+  if (body.length <= MAX_DESCRIPTION_CHARS) return body;
+  return (
+    body.slice(0, MAX_DESCRIPTION_CHARS - TRUNCATION_NOTE.length) +
+    TRUNCATION_NOTE
+  );
+}
+
 export class AdoPRStrategy extends BasePRStrategy {
   private readonly bodyFilePath = ".pr-description.md";
 
@@ -218,7 +230,7 @@ export class AdoPRStrategy extends BasePRStrategy {
 
     const descFile = join(workDir, this.bodyFilePath);
     try {
-      writeFileSync(descFile, body, "utf-8");
+      writeFileSync(descFile, fitDescription(body), "utf-8");
     } catch (err) {
       throw new SyncError(
         `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,
