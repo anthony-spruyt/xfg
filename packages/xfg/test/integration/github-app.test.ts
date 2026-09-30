@@ -273,7 +273,6 @@ describe("GitHub App Repo Settings Test", { skip: SKIP_TESTS }, () => {
   });
 
   test("repo settings with GitHub App token is idempotent", async () => {
-    // Reset repo settings to defaults
     const fields = Object.entries(GITHUB_DEFAULTS)
       .map(([k, v]) => `-F ${k}=${v}`)
       .join(" ");
@@ -299,13 +298,24 @@ repos:
 
     await exec(`node dist/cli.js sync --config ${configPath}`, xfgEnv);
 
-    const secondOutput = await exec(
-      `node dist/cli.js sync --config ${configPath}`,
-      xfgEnv
-    );
-    assert.ok(
-      secondOutput.includes("No changes needed") ||
-        secondOutput.includes("0 to add, 0 to change")
+    // Repo settings reads are eventually consistent, so an immediate rerun can plan a stale diff
+    await withTestRetry(
+      async () => {
+        const output = await exec(
+          `node dist/cli.js sync --config ${configPath}`,
+          xfgEnv
+        );
+        assert.ok(
+          output.includes("No changes needed") ||
+            output.includes("0 to add, 0 to change"),
+          `expected idempotent sync to report no changes; got:\n${output}`
+        );
+      },
+      {
+        description: "idempotent sync reports no changes",
+        retries: 5,
+        baseDelayMs: 3000,
+      }
     );
   });
 });
@@ -769,7 +779,6 @@ describe("GitHub App Signed Refs Test", { skip: SKIP_TESTS }, () => {
   beforeEach(async () => {
     await resetTestRepo(signedTestRepo);
 
-    // Apply required_signatures ruleset via PAT
     const rulesetConfig = writeConfig(
       signedTmpDir,
       `id: integration-test-signed-refs
