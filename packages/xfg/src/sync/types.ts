@@ -158,7 +158,8 @@ export interface CommitPushOptions extends RunContext {
   repoInfo: RepoInfo;
   gitOps: IGitOps;
   fileChanges: Map<string, FileWriteResult>;
-  commitMessage: string;
+  /** Called only once there is something to commit */
+  commitMessage: () => Promise<string>;
   pushBranch: string;
   baseBranch: string;
   isDirectMode: boolean;

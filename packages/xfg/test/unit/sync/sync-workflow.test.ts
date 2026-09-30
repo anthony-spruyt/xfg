@@ -501,7 +501,7 @@ describe("SyncWorkflow", () => {
       const commitMessages: string[] = [];
       const prInputs: CreateAndMergeInput[] = [];
       components.commitPushManager.commitAndPush = async (opts) => {
-        commitMessages.push(opts.commitMessage);
+        commitMessages.push(await opts.commitMessage());
         return { success: true };
       };
       components.prMergeHandler.createAndMerge = async (input) => {
@@ -605,6 +605,24 @@ describe("SyncWorkflow", () => {
       await run(ctx, { ai: { provider: "anthropic" } }, { noAi: true });
       assert.equal(ctx.components.changeDescriber.calls.length, 0);
       assert.deepEqual(ctx.commitMessages, ["chore: sync ci.yaml"]);
+    });
+
+    test("nothing staged: describer not called", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      ctx.components.commitPushManager.commitAndPush = async () => ({
+        success: true,
+        skipped: true,
+      });
+      const result = await run(ctx, { ai: { provider: "anthropic" } });
+      assert.equal(result.skipped, true);
+      assert.equal(ctx.components.changeDescriber.calls.length, 0);
+    });
+
+    test("describer is called once for commit and PR", async () => {
+      const ctx = setup(AI_DESCRIPTION);
+      await run(ctx, { ai: { provider: "anthropic" } });
+      assert.equal(ctx.components.changeDescriber.calls.length, 1);
+      assert.equal(ctx.prInputs[0].prTitle, AI_DESCRIPTION.subject);
     });
 
     test("dry run: describer not called, logs intent", async () => {

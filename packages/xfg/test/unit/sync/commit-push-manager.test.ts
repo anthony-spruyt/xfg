@@ -54,7 +54,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -75,6 +75,7 @@ describe("CommitPushManager", () => {
       const { mock: mockLogger, messages } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({});
 
+      let messageBuilt = false;
       const manager = new CommitPushManager(mockLogger);
       const fileChanges = new Map<string, FileWriteResult>([
         [
@@ -88,7 +89,10 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => {
+          messageBuilt = true;
+          return "chore: sync config";
+        },
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -99,6 +103,7 @@ describe("CommitPushManager", () => {
 
       assert.equal(result.success, true);
       assert.equal(result.skipped, true);
+      assert.equal(messageBuilt, false);
       assert.ok(messages.some((msg) => msg.includes("No staged changes")));
     });
 
@@ -128,7 +133,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "main",
         baseBranch: "main",
         isDirectMode: true,
@@ -168,7 +173,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -221,7 +226,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -273,7 +278,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -318,7 +323,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,
@@ -356,7 +361,7 @@ describe("CommitPushManager", () => {
         gitOps,
         workDir,
         fileChanges,
-        commitMessage: "chore: sync config",
+        commitMessage: async () => "chore: sync config",
         pushBranch: "chore/sync-config",
         baseBranch: "main",
         isDirectMode: false,

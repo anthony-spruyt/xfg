@@ -101,15 +101,20 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
-      const description = await this.describeChanges(
-        repoConfig,
-        options,
-        runCtx,
-        workResult
-      );
-      const commitMessage = description
-        ? [description.subject, description.body].filter(Boolean).join("\n\n")
-        : workResult.commitMessage;
+      let pending: Promise<ChangeDescription | null> | undefined;
+      const describe = () =>
+        (pending ??= this.describeChanges(
+          repoConfig,
+          options,
+          runCtx,
+          workResult
+        ));
+      const commitMessage = async () => {
+        const description = await describe();
+        return description
+          ? [description.subject, description.body].filter(Boolean).join("\n\n")
+          : workResult.commitMessage;
+      };
 
       const pushBranch = isDirectMode ? session.baseBranch : branchName;
       const commitResult = await this.commitPushManager.commitAndPush({
@@ -150,6 +155,7 @@ export class SyncWorkflow implements ISyncWorkflow {
         };
       }
 
+      const description = await describe();
       return await this.prMergeHandler.createAndMerge({
         repoInfo,
         prOptions: repoConfig.prOptions,
