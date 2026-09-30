@@ -19,6 +19,7 @@ import { SyncWorkflow } from "./sync-workflow.js";
 import {
   AiChangeDescriber,
   createAiClient,
+  type FetchFn,
   type IChangeDescriber,
 } from "../ai/index.js";
 import type {
@@ -60,6 +61,9 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       changeDescriber?: IChangeDescriber;
       tokenManager?: GitHubAppTokenManager | null;
       envToken?: string;
+      /** Environment the AI client reads API keys from */
+      aiEnv?: Record<string, string | undefined>;
+      fetch?: FetchFn;
     }
   ) {
     const factory: GitOpsFactory =
@@ -95,7 +99,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const changeDescriber =
       components?.changeDescriber ??
       new AiChangeDescriber(
-        (opts) => createAiClient(opts, process.env, globalThis.fetch),
+        (opts) =>
+          createAiClient(
+            opts,
+            components?.aiEnv ?? {},
+            components?.fetch ?? globalThis.fetch
+          ),
         log
       );
 

@@ -1080,6 +1080,51 @@ describe("RepositoryProcessor", () => {
       );
     });
 
+    test("builds the AI client from injected env and fetch", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { gitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+        changedFiles: ["config.json"],
+      });
+      const trackingExecutor = createTrackingMockExecutor();
+      const apiKeys: string[] = [];
+      const processor = new RepositoryProcessor(() => gitOps, mockLogger, {
+        aiEnv: { ANTHROPIC_API_KEY: "injected-key" },
+        fetch: async (_url, init) => {
+          apiKeys.push((init.headers as Record<string, string>)["x-api-key"]);
+          const text = JSON.stringify({
+            subject: "build(config): add key",
+            body: "",
+            prSummary: "s",
+          });
+          return new Response(
+            JSON.stringify({ content: [{ type: "text", text }] }),
+            { status: 200 }
+          );
+        },
+      });
+
+      await processor.process(
+        { ...mockRepoConfig, prOptions: { ai: { provider: "anthropic" } } },
+        mockRepoInfo,
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, `ai-env-${Date.now()}`),
+          configId: "test-config",
+          dryRun: false,
+          executor: trackingExecutor,
+        }
+      );
+
+      assert.deepEqual(apiKeys, ["injected-key"]);
+      assert.equal(
+        trackingExecutor.lastCommitMessage,
+        "build(config): add key"
+      );
+    });
+
     test("should format commit message for more than 3 files with count", async () => {
       const { mock: mockLogger } = createMockLogger();
       const { gitOps } = createMockAuthenticatedGitOps({
