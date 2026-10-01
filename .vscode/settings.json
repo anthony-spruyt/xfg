@@ -25,5 +25,6 @@
   "editor.codeActions.triggerOnFocusChange": false,
   "explorer.sortOrder": "type",
   "editor.tabSize": 2,
-  "chat.agent.enabled": false
+  "chat.agent.enabled": false,
+  "workbench.colorTheme": "Forest Ash Sumi Moon"
 }

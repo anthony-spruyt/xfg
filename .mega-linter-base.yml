@@ -18,6 +18,8 @@ ENABLE_LINTERS:
 EXCLUDED_DIRECTORIES:
   - ".claude"
   - ".git"
+  - ".venv"
+  - "__pycache__"
   - "plans"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$|CHANGELOG\\.md$)"
 FLAVOR_SUGGESTIONS: false
