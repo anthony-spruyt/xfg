@@ -103,7 +103,3 @@ Paths are relative to `packages/xfg/`.
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
 - `.sh` files auto-marked executable unless `executable: false`
 - PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
-
-## Desloppify
-
-See `.claude/rules/desloppify.md` for all desloppify rules (scanning, false positives, reviews, subagent limits).
