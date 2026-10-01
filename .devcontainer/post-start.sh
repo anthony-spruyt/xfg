@@ -5,6 +5,9 @@ set -uo pipefail
 
 cd "$(dirname "$0")/.." || exit 0
 
+# envbuilder (Coder) runs this without ~/.bashrc, where ~/.local/bin joins PATH
+export PATH="$HOME/.local/bin:$PATH"
+
 shopt -s nullglob
 for hook in .devcontainer/post-start.d/*.sh; do
   echo "post-start: $hook"
