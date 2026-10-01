@@ -24,7 +24,6 @@ EXCLUDED_DIRECTORIES:
   - "test-cli-tmp"
   - "test-settings-cmd-tmp"
   - "tmp"
-  - ".desloppify"
   - ".worktrees"
   - "worktrees"
   - ".output"
