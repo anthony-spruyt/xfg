@@ -1288,6 +1288,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../configuration/collaborators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Collaborators
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/code-scanning/" class="md-nav__link">
         
   
@@ -4378,6 +4406,13 @@
 <td>Map of GitHub Actions secret names to SecretConfig.</td>
 </tr>
 <tr>
+<td><code>collaborators</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>-</td>
+<td>Direct collaborators for personal (user-owned) repos.</td>
+</tr>
+<tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
 <td>No</td>
@@ -4391,6 +4426,7 @@
 <li><code>labels</code> — Set a label to false to disable it.</li>
 <li><code>variables</code> — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.</li>
 <li><code>secrets</code> — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
+<li><code>collaborators</code> — Org repos are skipped with a warning.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -4454,6 +4490,13 @@
 <td>Map of GitHub Actions secret names to SecretConfig.</td>
 </tr>
 <tr>
+<td><code>collaborators</code></td>
+<td><code>object</code></td>
+<td>No</td>
+<td>-</td>
+<td>Direct collaborators for personal (user-owned) repos.</td>
+</tr>
+<tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
 <td>No</td>
@@ -4469,6 +4512,7 @@
 <li><code>codeScanning</code> — Set to false at per-repo level to opt out of inherited settings.</li>
 <li><code>variables</code> — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.</li>
 <li><code>secrets</code> — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
+<li><code>collaborators</code> — Users are added to inherited users. Set inherit: false to drop inherited users.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
