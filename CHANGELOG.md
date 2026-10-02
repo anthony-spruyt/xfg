@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.4.0](https://github.com/anthony-spruyt/xfg/compare/v7.3.0...v7.4.0) (2026-10-02)
+
+
+### Features
+
+* **settings:** manage collaborators on personal repos ([#1074](https://github.com/anthony-spruyt/xfg/issues/1074)) ([0139dca](https://github.com/anthony-spruyt/xfg/commit/0139dca6a43fb590dfc846e55e0474ec595715f6))
+
+
+### Bug Fixes
+
+* **lifecycle:** fail fast when App token targets a personal account ([#1071](https://github.com/anthony-spruyt/xfg/issues/1071)) ([17bf24a](https://github.com/anthony-spruyt/xfg/commit/17bf24a4d16dbea51e1fbf26638b9377f1a5669d))
+
 ## [7.3.0](https://github.com/anthony-spruyt/xfg/compare/v7.2.1...v7.3.0) (2026-09-30)
 
 
