@@ -7,6 +7,7 @@ import {
   MANIFEST_FILENAME,
   type XfgManifest,
 } from "./manifest.js";
+import type { CollaboratorsConfig } from "../config/index.js";
 import { computeUnifiedDiff, isBinaryFile } from "./diff-utils.js";
 import type {
   IManifestManager,
@@ -30,14 +31,16 @@ export class ManifestManager implements IManifestManager {
   detectOrphans(
     workDir: string,
     configId: string,
-    filesWithDeleteOrphaned: Map<string, boolean | undefined>
+    filesWithDeleteOrphaned: Map<string, boolean | undefined>,
+    collaborators?: CollaboratorsConfig
   ): OrphanProcessResult {
     const existingManifest = loadManifest(workDir, this.log);
 
     const { manifest, filesToDelete } = updateManifest(
       existingManifest,
       configId,
-      filesWithDeleteOrphaned
+      filesWithDeleteOrphaned,
+      collaborators
     );
 
     return { manifest, existingManifest, filesToDelete };
@@ -63,7 +66,6 @@ export class ManifestManager implements IManifestManager {
     }
 
     for (const fileName of filesToDelete) {
-      // Only delete if file actually exists in the working directory
       if (!gitOps.fileExists(fileName)) {
         continue;
       }
@@ -99,7 +101,6 @@ export class ManifestManager implements IManifestManager {
     dryRun: boolean,
     fileChanges: Map<string, FileWriteResult>
   ): void {
-    // Check if manifest changed
     const existingConfigs = existingManifest?.configs ?? {};
     const manifestChanged =
       JSON.stringify(existingConfigs) !== JSON.stringify(manifest.configs);
@@ -122,7 +123,6 @@ export class ManifestManager implements IManifestManager {
       action: manifestExisted ? "update" : "create",
     };
 
-    // Compute diff for the manifest (it's a JSON file)
     const oldManifestContent = existingManifest
       ? JSON.stringify(existingManifest, null, 2) + "\n"
       : null;

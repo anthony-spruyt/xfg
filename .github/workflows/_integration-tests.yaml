@@ -176,6 +176,31 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:github-variables
 
+  integration-test-cli-collaborators-github-pat:
+    runs-on: ubuntu-latest
+    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: ./.github/actions/integration-test-setup
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Ephemeral repo is created under the token's own user, not the org
+      - name: Run GitHub collaborators integration tests (PAT)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-collaborators
+
   integration-test-cli-code-scanning-github-pat:
     runs-on: ubuntu-latest
 

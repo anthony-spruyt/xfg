@@ -408,6 +408,17 @@ export type SecretsConfig = Record<string, SecretConfig | boolean> & {
   deleteOrphaned?: boolean;
 };
 
+export interface CollaboratorsConfig {
+  /** GitHub usernames granted write access (personal repos only) */
+  users?: string[];
+  /** Remove users xfg added (tracked in .xfg.json) once they leave the config */
+  deleteOrphaned?: boolean;
+}
+
+export interface RawCollaboratorsConfig extends CollaboratorsConfig {
+  inherit?: boolean;
+}
+
 export interface RepoSettings {
   /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
@@ -421,6 +432,8 @@ export interface RepoSettings {
   variables?: Record<string, string> & { deleteOrphaned?: boolean };
   /** GitHub Actions secrets keyed by name */
   secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
+  /** Direct collaborators on personal (user-owned) repos */
+  collaborators?: CollaboratorsConfig;
   deleteOrphaned?: boolean;
 }
 
@@ -496,6 +509,7 @@ export interface RawRootSettings {
   codeScanning?: CodeScanningSettings | false;
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
+  collaborators?: CollaboratorsConfig;
   deleteOrphaned?: boolean;
 }
 
@@ -510,6 +524,7 @@ export interface RawRepoSettings {
     deleteOrphaned?: boolean;
   };
   secrets?: SecretsConfig & { inherit?: boolean };
+  collaborators?: RawCollaboratorsConfig;
   deleteOrphaned?: boolean;
 }
 

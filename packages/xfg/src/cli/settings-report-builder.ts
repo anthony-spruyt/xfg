@@ -5,6 +5,7 @@ import {
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
   type VariablesPlanEntry,
+  type CollaboratorsPlanEntry,
   type SecretsPlanEntry,
   countActions,
   isActiveAction,
@@ -37,6 +38,11 @@ export interface ProcessorResults {
       entries?: VariablesPlanEntry[];
     };
   };
+  collaboratorsResult?: {
+    planOutput?: {
+      entries?: CollaboratorsPlanEntry[];
+    };
+  };
   secretsResult?: {
     planOutput?: {
       entries?: SecretsPlanEntry[];
@@ -55,6 +61,7 @@ export function buildSettingsReport(
     labels: { create: 0, update: 0, delete: 0 },
     variables: { create: 0, update: 0, delete: 0 },
     secrets: { create: 0, update: 0, delete: 0 },
+    collaborators: { create: 0, update: 0, delete: 0 },
   };
 
   for (const result of results) {
@@ -65,6 +72,7 @@ export function buildSettingsReport(
       labels: [],
       variables: [],
       secrets: [],
+      collaborators: [],
     };
 
     if (result.settingsResult?.planOutput?.entries) {
@@ -154,6 +162,19 @@ export function buildSettingsReport(
       totals.secrets.create += counts.create;
       totals.secrets.update += counts.update;
       totals.secrets.delete += counts.delete;
+    }
+
+    if (result.collaboratorsResult?.planOutput?.entries) {
+      for (const entry of result.collaboratorsResult.planOutput.entries) {
+        if (entry.action === "unchanged") continue;
+        repoChanges.collaborators!.push({
+          name: entry.name,
+          action: entry.action,
+        });
+      }
+      const counts = countActions(repoChanges.collaborators!);
+      totals.collaborators.create += counts.create;
+      totals.collaborators.delete += counts.delete;
     }
 
     if (result.error) {

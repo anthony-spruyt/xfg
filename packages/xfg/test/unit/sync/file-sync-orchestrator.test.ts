@@ -69,16 +69,20 @@ describe("FileSyncOrchestrator", () => {
       deleteOrphans: number;
       saveUpdatedManifest: number;
     };
+    detectOrphansArgs: unknown[][];
   } {
     const calls = {
       detectOrphans: 0,
       deleteOrphans: 0,
       saveUpdatedManifest: 0,
     };
+    const detectOrphansArgs: unknown[][] = [];
     return {
       calls,
-      detectOrphans: () => {
+      detectOrphansArgs,
+      detectOrphans: (...args: unknown[]) => {
         calls.detectOrphans++;
+        detectOrphansArgs.push(args);
         return {
           manifest: { version: 4, configs: {} },
           existingManifest: null,
@@ -95,6 +99,39 @@ describe("FileSyncOrchestrator", () => {
   }
 
   describe("sync", () => {
+    test("passes merged collaborators to manifest tracking", async () => {
+      const { gitOps } = createMockAuthenticatedGitOps({});
+      const { mock: mockLogger } = createMockLogger();
+      const mockManifestManager = createMockManifestManager();
+      const orchestrator = new FileSyncOrchestrator(
+        createMockFileWriter(new Map()),
+        mockManifestManager,
+        mockLogger
+      );
+      const collaborators = { users: ["bot"], deleteOrphaned: true };
+
+      await orchestrator.sync(
+        {
+          git: mockRepoInfo.gitUrl,
+          files: [],
+          settings: { collaborators },
+        },
+        mockRepoInfo,
+        { gitOps, baseBranch: "main", cleanup: () => {} },
+        {
+          branchName: "chore/sync",
+          workDir,
+          configId: "test",
+          executor: createMockExecutor().mock,
+        }
+      );
+
+      assert.deepEqual(
+        mockManifestManager.detectOrphansArgs[0][3],
+        collaborators
+      );
+    });
+
     test("orchestrates file writing and manifest handling", async () => {
       const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();

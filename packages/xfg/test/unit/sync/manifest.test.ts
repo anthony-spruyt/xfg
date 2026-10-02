@@ -10,6 +10,7 @@ import {
   loadManifest,
   saveManifest,
   getManagedFiles,
+  getManagedCollaborators,
   parseManifestContent,
   updateManifest,
 } from "../../../src/sync/manifest.js";
@@ -575,6 +576,67 @@ describe("manifest", () => {
       assert.equal(manifest.configs["config-a"], undefined);
       // config-b should be preserved
       assert.deepEqual(manifest.configs["config-b"]?.files, ["other.json"]);
+    });
+
+    test("tracks collaborators sorted and lowercased when deleteOrphaned", () => {
+      const { manifest } = updateManifest(null, configId, new Map(), {
+        users: ["Zed", "alice"],
+        deleteOrphaned: true,
+      });
+
+      assert.deepEqual(manifest.configs[configId], {
+        collaborators: ["alice", "zed"],
+      });
+    });
+
+    test("does not track collaborators without deleteOrphaned", () => {
+      const { manifest } = updateManifest(null, configId, new Map(), {
+        users: ["alice"],
+      });
+
+      assert.equal(manifest.configs[configId], undefined);
+    });
+
+    test("tracks files and collaborators together", () => {
+      const filesMap = new Map<string, boolean | undefined>([["a.json", true]]);
+      const { manifest } = updateManifest(null, configId, filesMap, {
+        users: ["bot"],
+        deleteOrphaned: true,
+      });
+
+      assert.deepEqual(manifest.configs[configId], {
+        files: ["a.json"],
+        collaborators: ["bot"],
+      });
+    });
+
+    test("drops collaborators from entry when no longer configured", () => {
+      const existing: XfgManifest = {
+        version: 4,
+        configs: { [configId]: { files: ["a.json"], collaborators: ["bot"] } },
+      };
+      const filesMap = new Map<string, boolean | undefined>([["a.json", true]]);
+
+      const { manifest } = updateManifest(existing, configId, filesMap);
+
+      assert.deepEqual(manifest.configs[configId], { files: ["a.json"] });
+    });
+  });
+
+  describe("getManagedCollaborators", () => {
+    test("returns empty array for null manifest", () => {
+      assert.deepEqual(getManagedCollaborators(null, "c"), []);
+    });
+
+    test("returns tracked collaborators for the config", () => {
+      const manifest: XfgManifest = {
+        version: 4,
+        configs: {
+          c: { collaborators: ["bot"] },
+          other: { collaborators: ["x"] },
+        },
+      };
+      assert.deepEqual(getManagedCollaborators(manifest, "c"), ["bot"]);
     });
   });
 

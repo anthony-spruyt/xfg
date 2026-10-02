@@ -97,6 +97,19 @@ describe("ManifestManager", () => {
 
       assert.deepEqual(result.filesToDelete, []);
     });
+
+    test("records collaborators in the new manifest", () => {
+      const manager = new ManifestManager();
+
+      const result = manager.detectOrphans(workDir, "test-config", new Map(), {
+        users: ["Bot"],
+        deleteOrphaned: true,
+      });
+
+      assert.deepEqual(result.manifest.configs["test-config"], {
+        collaborators: ["bot"],
+      });
+    });
   });
 
   describe("deleteOrphans", () => {

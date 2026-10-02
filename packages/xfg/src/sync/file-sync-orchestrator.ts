@@ -55,7 +55,8 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
     } = this.manifestManager.detectOrphans(
       workDir,
       configId,
-      filesWithDeleteOrphaned
+      filesWithDeleteOrphaned,
+      repoConfig.settings?.collaborators
     );
 
     this.manifestManager.deleteOrphans(

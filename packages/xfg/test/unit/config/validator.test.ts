@@ -5761,3 +5761,163 @@ describe("group extends validation", () => {
     });
   });
 });
+
+describe("settings.collaborators validation", () => {
+  const base = (settings: RawRootSettings, repoSettings?: RawRepoSettings) =>
+    ({
+      id: "test-config",
+      settings,
+      repos: [{ git: "git@github.com:me/repo.git", settings: repoSettings }],
+    }) as RawConfig;
+
+  test("accepts users and deleteOrphaned", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        base({
+          collaborators: { users: ["spruyt-labs-bot"], deleteOrphaned: true },
+        })
+      )
+    );
+  });
+
+  test("rejects non-object collaborators", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base({
+            collaborators: ["x"] as unknown as RawRootSettings["collaborators"],
+          })
+        ),
+      /collaborators must be an object/
+    );
+  });
+
+  test("rejects users that is not an array", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base({
+            collaborators: {
+              users: "bot" as unknown as string[],
+            },
+          })
+        ),
+      /collaborators\.users must be an array/
+    );
+  });
+
+  test("rejects invalid GitHub usernames", () => {
+    for (const bad of [
+      "-bot",
+      "bot-",
+      "has space",
+      "dependabot[bot]",
+      "a".repeat(40),
+      "",
+    ]) {
+      assert.throws(
+        () => validateRawConfig(base({ collaborators: { users: [bad] } })),
+        /not a valid GitHub username/,
+        bad
+      );
+    }
+  });
+
+  test("rejects non-boolean deleteOrphaned", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base({
+            collaborators: {
+              deleteOrphaned: "yes" as unknown as boolean,
+            },
+          })
+        ),
+      /collaborators\.deleteOrphaned must be a boolean/
+    );
+  });
+
+  test("rejects unknown keys", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base({
+            collaborators: {
+              users: ["bot"],
+              permission: "admin",
+            } as unknown as RawRootSettings["collaborators"],
+          })
+        ),
+      /collaborators: unknown key 'permission'/
+    );
+  });
+
+  test("rejects inherit at root", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base({
+            collaborators: {
+              inherit: false,
+            } as unknown as RawRootSettings["collaborators"],
+          })
+        ),
+      /'inherit' is not allowed in root-level collaborators/
+    );
+  });
+
+  test("allows inherit at repo level", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        base(
+          { collaborators: { users: ["bot"] } },
+          { collaborators: { inherit: false } }
+        )
+      )
+    );
+  });
+
+  test("rejects non-boolean inherit at repo level", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base(
+            { collaborators: { users: ["bot"] } },
+            { collaborators: { inherit: "no" as unknown as boolean } }
+          )
+        ),
+      /collaborators\.inherit must be a boolean/
+    );
+  });
+
+  test("allows inherit in groups", () => {
+    const config = {
+      id: "test-config",
+      settings: { collaborators: { users: ["bot"] } },
+      groups: { g: { settings: { collaborators: { inherit: false } } } },
+      repos: [{ git: "git@github.com:me/repo.git", groups: ["g"] }],
+    } as RawConfig;
+    assert.doesNotThrow(() => validateRawConfig(config));
+  });
+
+  test("collaborators-only config is actionable for sync", () => {
+    assert.doesNotThrow(() =>
+      validateForSync(base({ collaborators: { users: ["bot"] } }))
+    );
+  });
+
+  test("hasActionableSettings: users or deleteOrphaned", () => {
+    assert.equal(
+      hasActionableSettings({ collaborators: { users: ["bot"] } }),
+      true
+    );
+    assert.equal(
+      hasActionableSettings({ collaborators: { deleteOrphaned: true } }),
+      true
+    );
+    assert.equal(
+      hasActionableSettings({ collaborators: { users: [] } }),
+      false
+    );
+  });
+});

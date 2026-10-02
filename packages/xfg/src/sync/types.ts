@@ -1,4 +1,5 @@
 import type {
+  CollaboratorsConfig,
   FileContent,
   RepoConfig,
   RepoPROptions,
@@ -85,7 +86,8 @@ export interface IManifestManager {
   detectOrphans(
     workDir: string,
     configId: string,
-    filesWithDeleteOrphaned: Map<string, boolean | undefined>
+    filesWithDeleteOrphaned: Map<string, boolean | undefined>,
+    collaborators?: CollaboratorsConfig
   ): OrphanProcessResult;
 
   deleteOrphans(

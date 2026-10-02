@@ -4,11 +4,13 @@ import {
   LabelsProcessor,
   CodeScanningProcessor,
   VariablesProcessor,
+  CollaboratorsProcessor,
   GitHubRulesetStrategy,
   GitHubRepoSettingsStrategy,
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
   GitHubVariablesStrategy,
+  GitHubCollaboratorsStrategy,
 } from "../settings/index.js";
 import { GitHubRepoMetadataProvider } from "../repo/index.js";
 import type { ProcessExecutor } from "../shared/command-executor.js";
@@ -18,6 +20,7 @@ import type {
   LabelsProcessorFactory,
   CodeScanningProcessorFactory,
   VariablesProcessorFactory,
+  CollaboratorsProcessorFactory,
   SettingsProcessorFactories,
 } from "./types.js";
 
@@ -66,6 +69,17 @@ export function createDefaultVariablesProcessorFactory(
     new VariablesProcessor(new GitHubVariablesStrategy(executor, { cwd }));
 }
 
+export function createDefaultCollaboratorsProcessorFactory(
+  executor: ProcessExecutor
+): CollaboratorsProcessorFactory {
+  const cwd = process.cwd();
+  return () =>
+    new CollaboratorsProcessor(
+      new GitHubCollaboratorsStrategy(executor, { cwd }),
+      new GitHubRepoMetadataProvider(executor, { cwd })
+    );
+}
+
 export function createDefaultFactories(
   executor: ProcessExecutor,
   overrides?: Partial<SettingsProcessorFactories>
@@ -81,5 +95,8 @@ export function createDefaultFactories(
       createDefaultCodeScanningProcessorFactory(executor),
     variables:
       overrides?.variables ?? createDefaultVariablesProcessorFactory(executor),
+    collaborators:
+      overrides?.collaborators ??
+      createDefaultCollaboratorsProcessorFactory(executor),
   };
 }
