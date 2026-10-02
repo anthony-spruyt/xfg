@@ -71,7 +71,11 @@ describe("CollaboratorsProcessor", () => {
     const strategy = new MockStrategy();
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {});
+    const result = await processor.process(
+      config({ users: ["bot"] }),
+      repo,
+      {}
+    );
 
     assert.equal(result.success, true);
     assert.deepEqual(strategy.calls, [{ method: "add", args: ["bot"] }]);
@@ -96,7 +100,11 @@ describe("CollaboratorsProcessor", () => {
     strategy.invitations = [{ id: 1, invitee: { login: "bot" } }];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {});
+    const result = await processor.process(
+      config({ users: ["bot"] }),
+      repo,
+      {}
+    );
 
     assert.deepEqual(strategy.calls, []);
     assert.equal(result.message, "No changes needed");
@@ -104,7 +112,9 @@ describe("CollaboratorsProcessor", () => {
 
   test("expired invite is cancelled before inviting again", async () => {
     const strategy = new MockStrategy();
-    strategy.invitations = [{ id: 4, invitee: { login: "bot" }, expired: true }];
+    strategy.invitations = [
+      { id: 4, invitee: { login: "bot" }, expired: true },
+    ];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
     await processor.process(config({ users: ["bot"] }), repo, {});
@@ -117,7 +127,11 @@ describe("CollaboratorsProcessor", () => {
 
   test("deleteOrphaned removes everyone not in config except the owner", async () => {
     const strategy = new MockStrategy();
-    strategy.collaborators = [{ login: "me" }, { login: "bot" }, { login: "old" }];
+    strategy.collaborators = [
+      { login: "me" },
+      { login: "bot" },
+      { login: "old" },
+    ];
     strategy.invitations = [{ id: 9, invitee: { login: "late" } }];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
@@ -180,7 +194,11 @@ describe("CollaboratorsProcessor", () => {
       metadata("Organization")
     );
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {});
+    const result = await processor.process(
+      config({ users: ["bot"] }),
+      repo,
+      {}
+    );
 
     assert.equal(result.skipped, true);
     assert.equal(result.success, true);
@@ -205,7 +223,11 @@ describe("CollaboratorsProcessor", () => {
     };
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {});
+    const result = await processor.process(
+      config({ users: ["bot"] }),
+      repo,
+      {}
+    );
 
     assert.equal(result.success, false);
     assert.match(result.message, /HTTP 403/);

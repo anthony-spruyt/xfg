@@ -197,6 +197,7 @@ jobs:
       - name: Run GitHub collaborators integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
         working-directory: packages/xfg
         run: npm run test:integration:github-collaborators
 
