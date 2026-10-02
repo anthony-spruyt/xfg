@@ -2092,3 +2092,24 @@ describe("formatSettingsReportCLI collaborators", () => {
     assert.ok(output.includes("2 collaborators"), output);
   });
 });
+
+describe("renderRepoSettingsDiffLines collaborators", () => {
+  test("separates collaborators from earlier sections with a blank line", () => {
+    const lines: string[] = [];
+    renderRepoSettingsDiffLines(
+      {
+        repoName: "me/repo",
+        settings: [],
+        rulesets: [],
+        labels: [],
+        variables: [{ name: "A", action: "create", newValue: "1" }],
+        collaborators: [{ name: "bot", action: "create" }],
+      },
+      lines
+    );
+
+    const i = lines.indexOf('+ collaborator "bot"');
+    assert.ok(i > 0, lines.join("\n"));
+    assert.equal(lines[i - 1], "");
+  });
+});

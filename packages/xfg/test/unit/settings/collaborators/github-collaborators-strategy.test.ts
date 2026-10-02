@@ -112,6 +112,19 @@ describe("GitHubCollaboratorsStrategy", () => {
     );
   });
 
+  test("getManifest returns null for non-base64 content", async () => {
+    const executor = new MockExecutor();
+    executor.response = JSON.stringify({ encoding: "none", content: "" });
+    assert.equal(await make(executor).getManifest(repo), null);
+  });
+
+  test("uses the default retry count when none is given", async () => {
+    const executor = new MockExecutor();
+    executor.response = "[]";
+    const strategy = new GitHubCollaboratorsStrategy(executor, { cwd: "/tmp" });
+    assert.deepEqual(await strategy.listCollaborators(repo), []);
+  });
+
   test("getManifest returns null on 404", async () => {
     const executor = new MockExecutor();
     executor.error = new Error("gh: Not Found (HTTP 404)");

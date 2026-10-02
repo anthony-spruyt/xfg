@@ -136,6 +136,35 @@ describe("CollaboratorsProcessor", () => {
     );
   });
 
+  test("without a config id nothing counts as managed", async () => {
+    const strategy = new MockStrategy();
+    strategy.collaborators = [{ login: "old" }];
+    strategy.manifest = managed(["old"]);
+    const processor = new CollaboratorsProcessor(strategy, metadata());
+
+    await processor.process(
+      config({ users: [], deleteOrphaned: true }),
+      repo,
+      {}
+    );
+
+    assert.deepEqual(strategy.calls, []);
+  });
+
+  test("deleteOrphaned with no users still runs", async () => {
+    const strategy = new MockStrategy();
+    const processor = new CollaboratorsProcessor(strategy, metadata());
+
+    const result = await processor.process(
+      config({ deleteOrphaned: true }),
+      repo,
+      { configId: "cfg" }
+    );
+
+    assert.equal(result.skipped, undefined);
+    assert.equal(result.message, "No changes needed");
+  });
+
   test("--no-delete suppresses removals", async () => {
     const strategy = new MockStrategy();
     strategy.collaborators = [{ login: "old" }];
