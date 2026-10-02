@@ -70,6 +70,22 @@ const POST_CREATE_PERMANENT_PATTERNS = [
  */
 const FORK_POLL_INTERVAL_MS = 2_000;
 
+function isInstallationToken(token: string | undefined): boolean {
+  return token?.startsWith("ghs_") ?? false;
+}
+
+// Installation tokens have no user, so POST /user/repos is refused - GitHub
+// misreports it as "403 Rate Limit Exceeded", which retries would wait out.
+function personalAccountInstallationTokenError(
+  repoInfo: GitHubRepoInfo
+): LifecycleError {
+  return new LifecycleError(
+    `GitHub App installation token cannot create repositories for personal account '${repoInfo.owner}'. ` +
+      `Create ${repoInfo.owner}/${repoInfo.repo} first, or run lifecycle with a personal access token. ` +
+      `App installation tokens can only create repositories in organizations.`
+  );
+}
+
 /**
  * GitHub implementation of IRepoLifecycleProvider.
  * Uses gh CLI for all operations.
@@ -178,6 +194,15 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     assertGitHubRepo(repoInfo, "GitHubLifecycleProvider");
   }
 
+  private async assertTokenCanCreateRepo(
+    repoInfo: GitHubRepoInfo,
+    token: string | undefined
+  ): Promise<void> {
+    if (!isInstallationToken(token)) return;
+    if (await this.isOrganization(repoInfo.owner, repoInfo, token)) return;
+    throw personalAccountInstallationTokenError(repoInfo);
+  }
+
   private buildGhApiPrefix(
     repoInfo: GitHubRepoInfo,
     token?: string
@@ -227,6 +252,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   async create(params: LifecycleCreateParams): Promise<void> {
     const { repo: repoInfo, settings, token } = params;
     this.assertGitHub(repoInfo);
+    await this.assertTokenCanCreateRepo(repoInfo, token);
 
     const tokenEnv = buildTokenEnv(token);
     const args: string[] = [
@@ -308,6 +334,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     // Determine if target owner is an organization or user
     const isOrg = await this.isOrganization(target.owner, target, token);
+    if (!isOrg && isInstallationToken(token)) {
+      throw personalAccountInstallationTokenError(target);
+    }
 
     const tokenEnv = buildTokenEnv(token);
 
@@ -423,6 +452,7 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   ): Promise<void> {
     const { repo: repoInfo, sourceDir, settings, token } = params;
     this.assertGitHub(repoInfo);
+    await this.assertTokenCanCreateRepo(repoInfo, token);
 
     await this.removeOriginRemote(sourceDir);
     await this.cleanNonStandardRefs(sourceDir);

@@ -1409,7 +1409,10 @@ describe("GitHubLifecycleProvider", () => {
 
     test("create() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
+        responses: new Map([
+          ["gh users/test-org", '{"type": "Organization"}'],
+          ["gh contents/README.md --jq", "abc123def"],
+        ]),
         defaultResponse: "",
       });
 
@@ -1420,19 +1423,20 @@ describe("GitHubLifecycleProvider", () => {
       });
       await provider.create({ repo: mockRepoInfo, token: "ghs_test_token" });
 
-      // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
-      assert.equal(calls.length, 3);
+      // calls[0] = owner type check, calls[1] = gh repo create,
+      // calls[2] = GET README sha, calls[3] = DELETE README
+      assert.equal(calls.length, 4);
       assert.ok(
-        calls[0].executable === "gh" && calls[0].args.includes("create")
+        calls[1].executable === "gh" && calls[1].args.includes("create")
       );
-      assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
-      // Token should also be used for the deleteReadme API calls
-      assert.equal(calls[1].options?.env?.GH_TOKEN, "ghs_test_token");
-      assert.equal(calls[2].options?.env?.GH_TOKEN, "ghs_test_token");
+      for (const call of calls) {
+        assert.equal(call.options?.env?.GH_TOKEN, "ghs_test_token");
+      }
     });
 
     test("receiveMigration() passes GH_TOKEN via env when token provided", async () => {
-      const { mock: executor, calls } = createMockExecutor({
+      const { mock: executor, calls: allCalls } = createMockExecutor({
+        responses: new Map([["gh users/test-org", '{"type": "Organization"}']]),
         defaultResponse: "",
       });
 
@@ -1447,6 +1451,8 @@ describe("GitHubLifecycleProvider", () => {
         token: "ghs_test_token",
       });
 
+      assert.ok(allCalls[0].args.includes("users/test-org"));
+      const calls = allCalls.slice(1);
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
       // calls[2] = gh repo create, calls[3] = git remote add origin, calls[4] = git push --mirror
       assert.equal(calls.length, 5);
@@ -1544,6 +1550,108 @@ describe("GitHubLifecycleProvider", () => {
         forkCall.args.includes("--org"),
         "Should use --org flag when isOrganization check fails"
       );
+    });
+  });
+
+  describe("installation token on personal account", () => {
+    const personalRepoInfo: GitHubRepoInfo = {
+      type: "github",
+      gitUrl: "git@github.com:someuser/new-repo.git",
+      owner: "someuser",
+      repo: "new-repo",
+      host: "github.com",
+    };
+    const upstreamRepoInfo: GitHubRepoInfo = {
+      type: "github",
+      gitUrl: "git@github.com:opensource/cool-tool.git",
+      owner: "opensource",
+      repo: "cool-tool",
+      host: "github.com",
+    };
+
+    function setup() {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map([
+          ["gh users/someuser", '{"type": "User"}'],
+          ["gh users/test-org", '{"type": "Organization"}'],
+          ["gh contents/README.md --jq", "abc123def"],
+        ]),
+        defaultResponse: "",
+      });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
+      const repoCreateCalls = () =>
+        calls.filter(
+          (c) =>
+            c.executable === "gh" &&
+            c.args[0] === "repo" &&
+            (c.args[1] === "create" || c.args[1] === "fork")
+        );
+      return { provider, calls, repoCreateCalls };
+    }
+
+    test("create() fails fast without calling gh repo create", async () => {
+      const { provider, repoCreateCalls } = setup();
+
+      await assert.rejects(
+        () =>
+          provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
+        /installation token cannot create repositories for personal account 'someuser'/
+      );
+      assert.equal(repoCreateCalls().length, 0);
+    });
+
+    test("fork() fails fast without calling gh repo fork", async () => {
+      const { provider, repoCreateCalls } = setup();
+
+      await assert.rejects(
+        () =>
+          provider.fork!({
+            upstream: upstreamRepoInfo,
+            target: personalRepoInfo,
+            token: "ghs_app_token",
+          }),
+        /personal account 'someuser'/
+      );
+      assert.equal(repoCreateCalls().length, 0);
+    });
+
+    test("receiveMigration() fails fast without calling gh repo create", async () => {
+      const { provider, repoCreateCalls } = setup();
+
+      await assert.rejects(
+        () =>
+          provider.receiveMigration({
+            repo: personalRepoInfo,
+            sourceDir: "/tmp/source",
+            token: "ghs_app_token",
+          }),
+        /personal account 'someuser'/
+      );
+      assert.equal(repoCreateCalls().length, 0);
+    });
+
+    test("create() proceeds with installation token on an organization", async () => {
+      const { provider, repoCreateCalls } = setup();
+
+      await provider.create({ repo: mockRepoInfo, token: "ghs_app_token" });
+
+      assert.equal(repoCreateCalls().length, 1);
+    });
+
+    test("create() with a PAT on a personal account skips the owner check", async () => {
+      const { provider, calls, repoCreateCalls } = setup();
+
+      await provider.create({
+        repo: personalRepoInfo,
+        token: "github_pat_abc",
+      });
+
+      assert.equal(repoCreateCalls().length, 1);
+      assert.ok(!calls.some((c) => c.args.some((a) => a.startsWith("users/"))));
     });
   });
 });

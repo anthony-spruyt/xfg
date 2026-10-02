@@ -174,6 +174,20 @@ In dry-run mode (`--dry-run`), lifecycle operations are reported but not execute
 | Migrate (target) | Yes    | -            | -      |
 | Migrate (source) | -      | Yes          | -      |
 
+## Authentication
+
+Create, fork, and migrate support depends on the auth type and on who owns the target repo:
+
+| Target owner     | PAT (`GH_TOKEN`) | [GitHub App](../platforms/github-app.md) installation token |
+| ---------------- | ---------------- | ----------------------------------------------------------- |
+| Organization     | Yes              | Yes (needs Administration: Read and write)                  |
+| Personal account | Yes              | No                                                          |
+
+GitHub does not let an installation token create repos for a personal account. With App auth, xfg stops with an error instead of trying. To work around it, either:
+
+- Create the repo first (in the GitHub UI or with a PAT). xfg then syncs it as normal with App auth.
+- Run xfg with a PAT in `GH_TOKEN` and no App credentials.
+
 ## Example: Full Lifecycle Config
 
 ```yaml
