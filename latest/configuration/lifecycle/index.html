@@ -1299,6 +1299,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#example-full-lifecycle-config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1445,6 +1456,34 @@
     
   
     Secrets
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collaborators/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Collaborators
   
 
     
@@ -2812,6 +2851,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#example-full-lifecycle-config" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3073,6 +3123,34 @@
 </tr>
 </tbody>
 </table>
+<h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
+<p>Create, fork, and migrate support depends on the auth type and on who owns the target repo:</p>
+<table>
+<thead>
+<tr>
+<th>Target owner</th>
+<th>PAT (<code>GH_TOKEN</code>)</th>
+<th><a href="../../platforms/github-app/">GitHub App</a> installation token</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Organization</td>
+<td>Yes</td>
+<td>Yes (needs Administration: Read and write)</td>
+</tr>
+<tr>
+<td>Personal account</td>
+<td>Yes</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>GitHub does not let an installation token create repos for a personal account. This also applies to the Actions <code>GITHUB_TOKEN</code>. xfg stops with an error instead of trying. <code>--dry-run</code> does not catch this. To work around it, either:</p>
+<ul>
+<li>Create the repo first (in the GitHub UI or with a PAT). xfg then syncs it as normal with App auth.</li>
+<li>Run xfg with a PAT in <code>GH_TOKEN</code> and no App credentials.</li>
+</ul>
 <h2 id="example-full-lifecycle-config">Example: Full Lifecycle Config<a class="headerlink" href="#example-full-lifecycle-config" title="Permanent link">&para;</a></h2>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-org-repos</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
