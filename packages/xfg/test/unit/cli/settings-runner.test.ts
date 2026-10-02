@@ -140,6 +140,8 @@ function buildCtx(
       neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
     variables:
       neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+    collaborators:
+      neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
   };
   return {
     repoConfig: { name: "org/repo" } as unknown as RepoConfig,
@@ -184,6 +186,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -216,6 +220,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -253,6 +259,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -294,6 +302,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -337,6 +347,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -386,6 +398,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -429,6 +443,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -465,6 +481,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -512,6 +530,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -555,6 +575,8 @@ describe("applyRepoSettings", () => {
         ) as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -597,6 +619,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
+        collaborators:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
       },
       logger,
     });
@@ -609,5 +633,53 @@ describe("applyRepoSettings", () => {
       0,
       "collector must remain empty for skipped results"
     );
+  });
+
+  test("runs collaborators and stores the result", async () => {
+    const collector = new ResultsCollector();
+    const { logger } = createMockLogger();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { collaborators: { users: ["bot"] } },
+      } as unknown as RepoConfig,
+      settingsCollector: collector,
+      factories: {
+        ...buildCtx({}).factories,
+        collaborators: createMockFactory(
+          successResult
+        ) as unknown as SettingsProcessorFactories["collaborators"],
+      },
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+
+    assert.ok("collaboratorsResult" in collector.getAll()[0]);
+  });
+
+  test("logs warnings from skipped results", async () => {
+    const { logger, calls } = createMockLogger();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { collaborators: { users: ["bot"] } },
+      } as unknown as RepoConfig,
+      factories: {
+        ...buildCtx({}).factories,
+        collaborators: createMockFactory({
+          ...skippedResult,
+          warnings: ["personal repos only"],
+        }) as unknown as SettingsProcessorFactories["collaborators"],
+      },
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+
+    const warns = calls
+      .filter((c) => c.method === "warn")
+      .map((c) => c.args[0]);
+    assert.deepEqual(warns, ["personal repos only"]);
   });
 });

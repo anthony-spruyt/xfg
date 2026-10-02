@@ -25,6 +25,7 @@ export interface SettingsReport {
     labels: { create: number; update: number; delete: number };
     variables?: { create: number; update: number; delete: number };
     secrets?: { create: number; update: number; delete: number };
+    collaborators?: { create: number; update: number; delete: number };
   };
 }
 
@@ -40,6 +41,7 @@ export interface RepoChanges {
     newValue?: string;
   }[];
   secrets?: SecretsPlanEntry[];
+  collaborators?: { name: string; action: "create" | "delete" }[];
   error?: string;
 }
 
@@ -50,6 +52,7 @@ export function hasRepoSettingsChanges(repo: RepoChanges): boolean {
     repo.labels.length > 0 ||
     (repo.variables ?? []).length > 0 ||
     (repo.secrets ?? []).length > 0 ||
+    (repo.collaborators ?? []).length > 0 ||
     !!repo.error
   );
 }
@@ -146,6 +149,11 @@ const SETTINGS_CATEGORIES: {
   { noun: "label", plural: "labels", totals: (t) => t.labels },
   { noun: "variable", plural: "variables", totals: (t) => t.variables },
   { noun: "secret", plural: "secrets", totals: (t) => t.secrets },
+  {
+    noun: "collaborator",
+    plural: "collaborators",
+    totals: (t) => t.collaborators,
+  },
 ];
 
 export function formatSettingsCountEntries(
@@ -349,6 +357,15 @@ export function renderRepoSettingsDiffLines(
     } else {
       diffLines.push(`- secret ${quoted(secret.name)}`);
     }
+  }
+
+  if ((repo.collaborators ?? []).length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  for (const collaborator of repo.collaborators ?? []) {
+    const sign = collaborator.action === "create" ? "+" : "-";
+    diffLines.push(`${sign} collaborator ${quoted(collaborator.name)}`);
   }
 
   if (repo.error) {

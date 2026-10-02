@@ -28,6 +28,8 @@ import type {
   Ruleset,
   Label,
   GitHubRepoSettings,
+  CollaboratorsConfig,
+  RawCollaboratorsConfig,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
 
@@ -307,6 +309,36 @@ function dropEntryMapIfEmpty(
 }
 
 /**
+ * Merges collaborator layers: users union (case-insensitive, first spelling wins),
+ * `inherit: false` drops base users but never clears an inherited deleteOrphaned.
+ */
+function mergeCollaboratorsLayer(
+  base: RawCollaboratorsConfig | undefined,
+  overlay: RawCollaboratorsConfig | undefined
+): CollaboratorsConfig {
+  const inheritedUsers = overlay?.inherit === false ? [] : (base?.users ?? []);
+  const seen = new Set<string>();
+  const users: string[] = [];
+  for (const user of [...inheritedUsers, ...(overlay?.users ?? [])]) {
+    const key = user.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    users.push(user);
+  }
+
+  const deleteOrphaned = overlay?.deleteOrphaned ?? base?.deleteOrphaned;
+  return deleteOrphaned === undefined ? { users } : { users, deleteOrphaned };
+}
+
+function dropCollaboratorsIfEmpty(
+  merged: CollaboratorsConfig
+): CollaboratorsConfig | undefined {
+  if ((merged.users ?? []).length === 0 && merged.deleteOrphaned === undefined)
+    return undefined;
+  return merged;
+}
+
+/**
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
  */
@@ -364,8 +396,6 @@ export function mergeSettings(
     result.deleteOrphaned = deleteOrphaned;
   }
 
-  // Merge repo settings: per-repo overrides root (shallow merge)
-  // repo: false means opt out of all root repo settings
   if (perRepo?.repo === false) {
     // Opt-out: don't include any repo settings
   } else {
@@ -425,6 +455,15 @@ export function mergeSettings(
     );
     if (merged) {
       result.secrets = merged as RepoSettings["secrets"];
+    }
+  }
+
+  if (root?.collaborators || perRepo?.collaborators) {
+    const merged = dropCollaboratorsIfEmpty(
+      mergeCollaboratorsLayer(root?.collaborators, perRepo?.collaborators)
+    );
+    if (merged) {
+      result.collaborators = merged;
     }
   }
 
@@ -605,7 +644,6 @@ function mergeRawSettings(
     );
   }
 
-  // Merge code scanning: overlay fully replaces base (same semantics as mergeSettings)
   if (overlay.codeScanning !== undefined) {
     if (overlay.codeScanning === false) {
       result.codeScanning = false;
@@ -626,6 +664,13 @@ function mergeRawSettings(
       result.secrets as Record<string, unknown> | undefined,
       overlay.secrets as Record<string, unknown>
     ) as typeof result.secrets;
+  }
+
+  if (overlay.collaborators) {
+    result.collaborators = mergeCollaboratorsLayer(
+      result.collaborators,
+      overlay.collaborators
+    );
   }
 
   if (overlay.deleteOrphaned !== undefined) {

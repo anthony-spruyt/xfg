@@ -6600,3 +6600,129 @@ describe("mergeRawSettings variables deleteOrphaned survives inherit: false", ()
     assert.equal(vars.deleteOrphaned, true);
   });
 });
+
+describe("mergeSettings collaborators", () => {
+  test("inherits root collaborators", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"] } },
+      undefined
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["bot"] });
+  });
+
+  test("unions root and repo users", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"] } },
+      { collaborators: { users: ["other"] } }
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["bot", "other"] });
+  });
+
+  test("dedupes users case-insensitively, first spelling wins", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["Bot"] } },
+      { collaborators: { users: ["bot", "BOT", "other"] } }
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["Bot", "other"] });
+  });
+
+  test("inherit: false drops inherited users", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"] } },
+      { collaborators: { inherit: false, users: ["only"] } }
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["only"] });
+  });
+
+  test("inherit: false keeps inherited deleteOrphaned", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"], deleteOrphaned: true } },
+      { collaborators: { inherit: false } }
+    );
+    assert.deepStrictEqual(result?.collaborators, {
+      users: [],
+      deleteOrphaned: true,
+    });
+  });
+
+  test("repo deleteOrphaned overrides root", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"], deleteOrphaned: true } },
+      { collaborators: { deleteOrphaned: false } }
+    );
+    assert.deepStrictEqual(result?.collaborators, {
+      users: ["bot"],
+      deleteOrphaned: false,
+    });
+  });
+
+  test("collapses to undefined when no users and no deleteOrphaned", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"] } },
+      { collaborators: { inherit: false } }
+    );
+    assert.equal(result?.collaborators, undefined);
+  });
+});
+
+describe("mergeRawSettings collaborators", () => {
+  test("group users union with root and repo users", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      settings: { collaborators: { users: ["root-bot"] } },
+      groups: {
+        g: { settings: { collaborators: { users: ["group-bot"] } } },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["g"],
+          settings: { collaborators: { users: ["repo-bot"] } },
+        },
+      ],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
+      users: ["root-bot", "group-bot", "repo-bot"],
+    });
+  });
+
+  test("group inherit: false drops root users but keeps deleteOrphaned", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      settings: {
+        collaborators: { users: ["root-bot"], deleteOrphaned: true },
+      },
+      groups: {
+        g: {
+          settings: { collaborators: { inherit: false, users: ["g-bot"] } },
+        },
+      },
+      repos: [{ git: "https://github.com/o/r.git", groups: ["g"] }],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
+      users: ["g-bot"],
+      deleteOrphaned: true,
+    });
+  });
+
+  test("conditional group users are merged", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      settings: { collaborators: { users: ["root-bot"] } },
+      groups: { g: {} },
+      conditionalGroups: [
+        {
+          when: { allOf: ["g"] },
+          settings: { collaborators: { users: ["cond-bot"] } },
+        },
+      ],
+      repos: [{ git: "https://github.com/o/r.git", groups: ["g"] }],
+    };
+    const config = normalizeConfig(raw, {});
+    assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
+      users: ["root-bot", "cond-bot"],
+    });
+  });
+});

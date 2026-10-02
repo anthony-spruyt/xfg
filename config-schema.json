@@ -692,6 +692,26 @@
             ]
           }
         },
+        "collaborators": {
+          "type": "object",
+          "description": "Direct collaborators for personal (user-owned) repos. Org repos are skipped with a warning.",
+          "properties": {
+            "users": {
+              "type": "array",
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+              }
+            },
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Remove every direct collaborator and pending invite not in users (the repo owner is kept). Default: false"
+            }
+          },
+          "additionalProperties": false
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
@@ -827,6 +847,30 @@
               }
             ]
           }
+        },
+        "collaborators": {
+          "type": "object",
+          "description": "Direct collaborators for personal (user-owned) repos. Users are added to inherited users. Set inherit: false to drop inherited users.",
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to drop inherited users. Does not clear an inherited deleteOrphaned. Default: true"
+            },
+            "users": {
+              "type": "array",
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
+              "items": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+              }
+            },
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Remove every direct collaborator and pending invite not in users (the repo owner is kept). Overrides an inherited collaborators.deleteOrphaned. Default: false"
+            }
+          },
+          "additionalProperties": false
         },
         "deleteOrphaned": {
           "type": "boolean",

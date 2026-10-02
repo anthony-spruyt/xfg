@@ -367,6 +367,54 @@ function validateSettingsSecrets(
   }
 }
 
+const GITHUB_USERNAME_PATTERN =
+  /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
+const COLLABORATORS_KEYS = new Set(["users", "deleteOrphaned", "inherit"]);
+
+function validateSettingsCollaborators(
+  settings: RawRepoSettings | RawRootSettings,
+  context: string
+): void {
+  if (settings.collaborators === undefined) return;
+
+  if (!isPlainObject(settings.collaborators)) {
+    throw new ValidationError(`${context}: collaborators must be an object`);
+  }
+
+  const collaborators = settings.collaborators as Record<string, unknown>;
+  for (const key of Object.keys(collaborators)) {
+    if (!COLLABORATORS_KEYS.has(key)) {
+      throw new ValidationError(
+        `${context}: collaborators: unknown key '${key}'`
+      );
+    }
+  }
+
+  for (const key of ["deleteOrphaned", "inherit"]) {
+    const value = collaborators[key];
+    if (value !== undefined && typeof value !== "boolean") {
+      throw new ValidationError(
+        `${context}: collaborators.${key} must be a boolean`
+      );
+    }
+  }
+
+  const users = collaborators.users;
+  if (users === undefined) return;
+  if (!Array.isArray(users)) {
+    throw new ValidationError(
+      `${context}: collaborators.users must be an array of GitHub usernames`
+    );
+  }
+  for (const user of users) {
+    if (typeof user !== "string" || !GITHUB_USERNAME_PATTERN.test(user)) {
+      throw new ValidationError(
+        `${context}: collaborators.users entry '${String(user)}' is not a valid GitHub username`
+      );
+    }
+  }
+}
+
 export function validateSettings(
   settings: unknown,
   context: string,
@@ -382,6 +430,7 @@ export function validateSettings(
   validateSettingsRepo(settings, context, rootCtx);
   validateSettingsCodeScanning(settings, context, rootCtx);
   validateSettingsSecrets(settings, context);
+  validateSettingsCollaborators(settings, context);
 }
 
 export function enrichSettingsContext(

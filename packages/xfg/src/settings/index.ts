@@ -43,6 +43,13 @@ export {
   GitHubVariablesStrategy,
 } from "./variables/index.js";
 
+export {
+  type CollaboratorsPlanEntry,
+  CollaboratorsProcessor,
+  type ICollaboratorsProcessor,
+  GitHubCollaboratorsStrategy,
+} from "./collaborators/index.js";
+
 // Secrets — not wired into `xfg sync`; driven by `xfg secrets sync` only.
 export {
   SecretsProcessor,
