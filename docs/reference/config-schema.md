@@ -284,12 +284,14 @@ Global repository settings including GitHub Rulesets and repository features. in
 | `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)        | No       | -       | GitHub code scanning default setup configuration.               |
 | `variables`      | `object` of `false` \| `string`                        | No       | -       | Map of GitHub Actions variable names to values.                 |
 | `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig) | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
+| `collaborators`  | `object`                                               | No       | -       | Direct collaborators for personal (user-owned) repos.           |
 | `deleteOrphaned` | `boolean`                                              | No       | `false` | Track managed resources for orphan deletion.                    |
 
 - `rulesets` — Set a ruleset to false to disable it.
 - `labels` — Set a label to false to disable it.
 - `variables` — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.
 - `secrets` — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.
+- `collaborators` — Org repos are skipped with a warning.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->
@@ -310,6 +312,7 @@ Repository settings including GitHub Rulesets and repository features
 | `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings) | No       | -       | GitHub code scanning default setup configuration.               |
 | `variables`      | `object` of `false` \| `string`                            | No       | -       | Map of GitHub Actions variable names to values.                 |
 | `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)     | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
+| `collaborators`  | `object`                                                   | No       | -       | Direct collaborators for personal (user-owned) repos.           |
 | `deleteOrphaned` | `boolean`                                                  | No       | `false` | Track managed resources for orphan deletion.                    |
 
 - `rulesets` — Set a ruleset to false to opt out. Set inherit: false to skip all inherited rulesets.
@@ -318,6 +321,7 @@ Repository settings including GitHub Rulesets and repository features
 - `codeScanning` — Set to false at per-repo level to opt out of inherited settings.
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
+- `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->

@@ -2061,3 +2061,55 @@ describe("formatCountEntry", () => {
     assert.equal(result, "6 variables (1 to create, 2 to update, 3 to delete)");
   });
 });
+
+describe("formatSettingsReportCLI collaborators", () => {
+  test("renders invites and removals", () => {
+    const report: SettingsReport = {
+      repos: [
+        {
+          repoName: "me/repo",
+          settings: [],
+          rulesets: [],
+          labels: [],
+          collaborators: [
+            { name: "bot", action: "create" },
+            { name: "old", action: "delete" },
+          ],
+        },
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        collaborators: { create: 1, update: 0, delete: 1 },
+      },
+    };
+
+    const output = formatSettingsReportCLI(report).join("\n");
+
+    assert.ok(output.includes('+ collaborator "bot"'), output);
+    assert.ok(output.includes('- collaborator "old"'), output);
+    assert.ok(output.includes("2 collaborators"), output);
+  });
+});
+
+describe("renderRepoSettingsDiffLines collaborators", () => {
+  test("separates collaborators from earlier sections with a blank line", () => {
+    const lines: string[] = [];
+    renderRepoSettingsDiffLines(
+      {
+        repoName: "me/repo",
+        settings: [],
+        rulesets: [],
+        labels: [],
+        variables: [{ name: "A", action: "create", newValue: "1" }],
+        collaborators: [{ name: "bot", action: "create" }],
+      },
+      lines
+    );
+
+    const i = lines.indexOf('+ collaborator "bot"');
+    assert.ok(i > 0, lines.join("\n"));
+    assert.equal(lines[i - 1], "");
+  });
+});

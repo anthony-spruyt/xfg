@@ -33,6 +33,7 @@ ignore:
   - "packages/xfg/src/settings/labels/types.ts"
   - "packages/xfg/src/settings/variables/types.ts"
   - "packages/xfg/src/settings/secrets/types.ts"
+  - "packages/xfg/src/settings/collaborators/types.ts"
   - "packages/xfg/src/ai/types.ts"
 
   # Re-export index files (no logic, just exports)
@@ -49,6 +50,7 @@ ignore:
   - "packages/xfg/src/settings/variables/index.ts"
   - "packages/xfg/src/settings/secrets/index.ts"
   - "packages/xfg/src/settings/labels/index.ts"
+  - "packages/xfg/src/settings/collaborators/index.ts"
   - "packages/xfg/src/repo/index.ts"
   - "packages/xfg/src/ai/index.ts"
 

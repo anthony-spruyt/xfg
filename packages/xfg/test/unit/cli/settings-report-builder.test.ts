@@ -619,3 +619,32 @@ describe("buildSettingsReport", () => {
     assert.equal(report.totals.settings.update, 1);
   });
 });
+
+describe("buildSettingsReport collaborators", () => {
+  test("keeps active collaborator changes and totals them", () => {
+    const report = buildSettingsReport([
+      {
+        repoName: "me/repo",
+        collaboratorsResult: {
+          planOutput: {
+            entries: [
+              { name: "bot", action: "create" as const },
+              { name: "old", action: "delete" as const },
+              { name: "keep", action: "unchanged" as const, pending: true },
+            ],
+          },
+        },
+      },
+    ]);
+
+    assert.deepEqual(report.repos[0].collaborators, [
+      { name: "bot", action: "create" },
+      { name: "old", action: "delete" },
+    ]);
+    assert.deepEqual(report.totals.collaborators, {
+      create: 1,
+      update: 0,
+      delete: 1,
+    });
+  });
+});

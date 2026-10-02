@@ -4,12 +4,16 @@ import type { ISettingsProcessor } from "../settings/index.js";
 import type { BaseProcessorOptions } from "../settings/base-processor.js";
 import type { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
-import type { SettingsResult, ApplyRepoSettingsContext } from "./types.js";
+import type {
+  SettingsResult,
+  ApplyRepoSettingsContext,
+  SettingsKind,
+} from "./types.js";
 import type { ResultsCollector } from "./results-collector.js";
 import type { ProcessorResults } from "./settings-report-builder.js";
 
 interface SettingsDescriptor {
-  key: "rulesets" | "labels" | "repo" | "codeScanning" | "variables";
+  key: SettingsKind;
   label: string;
   run: () => Promise<SettingsResult>;
 }
@@ -35,6 +39,10 @@ function logSettingsResult(
     }
   } else if (!result.skipped && result.success) {
     logger.success(repoNumber, repoName, `${label}: ${result.message}`);
+  } else if (result.skipped) {
+    for (const warning of result.warnings ?? []) {
+      logger.warn(warning);
+    }
   }
   if (!result.success && !result.skipped) {
     logger.error(repoNumber, repoName, `${label}: ${result.message}`);
@@ -148,6 +156,22 @@ function buildSettingsDescriptors(
           settingsCollector,
           (e, r) => {
             e.variablesResult = r;
+          }
+        ),
+    },
+    {
+      key: "collaborators" as const,
+      label: "Collaborators",
+      run: () =>
+        runAndStoreResult(
+          factories.collaborators,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.collaboratorsResult = r;
           }
         ),
     },

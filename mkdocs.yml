@@ -84,6 +84,7 @@ nav:
       - GitHub Labels: configuration/labels.md
       - GitHub Variables: configuration/variables.md
       - Secrets: configuration/secrets.md
+      - GitHub Collaborators: configuration/collaborators.md
       - Code Scanning: configuration/code-scanning.md
   - Examples:
       - Overview: examples/index.md

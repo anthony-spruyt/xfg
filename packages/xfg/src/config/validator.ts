@@ -124,6 +124,15 @@ function validateRootSettings(config: RawConfig): void {
       "'inherit' is not allowed in root-level secrets (nothing to inherit from)"
     );
   }
+
+  if (
+    config.settings.collaborators &&
+    "inherit" in config.settings.collaborators
+  ) {
+    throw new ValidationError(
+      "'inherit' is not allowed in root-level collaborators (nothing to inherit from)"
+    );
+  }
 }
 
 function validateGithubHosts(config: RawConfig): void {
@@ -460,6 +469,14 @@ export function hasActionableSettings(
     if (Object.keys(entries).length > 0 || deleteOrphaned === true) {
       return true;
     }
+  }
+
+  if (
+    settings.collaborators &&
+    ((settings.collaborators.users ?? []).length > 0 ||
+      settings.collaborators.deleteOrphaned === true)
+  ) {
+    return true;
   }
 
   // Secrets are deliberately absent: `xfg sync` must never process them.
