@@ -11,164 +11,57 @@ import {
   createRepo,
   deleteRepo,
   writeConfig,
-  withTestRetry,
 } from "./test-helpers.js";
 
+// Personal-repo paths are unit-tested only: ephemeral repos in a user account are noisy and orphan easily
 const ORG_OWNER = "spruyt-labs";
+const INVITEE = "spruyt-labs-bot";
 
 interface Invitation {
   id: number;
   invitee: { login: string } | null;
 }
 
-let userOwner: string;
-let invitee: string;
-let repoName: string;
-let testRepo: string;
 let orgRepoName: string;
 let tmpDir: string;
-let personalRepoReady = false;
-let orgRepoReady = false;
-
-async function tryCreateRepo(owner: string, name: string): Promise<boolean> {
-  try {
-    await createRepo(owner, name);
-    return true;
-  } catch (error) {
-    console.log(`  Cannot create ${owner}/${name}: ${String(error)}`);
-    return false;
-  }
-}
-
-async function getInvitees(repo: string): Promise<string[]> {
-  const output = await execWithRetry(`gh api repos/${repo}/invitations`);
-  return (JSON.parse(output) as Invitation[])
-    .map((i) => i.invitee?.login.toLowerCase())
-    .filter((l): l is string => l !== undefined);
-}
-
-async function runSync(configPath: string, extraArgs = ""): Promise<string> {
-  return exec(
-    `node dist/cli.js sync --config ${configPath} ${extraArgs}`.trim(),
-    { cwd: projectRoot }
-  );
-}
-
-function personalConfig(users: string[]): string {
-  return writeConfig(
-    tmpDir,
-    `id: integration-test-github-collaborators
-settings:
-  collaborators:
-    deleteOrphaned: true
-    users: [${users.join(", ")}]
-repos:
-  - git: https://github.com/${testRepo}.git
-`
-  );
-}
 
 describe("GitHub Collaborators Integration Test", () => {
   before(async () => {
-    userOwner = await execWithRetry(`gh api user --jq .login`);
-    invitee =
-      process.env.XFG_TEST_COLLABORATOR ??
-      (userOwner.toLowerCase() === "spruyt-labs-bot"
-        ? "anthony-spruyt"
-        : "spruyt-labs-bot");
-    repoName = generateRepoName("collaborators");
-    testRepo = `${userOwner}/${repoName}`;
     orgRepoName = generateRepoName("collaborators-org");
     tmpDir = join(tmpdir(), `xfg-collaborators-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
-    // CI's org-scoped PAT cannot create personal repos, and a user token may lack org admin
-    personalRepoReady = await tryCreateRepo(userOwner, repoName);
-    orgRepoReady = await tryCreateRepo(ORG_OWNER, orgRepoName);
+    await createRepo(ORG_OWNER, orgRepoName);
   });
 
   after(async () => {
-    await deleteRepo(userOwner, repoName);
     await deleteRepo(ORG_OWNER, orgRepoName);
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test("invites a collaborator on a personal repo", async (t) => {
-    if (!personalRepoReady) return t.skip("token cannot create personal repos");
-    const output = await runSync(personalConfig([invitee]), "--merge direct");
-
-    assert.ok(
-      output.includes(`+ collaborator "${invitee}"`),
-      `apply output should name the invitee, got: ${output}`
-    );
-    await withTestRetry(
-      async () => {
-        assert.ok(
-          (await getInvitees(testRepo)).includes(invitee.toLowerCase()),
-          "invitation should be pending"
-        );
-      },
-      { description: "invitation visible" }
-    );
-  });
-
-  test("second run is a no-op and shows the invite as pending", async (t) => {
-    if (!personalRepoReady) return t.skip("token cannot create personal repos");
-    const output = await runSync(personalConfig([invitee]), "--merge direct");
-
-    assert.ok(
-      output.includes(`collaborator "${invitee}": invite pending`),
-      `output should show pending invite, got: ${output}`
-    );
-    assert.ok(
-      !output.includes(`+ collaborator "${invitee}"`),
-      `should not re-invite, got: ${output}`
-    );
-    assert.equal(
-      (await getInvitees(testRepo)).filter((l) => l === invitee.toLowerCase())
-        .length,
-      1
-    );
-  });
-
-  test("removing the user from config cancels the invite", async (t) => {
-    if (!personalRepoReady) return t.skip("token cannot create personal repos");
-    const output = await runSync(personalConfig([]), "--merge direct");
-
-    assert.ok(
-      output.includes(`- collaborator "${invitee}"`),
-      `output should cancel the invite, got: ${output}`
-    );
-    await withTestRetry(
-      async () => {
-        assert.ok(
-          !(await getInvitees(testRepo)).includes(invitee.toLowerCase()),
-          "invitation should be cancelled"
-        );
-      },
-      { description: "invitation cancelled" }
-    );
-  });
-
-  test("org repos are skipped with a warning", async (t) => {
-    if (!orgRepoReady) return t.skip("token cannot create org repos");
+  test("org repos are skipped with a warning", async () => {
     const orgRepo = `${ORG_OWNER}/${orgRepoName}`;
     const configPath = writeConfig(
       tmpDir,
       `id: integration-test-github-collaborators-org
 settings:
   collaborators:
-    users: [${invitee}]
+    users: [${INVITEE}]
 repos:
   - git: https://github.com/${orgRepo}.git
 `
     );
 
-    const output = await runSync(configPath);
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
 
     assert.ok(
       output.includes("collaborators only apply to personal repos"),
       `should warn about org repo, got: ${output}`
     );
-    assert.deepEqual(await getInvitees(orgRepo), []);
+    const invitations = JSON.parse(
+      await execWithRetry(`gh api repos/${orgRepo}/invitations`)
+    ) as Invitation[];
+    assert.deepEqual(invitations, []);
   });
 });

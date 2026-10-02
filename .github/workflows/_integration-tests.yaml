@@ -194,7 +194,6 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Ephemeral repo is created under the token's own user, not the org
       - name: Run GitHub collaborators integration tests (PAT)
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
