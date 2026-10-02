@@ -424,8 +424,6 @@ describe("GitHubLifecycleProvider", () => {
         // Custom executor: returns "master" on the first default_branch
         // query (before rename) and "main" on subsequent queries (after rename,
         // during the waitForDefaultBranch poll).
-        // Note: This mock executor follows the same ICommandExecutor interface
-        // used throughout the test suite. No shell commands are executed.
         let defaultBranchCallCount = 0;
         const calls: Array<{
           executable: string;
@@ -475,7 +473,6 @@ describe("GitHubLifecycleProvider", () => {
         );
         assert.ok(calls[2].args.includes("POST"));
         assert.ok(calls[2].args.includes("new_name=main"));
-        // Verify polling happened (call after rename should also query default_branch)
         assert.ok(
           calls[3].args.includes("--jq") &&
             calls[3].args.includes(".default_branch")
@@ -529,7 +526,6 @@ describe("GitHubLifecycleProvider", () => {
       });
 
       test("waitForDefaultBranch handles API errors during polling", async () => {
-        // Poll throws errors intermittently, then succeeds
         let defaultBranchCallCount = 0;
         const calls: Array<{
           executable: string;
@@ -571,7 +567,6 @@ describe("GitHubLifecycleProvider", () => {
           settings: { defaultBranch: "main" },
         });
 
-        // Should have recovered from the error and continued polling
         const pollCalls = calls.filter(
           (c) => c.args.includes("--jq") && c.args.includes(".default_branch")
         );
@@ -631,7 +626,6 @@ describe("GitHubLifecycleProvider", () => {
 
     test("forks repo to organization with --org flag", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        // Use 'users/' pattern to match the owner type check API call
         responses: new Map([
           ["gh users/test-org", '{"type": "Organization"}'],
           ["gh repo fork", ""],
@@ -649,7 +643,6 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      // Find the fork command (not the API check)
       const forkCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("fork")
       );
@@ -671,7 +664,6 @@ describe("GitHubLifecycleProvider", () => {
       };
 
       const { mock: executor, calls } = createMockExecutor({
-        // Use 'users/myusername' pattern to match the owner type check API call
         responses: new Map([
           ["gh users/myusername", '{"type": "User"}'],
           ["gh repo fork", ""],
@@ -689,7 +681,6 @@ describe("GitHubLifecycleProvider", () => {
         target: personalRepoInfo,
       });
 
-      // Find the fork command (not the API check)
       const forkCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("fork")
       );
@@ -745,7 +736,6 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      // Should default to --org when we can't determine owner type
       const forkCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("fork")
       );
@@ -776,7 +766,6 @@ describe("GitHubLifecycleProvider", () => {
         },
       });
 
-      // Should call gh repo edit after fork
       const editCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("edit")
       );
@@ -811,7 +800,6 @@ describe("GitHubLifecycleProvider", () => {
         },
       });
 
-      // Should call gh repo edit after fork
       const editCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("edit")
       );
@@ -839,7 +827,6 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      // Should NOT call gh repo edit
       const editCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("edit")
       );
@@ -995,7 +982,6 @@ describe("GitHubLifecycleProvider", () => {
         },
       });
 
-      // Should not call any branch rename API
       assert.ok(
         !calls.some((c) => c.args.some((a) => a.includes("branches/")))
       );
@@ -1219,7 +1205,6 @@ describe("GitHubLifecycleProvider", () => {
         sourceDir: "/tmp/source-mirror",
       });
 
-      // Should still reach gh repo create despite remote remove failure
       const createCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("create")
       );
@@ -1247,7 +1232,6 @@ describe("GitHubLifecycleProvider", () => {
         sourceDir: "/tmp/source-mirror",
       });
 
-      // Should still reach gh repo create despite ref cleanup failure
       const createCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("create")
       );
@@ -1497,7 +1481,6 @@ describe("GitHubLifecycleProvider", () => {
         token: "ghs_test_token",
       });
 
-      // isOrganization API call should have token via env
       const apiCall = calls.find((c) =>
         c.args.some((a) => a.startsWith("users/"))
       );
@@ -1505,7 +1488,6 @@ describe("GitHubLifecycleProvider", () => {
       assert.ok(apiCall.executable === "gh" && apiCall.args.includes("api"));
       assert.equal(apiCall.options?.env?.GH_TOKEN, "ghs_test_token");
 
-      // fork command should have token via env
       const forkCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("fork")
       );
@@ -1541,7 +1523,6 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      // Should still fork with --org flag (defaults to org when check fails)
       const forkCall = calls.find(
         (c) => c.executable === "gh" && c.args.includes("fork")
       );
@@ -1599,7 +1580,7 @@ describe("GitHubLifecycleProvider", () => {
       await assert.rejects(
         () =>
           provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
-        /installation token cannot create repositories for personal account 'someuser'/
+        /installation token \(GitHub App or Actions GITHUB_TOKEN\) cannot create repositories for personal account 'someuser'/
       );
       assert.equal(repoCreateCalls().length, 0);
     });
@@ -1619,8 +1600,8 @@ describe("GitHubLifecycleProvider", () => {
       assert.equal(repoCreateCalls().length, 0);
     });
 
-    test("receiveMigration() fails fast without calling gh repo create", async () => {
-      const { provider, repoCreateCalls } = setup();
+    test("receiveMigration() fails fast before touching the mirror clone", async () => {
+      const { provider, calls } = setup();
 
       await assert.rejects(
         () =>
@@ -1631,7 +1612,80 @@ describe("GitHubLifecycleProvider", () => {
           }),
         /personal account 'someuser'/
       );
-      assert.equal(repoCreateCalls().length, 0);
+      assert.equal(calls.length, 1);
+      assert.ok(calls[0].args.includes("users/someuser"));
+    });
+
+    test("create() proceeds when the owner check fails transiently", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map<string, string | Error>([
+          ["gh users/someuser", new Error("connection reset")],
+          ["gh contents/README.md --jq", "abc123def"],
+        ]),
+        defaultResponse: "",
+      });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
+
+      await provider.create({ repo: personalRepoInfo, token: "ghs_app_token" });
+
+      assert.ok(
+        calls.some((c) => c.args[0] === "repo" && c.args[1] === "create")
+      );
+    });
+
+    test("create() proceeds when the owner check fails permanently", async () => {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map<string, string | Error>([
+          ["gh users/test-org", new Error("HTTP 403: Forbidden")],
+          ["gh contents/README.md --jq", "abc123def"],
+        ]),
+        defaultResponse: "",
+      });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries: 0,
+        cwd: "/test",
+      });
+
+      await provider.create({ repo: mockRepoInfo, token: "ghs_app_token" });
+
+      assert.ok(
+        calls.some((c) => c.args[0] === "repo" && c.args[1] === "create")
+      );
+    });
+
+    test("owner check passes --hostname for GHE", async () => {
+      const gheRepoInfo: GitHubRepoInfo = {
+        ...personalRepoInfo,
+        gitUrl: "git@github.mycompany.com:someuser/new-repo.git",
+        host: "github.mycompany.com",
+      };
+      const { provider, calls } = setup();
+
+      await assert.rejects(
+        () => provider.create({ repo: gheRepoInfo, token: "ghs_app_token" }),
+        /personal account 'someuser'/
+      );
+      assert.ok(calls[0].args.includes("--hostname"));
+      assert.ok(calls[0].args.includes("github.mycompany.com"));
+    });
+
+    test("fork() with a PAT on a personal account still forks without --org", async () => {
+      const { provider, calls } = setup();
+
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: personalRepoInfo,
+        token: "github_pat_abc",
+      });
+
+      const forkCall = calls.find((c) => c.args[1] === "fork");
+      assert.ok(forkCall);
+      assert.ok(!forkCall.args.includes("--org"));
     });
 
     test("create() proceeds with installation token on an organization", async () => {

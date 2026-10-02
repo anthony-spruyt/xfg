@@ -183,7 +183,7 @@ Create, fork, and migrate support depends on the auth type and on who owns the t
 | Organization     | Yes              | Yes (needs Administration: Read and write)                  |
 | Personal account | Yes              | No                                                          |
 
-GitHub does not let an installation token create repos for a personal account. With App auth, xfg stops with an error instead of trying. To work around it, either:
+GitHub does not let an installation token create repos for a personal account. This also applies to the Actions `GITHUB_TOKEN`. xfg stops with an error instead of trying. `--dry-run` does not catch this. To work around it, either:
 
 - Create the repo first (in the GitHub UI or with a PAT). xfg then syncs it as normal with App auth.
 - Run xfg with a PAT in `GH_TOKEN` and no App credentials.

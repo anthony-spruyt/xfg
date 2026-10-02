@@ -97,8 +97,7 @@ When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses G
 2. **File size** - Large files (>50MB) should use PAT flow instead
 3. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
 4. **Atomic commits** - All file changes in a single commit (executable file mode changes use a follow-up commit)
-5. **Repo creation on personal accounts** - Installation tokens can create, fork, and migrate repos into organizations, but not into personal user accounts. GitHub's `POST /user/repos` needs a user, and an installation token has none. xfg fails fast with a clear error. Create the repo first (in the UI or with a PAT), or run lifecycle with `GH_TOKEN` set to a PAT. See
-   [Repo Lifecycle](../configuration/lifecycle.md#authentication).
+5. **Repo creation on personal accounts** - Installation tokens can create, fork, and migrate repos into organizations, but not into personal user accounts. A repo owned by a user must be created by a user, and an installation token has none. xfg fails fast with a clear error. See [Repo Lifecycle](../configuration/lifecycle.md#authentication) for workarounds.
 
 ## Troubleshooting
 

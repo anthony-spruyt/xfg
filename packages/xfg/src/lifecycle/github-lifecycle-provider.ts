@@ -74,15 +74,13 @@ function isInstallationToken(token: string | undefined): boolean {
   return token?.startsWith("ghs_") ?? false;
 }
 
-// Installation tokens have no user, so POST /user/repos is refused - GitHub
-// misreports it as "403 Rate Limit Exceeded", which retries would wait out.
 function personalAccountInstallationTokenError(
   repoInfo: GitHubRepoInfo
 ): LifecycleError {
   return new LifecycleError(
-    `GitHub App installation token cannot create repositories for personal account '${repoInfo.owner}'. ` +
+    `An installation token (GitHub App or Actions GITHUB_TOKEN) cannot create repositories for personal account '${repoInfo.owner}'. ` +
       `Create ${repoInfo.owner}/${repoInfo.repo} first, or run lifecycle with a personal access token. ` +
-      `App installation tokens can only create repositories in organizations.`
+      `Installation tokens can only create repositories in organizations.`
   );
 }
 
@@ -176,14 +174,13 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       if (isPermanentError(error)) {
         throw error;
       }
-      // This may cause fork to fail with a misleading error for personal accounts.
       const errMsg = toErrorMessage(error);
       this.log?.debug(
         `Could not determine if '${owner}' is an organization, defaulting to org behavior: ${errMsg}`
       );
       this.log?.warn(
         `Could not verify if '${owner}' is an organization or user account. ` +
-          `If fork fails, check your authentication (gh auth status) and ensure the ` +
+          `If the operation fails, check your authentication (gh auth status) and ensure the ` +
           `target owner is correct.`
       );
       return true;
@@ -194,13 +191,23 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     assertGitHubRepo(repoInfo, "GitHubLifecycleProvider");
   }
 
+  // GitHub refuses installation tokens on POST /user/repos with a misleading
+  // "403 Rate Limit Exceeded", which withRetry treats as transient.
   private async assertTokenCanCreateRepo(
     repoInfo: GitHubRepoInfo,
     token: string | undefined
   ): Promise<void> {
     if (!isInstallationToken(token)) return;
-    if (await this.isOrganization(repoInfo.owner, repoInfo, token)) return;
-    throw personalAccountInstallationTokenError(repoInfo);
+    let isOrg: boolean;
+    try {
+      isOrg = await this.isOrganization(repoInfo.owner, repoInfo, token);
+    } catch (error) {
+      this.log?.debug(
+        `Skipping installation token owner check for '${repoInfo.owner}': ${toErrorMessage(error)}`
+      );
+      return;
+    }
+    if (!isOrg) throw personalAccountInstallationTokenError(repoInfo);
   }
 
   private buildGhApiPrefix(
@@ -240,11 +247,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
       return true;
     } catch (error) {
-      // Distinguish "repo not found" from actual errors
       if (isRepoNotFoundError(error)) {
         return false;
       }
-      // Re-throw network/auth errors
       throw error;
     }
   }
@@ -274,7 +279,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       }
     );
 
-    // Rename default branch if requested and it differs from what GitHub created.
     if (settings?.defaultBranch) {
       const {
         tokenEnv: branchTokenEnv,
@@ -282,7 +286,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
         apiPath,
       } = this.buildGhApiPrefix(repoInfo, token);
 
-      // Detect the actual default branch name
       const actualBranch = (
         await withRetry(
           () =>
@@ -324,7 +327,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     this.assertGitHub(upstream);
     this.assertGitHub(target);
 
-    // Guard: cannot fork a repo to the same owner
     if (upstream.owner.toLowerCase() === target.owner.toLowerCase()) {
       throw new LifecycleError(
         `Cannot fork ${upstream.owner}/${upstream.repo} to the same owner '${target.owner}'. ` +
@@ -332,7 +334,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       );
     }
 
-    // Determine if target owner is an organization or user
     const isOrg = await this.isOrganization(target.owner, target, token);
     if (!isOrg && isInstallationToken(token)) {
       throw personalAccountInstallationTokenError(target);
@@ -340,9 +341,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const tokenEnv = buildTokenEnv(token);
 
-    // Build fork command
-    // For orgs: gh repo fork <upstream> --org <target-org> --fork-name <name> --clone=false
-    // For users: gh repo fork <upstream> --fork-name <name> --clone=false
     const forkArgs = ["repo", "fork", `${upstream.owner}/${upstream.repo}`];
 
     if (isOrg) {
@@ -365,7 +363,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       token,
     });
 
-    // Apply settings after fork (visibility, description, etc.)
     if (settings?.visibility || settings?.description) {
       await this.applyRepoSettings(target, settings, token);
     }
@@ -681,7 +678,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
       token
     );
 
-    // Get the SHA of the README.md created by --add-readme
     const fileInfo = await withRetry(
       () =>
         this.executor.exec(
@@ -698,7 +694,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     const sha = fileInfo.trim();
 
-    // Delete the README.md to leave the repo clean
     await withRetry(
       () =>
         this.executor.exec(
