@@ -18,7 +18,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 2. Click "New GitHub App"
 3. Configure permissions:
    - **Repository permissions:**
-     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc.)_
+     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc. Organization owners only, see [Limitations](#limitations))_
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
@@ -97,6 +97,7 @@ When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses G
 2. **File size** - Large files (>50MB) should use PAT flow instead
 3. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
 4. **Atomic commits** - All file changes in a single commit (executable file mode changes use a follow-up commit)
+5. **Repo creation on personal accounts** - Installation tokens can create, fork, and migrate repos into organizations, but not into personal user accounts. A repo owned by a user must be created by a user, and an installation token has none. xfg fails fast with a clear error. See [Repo Lifecycle](../configuration/lifecycle.md#authentication) for workarounds.
 
 ## Troubleshooting
 
