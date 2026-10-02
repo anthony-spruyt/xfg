@@ -15,8 +15,6 @@ export interface CollaboratorsDiffInput {
   collaborators: GitHubCollaborator[];
   invitations: GitHubRepoInvitation[];
   desired: string[];
-  /** Lowercased logins xfg added, read from the default-branch manifest */
-  managed: string[];
   deleteOrphaned: boolean;
 }
 
@@ -27,30 +25,36 @@ export function diffCollaborators(
   const collaborators = new Map(
     input.collaborators.map((c) => [c.login.toLowerCase(), c])
   );
-  const invitations = new Map<string, GitHubRepoInvitation>();
+  const invitations = new Map<
+    string,
+    { id: number; login: string; expired: boolean }
+  >();
   for (const inv of input.invitations) {
-    if (inv.invitee) invitations.set(inv.invitee.login.toLowerCase(), inv);
+    if (inv.invitee) {
+      invitations.set(inv.invitee.login.toLowerCase(), {
+        id: inv.id,
+        login: inv.invitee.login,
+        expired: inv.expired === true,
+      });
+    }
   }
   const desired = new Set(input.desired.map((u) => u.toLowerCase()));
 
   const changes: CollaboratorChange[] = [];
 
   if (input.deleteOrphaned) {
-    for (const user of input.managed) {
-      const key = user.toLowerCase();
+    for (const [key, collaborator] of collaborators) {
       if (desired.has(key) || key === owner) continue;
-      const collaborator = collaborators.get(key);
-      const invitation = invitations.get(key);
-      if (collaborator) {
-        changes.push({ action: "delete", username: collaborator.login });
-      } else if (invitation?.invitee) {
-        changes.push({
-          action: "delete",
-          username: invitation.invitee.login,
-          pending: true,
-          invitationId: invitation.id,
-        });
-      }
+      changes.push({ action: "delete", username: collaborator.login });
+    }
+    for (const [key, invitation] of invitations) {
+      if (desired.has(key) || collaborators.has(key)) continue;
+      changes.push({
+        action: "delete",
+        username: invitation.login,
+        pending: true,
+        invitationId: invitation.id,
+      });
     }
   }
 
@@ -61,15 +65,21 @@ export function diffCollaborators(
     const invitation = invitations.get(key);
     if (collaborator) {
       unchanged.push({ action: "unchanged", username: collaborator.login });
-    } else if (invitation?.invitee) {
+    } else if (invitation && !invitation.expired) {
       unchanged.push({
         action: "unchanged",
-        username: invitation.invitee.login,
+        username: invitation.login,
         pending: true,
         invitationId: invitation.id,
       });
     } else if (key === owner) {
       unchanged.push({ action: "unchanged", username: user });
+    } else if (invitation) {
+      changes.push({
+        action: "create",
+        username: user,
+        invitationId: invitation.id,
+      });
     } else {
       changes.push({ action: "create", username: user });
     }

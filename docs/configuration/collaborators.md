@@ -33,6 +33,7 @@ GitHub does not add people to a personal repo straight away. It sends an **invit
 
 - A user who is not a collaborator gets an invite (`PUT /repos/{owner}/{repo}/collaborators/{user}`).
 - A user with a pending invite is left alone and shown as `invite pending`. xfg does not send it again.
+- An expired invite is cancelled and sent again.
 - A user who is already a collaborator is left alone.
 
 Personal repos have no permission levels. Collaborators always get write access, so there is no `permission` field.
@@ -64,7 +65,7 @@ repos:
 
 ## Removing Collaborators
 
-By default xfg never removes anyone. Turn on `deleteOrphaned` to let xfg remove collaborators **it added** once they leave the config:
+By default xfg never removes anyone. Turn on `deleteOrphaned` and the `users` list becomes the full list: anyone else is removed.
 
 ```yaml
 settings:
@@ -74,25 +75,13 @@ settings:
       - my-bot
 ```
 
-How xfg knows who it added:
-
-1. When `deleteOrphaned: true`, xfg records the users in the repo's `.xfg.json` manifest. This goes in the same PR (or direct push) as your file changes.
-2. Later runs read `.xfg.json` from the **default branch**. Users listed there but no longer in config are removed. A pending invite is cancelled instead.
-
-Safety rules:
-
-- People added by hand are never removed.
+- Direct collaborators not in `users` are removed, including people added by hand.
+- Pending invites for people not in `users` are cancelled.
 - The repo owner is never removed.
-- Until the PR with the manifest is merged, nothing is removed.
 - `--no-delete` turns off removal for that run.
-- Deleting the whole `collaborators` section removes nothing. To remove everyone xfg added, keep the section with no users:
 
-```yaml
-settings:
-  collaborators:
-    inherit: false
-    deleteOrphaned: true
-```
+!!! warning
+    With `deleteOrphaned: true`, an empty or missing `users` list removes every collaborator except the owner.
 
 ## Dry Run Output
 

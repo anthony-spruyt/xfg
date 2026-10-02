@@ -98,8 +98,6 @@ export interface ApplyRepoSettingsContext {
   repoNumber: number;
   options: SyncOptions;
   token: string | undefined;
-  /** Namespaces xfg-managed state in .xfg.json */
-  configId?: string;
   settingsCollector: ResultsCollector;
   factories: SettingsProcessorFactories;
   logger: Logger;

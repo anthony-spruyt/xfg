@@ -3,7 +3,6 @@ import { join } from "node:path";
 import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
 import { SyncError } from "../shared/errors.js";
 import type { DebugWarnLog } from "../shared/logger.js";
-import type { CollaboratorsConfig } from "../config/index.js";
 
 export const MANIFEST_FILENAME = ".xfg.json";
 
@@ -40,11 +39,9 @@ interface XfgManifestV3 {
   >;
 }
 
-// V4 config entry (rulesets and labels removed in V4)
+// V4 config entry — files only (rulesets and labels removed in V4)
 export interface XfgManifestConfigEntry {
   files?: string[];
-  /** Lowercased logins xfg added as collaborators with deleteOrphaned: true */
-  collaborators?: string[];
 }
 
 // V4 manifest structure (current)
@@ -114,6 +111,7 @@ function migrateV2ToV3(v2: XfgManifestV2): XfgManifestV3 {
 function migrateV3ToV4(v3: XfgManifestV3): XfgManifest {
   const v4Configs: Record<string, XfgManifestConfigEntry> = {};
   for (const [configId, entry] of Object.entries(v3.configs)) {
+    // Only preserve files — rulesets and labels are dropped
     if (entry.files && entry.files.length > 0) {
       v4Configs[configId] = { files: entry.files };
     }
@@ -165,6 +163,7 @@ export function loadManifest(
       return null;
     }
 
+    // Unknown format
     log?.warn(`Unrecognized manifest format in ${manifestPath}, ignoring`);
     return null;
   } catch (error) {
@@ -226,35 +225,16 @@ export function getManagedFiles(
   return [...(manifest.configs[configId]?.files ?? [])];
 }
 
-export function getManagedCollaborators(
-  manifest: XfgManifest | null,
-  configId: string
-): string[] {
-  return [...(manifest?.configs[configId]?.collaborators ?? [])];
-}
-
-function trackedCollaborators(
-  collaborators: CollaboratorsConfig | undefined
-): string[] {
-  if (collaborators?.deleteOrphaned !== true) return [];
-  const lowered = new Set(
-    (collaborators.users ?? []).map((u) => u.toLowerCase())
-  );
-  return Array.from(lowered).sort((a, b) => a.localeCompare(b));
-}
-
 /**
  * Updates manifest tracking for a config. Files with deleteOrphaned: true are tracked;
  * files previously tracked but no longer in config are returned as filesToDelete.
- * Collaborators are tracked only when their deleteOrphaned is true; deleting them
- * is the settings phase's job, so nothing is returned for them here.
  */
 export function updateManifest(
   manifest: XfgManifest | null,
   configId: string,
-  filesWithDeleteOrphaned: Map<string, boolean | undefined>,
-  collaborators?: CollaboratorsConfig
+  filesWithDeleteOrphaned: Map<string, boolean | undefined>
 ): { manifest: XfgManifest; filesToDelete: string[] } {
+  // Get existing managed files for this config only
   const existingManaged = new Set(getManagedFiles(manifest, configId));
   const newManaged = new Set<string>();
   const filesToDelete: string[] = [];
@@ -265,6 +245,7 @@ export function updateManifest(
     }
   }
 
+  // Find orphaned files: in old manifest but not in current config
   for (const fileName of existingManaged) {
     if (!filesWithDeleteOrphaned.has(fileName)) {
       filesToDelete.push(fileName);
@@ -277,13 +258,8 @@ export function updateManifest(
   const sortedManaged = Array.from(newManaged).sort((a, b) =>
     a.localeCompare(b)
   );
-  const managedCollaborators = trackedCollaborators(collaborators);
-  const entry: XfgManifestConfigEntry = {};
-  if (sortedManaged.length > 0) entry.files = sortedManaged;
-  if (managedCollaborators.length > 0)
-    entry.collaborators = managedCollaborators;
-  if (Object.keys(entry).length > 0) {
-    updatedConfigs[configId] = entry;
+  if (sortedManaged.length > 0) {
+    updatedConfigs[configId] = { files: sortedManaged };
   } else {
     delete updatedConfigs[configId];
   }

@@ -236,22 +236,17 @@ export async function runSingleRepo(
   const skipFileSync = await runLifecyclePhase(repo, ctx);
   if (skipFileSync) return;
 
-  const settingsCtx = {
+  await runFileSyncPhase(repo, ctx);
+
+  await applyRepoSettings({
     repoConfig: effectiveRepoConfig,
     repoInfo,
     repoName,
     repoNumber,
     options,
     token: repoToken,
-    configId: config.id,
     settingsCollector: ctx.settingsCollector,
     factories: ctx.factories,
     logger,
-  };
-
-  await applyRepoSettings(settingsCtx, "pre-sync");
-
-  await runFileSyncPhase(repo, ctx);
-
-  await applyRepoSettings(settingsCtx, "post-sync");
+  });
 }

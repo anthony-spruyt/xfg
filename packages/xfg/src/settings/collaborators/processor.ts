@@ -4,7 +4,6 @@ import type {
   IRepoMetadataProvider,
   RepoInfo,
 } from "../../repo/index.js";
-import { getManagedCollaborators } from "../../sync/manifest.js";
 import { diffCollaborators } from "./diff.js";
 import {
   formatCollaboratorsPlan,
@@ -29,8 +28,6 @@ export type ICollaboratorsProcessor = ISettingsProcessor<
 
 export interface CollaboratorsProcessorOptions extends BaseProcessorOptions {
   noDelete?: boolean;
-  /** Config id that namespaces managed collaborators in .xfg.json */
-  configId?: string;
 }
 
 export interface CollaboratorsProcessorResult extends BaseProcessorResult {
@@ -68,7 +65,7 @@ export class CollaboratorsProcessor implements ICollaboratorsProcessor {
     effectiveToken: string | undefined,
     repoName: string
   ): Promise<CollaboratorsProcessorResult> {
-    const { dryRun, noDelete, configId } = options;
+    const { dryRun, noDelete } = options;
     const desired = repoConfig.settings?.collaborators ?? {};
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
@@ -89,12 +86,9 @@ export class CollaboratorsProcessor implements ICollaboratorsProcessor {
     }
 
     const deleteOrphaned = desired.deleteOrphaned === true && !noDelete;
-    const [collaborators, invitations, manifest] = await Promise.all([
+    const [collaborators, invitations] = await Promise.all([
       this.strategy.listCollaborators(githubRepo, strategyOptions),
       this.strategy.listInvitations(githubRepo, strategyOptions),
-      deleteOrphaned && configId
-        ? this.strategy.getManifest(githubRepo, strategyOptions)
-        : Promise.resolve(null),
     ]);
 
     const changes = diffCollaborators({
@@ -102,7 +96,6 @@ export class CollaboratorsProcessor implements ICollaboratorsProcessor {
       collaborators,
       invitations,
       desired: desired.users ?? [],
-      managed: configId ? getManagedCollaborators(manifest, configId) : [],
       deleteOrphaned,
     });
     const changeCounts = countActions(changes);
@@ -115,6 +108,13 @@ export class CollaboratorsProcessor implements ICollaboratorsProcessor {
     let appliedCount = 0;
     for (const change of changes) {
       if (change.action === "create") {
+        if (change.invitationId !== undefined) {
+          await this.strategy.cancelInvitation(
+            githubRepo,
+            change.invitationId,
+            strategyOptions
+          );
+        }
         await this.strategy.add(githubRepo, change.username, strategyOptions);
         appliedCount++;
       } else if (change.action === "delete") {

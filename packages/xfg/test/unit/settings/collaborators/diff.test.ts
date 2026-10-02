@@ -7,7 +7,6 @@ const base = {
   collaborators: [],
   invitations: [],
   desired: [],
-  managed: [],
   deleteOrphaned: false,
 };
 
@@ -42,21 +41,19 @@ describe("diffCollaborators", () => {
     assert.deepEqual(changes, [{ action: "unchanged", username: "Me" }]);
   });
 
-  test("managed user no longer in config is deleted when deleteOrphaned", () => {
+  test("collaborator not in config is deleted when deleteOrphaned", () => {
     const changes = diffCollaborators({
       ...base,
       collaborators: [{ login: "Old" }],
-      managed: ["old"],
       deleteOrphaned: true,
     });
     assert.deepEqual(changes, [{ action: "delete", username: "Old" }]);
   });
 
-  test("managed pending invite no longer in config is cancelled", () => {
+  test("pending invite not in config is cancelled when deleteOrphaned", () => {
     const changes = diffCollaborators({
       ...base,
       invitations: [{ id: 3, invitee: { login: "old" } }],
-      managed: ["old"],
       deleteOrphaned: true,
     });
     assert.deepEqual(changes, [
@@ -68,48 +65,59 @@ describe("diffCollaborators", () => {
     const changes = diffCollaborators({
       ...base,
       collaborators: [{ login: "old" }],
-      managed: ["old"],
+      invitations: [{ id: 3, invitee: { login: "other" } }],
     });
     assert.deepEqual(changes, []);
   });
 
-  test("hand-added collaborators are never deleted", () => {
+  test("owner is never deleted", () => {
     const changes = diffCollaborators({
       ...base,
-      collaborators: [{ login: "human" }],
+      collaborators: [{ login: "ME" }],
       deleteOrphaned: true,
     });
     assert.deepEqual(changes, []);
   });
 
-  test("managed user who already left is ignored", () => {
+  test("collaborator still in config is kept (case-insensitive)", () => {
     const changes = diffCollaborators({
       ...base,
-      managed: ["gone"],
-      deleteOrphaned: true,
-    });
-    assert.deepEqual(changes, []);
-  });
-
-  test("owner is never deleted even if managed", () => {
-    const changes = diffCollaborators({
-      ...base,
-      collaborators: [{ login: "me" }],
-      managed: ["me"],
-      deleteOrphaned: true,
-    });
-    assert.deepEqual(changes, []);
-  });
-
-  test("managed user still in config is kept", () => {
-    const changes = diffCollaborators({
-      ...base,
-      collaborators: [{ login: "bot" }],
+      collaborators: [{ login: "Bot" }],
       desired: ["bot"],
-      managed: ["bot"],
       deleteOrphaned: true,
     });
-    assert.deepEqual(changes, [{ action: "unchanged", username: "bot" }]);
+    assert.deepEqual(changes, [{ action: "unchanged", username: "Bot" }]);
+  });
+
+  test("invitation without an invitee is ignored", () => {
+    const changes = diffCollaborators({
+      ...base,
+      invitations: [{ id: 9, invitee: null }],
+      deleteOrphaned: true,
+    });
+    assert.deepEqual(changes, []);
+  });
+
+  test("expired invite for a desired user is sent again", () => {
+    const changes = diffCollaborators({
+      ...base,
+      invitations: [{ id: 5, invitee: { login: "bot" }, expired: true }],
+      desired: ["bot"],
+    });
+    assert.deepEqual(changes, [
+      { action: "create", username: "bot", invitationId: 5 },
+    ]);
+  });
+
+  test("expired invite not in config is cancelled when deleteOrphaned", () => {
+    const changes = diffCollaborators({
+      ...base,
+      invitations: [{ id: 5, invitee: { login: "old" }, expired: true }],
+      deleteOrphaned: true,
+    });
+    assert.deepEqual(changes, [
+      { action: "delete", username: "old", pending: true, invitationId: 5 },
+    ]);
   });
 
   test("orders deletes, then creates, then unchanged", () => {
@@ -117,7 +125,6 @@ describe("diffCollaborators", () => {
       ...base,
       collaborators: [{ login: "keep" }, { login: "old" }],
       desired: ["keep", "new"],
-      managed: ["old"],
       deleteOrphaned: true,
     });
     assert.deepEqual(

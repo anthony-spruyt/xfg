@@ -13,7 +13,6 @@ import type {
 class MockExecutor implements ICommandExecutor {
   calls: { args: string[]; options?: ExecOptions }[] = [];
   response = "";
-  error: Error | undefined;
 
   async exec(
     _executable: string,
@@ -22,7 +21,6 @@ class MockExecutor implements ICommandExecutor {
     options?: ExecOptions
   ): Promise<string> {
     this.calls.push({ args, options });
-    if (this.error) throw this.error;
     return this.response;
   }
 }
@@ -93,48 +91,11 @@ describe("GitHubCollaboratorsStrategy", () => {
     assert.equal(executor.calls[0].options?.env?.GH_TOKEN, "t");
   });
 
-  test("getManifest decodes .xfg.json from the default branch", async () => {
-    const executor = new MockExecutor();
-    const manifest = {
-      version: 4,
-      configs: { c: { collaborators: ["bot"] } },
-    };
-    executor.response = JSON.stringify({
-      encoding: "base64",
-      content: Buffer.from(JSON.stringify(manifest)).toString("base64"),
-    });
-
-    const result = await make(executor).getManifest(repo);
-
-    assert.deepEqual(result, manifest);
-    assert.ok(
-      executor.calls[0].args.includes("/repos/me/r/contents/.xfg.json")
-    );
-  });
-
-  test("getManifest returns null for non-base64 content", async () => {
-    const executor = new MockExecutor();
-    executor.response = JSON.stringify({ encoding: "none", content: "" });
-    assert.equal(await make(executor).getManifest(repo), null);
-  });
-
   test("uses the default retry count when none is given", async () => {
     const executor = new MockExecutor();
     executor.response = "[]";
     const strategy = new GitHubCollaboratorsStrategy(executor, { cwd: "/tmp" });
     assert.deepEqual(await strategy.listCollaborators(repo), []);
-  });
-
-  test("getManifest returns null on 404", async () => {
-    const executor = new MockExecutor();
-    executor.error = new Error("gh: Not Found (HTTP 404)");
-    assert.equal(await make(executor).getManifest(repo), null);
-  });
-
-  test("getManifest rethrows other errors", async () => {
-    const executor = new MockExecutor();
-    executor.error = new Error("gh: Server Error (HTTP 500)");
-    await assert.rejects(() => make(executor).getManifest(repo), /HTTP 500/);
   });
 
   test("rejects non-GitHub repos", async () => {

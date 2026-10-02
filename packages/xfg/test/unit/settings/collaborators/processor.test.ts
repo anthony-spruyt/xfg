@@ -15,13 +15,11 @@ import type {
   IRepoMetadataProvider,
   RepoMetadata,
 } from "../../../../src/repo/index.js";
-import type { XfgManifest } from "../../../../src/sync/manifest.js";
 
 class MockStrategy implements ICollaboratorsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
   collaborators: GitHubCollaborator[] = [];
   invitations: GitHubRepoInvitation[] = [];
-  manifest: XfgManifest | null = null;
 
   async listCollaborators(): Promise<GitHubCollaborator[]> {
     return this.collaborators;
@@ -37,9 +35,6 @@ class MockStrategy implements ICollaboratorsStrategy {
   }
   async cancelInvitation(_r: unknown, id: number): Promise<void> {
     this.calls.push({ method: "cancelInvitation", args: [id] });
-  }
-  async getManifest(): Promise<XfgManifest | null> {
-    return this.manifest;
   }
 }
 
@@ -71,18 +66,12 @@ function config(collaborators?: CollaboratorsConfig): RepoConfig {
   };
 }
 
-function managed(users: string[]): XfgManifest {
-  return { version: 4, configs: { cfg: { collaborators: users } } };
-}
-
 describe("CollaboratorsProcessor", () => {
   test("invites missing users", async () => {
     const strategy = new MockStrategy();
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {
-      configId: "cfg",
-    });
+    const result = await processor.process(config({ users: ["bot"] }), repo, {});
 
     assert.equal(result.success, true);
     assert.deepEqual(strategy.calls, [{ method: "add", args: ["bot"] }]);
@@ -95,7 +84,6 @@ describe("CollaboratorsProcessor", () => {
 
     const result = await processor.process(config({ users: ["bot"] }), repo, {
       dryRun: true,
-      configId: "cfg",
     });
 
     assert.equal(result.dryRun, true);
@@ -108,24 +96,36 @@ describe("CollaboratorsProcessor", () => {
     strategy.invitations = [{ id: 1, invitee: { login: "bot" } }];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {
-      configId: "cfg",
-    });
+    const result = await processor.process(config({ users: ["bot"] }), repo, {});
 
     assert.deepEqual(strategy.calls, []);
     assert.equal(result.message, "No changes needed");
   });
 
-  test("removes managed orphans and cancels managed pending invites", async () => {
+  test("expired invite is cancelled before inviting again", async () => {
     const strategy = new MockStrategy();
-    strategy.collaborators = [{ login: "old" }, { login: "human" }];
-    strategy.invitations = [{ id: 9, invitee: { login: "late" } }];
-    strategy.manifest = managed(["late", "old"]);
+    strategy.invitations = [{ id: 4, invitee: { login: "bot" }, expired: true }];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    await processor.process(config({ users: [], deleteOrphaned: true }), repo, {
-      configId: "cfg",
-    });
+    await processor.process(config({ users: ["bot"] }), repo, {});
+
+    assert.deepEqual(strategy.calls, [
+      { method: "cancelInvitation", args: [4] },
+      { method: "add", args: ["bot"] },
+    ]);
+  });
+
+  test("deleteOrphaned removes everyone not in config except the owner", async () => {
+    const strategy = new MockStrategy();
+    strategy.collaborators = [{ login: "me" }, { login: "bot" }, { login: "old" }];
+    strategy.invitations = [{ id: 9, invitee: { login: "late" } }];
+    const processor = new CollaboratorsProcessor(strategy, metadata());
+
+    await processor.process(
+      config({ users: ["bot"], deleteOrphaned: true }),
+      repo,
+      {}
+    );
 
     assert.deepEqual(
       strategy.calls.sort((a, b) => a.method.localeCompare(b.method)),
@@ -136,19 +136,15 @@ describe("CollaboratorsProcessor", () => {
     );
   });
 
-  test("without a config id nothing counts as managed", async () => {
+  test("without deleteOrphaned nobody is removed", async () => {
     const strategy = new MockStrategy();
     strategy.collaborators = [{ login: "old" }];
-    strategy.manifest = managed(["old"]);
+    strategy.invitations = [{ id: 9, invitee: { login: "late" } }];
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    await processor.process(
-      config({ users: [], deleteOrphaned: true }),
-      repo,
-      {}
-    );
+    await processor.process(config({ users: ["bot"] }), repo, {});
 
-    assert.deepEqual(strategy.calls, []);
+    assert.deepEqual(strategy.calls, [{ method: "add", args: ["bot"] }]);
   });
 
   test("deleteOrphaned with no users still runs", async () => {
@@ -158,7 +154,7 @@ describe("CollaboratorsProcessor", () => {
     const result = await processor.process(
       config({ deleteOrphaned: true }),
       repo,
-      { configId: "cfg" }
+      {}
     );
 
     assert.equal(result.skipped, undefined);
@@ -168,28 +164,10 @@ describe("CollaboratorsProcessor", () => {
   test("--no-delete suppresses removals", async () => {
     const strategy = new MockStrategy();
     strategy.collaborators = [{ login: "old" }];
-    strategy.manifest = managed(["old"]);
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
     await processor.process(config({ users: [], deleteOrphaned: true }), repo, {
-      configId: "cfg",
       noDelete: true,
-    });
-
-    assert.deepEqual(strategy.calls, []);
-  });
-
-  test("only reads managed users for its own config id", async () => {
-    const strategy = new MockStrategy();
-    strategy.collaborators = [{ login: "old" }];
-    strategy.manifest = {
-      version: 4,
-      configs: { other: { collaborators: ["old"] } },
-    };
-    const processor = new CollaboratorsProcessor(strategy, metadata());
-
-    await processor.process(config({ users: [], deleteOrphaned: true }), repo, {
-      configId: "cfg",
     });
 
     assert.deepEqual(strategy.calls, []);
@@ -202,9 +180,7 @@ describe("CollaboratorsProcessor", () => {
       metadata("Organization")
     );
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {
-      configId: "cfg",
-    });
+    const result = await processor.process(config({ users: ["bot"] }), repo, {});
 
     assert.equal(result.skipped, true);
     assert.equal(result.success, true);
@@ -229,9 +205,7 @@ describe("CollaboratorsProcessor", () => {
     };
     const processor = new CollaboratorsProcessor(strategy, metadata());
 
-    const result = await processor.process(config({ users: ["bot"] }), repo, {
-      configId: "cfg",
-    });
+    const result = await processor.process(config({ users: ["bot"] }), repo, {});
 
     assert.equal(result.success, false);
     assert.match(result.message, /HTTP 403/);

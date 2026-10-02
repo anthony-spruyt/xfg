@@ -12,16 +12,9 @@ import type {
 import type { ResultsCollector } from "./results-collector.js";
 import type { ProcessorResults } from "./settings-report-builder.js";
 
-/**
- * "pre-sync" runs before file sync so collaborators read the default-branch
- * manifest before this run's push can rewrite it.
- */
-export type SettingsPhase = "pre-sync" | "post-sync";
-
 interface SettingsDescriptor {
   key: SettingsKind;
   label: string;
-  phase: SettingsPhase;
   run: () => Promise<SettingsResult>;
 }
 
@@ -61,12 +54,7 @@ async function runAndStoreResult<TResult extends SettingsResult>(
   factory: () => ISettingsProcessor<BaseProcessorOptions, TResult>,
   repoConfig: RepoConfig,
   repoInfo: RepoInfo,
-  opts: {
-    dryRun?: boolean;
-    noDelete?: boolean;
-    token?: string;
-    configId?: string;
-  },
+  opts: { dryRun?: boolean; noDelete?: boolean; token?: string },
   repoName: string,
   settingsCollector: ResultsCollector,
   assign: (entry: ProcessorResults, result: TResult) => void
@@ -94,7 +82,6 @@ function buildSettingsDescriptors(
     {
       key: "rulesets" as const,
       label: "Rulesets",
-      phase: "post-sync",
       run: () =>
         runAndStoreResult(
           factories.rulesets,
@@ -111,7 +98,6 @@ function buildSettingsDescriptors(
     {
       key: "labels" as const,
       label: "Labels",
-      phase: "post-sync",
       run: () =>
         runAndStoreResult(
           factories.labels,
@@ -128,7 +114,6 @@ function buildSettingsDescriptors(
     {
       key: "repo" as const,
       label: "Repo Settings",
-      phase: "post-sync",
       run: () =>
         runAndStoreResult(
           factories.repo,
@@ -145,7 +130,6 @@ function buildSettingsDescriptors(
     {
       key: "codeScanning" as const,
       label: "Code Scanning",
-      phase: "post-sync",
       run: () =>
         runAndStoreResult(
           factories.codeScanning,
@@ -162,7 +146,6 @@ function buildSettingsDescriptors(
     {
       key: "variables" as const,
       label: "Variables",
-      phase: "post-sync",
       run: () =>
         runAndStoreResult(
           factories.variables,
@@ -179,13 +162,12 @@ function buildSettingsDescriptors(
     {
       key: "collaborators" as const,
       label: "Collaborators",
-      phase: "pre-sync",
       run: () =>
         runAndStoreResult(
           factories.collaborators,
           repoConfig,
           repoInfo,
-          { ...sharedOpts, configId: ctx.configId },
+          sharedOpts,
           repoName,
           settingsCollector,
           (e, r) => {
@@ -197,8 +179,7 @@ function buildSettingsDescriptors(
 }
 
 export async function applyRepoSettings(
-  ctx: ApplyRepoSettingsContext,
-  phase: SettingsPhase = "post-sync"
+  ctx: ApplyRepoSettingsContext
 ): Promise<void> {
   const {
     repoConfig,
@@ -212,7 +193,6 @@ export async function applyRepoSettings(
   if (!repoConfig.settings || !isGitHubRepo(repoInfo)) return;
 
   for (const desc of buildSettingsDescriptors(ctx)) {
-    if (desc.phase !== phase) continue;
     const settingsValue = repoConfig.settings[desc.key];
     if (!settingsValue || Object.keys(settingsValue).length === 0) continue;
 

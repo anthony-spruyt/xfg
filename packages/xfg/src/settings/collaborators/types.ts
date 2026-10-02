@@ -1,6 +1,5 @@
 import type { RepoInfo } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
-import type { XfgManifest } from "../../sync/manifest.js";
 
 export interface GitHubCollaborator {
   login: string;
@@ -9,6 +8,7 @@ export interface GitHubCollaborator {
 export interface GitHubRepoInvitation {
   id: number;
   invitee: { login: string } | null;
+  expired?: boolean;
 }
 
 export interface ICollaboratorsStrategy {
@@ -35,9 +35,4 @@ export interface ICollaboratorsStrategy {
     invitationId: number,
     options?: GhApiOptions
   ): Promise<void>;
-  /** Reads .xfg.json from the default branch; null when absent. */
-  getManifest(
-    repoInfo: RepoInfo,
-    options?: GhApiOptions
-  ): Promise<XfgManifest | null>;
 }

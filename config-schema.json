@@ -707,7 +707,7 @@
             "deleteOrphaned": {
               "type": "boolean",
               "default": false,
-              "description": "Remove collaborators xfg added (tracked in .xfg.json) once they leave the config. Never touches people added by hand. Default: false"
+              "description": "Remove every direct collaborator and pending invite not in users (the repo owner is kept). Default: false"
             }
           },
           "additionalProperties": false
@@ -867,7 +867,7 @@
             "deleteOrphaned": {
               "type": "boolean",
               "default": false,
-              "description": "Remove collaborators xfg added (tracked in .xfg.json) once they leave the config. Overrides an inherited collaborators.deleteOrphaned. Default: false"
+              "description": "Remove every direct collaborator and pending invite not in users (the repo owner is kept). Overrides an inherited collaborators.deleteOrphaned. Default: false"
             }
           },
           "additionalProperties": false
