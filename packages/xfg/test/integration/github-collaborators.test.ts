@@ -27,6 +27,18 @@ let repoName: string;
 let testRepo: string;
 let orgRepoName: string;
 let tmpDir: string;
+let personalRepoReady = false;
+let orgRepoReady = false;
+
+async function tryCreateRepo(owner: string, name: string): Promise<boolean> {
+  try {
+    await createRepo(owner, name);
+    return true;
+  } catch (error) {
+    console.log(`  Cannot create ${owner}/${name}: ${String(error)}`);
+    return false;
+  }
+}
 
 async function getInvitees(repo: string): Promise<string[]> {
   const output = await execWithRetry(`gh api repos/${repo}/invitations`);
@@ -69,7 +81,9 @@ describe("GitHub Collaborators Integration Test", () => {
     orgRepoName = generateRepoName("collaborators-org");
     tmpDir = join(tmpdir(), `xfg-collaborators-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
-    await createRepo(userOwner, repoName);
+    // CI's org-scoped PAT cannot create personal repos, and a user token may lack org admin
+    personalRepoReady = await tryCreateRepo(userOwner, repoName);
+    orgRepoReady = await tryCreateRepo(ORG_OWNER, orgRepoName);
   });
 
   after(async () => {
@@ -78,7 +92,8 @@ describe("GitHub Collaborators Integration Test", () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  test("invites a collaborator on a personal repo", async () => {
+  test("invites a collaborator on a personal repo", async (t) => {
+    if (!personalRepoReady) return t.skip("token cannot create personal repos");
     const output = await runSync(personalConfig([invitee]), "--merge direct");
 
     assert.ok(
@@ -96,7 +111,8 @@ describe("GitHub Collaborators Integration Test", () => {
     );
   });
 
-  test("second run is a no-op and shows the invite as pending", async () => {
+  test("second run is a no-op and shows the invite as pending", async (t) => {
+    if (!personalRepoReady) return t.skip("token cannot create personal repos");
     const output = await runSync(personalConfig([invitee]), "--merge direct");
 
     assert.ok(
@@ -114,7 +130,8 @@ describe("GitHub Collaborators Integration Test", () => {
     );
   });
 
-  test("removing the user from config cancels the invite", async () => {
+  test("removing the user from config cancels the invite", async (t) => {
+    if (!personalRepoReady) return t.skip("token cannot create personal repos");
     const output = await runSync(personalConfig([]), "--merge direct");
 
     assert.ok(
@@ -132,8 +149,8 @@ describe("GitHub Collaborators Integration Test", () => {
     );
   });
 
-  test("org repos are skipped with a warning", async () => {
-    await createRepo(ORG_OWNER, orgRepoName);
+  test("org repos are skipped with a warning", async (t) => {
+    if (!orgRepoReady) return t.skip("token cannot create org repos");
     const orgRepo = `${ORG_OWNER}/${orgRepoName}`;
     const configPath = writeConfig(
       tmpDir,
