@@ -1670,8 +1670,9 @@ describe("GitHubLifecycleProvider", () => {
         () => provider.create({ repo: gheRepoInfo, token: "ghs_app_token" }),
         /personal account 'someuser'/
       );
-      assert.ok(calls[0].args.includes("--hostname"));
-      assert.ok(calls[0].args.includes("github.mycompany.com"));
+      const hostnameIndex = calls[0].args.indexOf("--hostname");
+      assert.ok(hostnameIndex >= 0);
+      assert.equal(calls[0].args[hostnameIndex + 1], gheRepoInfo.host);
     });
 
     test("fork() with a PAT on a personal account still forks without --org", async () => {
