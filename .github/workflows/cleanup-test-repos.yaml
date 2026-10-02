@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+
+name: "Cleanup Stale Test Repos"
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "List repos without deleting them"
+        type: boolean
+        default: true
+permissions:
+  contents: "read"
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - owner: spruyt-labs
+            token: GH_PAT_ORG
+          - owner: spruyt-labs-bot
+            token: GH_PAT_BOT
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Delete stale test repos in ${{ matrix.owner }}
+        env:
+          GH_TOKEN: ${{ secrets[matrix.token] }}
+          DRY_RUN: ${{ inputs.dry-run && '--dry-run' || '' }}
+        run: ./.github/scripts/cleanup-stale-test-repos.sh "${{ matrix.owner }}" 6 "${DRY_RUN}"
