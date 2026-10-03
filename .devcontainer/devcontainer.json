@@ -4,6 +4,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
+      "BASE_REGISTRY": "${localEnv:BASE_REGISTRY:ghcr.io}",
       "NEXUS_URL": "${localEnv:NEXUS_URL}"
     }
   },
@@ -49,7 +50,10 @@
         "nk2552003.forest-ash-theme-vscode",
         "redhat.vscode-yaml",
         "github.vscode-github-actions"
-      ]
+      ],
+      "settings": {
+        "workbench.startupEditor": "none"
+      }
     }
   }
 }
