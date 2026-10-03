@@ -1,4 +1,4 @@
-# Docker Hub, not ghcr.io: ghcr drops long layer downloads. Coder sets BASE_REGISTRY to Nexus.
+# Coder workspaces set BASE_REGISTRY to Nexus.
 ARG BASE_REGISTRY=docker.io
 # renovate: datasource=docker depName=docker.io/aspruyt/devcontainer-common versioning=semver
 FROM ${BASE_REGISTRY}/aspruyt/devcontainer-common:2.2.2@sha256:a168140484ad57eaa023809b62fd2bad0c89c7e9acdae6e140ef350f1602e3c9

@@ -4,7 +4,7 @@ Standardized development container synced across repos via repo-operator. Edits 
 
 ## Architecture
 
-The heavy lifting is baked into `docker.io/aspruyt/devcontainer-common` (mirrored from ghcr.io, whose CDN drops long layer downloads) (built from `container-images/devcontainer-common/`). That image includes:
+The heavy lifting is baked into `docker.io/aspruyt/devcontainer-common` (built from `container-images/devcontainer-common/`). That image includes:
 
 - Python, Node, GitHub CLI, pre-commit
 - Podman, with `podman`/`docker` wrappers at `/usr/local/bin` that run it via `sudo`
