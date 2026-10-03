@@ -48,10 +48,10 @@ prOptions:
   merge: ${merge}
   branch: ${PR_BRANCH}
   ai:
-    provider: anthropic
-    baseUrl: https://openrouter.ai/api
+    provider: openai
+    baseUrl: https://openrouter.ai/api/v1
     apiKeyEnv: ${KEY_ENV}
-    model: anthropic/claude-haiku-4.5
+    model: openai/gpt-4o-mini
 repos:
   - git: https://github.com/${testRepo}.git
 `;
