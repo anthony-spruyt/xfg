@@ -2,9 +2,14 @@
 name: warn-raw-container-run
 enabled: true
 event: bash
-pattern: (^|\s|&&|\|\||;)(docker|podman)\s+run(\s|$)
 action: warn
 warn_once: true
+mask_data: true
+conditions:
+  - field: command
+    operator: command_match
+    pattern: '^(docker|podman)(\s+-\S+)*\s+(container\s+)?run(\s|$)'
+    fallback: '(^|\s|&&|\|\||;)(docker|podman)\s+(container\s+)?run(\s|$)'
 ---
 
 **[warn-raw-container-run]** `docker` here is rootful Podman, not Docker. Pick the runner by workspace:

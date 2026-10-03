@@ -2,9 +2,14 @@
 name: warn-trivy-sarif
 enabled: true
 event: bash
-pattern: gh\s+run\s+view.*--log.*CVE|gh\s+run\s+view.*--log.*trivy|--log.*grep.*CVE|--log.*grep.*trivy
 action: warn
 warn_once: true
+mask_data: true
+conditions:
+  - field: command
+    operator: command_match
+    pattern: '^gh\s+run\s+view\b.*--log.*(cve|trivy)'
+    fallback: 'gh\s+run\s+view.*--log.*(cve|trivy)|--log.*grep.*(cve|trivy)'
 ---
 
 **[warn-trivy-sarif]** Trivy SARIF alerts live under `refs/pull/N/merge`, not source branch. Use the API instead of parsing logs:
