@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.4.1](https://github.com/anthony-spruyt/xfg/compare/v7.4.0...v7.4.1) (2026-10-03)
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.19.0 ([#1078](https://github.com/anthony-spruyt/xfg/issues/1078)) ([c60fd80](https://github.com/anthony-spruyt/xfg/commit/c60fd808087dc349b8d5b215a4515cfa832c23ec))
+
 ## [7.4.0](https://github.com/anthony-spruyt/xfg/compare/v7.3.0...v7.4.0) (2026-10-02)
 
 
