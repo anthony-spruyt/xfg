@@ -1,7 +1,7 @@
-# Coder workspaces set BASE_REGISTRY to Nexus; envbuilder ignores registry mirrors.
-ARG BASE_REGISTRY=ghcr.io
-# renovate: datasource=docker depName=ghcr.io/anthony-spruyt/devcontainer-common versioning=semver
-FROM ${BASE_REGISTRY}/anthony-spruyt/devcontainer-common:2.2.1@sha256:f3f58e907ed5062bcfbb7d2eaad831729a10c6010cb9ea129e65b62d19caabbf
+# Docker Hub, not ghcr.io: ghcr drops long layer downloads. Coder sets BASE_REGISTRY to Nexus.
+ARG BASE_REGISTRY=docker.io
+# renovate: datasource=docker depName=docker.io/aspruyt/devcontainer-common versioning=semver
+FROM ${BASE_REGISTRY}/aspruyt/devcontainer-common:2.2.2@sha256:a168140484ad57eaa023809b62fd2bad0c89c7e9acdae6e140ef350f1602e3c9
 
 # Route Ubuntu archive through Nexus apt-ubuntu-proxy when NEXUS_URL is
 # supplied at build time. Coder workspaces inject it via envbuilder_env.

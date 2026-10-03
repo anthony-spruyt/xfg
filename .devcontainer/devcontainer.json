@@ -4,7 +4,7 @@
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
-      "BASE_REGISTRY": "${localEnv:BASE_REGISTRY:ghcr.io}",
+      "BASE_REGISTRY": "${localEnv:BASE_REGISTRY:docker.io}",
       "NEXUS_URL": "${localEnv:NEXUS_URL}"
     }
   },
