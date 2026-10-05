@@ -20,6 +20,7 @@
         ".devcontainer/initialize.sh",
         ".devcontainer/podman-seccomp.json",
         ".devcontainer/post-start.d/claude-plugins.sh",
+        ".devcontainer/post-start.d/claude-state.sh",
         ".devcontainer/post-start.sh",
         ".devcontainer/README.md",
         ".devcontainer/setup-devcontainer.sh",
