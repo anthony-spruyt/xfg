@@ -12,7 +12,7 @@ conditions:
     fallback: '(?:^|[;&|]\s*)gh\s+api\b(?!.*refs/pull/).*code-scanning/alerts(?![/\w])'
 ---
 
-**[warn-code-scanning-ref]** Code-scanning SARIF alerts are indexed under the merge ref, not the source branch. Without `ref=refs/pull/N/merge`, the API returns 404.
+**[warn-code-scanning-ref]** Code-scanning SARIF alerts are indexed under the merge ref, not the source branch. Without `ref=refs/pull/N/merge` you get default-branch alerts, not the PR's.
 
 Correct usage:
 

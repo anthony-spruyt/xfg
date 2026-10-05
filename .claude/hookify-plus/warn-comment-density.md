@@ -10,7 +10,7 @@ conditions:
     pattern: \.(ya?ml|json5|jsonc|tf|tfvars|hcl|sh|bash|py|go|ts|tsx|js|jsx|mjs|cjs|rs|rb|java|kt|swift|cs|c|h|cc|cpp|hpp|sql|toml|ini|cfg|conf|proto|gradle)$|(?:^|/)(?:Dockerfile|Makefile|Justfile|Taskfile)(?:[.\-][\w.\-]+)?$
   - field: new_text
     operator: regex_match
-    pattern: (?:^|\n)[ \t]*(?:#(?!!)|//|--(?!-)|/\*)(?![ \t]*(?:renovate|yamllint|yaml-language-server|nolint|noqa|shellcheck|hadolint|checkov|tflint|gitleaks|eslint|biome-ignore|prettier-ignore|cspell|codespell|pylint|mypy|ruff|nosec|pragma|jscpd|trunk-ignore|go:generate|go:build|@?ts-|SPDX-|Copyright|region|endregion|MARK|type:|depName)\b)
+    pattern: (?:^|\n)[ \t]*(?:#(?!!)|//|--(?=[ \t\n]|$)|/\*)(?![ \t]*#?[ \t]*(?:renovate|yamllint|yaml-language-server|nolint|noqa|shellcheck|hadolint|checkov|tflint|gitleaks|eslint|biome-ignore|prettier-ignore|cspell|codespell|pylint|mypy|ruff|nosec|pragma|jscpd|trunk-ignore|go:generate|go:build|@?ts-|SPDX-|Copyright|region|endregion|MARK|type:|depName)\b)
 ---
 
 **[warn-comment-density]** You are adding a comment to a code or config file.
