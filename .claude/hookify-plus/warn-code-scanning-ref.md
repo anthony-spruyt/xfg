@@ -8,11 +8,11 @@ mask_data: true
 conditions:
   - field: command
     operator: command_match
-    pattern: '^gh\s+api\b(?!.*refs/pull/).*code-scanning/alerts(?![/\w])'
-    fallback: '(?:^|[;&|]\s*)gh\s+api\b(?!.*refs/pull/).*code-scanning/alerts(?![/\w])'
+    pattern: '^gh\s+api\b(?!.*(?:refs/pull/|[?&]pr=\d)).*code-scanning/alerts(?![/\w])'
+    fallback: '(?:^|[;&|]\s*)gh\s+api\b(?!.*(?:refs/pull/|[?&]pr=\d)).*code-scanning/alerts(?![/\w])'
 ---
 
-**[warn-code-scanning-ref]** Code-scanning SARIF alerts are indexed under the merge ref, not the source branch. Without `ref=refs/pull/N/merge` you get default-branch alerts, not the PR's.
+**[warn-code-scanning-ref]** Code-scanning SARIF alerts are indexed under the merge ref, not the source branch. Without `ref=refs/pull/N/merge` or `pr=N` you get default-branch alerts, not the PR's.
 
 Correct usage:
 
