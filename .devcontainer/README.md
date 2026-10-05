@@ -7,6 +7,7 @@ Standardized development container synced across repos via repo-operator. Edits 
 The heavy lifting is baked into `docker.io/aspruyt/devcontainer-common` (built from `container-images/devcontainer-common/`). That image includes:
 
 - Python, Node, GitHub CLI, pre-commit
+- bats, with `bats-support` and `bats-assert` loadable via `bats_load_library`
 - Podman, with `podman`/`docker` wrappers at `/usr/local/bin` that run it via `sudo`
 - safe-chain supply-chain protection
 - `agent-run` policy-enforcing podman wrapper at `/usr/local/bin/agent-run`
