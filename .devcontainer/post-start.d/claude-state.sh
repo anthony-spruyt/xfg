@@ -7,7 +7,7 @@ command -v jq >/dev/null || exit 0
 workspace="$(pwd -P)"
 state="$HOME/.claude.json"
 
-[ -s "$state" ] || (
+[[ -s "$state" ]] || (
   umask 077
   echo '{}' >"$state"
 )
