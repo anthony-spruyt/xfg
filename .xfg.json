@@ -33,7 +33,6 @@
         ".gitignore",
         ".gitleaks.toml",
         ".jsonlintrc",
-        ".lint-config.sh",
         ".lycheeignore",
         ".markdownlint.json",
         ".markdownlintignore",
