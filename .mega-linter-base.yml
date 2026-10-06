@@ -15,12 +15,19 @@ ENABLE_LINTERS:
   - "REPOSITORY_TRIVY"
   - "SPELL_LYCHEE"
   - "YAML_YAMLLINT"
-EXCLUDED_DIRECTORIES:
+ADDITIONAL_EXCLUDED_DIRECTORIES:
   - ".claude"
-  - ".git"
+  - ".output"
   - ".venv"
+  - ".worktrees"
   - "__pycache__"
+  - "coverage"
+  - "dist"
+  - "node_modules"
   - "plans"
+  - "site"
+  - "tmp"
+  - "worktrees"
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$|CHANGELOG\\.md$)"
 FLAVOR_SUGGESTIONS: false
 IGNORE_GITIGNORED_FILES: true
@@ -29,5 +36,6 @@ REPOSITORY_SECRETLINT_ARGUMENTS:
   - ".secretlintignore"
 SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(package-lock\\.json)"
 REPOSITORY_TRIVY_CONFIG_FILE: "trivy-mega-linter.yaml"
-REPOSITORY_TRIVY_ARGUMENTS: "--source misconfig,secret --exit-code 1"
-REPOSITORY_TRIVY_COMMAND_REMOVE_ARGUMENTS: "--source vuln,misconfig --exit-code 1"
+REPOSITORY_TRIVY_COMMAND_REMOVE_ARGUMENTS:
+  - "--scanners"
+  - "vuln,misconfig"

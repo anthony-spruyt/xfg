@@ -5,3 +5,7 @@
 disable-telemetry: true
 quiet: true
 ignorefile: ".trivyignore.yaml"
+scan:
+  scanners:
+    - "misconfig"
+    - "secret"
