@@ -44,7 +44,6 @@
         ".pre-commit-config.yaml",
         ".prettierignore",
         ".prettierrc.yaml",
-        ".pylintrc",
         ".secretlintignore",
         ".shellcheckrc",
         ".sonarcloud.properties",
