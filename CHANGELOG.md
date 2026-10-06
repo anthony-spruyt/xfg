@@ -1,5 +1,18 @@
 # Changelog
 
+## [7.5.0](https://github.com/anthony-spruyt/xfg/compare/v7.4.0...v7.5.0) (2026-10-06)
+
+
+### Features
+
+* **sync:** add --render-dir to write dry-run file changes to disk ([#1090](https://github.com/anthony-spruyt/xfg/issues/1090)) ([0ab708a](https://github.com/anthony-spruyt/xfg/commit/0ab708a360cef79623a40dfbeb16a412dacb04d9))
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.19.0 ([#1078](https://github.com/anthony-spruyt/xfg/issues/1078)) ([c60fd80](https://github.com/anthony-spruyt/xfg/commit/c60fd808087dc349b8d5b215a4515cfa832c23ec))
+* **deps:** update dependency chalk to v6.0.1 ([#1083](https://github.com/anthony-spruyt/xfg/issues/1083)) ([af526b1](https://github.com/anthony-spruyt/xfg/commit/af526b15fb2877a229ecc37de6e08fead08d66f7))
+
 ## [7.4.0](https://github.com/anthony-spruyt/xfg/compare/v7.3.0...v7.4.0) (2026-10-02)
 
 
