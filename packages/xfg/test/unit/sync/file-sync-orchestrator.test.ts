@@ -13,11 +13,17 @@ import {
   createDiffStats,
   incrementDiffStats,
 } from "../../../src/sync/diff-utils.js";
-import type { IFileWriter, IManifestManager } from "../../../src/sync/types.js";
+import type {
+  IFileWriter,
+  IManifestManager,
+  IRenderWriter,
+} from "../../../src/sync/types.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 
 const testDir = join(tmpdir(), "file-sync-orchestrator-test-" + Date.now());
+
+const noopRenderWriter: IRenderWriter = { write: () => {} };
 
 describe("FileSyncOrchestrator", () => {
   let workDir: string;
@@ -111,7 +117,8 @@ describe("FileSyncOrchestrator", () => {
       const orchestrator = new FileSyncOrchestrator(
         mockFileWriter,
         mockManifestManager,
-        mockLogger
+        mockLogger,
+        noopRenderWriter
       );
 
       const repoConfig: RepoConfig = {
@@ -154,7 +161,8 @@ describe("FileSyncOrchestrator", () => {
       const orchestrator = new FileSyncOrchestrator(
         mockFileWriter,
         mockManifestManager,
-        mockLogger
+        mockLogger,
+        noopRenderWriter
       );
 
       const repoConfig: RepoConfig = {
@@ -193,7 +201,8 @@ describe("FileSyncOrchestrator", () => {
       const orchestrator = new FileSyncOrchestrator(
         mockFileWriter,
         mockManifestManager,
-        mockLogger
+        mockLogger,
+        noopRenderWriter
       );
 
       const repoConfig: RepoConfig = {
@@ -241,7 +250,8 @@ describe("FileSyncOrchestrator", () => {
       const orchestrator = new FileSyncOrchestrator(
         mockFileWriter,
         mockManifestManager,
-        mockLogger
+        mockLogger,
+        noopRenderWriter
       );
 
       const repoConfig: RepoConfig = {
@@ -267,6 +277,103 @@ describe("FileSyncOrchestrator", () => {
 
       assert.equal(result.diffStats.newCount, 1);
       assert.equal(result.diffStats.modifiedCount, 1);
+    });
+
+    describe("renderDir", () => {
+      function createRecordingRenderWriter(): IRenderWriter & {
+        calls: Array<{ renderDir: string; repoName: string; files: string[] }>;
+      } {
+        const calls: Array<{
+          renderDir: string;
+          repoName: string;
+          files: string[];
+        }> = [];
+        return {
+          calls,
+          write: (renderDir, repoName, fileChanges) => {
+            calls.push({ renderDir, repoName, files: [...fileChanges.keys()] });
+          },
+        };
+      }
+
+      async function syncWith(
+        renderWriter: IRenderWriter,
+        options: { dryRun: boolean; renderDir?: string }
+      ): Promise<void> {
+        const { gitOps } = createMockAuthenticatedGitOps({});
+        const { mock: mockLogger } = createMockLogger();
+        const manifestManager = createMockManifestManager();
+        manifestManager.saveUpdatedManifest = (_w, _m, _e, _d, changes) => {
+          changes.set(".xfg.json", {
+            fileName: ".xfg.json",
+            content: "{}",
+            action: "update",
+          });
+        };
+        const orchestrator = new FileSyncOrchestrator(
+          createMockFileWriter(
+            new Map([
+              [
+                "config.json",
+                {
+                  fileName: "config.json",
+                  content: "{}",
+                  action: "create" as const,
+                },
+              ],
+            ])
+          ),
+          manifestManager,
+          mockLogger,
+          renderWriter
+        );
+
+        await orchestrator.sync(
+          {
+            git: mockRepoInfo.gitUrl,
+            files: [{ fileName: "config.json", content: {} }],
+          },
+          mockRepoInfo,
+          { gitOps, baseBranch: "main", cleanup: () => {} },
+          {
+            branchName: "chore/sync",
+            workDir,
+            configId: "test",
+            executor: createMockExecutor().mock,
+            ...options,
+          }
+        );
+      }
+
+      test("renders the repo's file changes, manifest included, in dry-run", async () => {
+        const renderWriter = createRecordingRenderWriter();
+
+        await syncWith(renderWriter, { dryRun: true, renderDir: "/out" });
+
+        assert.deepEqual(renderWriter.calls, [
+          {
+            renderDir: "/out",
+            repoName: "test/repo",
+            files: ["config.json", ".xfg.json"],
+          },
+        ]);
+      });
+
+      test("does not render without renderDir", async () => {
+        const renderWriter = createRecordingRenderWriter();
+
+        await syncWith(renderWriter, { dryRun: true });
+
+        assert.equal(renderWriter.calls.length, 0);
+      });
+
+      test("does not render outside dry-run", async () => {
+        const renderWriter = createRecordingRenderWriter();
+
+        await syncWith(renderWriter, { dryRun: false, renderDir: "/out" });
+
+        assert.equal(renderWriter.calls.length, 0);
+      });
     });
   });
 });
