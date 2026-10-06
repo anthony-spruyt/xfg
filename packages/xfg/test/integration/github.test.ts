@@ -234,7 +234,8 @@ files:
   render-new.json:
     content:
       rendered: true
-  render-run.sh: "#!/bin/sh"
+  render-run.sh:
+    content: "#!/bin/sh"
 repos:
   - git: https://github.com/${testRepo}.git
 `
