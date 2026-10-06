@@ -90,7 +90,20 @@ describe("RenderWriter", () => {
     );
 
     const mode = statSync(join(renderDir, "org/repo/run.sh")).mode & 0o777;
-    assert.equal(mode & 0o111, 0o111);
+    assert.equal(mode, 0o700);
+  });
+
+  test("writes files and the index readable by the owner only", () => {
+    new RenderWriter().write(
+      renderDir,
+      "org/repo",
+      changes({ fileName: "a.json", content: "{}", action: "create" })
+    );
+
+    for (const path of ["org/repo/a.json", "render.json"]) {
+      const mode = statSync(join(renderDir, path)).mode & 0o777;
+      assert.equal(mode, 0o600, path);
+    }
   });
 
   test("indexes written and deleted files per repo in render.json", () => {
@@ -124,7 +137,11 @@ describe("RenderWriter", () => {
         new RenderWriter().write(
           renderDir,
           "org/repo",
-          changes({ fileName: "../../evil.txt", content: "x", action: "create" })
+          changes({
+            fileName: "../../evil.txt",
+            content: "x",
+            action: "create",
+          })
         ),
       /outside/
     );

@@ -61,7 +61,7 @@ Non-structured files (`.sh`, `.md`, `.txt`, etc.) show only the file path withou
 xfg sync --config ./config.yaml --dry-run --render-dir ./rendered
 ```
 
-- Files that would be created or updated are written to `<path>/<repo>/<file>` with their planned content, where `<repo>` is the display name (`owner/repo` on GitHub). Executable files keep their executable bit.
+- Files that would be created or updated are written to `<path>/<repo>/<file>` with their planned content, where `<repo>` is the display name (`owner/repo` on GitHub). Files are readable by the owner only (`0600`, or `0700` for executable files).
 - Unchanged files, skipped `createOnly` files and mode-only changes are not written.
 - `<path>/render.json` lists, per repo, the files written and the files that would be deleted (orphans under `deleteOrphaned`):
 

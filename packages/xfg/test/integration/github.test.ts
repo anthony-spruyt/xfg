@@ -251,7 +251,7 @@ repos:
       JSON.parse(readFileSync(join(repoDir, "render-new.json"), "utf-8")),
       { rendered: true }
     );
-    assert.equal(statSync(join(repoDir, "render-run.sh")).mode & 0o111, 0o111);
+    assert.equal(statSync(join(repoDir, "render-run.sh")).mode & 0o777, 0o700);
     assert.equal(existsSync(join(repoDir, existingFile)), false);
 
     const index = JSON.parse(

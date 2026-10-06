@@ -1,10 +1,4 @@
-import {
-  chmodSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import type { FileWriteResult, IRenderWriter } from "./types.js";
 
@@ -12,6 +6,20 @@ export const RENDER_INDEX_FILE = "render.json";
 
 interface RenderIndex {
   repos: Record<string, { files: string[]; deleted: string[] }>;
+}
+
+// Owner-only: the render may hold content the synced repos keep private
+const FILE_MODE = 0o600;
+
+function readIndex(indexPath: string): RenderIndex {
+  try {
+    return JSON.parse(readFileSync(indexPath, "utf-8")) as RenderIndex;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return { repos: {} };
+    }
+    throw error;
+  }
 }
 
 function resolveInside(root: string, path: string): string {
@@ -47,17 +55,17 @@ export class RenderWriter implements IRenderWriter {
 
       const target = resolveInside(repoDir, change.fileName);
       mkdirSync(dirname(target), { recursive: true });
-      writeFileSync(target, change.content);
-      if (change.mode === "100755") chmodSync(target, 0o755);
+      writeFileSync(target, change.content, { mode: FILE_MODE });
+      if (change.mode === "100755") chmodSync(target, 0o700);
       files.push(change.fileName);
     }
 
     const indexPath = resolve(root, RENDER_INDEX_FILE);
-    const index: RenderIndex = existsSync(indexPath)
-      ? (JSON.parse(readFileSync(indexPath, "utf-8")) as RenderIndex)
-      : { repos: {} };
+    const index = readIndex(indexPath);
     index.repos[repoName] = { files: files.sort(), deleted: deleted.sort() };
     mkdirSync(root, { recursive: true });
-    writeFileSync(indexPath, JSON.stringify(index, null, 2) + "\n");
+    writeFileSync(indexPath, JSON.stringify(index, null, 2) + "\n", {
+      mode: FILE_MODE,
+    });
   }
 }
