@@ -34,6 +34,18 @@ pull_request_rules:
           - "agent/fixing"
           - "agent/fixable"
           - "agent/needs-review"
+  - name: "request owner review"
+    conditions:
+      - "base = main"
+      - "-closed"
+      - "-draft"
+      - "-author = renovate[bot]"
+      - "-author = repo-operator-release-bot[bot]"
+      - "-label = agent/revert"
+    actions:
+      request_reviews:
+        users:
+          - "anthony-spruyt"
 merge_protections:
   - name: "default"
     if:
