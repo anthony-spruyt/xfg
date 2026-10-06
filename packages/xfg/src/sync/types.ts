@@ -64,6 +64,17 @@ export interface IFileWriter {
   ): Promise<FileWriteAllResult>;
 }
 
+/**
+ * Writes a repo's planned file changes to a local directory (dry-run render).
+ */
+export interface IRenderWriter {
+  write(
+    renderDir: string,
+    repoName: string,
+    fileChanges: Map<string, FileWriteResult>
+  ): void;
+}
+
 export interface OrphanProcessResult {
   manifest: XfgManifest;
   existingManifest: XfgManifest | null;
@@ -195,6 +206,8 @@ export interface ProcessorOptions {
   hasAppCredentials?: boolean;
   /** Disables prOptions.ai for this run */
   noAi?: boolean;
+  /** Dry-run only: directory the planned file changes are written to */
+  renderDir?: string;
 }
 
 export interface FileChangeDetail {

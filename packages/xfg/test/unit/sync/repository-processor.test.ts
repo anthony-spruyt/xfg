@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, writeFileSync, readdirSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+  readdirSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { RepositoryProcessor } from "../../../src/sync/repository-processor.js";
@@ -148,6 +154,35 @@ describe("RepositoryProcessor", () => {
       // The existing file should have been cleaned up
       const files = readdirSync(workDir);
       assert.equal(files.length, 0, "Workspace should be empty after cleanup");
+    });
+  });
+
+  describe("renderDir", () => {
+    test("writes planned files under <renderDir>/<owner>/<repo> in dry-run", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { gitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+      });
+      const processor = new RepositoryProcessor(() => gitOps, mockLogger);
+      const renderDir = join(testDir, `render-${Date.now()}`);
+
+      await processor.process(mockRepoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir: join(testDir, `render-work-${Date.now()}`),
+        configId: "test-config",
+        dryRun: true,
+        renderDir,
+        executor: createMockExecutor(),
+      });
+
+      assert.deepEqual(
+        JSON.parse(
+          readFileSync(join(renderDir, "test/repo/config.json"), "utf-8")
+        ),
+        { key: "value" }
+      );
     });
   });
 

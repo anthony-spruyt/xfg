@@ -35,6 +35,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 | `github-app-private-key` | No       | -                     | GitHub App private key (PEM format) for JWT signing                                                                                                        |
 | `no-delete`              | No       | `false`               | Skip deletion of orphaned resources even if deleteOrphaned is configured                                                                                   |
 | `no-ai`                  | No       | `false`               | Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured (sync only)                                                    |
+| `render-dir`             | No       | -                     | With dry-run, write each repo's planned file changes to this directory (sync only). See the --render-dir CLI option                                        |
 | `xfg-package`            | No       | -                     | Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release. |
 
 <!-- xfg:generated:end -->

@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import {
   loadRawConfig,
   normalizeConfig,
@@ -84,6 +84,19 @@ function displayReports(
   });
 }
 
+function resolveRenderDir(path: string, dryRun: boolean | undefined): string {
+  if (!dryRun) {
+    throw new ValidationError("--render-dir requires --dry-run");
+  }
+  const renderDir = resolve(path);
+  if (existsSync(renderDir) && readdirSync(renderDir).length > 0) {
+    throw new ValidationError(
+      `Render directory must be empty or missing: ${renderDir}`
+    );
+  }
+  return renderDir;
+}
+
 export async function runSync(
   options: SyncOptions,
   deps: SyncDependencies = {}
@@ -100,6 +113,13 @@ export async function runSync(
 
   if (!existsSync(configPath)) {
     throw new ValidationError(`Config path not found: ${configPath}`);
+  }
+
+  if (options.renderDir) {
+    options = {
+      ...options,
+      renderDir: resolveRenderDir(options.renderDir, options.dryRun),
+    };
   }
 
   logger.log(`Loading config from: ${configPath}`);

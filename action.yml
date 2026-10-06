@@ -63,6 +63,9 @@ inputs:
     description: "Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured (sync only)"
     required: false
     default: "false"
+  render-dir:
+    description: "With dry-run, write each repo's planned file changes to this directory (sync only). See the --render-dir CLI option"
+    required: false
   xfg-package:
     description: "Override xfg package to install (npm package name, local .tgz path, or 'skip' to use pre-installed). Defaults to the version matching this action release."
     required: false
@@ -156,6 +159,7 @@ runs:
         INPUT_MERGE_STRATEGY: ${{ inputs.merge-strategy }}
         INPUT_DELETE_BRANCH: ${{ inputs.delete-branch }}
         INPUT_NO_AI: ${{ inputs.no-ai }}
+        INPUT_RENDER_DIR: ${{ inputs.render-dir }}
       run: |
         case "${INPUT_COMMAND}" in
           sync) CMD=(xfg sync) ;;
@@ -194,6 +198,10 @@ runs:
 
           if [ "${INPUT_NO_AI}" = "true" ]; then
             CMD+=(--no-ai)
+          fi
+
+          if [ -n "${INPUT_RENDER_DIR}" ]; then
+            CMD+=(--render-dir "${INPUT_RENDER_DIR}")
           fi
         fi
 
