@@ -89,7 +89,6 @@ jobs:
   lint:
     if: github.event_name == 'pull_request' && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
-    secrets: "inherit"
 
   build:
     needs:
@@ -160,7 +159,13 @@ jobs:
       - "check-changes"
     if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.integration-needed == 'true' }}
     uses: ./.github/workflows/_integration-tests.yaml
-    secrets: "inherit"
+    secrets:
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+      GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+      GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+      GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
 
   # Summary job for branch protection - references reusable workflow job
   summary:

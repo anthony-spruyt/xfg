@@ -4,6 +4,19 @@ name: Integration Tests
 
 on:
   workflow_call:
+    secrets:
+      AZURE_DEVOPS_EXT_PAT:
+        required: false
+      GH_PAT_BOT:
+        required: false
+      GH_PAT_ORG:
+        required: false
+      GITLAB_TOKEN:
+        required: false
+      OPENROUTER_API_KEY:
+        required: false
+      TEST_APP_PRIVATE_KEY:
+        required: false
 
 permissions:
   contents: read

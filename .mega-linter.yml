@@ -2,36 +2,16 @@
 # Project-specific MegaLinter configuration
 # Extends the base config from repo-operator
 # Add custom linters or overrides below
-# Add project-specific linters below:
-# ENABLE_LINTERS:
-#   - TYPESCRIPT_ES
-#   - PYTHON_PYLINT
-
 EXTENDS:
   - ".mega-linter-base.yml"
 CONFIG_PROPERTIES_TO_APPEND:
   - "ENABLE_LINTERS"
-  - "EXCLUDED_DIRECTORIES"
+  - "ADDITIONAL_EXCLUDED_DIRECTORIES"
 ENABLE_LINTERS:
   - "JAVASCRIPT_ES"
-  - "JAVASCRIPT_PRETTIER"
   - "TYPESCRIPT_ES"
-  - "TYPESCRIPT_PRETTIER"
-EXCLUDED_DIRECTORIES:
-  - "coverage"
-  - "dist"
-  - "site"
+ADDITIONAL_EXCLUDED_DIRECTORIES:
   - "test-cli-tmp"
   - "test-settings-cmd-tmp"
-  - "tmp"
-  - ".worktrees"
-  - "worktrees"
-  - ".output"
-  - "node_modules"
-  - ".git"
-
-# Exclude intentionally invalid test fixtures from JSON linting
+# Intentionally invalid fixture
 JSON_JSONLINT_FILTER_REGEX_EXCLUDE: "test/fixtures/templates/invalid\\.json"
-
-# Exclude CI workflow and integration tests from lychee (contain shell-variable URLs and ephemeral repo names)
-SPELL_LYCHEE_FILTER_REGEX_EXCLUDE: "(ci\\.yaml|test/integration/github-lifecycle|test/|src/|\\.ts$)"
