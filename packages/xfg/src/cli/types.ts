@@ -71,6 +71,7 @@ export interface SyncOptions extends SharedOptions {
   mergeStrategy?: MergeStrategy;
   deleteBranch?: boolean;
   noAi?: boolean;
+  renderDir?: string;
 }
 
 export interface SyncResultEntry {

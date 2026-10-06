@@ -3,9 +3,19 @@ import { strict as assert } from "node:assert";
 import {
   parseMergeMode,
   parseMergeStrategy,
+  program,
   toSecretsSyncOptions,
   toSyncOptions,
 } from "../../../src/cli/program.js";
+
+describe("sync command", () => {
+  test("--render-dir maps to renderDir", () => {
+    const sync = program.commands.find((c) => c.name() === "sync");
+    const option = sync?.options.find((o) => o.long === "--render-dir");
+    assert.equal(option?.attributeName(), "renderDir");
+    assert.equal(option?.required, true);
+  });
+});
 
 describe("toSecretsSyncOptions", () => {
   test("--no-delete sets noDelete without leaking delete", () => {

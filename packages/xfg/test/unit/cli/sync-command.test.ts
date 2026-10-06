@@ -8,8 +8,8 @@ import {
 } from "node:test";
 import { strict as assert } from "node:assert";
 type MockFn = Mock<(...args: unknown[]) => unknown>;
-import { writeFileSync, rmSync, mkdtempSync } from "node:fs";
-import { join } from "node:path";
+import { writeFileSync, rmSync, mkdtempSync, mkdirSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { runSync, type SyncOptions } from "../../../src/cli/sync-command.js";
 import type { ProcessorResult } from "../../../src/sync/types.js";
@@ -93,6 +93,72 @@ describe("sync-command", () => {
     console.error = originalConsoleError;
 
     rmSync(testDir, { recursive: true, force: true });
+  });
+
+  describe("renderDir", () => {
+    const CONFIG = `id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+`;
+
+    test("passes the resolved renderDir to the processor", async () => {
+      writeFileSync(testConfigPath, CONFIG);
+      const mockProcessor = createMockProcessor();
+      const renderDir = join(testDir, "render");
+
+      await runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir, renderDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+
+      const callArgs = (mockProcessor.process as MockFn).mock.calls[0]
+        .arguments;
+      assert.equal(
+        (callArgs[2] as { renderDir?: string }).renderDir,
+        resolve(renderDir)
+      );
+    });
+
+    test("rejects renderDir without dryRun", async () => {
+      writeFileSync(testConfigPath, CONFIG);
+
+      await assert.rejects(
+        runSync(
+          {
+            config: testConfigPath,
+            workDir: testDir,
+            renderDir: join(testDir, "render"),
+          },
+          {
+            processorFactory: () => createMockProcessor(),
+            lifecycleManager: noopLifecycleManager,
+          }
+        ),
+        /--render-dir requires --dry-run/
+      );
+    });
+
+    test("rejects a renderDir that is not empty", async () => {
+      writeFileSync(testConfigPath, CONFIG);
+      const renderDir = join(testDir, "render");
+      mkdirSync(renderDir);
+      writeFileSync(join(renderDir, "stale.txt"), "x");
+
+      await assert.rejects(
+        runSync(
+          { config: testConfigPath, dryRun: true, workDir: testDir, renderDir },
+          {
+            processorFactory: () => createMockProcessor(),
+            lifecycleManager: noopLifecycleManager,
+          }
+        ),
+        /must be empty/
+      );
+    });
   });
 
   describe("lifecycle integration", () => {
