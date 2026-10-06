@@ -128,6 +128,10 @@ const syncCommand = new Command("sync")
     "--no-ai",
     "Disable AI-generated commit messages and PR descriptions even if prOptions.ai is configured"
   )
+  .option(
+    "--render-dir <path>",
+    "With --dry-run, write each repo's planned file changes to <path>/<repo>/ and list them in <path>/render.json. The directory must be empty or missing"
+  )
   .action(async (opts) => {
     try {
       await runSync(toSyncOptions(opts));

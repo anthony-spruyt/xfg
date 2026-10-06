@@ -53,6 +53,31 @@ For structured data files (`.json`, `.json5`, `.yaml`, `.yml`), xfg shows unifie
 
 Non-structured files (`.sh`, `.md`, `.txt`, etc.) show only the file path without content diffs.
 
+### Rendering Planned Files
+
+`--render-dir <path>` (with `--dry-run`) also writes each planned file to disk, so other tools can test a change before it is synced. For example, a CI job can copy a repo's rendered files over a checkout of that repo and run its linters.
+
+```bash
+xfg sync --config ./config.yaml --dry-run --render-dir ./rendered
+```
+
+- Files that would be created or updated are written to `<path>/<repo>/<file>` with their planned content, where `<repo>` is the display name (`owner/repo` on GitHub). Executable files keep their executable bit.
+- Unchanged files, skipped `createOnly` files and mode-only changes are not written.
+- `<path>/render.json` lists, per repo, the files written and the files that would be deleted (orphans under `deleteOrphaned`):
+
+```json
+{
+  "repos": {
+    "org/repo": {
+      "files": [".xfg.json", "lint.sh"],
+      "deleted": [".pylintrc"]
+    }
+  }
+}
+```
+
+A repo appears in `render.json` even when nothing would change, so an empty entry means "processed, no file changes". Repos that do not exist yet are not rendered. The directory must be empty or missing, so a rerun never mixes with stale output.
+
 ## CLI Options
 
 See [CLI Options Reference](../reference/cli-options.md) for the full option list, aliases, and defaults.

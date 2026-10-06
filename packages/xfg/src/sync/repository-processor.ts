@@ -13,6 +13,7 @@ import { AuthOptionsBuilder } from "./auth-options-builder.js";
 import { RepositorySession } from "./repository-session.js";
 import { CommitPushManager } from "./commit-push-manager.js";
 import { FileSyncOrchestrator } from "./file-sync-orchestrator.js";
+import { RenderWriter } from "./render-writer.js";
 import { PRMergeHandler } from "./pr-merge-handler.js";
 import { FileSyncStrategy } from "./file-sync-strategy.js";
 import { SyncWorkflow } from "./sync-workflow.js";
@@ -25,6 +26,7 @@ import {
 import type {
   IFileWriter,
   IManifestManager,
+  IRenderWriter,
   IBranchManager,
   IAuthOptionsBuilder,
   IRepositorySession,
@@ -51,6 +53,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     components?: {
       fileWriter?: IFileWriter;
       manifestManager?: IManifestManager;
+      renderWriter?: IRenderWriter;
       branchManager?: IBranchManager;
       authOptionsBuilder?: IAuthOptionsBuilder;
       repositorySession?: IRepositorySession;
@@ -110,7 +113,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
 
     this.fileSyncOrchestrator =
       components?.fileSyncOrchestrator ??
-      new FileSyncOrchestrator(fileWriter, manifestManager, log);
+      new FileSyncOrchestrator(
+        fileWriter,
+        manifestManager,
+        log,
+        components?.renderWriter ?? new RenderWriter()
+      );
 
     this.syncWorkflow =
       components?.syncWorkflow ??

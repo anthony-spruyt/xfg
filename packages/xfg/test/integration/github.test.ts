@@ -1,6 +1,13 @@
 import { test, describe, before, after, beforeEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -203,6 +210,61 @@ repos:
 
     const prCount = await execWithRetry(
       `gh pr list --repo ${testRepo} --head chore/sync-createonly-test --state all --json number --jq 'length'`
+    );
+    assert.equal(prCount, "0");
+  });
+
+  test("dry-run --render-dir writes planned files without touching the repo", async () => {
+    const existingFile = "render-existing.json";
+    const existingBase64 = Buffer.from('{"existing": true}\n').toString(
+      "base64"
+    );
+    await execWithRetry(
+      `gh api --method PUT repos/${testRepo}/contents/${existingFile} -f message="setup" -f content="${existingBase64}"`
+    );
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-render-github
+files:
+  ${existingFile}:
+    createOnly: true
+    content:
+      existing: false
+  render-new.json:
+    content:
+      rendered: true
+  render-run.sh: "#!/bin/sh"
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+    const renderDir = join(tmpDir, `render-${Date.now()}`);
+
+    await exec(
+      `node dist/cli.js sync --config ${configPath} --dry-run --render-dir ${renderDir}`,
+      { cwd: projectRoot }
+    );
+
+    const repoDir = join(renderDir, testRepo);
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(repoDir, "render-new.json"), "utf-8")),
+      { rendered: true }
+    );
+    assert.equal(statSync(join(repoDir, "render-run.sh")).mode & 0o111, 0o111);
+    assert.equal(existsSync(join(repoDir, existingFile)), false);
+
+    const index = JSON.parse(
+      readFileSync(join(renderDir, "render.json"), "utf-8")
+    );
+    const files: string[] = index.repos[testRepo].files;
+    assert.ok(files.includes("render-new.json"));
+    assert.ok(files.includes("render-run.sh"));
+    assert.ok(!files.includes(existingFile));
+    assert.deepEqual(index.repos[testRepo].deleted, []);
+
+    const prCount = await execWithRetry(
+      `gh pr list --repo ${testRepo} --json number --jq 'length'`
     );
     assert.equal(prCount, "0");
   });

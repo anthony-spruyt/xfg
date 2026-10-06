@@ -1,5 +1,5 @@
 import type { RepoConfig } from "../config/index.js";
-import type { RepoInfo } from "../repo/index.js";
+import { getRepoDisplayName, type RepoInfo } from "../repo/index.js";
 import type { ILogger } from "../shared/logger.js";
 import type { FileAction } from "../vcs/index.js";
 import { incrementDiffStats } from "./diff-utils.js";
@@ -7,6 +7,7 @@ import { incrementDiffStats } from "./diff-utils.js";
 import type {
   IFileWriter,
   IManifestManager,
+  IRenderWriter,
   SessionContext,
   ProcessorOptions,
   FileSyncResult,
@@ -17,7 +18,8 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
   constructor(
     private readonly fileWriter: IFileWriter,
     private readonly manifestManager: IManifestManager,
-    private readonly log: ILogger
+    private readonly log: ILogger,
+    private readonly renderWriter: IRenderWriter
   ) {}
 
   async sync(
@@ -72,6 +74,14 @@ export class FileSyncOrchestrator implements IFileSyncOrchestrator {
       dryRun,
       fileChanges
     );
+
+    if (dryRun && options.renderDir) {
+      this.renderWriter.write(
+        options.renderDir,
+        getRepoDisplayName(repoInfo),
+        fileChanges
+      );
+    }
 
     // Count stats for entries added after writeFiles (orphan deletes + manifest).
     // Invariant: writerFiles and post-write entries are disjoint — orphan deletes

@@ -134,6 +134,7 @@ async function runFileSyncPhase(
       prTemplate: ctx.config.prTemplate,
       noDelete: ctx.options.noDelete,
       noAi: ctx.options.noAi,
+      renderDir: ctx.options.renderDir,
       token: repo.token,
       hasAppCredentials:
         isGitHubRepo(repo.repoInfo) && ctx.tokenManager !== null,
