@@ -169,7 +169,7 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 ```yaml
 # GitHub Actions example
 - name: Sync secrets
-  uses: anthony-spruyt/xfg@v7 # x-release-please-major
+  uses: anthony-spruyt/xfg@v8 # x-release-please-major
   with:
     command: secrets-sync
     config: config.yaml

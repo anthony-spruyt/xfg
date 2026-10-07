@@ -1,5 +1,22 @@
 # Changelog
 
+## [8.0.0](https://github.com/anthony-spruyt/xfg/compare/v7.5.2...v8.0.0) (2026-10-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* GitHub Enterprise Server users must set XFG_ALLOWED_GITHUB_HOSTS (or allowed-github-hosts in the action) or xfg runs without a token for those hosts. Configs that interpolate GH_TOKEN, GITHUB_TOKEN, XFG_GITHUB_APP_PRIVATE_KEY and similar credential names now fail validation.
+
+### Bug Fixes
+
+* harden GitHub credential hosts, interpolation and repo writes ([#1124](https://github.com/anthony-spruyt/xfg/issues/1124)) ([7b5f4e7](https://github.com/anthony-spruyt/xfg/commit/7b5f4e70cd125e3d522685c5a9e2f4ecd8665d5e))
+* **sync:** sort render.json entries with an explicit comparator ([#1131](https://github.com/anthony-spruyt/xfg/issues/1131)) ([6482f70](https://github.com/anthony-spruyt/xfg/commit/6482f70a6325305050514779a90224ae0a822197))
+
+
+### Performance Improvements
+
+* **ci:** speed up integration tests ([#1119](https://github.com/anthony-spruyt/xfg/issues/1119)) ([375d479](https://github.com/anthony-spruyt/xfg/commit/375d47992511f7d224c80abca1e0bf4c9c7d4bd4))
+
 ## [7.5.2](https://github.com/anthony-spruyt/xfg/compare/v7.5.1...v7.5.2) (2026-10-07)
 
 
