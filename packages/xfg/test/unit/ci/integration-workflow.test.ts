@@ -32,6 +32,13 @@ function jobs(workflow: string): [string, Job][] {
   return Object.entries(parsed.jobs);
 }
 
+const SECRET_REF =
+  /secrets(?:\.([A-Za-z0-9_]+)|\[\s*['"]([A-Za-z0-9_]+)['"]\s*\])/g;
+
+function secretRefs(text: string): string[] {
+  return [...text.matchAll(SECRET_REF)].map((match) => match[1] ?? match[2]);
+}
+
 function secretsUsed(steps: Step[]): Set<string> {
   const names = new Set<string>();
   for (const step of steps) {
@@ -40,13 +47,55 @@ function secretsUsed(steps: Step[]): Set<string> {
       ...Object.values(step.with ?? {}),
     ];
     for (const value of values) {
-      for (const match of String(value).matchAll(/secrets\.([A-Z0-9_]+)/g)) {
-        names.add(match[1]);
-      }
+      for (const name of secretRefs(String(value))) names.add(name);
     }
   }
   return names;
 }
+
+function strings(node: unknown): string[] {
+  if (typeof node === "string") return [node];
+  if (node === null || typeof node !== "object") return [];
+  return Object.values(node).flatMap(strings);
+}
+
+// `secrets: inherit` hands every secret to a reusable workflow, so it reads them all
+function reads(node: unknown, secret: string): boolean {
+  if ((node as { secrets?: unknown } | undefined)?.secrets === "inherit") {
+    return true;
+  }
+  return strings(node).some((value) => secretRefs(value).includes(secret));
+}
+
+describe("secret reference matching", () => {
+  for (const [name, node] of Object.entries({
+    "dot syntax": { env: { A: "${{ secrets.GITLAB_TOKEN }}" } },
+    "single-quoted index": { env: { A: "${{ secrets['GITLAB_TOKEN'] }}" } },
+    "double-quoted index": { env: { A: '${{ secrets[ "GITLAB_TOKEN" ] }}' } },
+    "secrets: inherit": {
+      uses: "./.github/workflows/x.yaml",
+      secrets: "inherit",
+    },
+  })) {
+    test(`reads() sees ${name}`, () => {
+      assert.equal(reads(node, "GITLAB_TOKEN"), true);
+    });
+  }
+
+  test("reads() ignores other secrets", () => {
+    assert.equal(
+      reads({ env: { A: "${{ secrets['GITLAB_TOKEN_2'] }}" } }, "GITLAB_TOKEN"),
+      false
+    );
+  });
+
+  test("secretsUsed() sees index syntax", () => {
+    assert.deepEqual(
+      [...secretsUsed([{ env: { A: "${{ secrets['GH_PAT_ORG'] }}" } }])],
+      ["GH_PAT_ORG"]
+    );
+  });
+});
 
 const environmentJobs = [
   ...jobs("_integration-tests.yaml"),
@@ -55,7 +104,7 @@ const environmentJobs = [
 
 describe("environment-gated jobs", () => {
   test("exist", () => {
-    assert.ok(environmentJobs.length >= 9, "expected 7 lanes + 2 cleanups");
+    assert.ok(environmentJobs.length >= 11, "expected 9 lanes + 2 cleanups");
   });
 
   for (const [name, job] of environmentJobs) {
@@ -101,12 +150,15 @@ describe("ADO and GitLab credentials", () => {
   const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
     .filter((file) => /\.ya?ml$/.test(file))
     .sort();
-  const reads = (node: unknown, secret: string): boolean =>
-    JSON.stringify(node ?? {}).includes(`secrets.${secret}`);
   const readers = workflowFiles.flatMap((file) =>
     jobs(file)
-      // Jobs that call a reusable workflow have no steps; the called jobs are checked instead
-      .filter(([, job]) => Array.isArray(job.steps))
+      // Jobs that call a reusable workflow have no steps; the called jobs are checked
+      // instead, unless the caller inherits secrets
+      .filter(
+        ([, job]) =>
+          Array.isArray(job.steps) ||
+          (job as { secrets?: unknown }).secrets === "inherit"
+      )
       .map(([name, job]): [string, Job, string[]] => [
         `${file}: ${name}`,
         job,
@@ -138,11 +190,10 @@ describe("ADO and GitLab credentials", () => {
         `${name} must run in the integration environment with deployment: false`
       );
 
-      const index = job.steps.findIndex((step) =>
-        step.run?.includes(PREFLIGHT)
-      );
+      const steps = job.steps ?? [];
+      const index = steps.findIndex((step) => step.run?.includes(PREFLIGHT));
       assert.ok(index >= 0, `${name} has no preflight step`);
-      const preflight = job.steps[index];
+      const preflight = steps[index];
       for (const secret of secrets) {
         assert.ok(
           !reads(job.env, secret),
@@ -158,7 +209,7 @@ describe("ADO and GitLab credentials", () => {
           new RegExp(`\\b${secret}\\b`),
           `${name}: preflight does not name ${secret}`
         );
-        const firstUse = job.steps.findIndex(
+        const firstUse = steps.findIndex(
           (step, i) => i !== index && reads(step, secret)
         );
         assert.ok(
@@ -205,7 +256,9 @@ describe("integration workflow secrets", () => {
 });
 
 describe("integration lanes", () => {
-  for (const [name, job] of jobs("_integration-tests.yaml")) {
+  const lanes = jobs("_integration-tests.yaml");
+
+  for (const [name, job] of lanes) {
     test(`${name} has a timeout`, () => {
       assert.ok(
         Number.isInteger(job["timeout-minutes"]),
@@ -213,4 +266,46 @@ describe("integration lanes", () => {
       );
     });
   }
+
+  const RATE_LIMIT = ".github/scripts/rate-limit-summary.sh";
+  for (const [name, job] of lanes.filter(([, job]) =>
+    secretsUsed(job.steps).has("GH_PAT_ORG")
+  )) {
+    test(`${name} records GH_PAT_ORG rate-limit headroom at start and end`, () => {
+      for (const phase of ["start", "end"]) {
+        assert.ok(
+          job.steps.some(
+            (step) =>
+              step.run?.includes(`${RATE_LIMIT} ${phase} `) &&
+              step.env?.GH_TOKEN === "${{ secrets.GH_PAT_ORG }}"
+          ),
+          `${name} has no GH_PAT_ORG rate-limit ${phase} step`
+        );
+      }
+    });
+  }
+
+  test("sharded lanes cover every shard of their suite exactly once", () => {
+    const shards = new Map<string, string[]>();
+    for (const [, job] of lanes) {
+      for (const step of job.steps) {
+        const shard = step.env?.XFG_TEST_SHARD;
+        if (!shard || !step.run) continue;
+        shards.set(step.run, [...(shards.get(step.run) ?? []), shard]);
+      }
+    }
+    assert.ok(shards.size > 0, "no lane sets XFG_TEST_SHARD");
+    for (const [run, seen] of shards) {
+      const total = Number(seen[0].split("/")[1]);
+      const expected = Array.from(
+        { length: total },
+        (_, i) => `${i + 1}/${total}`
+      );
+      assert.deepEqual(
+        [...seen].sort(),
+        expected,
+        `${run}: ${seen.join(", ")}`
+      );
+    }
+  });
 });
