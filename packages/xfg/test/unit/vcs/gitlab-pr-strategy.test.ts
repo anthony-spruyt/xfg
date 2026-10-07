@@ -1,6 +1,6 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitLabPRStrategy } from "../../../src/vcs/gitlab-pr-strategy.js";
@@ -15,7 +15,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(tmpdir(), "test-gitlab-strategy-tmp");
+let testDir: string;
 
 describe("GitLabPRStrategy with mock executor", () => {
   const gitlabRepoInfo: GitLabRepoInfo = {
@@ -31,16 +31,11 @@ describe("GitLabPRStrategy with mock executor", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("findExistingPRUrl", () => {
@@ -382,16 +377,11 @@ describe("GitLabPRStrategy with nested groups", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("builds correct MR URL for nested groups", async () => {
@@ -450,20 +440,15 @@ describe("GitLabPRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(tmpdir(), "test-gitlab-strategy-close-tmp");
+  let testDirClose: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
-    mkdirSync(testDirClose, { recursive: true });
+    testDirClose = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
+    rmSync(testDirClose, { recursive: true, force: true });
   });
 
   test("returns no_pr when no MR exists", async () => {
@@ -594,16 +579,11 @@ describe("GitLabPRStrategy merge", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("merge with manual mode", () => {
@@ -834,20 +814,15 @@ describe("GitLabPRStrategy URL extraction edge cases", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(tmpdir(), "test-gitlab-strategy-edge-tmp");
+  let testDirEdge: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
-    mkdirSync(testDirEdge, { recursive: true });
+    testDirEdge = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
+    rmSync(testDirEdge, { recursive: true, force: true });
   });
 
   test("does not capture trailing punctuation in URL", async () => {
@@ -962,16 +937,11 @@ describe("GitLabPRStrategy type guards", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("findExistingPRUrl throws for non-GitLab repo", async () => {
@@ -1041,16 +1011,11 @@ describe("GitLabPRStrategy self-hosted", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("builds correct MR URL for self-hosted GitLab", async () => {
@@ -1096,7 +1061,7 @@ describe("GitLabPRStrategy merge unknown mode", () => {
       prUrl: "https://gitlab.com/myorg/myrepo/-/merge_requests/1",
       repoInfo: gitlabRepoInfo,
       config: { mode: "unknown" as "manual" },
-      workDir: testDir,
+      workDir: "/work/repo",
       retries: 0,
     });
 
@@ -1120,16 +1085,11 @@ describe("GitLabPRStrategy logger coverage", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-gitlab-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("findExistingPRUrl logs debug on error with stderr", async () => {
@@ -1259,7 +1219,7 @@ describe("GitLabPRStrategy closeExistingPR with unparseable URL", () => {
       repoInfo: gitlabRepoInfo,
       branchName: "test-branch",
       baseBranch: "main",
-      workDir: testDir,
+      workDir: "/work/repo",
       retries: 0,
     });
 

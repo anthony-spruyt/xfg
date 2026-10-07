@@ -65,6 +65,14 @@ Authenticate with each GHE instance using the `--hostname` flag:
 gh auth login --hostname github.mycompany.com
 ```
 
+xfg only hands GitHub credentials (App JWTs, installation tokens, `GH_TOKEN`) to github.com by default. `githubHosts` comes from the config file, so it can't grant that trust. List each GHE host in the `XFG_ALLOWED_GITHUB_HOSTS` environment variable as well:
+
+```bash
+export XFG_ALLOWED_GITHUB_HOSTS="github.mycompany.com,ghe.internal.net"
+```
+
+xfg fails every repo on a GHE host that isn't listed, before running any `gh` or `git` command against it. Entries must be plain hostnames, with no scheme, port, path, userinfo or IP address. The same applies to `githubHosts` entries.
+
 ### Mixed Environments
 
 You can use github.com and GHE repositories in the same config file:

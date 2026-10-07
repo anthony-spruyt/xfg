@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { resolve, isAbsolute, normalize, extname, relative } from "node:path";
 import JSON5 from "json5";
 import { parse as parseYaml } from "yaml";
@@ -35,7 +35,6 @@ export function resolveFileReference(
     );
   }
 
-  // Security: block absolute paths
   if (isAbsolute(relativePath)) {
     throw new ValidationError(
       `File reference "${reference}" uses absolute path. Use relative paths only.`
@@ -46,19 +45,25 @@ export function resolveFileReference(
   const normalizedResolved = normalize(resolvedPath);
   const normalizedConfigDir = normalize(configDir);
 
-  // Security: ensure path stays within config directory tree
-  // Fix for issue #89: Use path.relative() instead of hardcoded "/" separator
-  // The old approach (!path.startsWith(configDir + "/")) fails on Windows
-  // where normalize() returns paths with backslash separators.
-  const pathFromConfig = relative(normalizedConfigDir, normalizedResolved);
-  if (pathFromConfig.startsWith("..") || isAbsolute(pathFromConfig)) {
-    throw new ValidationError(
+  const escapes = (from: string, to: string): boolean => {
+    const rel = relative(from, to);
+    return rel.startsWith("..") || isAbsolute(rel);
+  };
+  const escapeError = () =>
+    new ValidationError(
       `File reference "${reference}" escapes config directory. ` +
         `References must be within "${configDir}".`
     );
+  if (escapes(normalizedConfigDir, normalizedResolved)) {
+    throw escapeError();
+  }
+  // A committed symlink can point anywhere, e.g. /proc/self/environ.
+  if (existsSync(resolvedPath)) {
+    if (escapes(realpathSync(configDir), realpathSync(resolvedPath))) {
+      throw escapeError();
+    }
   }
 
-  // Load file
   let content: string;
   try {
     content = readFileSync(resolvedPath, "utf-8");
@@ -70,7 +75,6 @@ export function resolveFileReference(
     );
   }
 
-  // Parse based on extension
   const ext = extname(relativePath).toLowerCase();
   if (ext === ".json") {
     return parseWithContext(

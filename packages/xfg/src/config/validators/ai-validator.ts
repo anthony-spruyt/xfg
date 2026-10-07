@@ -1,5 +1,6 @@
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
+import { assertAiKeyEnvAllowed } from "../../shared/credential-env.js";
 import type { AiProvider } from "../types.js";
 
 const VALID_PROVIDERS: AiProvider[] = ["anthropic", "openai"];
@@ -39,6 +40,12 @@ export function validateAiOption(ai: unknown): void {
       );
     }
   }
+
+  assertAiKeyEnvAllowed(
+    (provider as AiProvider | undefined) ?? "anthropic",
+    ai.apiKeyEnv as string | undefined,
+    ai.baseUrl as string | undefined
+  );
 
   if (provider === "openai" && ai.model === undefined) {
     throw new ValidationError(

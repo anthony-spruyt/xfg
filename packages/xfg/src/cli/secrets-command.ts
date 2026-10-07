@@ -13,6 +13,7 @@ import {
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { createTokenManagerFromEnv } from "../vcs/index.js";
+import { createGitHubHostPolicyFromEnv } from "../shared/github-host-policy.js";
 import {
   GitHubTokenProvider,
   type IGitHubTokenProvider,
@@ -105,14 +106,16 @@ export async function runSecretsSync(
   const config = normalizeConfig(rawConfig, process.env);
   validateNormalizedConfig(config);
 
+  const hostPolicy = createGitHubHostPolicyFromEnv(process.env);
   const tokenManager =
     deps.tokenManager !== undefined
       ? deps.tokenManager
-      : createTokenManagerFromEnv(process.env);
+      : createTokenManagerFromEnv(process.env, hostPolicy);
   const tokenProvider = new GitHubTokenProvider(
     tokenManager,
     process.env.GH_TOKEN || process.env.GITHUB_TOKEN,
-    logger
+    logger,
+    hostPolicy
   );
 
   const processorFactory = deps.processorFactory ?? createDefaultProcessor;

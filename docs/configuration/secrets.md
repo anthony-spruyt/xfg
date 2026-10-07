@@ -53,6 +53,8 @@ settings:
 
 The secret name (`MY_SECRET`) is what gets created in GitHub Actions. The `env` field is the environment variable that xfg reads at runtime to get the actual secret value.
 
+`env` can't name a credential xfg authenticates with (`GH_TOKEN`, `GITHUB_TOKEN`, `XFG_GITHUB_APP_PRIVATE_KEY` and the others listed in [Environment Variables](env-variables.md#credential-variables)). To push one of those values as a secret on purpose, export it under another name.
+
 ## Scoping Secrets
 
 Secrets merge through the same layers as variables: root → group → conditional group → repo. Innermost wins.

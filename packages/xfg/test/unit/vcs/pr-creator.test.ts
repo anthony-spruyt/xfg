@@ -332,7 +332,7 @@ describe("createPR", () => {
       branchName: "chore/sync-config",
       baseBranch: "main",
       files,
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: false,
       executor: mockExecutor,
     });
@@ -348,7 +348,7 @@ describe("createPR", () => {
       branchName: "chore/sync-config",
       baseBranch: "main",
       files,
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: true,
       executor: stubExecutor,
     });
@@ -369,7 +369,7 @@ describe("createPR", () => {
       branchName: "chore/sync-config",
       baseBranch: "main",
       files,
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: true,
       executor: stubExecutor,
     });
@@ -397,7 +397,7 @@ describe("mergePR", () => {
         strategy: "squash",
         deleteBranch: true,
       },
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: false,
       executor: mockExecutor,
     });
@@ -414,7 +414,7 @@ describe("mergePR", () => {
         strategy: "squash",
         deleteBranch: true,
       },
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: true,
       executor: stubExecutor,
     });
@@ -434,7 +434,7 @@ describe("mergePR", () => {
         strategy: "squash",
         deleteBranch: true,
       },
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: true,
       executor: stubExecutor,
     });
@@ -454,7 +454,7 @@ describe("mergePR", () => {
         strategy: "squash",
         deleteBranch: true,
       },
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       dryRun: true,
       executor: stubExecutor,
     });

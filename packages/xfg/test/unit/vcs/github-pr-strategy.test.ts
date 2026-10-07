@@ -1,6 +1,13 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync } from "node:fs";
+import {
+  mkdtempSync,
+  rmSync,
+  existsSync,
+  writeFileSync,
+  readFileSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
@@ -12,7 +19,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(tmpdir(), "test-github-strategy-tmp");
+let testDir: string;
 
 describe("GitHubPRStrategy with mock executor", () => {
   const githubRepoInfo: GitHubRepoInfo = {
@@ -27,16 +34,11 @@ describe("GitHubPRStrategy with mock executor", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("findExistingPRUrl", () => {
@@ -272,6 +274,32 @@ describe("GitHubPRStrategy with mock executor", () => {
       assert.equal(existsSync(bodyFile), false);
     });
 
+    test("does not write the PR body through a symlink", async () => {
+      const target = join(testDir, "target.txt");
+      writeFileSync(target, "original");
+      symlinkSync(target, join(testDir, ".pr-body.md"));
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/123"
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor.mock);
+      await assert.rejects(
+        () =>
+          strategy.create({
+            repoInfo: githubRepoInfo,
+            title: "Test PR",
+            body: "body",
+            branchName: "test-branch",
+            baseBranch: "main",
+            workDir: testDir,
+            retries: 0,
+          }),
+        /Failed to write PR description/
+      );
+      assert.equal(readFileSync(target, "utf-8"), "original");
+    });
+
     test("cleans up body file after error", async () => {
       mockExecutor.responses.set("gh pr create", new Error("Command failed"));
 
@@ -472,16 +500,11 @@ describe("GitHubPRStrategy cleanup error handling", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("succeeds and cleans up temp file on success", async () => {
@@ -569,20 +592,15 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(tmpdir(), "test-github-strategy-edge-tmp");
+  let testDirEdge: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
-    mkdirSync(testDirEdge, { recursive: true });
+    testDirEdge = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
+    rmSync(testDirEdge, { recursive: true, force: true });
   });
 
   test("throws error when output contains no URL", async () => {
@@ -717,20 +735,15 @@ describe("GitHubPRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(tmpdir(), "test-github-strategy-close-tmp");
+  let testDirClose: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
-    mkdirSync(testDirClose, { recursive: true });
+    testDirClose = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
+    rmSync(testDirClose, { recursive: true, force: true });
   });
 
   test("returns no_pr when no PR exists", async () => {
@@ -842,16 +855,11 @@ describe("GitHubPRStrategy with GitHub Enterprise Server", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("uses HOST/OWNER/REPO format for GHE in pr list", async () => {
@@ -967,16 +975,11 @@ describe("GitHubPRStrategy merge", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("merge auto mode checks auto-merge status", () => {
@@ -1254,16 +1257,11 @@ describe("GitHubPRStrategy with token parameter", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("findExistingPRUrl uses GH_TOKEN env prefix when token is provided", async () => {
@@ -1432,16 +1430,11 @@ describe("GitHubPRStrategy logger coverage", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-github-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("findExistingPRUrl logs debug on error with stderr", async () => {
@@ -1581,7 +1574,7 @@ describe("GitHubPRStrategy merge unknown mode", () => {
       prUrl: "https://github.com/owner/repo/pull/1",
       repoInfo: githubRepoInfo,
       config: { mode: "unknown" as "manual" },
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
       retries: 0,
     });
 

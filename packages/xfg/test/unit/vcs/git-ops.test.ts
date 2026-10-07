@@ -2,11 +2,13 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   mkdirSync,
+  mkdtempSync,
   rmSync,
   writeFileSync,
   readFileSync,
   existsSync,
   statSync,
+  symlinkSync,
 } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -22,7 +24,7 @@ const stubExecutor: ICommandExecutor = {
   exec: async (_exe: string, _args: string[], _cwd: string) => "",
 };
 
-const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
+let testDir: string;
 
 describe("sanitizeBranchName", () => {
   test("removes file extension", () => {
@@ -249,8 +251,8 @@ describe("GitOps", () => {
   let workDir: string;
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-git-ops-"));
+    workDir = join(testDir, "workspace");
   });
 
   afterEach(() => {
@@ -479,6 +481,99 @@ describe("GitOps", () => {
         () => gitOps.wouldChange("../escape.json", "content"),
         /Path traversal detected/
       );
+    });
+  });
+
+  describe("symlink protection", () => {
+    beforeEach(() => {
+      mkdirSync(join(workDir, ".git", "hooks"), { recursive: true });
+      mkdirSync(join(workDir, "real"), { recursive: true });
+      writeFileSync(join(workDir, "real", "target.txt"), "original\n");
+      symlinkSync(".git", join(workDir, "foo"), "dir");
+      symlinkSync("real", join(workDir, "linkdir"), "dir");
+      symlinkSync(join("real", "target.txt"), join(workDir, "link.txt"));
+    });
+
+    test("writeFile refuses to write through a symlinked directory", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(
+        () => gitOps.writeFile("foo/hooks/post-checkout", "#!/bin/sh"),
+        /symlink/
+      );
+      assert.ok(!existsSync(join(workDir, ".git", "hooks", "post-checkout")));
+    });
+
+    test("writeFile refuses to write through a symlinked file", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(() => gitOps.writeFile("link.txt", "changed"), /symlink/);
+      assert.equal(
+        readFileSync(join(workDir, "real", "target.txt"), "utf-8"),
+        "original\n"
+      );
+    });
+
+    test("getFileContent and wouldChange refuse to read through a symlink", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(() => gitOps.getFileContent("link.txt"), /symlink/);
+      assert.throws(
+        () => gitOps.wouldChange("linkdir/target.txt", "x"),
+        /symlink/
+      );
+    });
+
+    test("deleteFile, fileExists and setExecutable refuse a symlinked parent", async () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      assert.throws(() => gitOps.deleteFile("linkdir/target.txt"), /symlink/);
+      assert.throws(() => gitOps.fileExists("linkdir/target.txt"), /symlink/);
+      await assert.rejects(
+        () => gitOps.setExecutable("linkdir/target.txt"),
+        /symlink/
+      );
+      assert.ok(existsSync(join(workDir, "real", "target.txt")));
+    });
+
+    test("dry-run reads refuse symlinks too", () => {
+      const gitOps = new GitOps({
+        workDir,
+        dryRun: true,
+        executor: stubExecutor,
+      });
+      assert.throws(() => gitOps.getFileContent("link.txt"), /symlink/);
+    });
+
+    test("still writes regular nested paths", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      gitOps.writeFile("real/new/file.txt", "ok");
+      assert.equal(
+        readFileSync(join(workDir, "real", "new", "file.txt"), "utf-8"),
+        "ok\n"
+      );
+    });
+  });
+
+  describe(".git protection", () => {
+    beforeEach(() => {
+      mkdirSync(join(workDir, ".git"), { recursive: true });
+      writeFileSync(join(workDir, ".git", "config"), "[core]\n");
+    });
+
+    test("refuses any path inside .git, in any case", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      for (const name of [".git/config", ".GIT/config", "sub/.git/config"]) {
+        assert.throws(() => gitOps.writeFile(name, "x"), /'\.git'/, name);
+        assert.throws(() => gitOps.deleteFile(name), /'\.git'/, name);
+      }
+      assert.equal(
+        readFileSync(join(workDir, ".git", "config"), "utf-8"),
+        "[core]\n"
+      );
+    });
+
+    test("allows .github and .gitignore", () => {
+      const gitOps = new GitOps({ workDir, executor: stubExecutor });
+      gitOps.writeFile(".github/CODEOWNERS", "* @me");
+      gitOps.writeFile(".gitignore", "node_modules");
+      assert.ok(existsSync(join(workDir, ".github", "CODEOWNERS")));
     });
   });
 

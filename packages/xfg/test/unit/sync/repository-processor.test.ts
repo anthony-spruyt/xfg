@@ -2,6 +2,7 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -21,6 +22,7 @@ import { GitHubRepoInfo } from "../../../src/repo/index.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../../src/vcs/types.js";
 import { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+import { GitHubHostPolicy } from "../../../src/shared/github-host-policy.js";
 import type { AuthenticatedGitOpsMockConfig } from "../../mocks/index.js";
 import {
   createMockLogger,
@@ -28,7 +30,7 @@ import {
   createMockExecutor as createExecutorMockFull,
 } from "../../mocks/index.js";
 
-const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
+let testDir: string;
 
 function createMockExecutor(): ICommandExecutor {
   return createExecutorMockFull({}).mock;
@@ -104,8 +106,8 @@ describe("RepositoryProcessor", () => {
   };
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-repo-processor-"));
+    workDir = join(testDir, "workspace");
     const { mock: defaultMockLogger } = createMockLogger();
     processor = new RepositoryProcessor(undefined, defaultMockLogger);
   });
@@ -2869,6 +2871,58 @@ describe("RepositoryProcessor", () => {
       assert.strictEqual(auth.owner, "test-owner", "Owner should match");
       assert.strictEqual(auth.repo, "repo", "Repo should match");
     });
+
+    for (const [label, hostPolicy, expectAuth] of [
+      ["without", undefined, false],
+      ["with", new GitHubHostPolicy(["ghe.corp"]), true],
+    ] as const) {
+      test(`${label} an allowlisted GHES host, ${expectAuth ? "sends GH_TOKEN" : "refuses the repo"}`, async () => {
+        const { mock: mockLogger } = createMockLogger();
+        let capturedAuth: unknown = "unset";
+        const mockGitOpsFactory = createTypedGitOpsFactory({
+          onAuth: (auth) => {
+            capturedAuth = auth;
+          },
+        });
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger,
+          { envToken: "ghp_test_pat_token", hostPolicy }
+        );
+
+        const run = processor.process(
+          {
+            git: "git@ghe.corp:test-owner/repo.git",
+            files: [{ fileName: "test.json", content: { key: "value" } }],
+          },
+          {
+            type: "github",
+            gitUrl: "git@ghe.corp:test-owner/repo.git",
+            owner: "test-owner",
+            repo: "repo",
+            host: "ghe.corp",
+          },
+          {
+            branchName: "chore/sync-config",
+            workDir: join(testDir, `ghe-policy-${label}`),
+            configId: "test-config",
+            dryRun: false,
+            executor: createMockExecutor(),
+          }
+        );
+        if (!expectAuth) {
+          await assert.rejects(run, /not in XFG_ALLOWED_GITHUB_HOSTS/);
+          assert.equal(capturedAuth, "unset");
+          return;
+        }
+        await run;
+
+        assert.notEqual(capturedAuth, "unset", "factory should be called");
+        const token = (capturedAuth as GitAuthOptions | undefined)?.token;
+        assert.equal(token, expectAuth ? "ghp_test_pat_token" : undefined);
+      });
+    }
   });
 
   describe("deletion-only commit messages", () => {

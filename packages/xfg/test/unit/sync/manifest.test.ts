@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  readFileSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -15,10 +21,10 @@ import {
 } from "../../../src/sync/manifest.js";
 
 describe("manifest", () => {
-  const testDir = join(tmpdir(), "tmp-manifest-test");
+  let testDir: string;
 
   beforeEach(() => {
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-manifest-"));
   });
 
   afterEach(() => {
@@ -650,6 +656,35 @@ describe("manifest", () => {
       assert.equal(result, null);
       assert.ok(warnMessages.length > 0, "Should have logged a warning");
       assert.ok(warnMessages[0].includes("Failed to parse manifest content"));
+    });
+  });
+  describe("symlinked manifest", () => {
+    test("loadManifest ignores a symlinked manifest without reading it", () => {
+      const outside = join(testDir, "outside.txt");
+      writeFileSync(outside, "outside-content");
+      symlinkSync(outside, join(testDir, MANIFEST_FILENAME));
+      const warnings: string[] = [];
+
+      const result = loadManifest(testDir, {
+        debug: () => {},
+        warn: (m: string) => warnings.push(m),
+      });
+
+      assert.equal(result, null);
+      assert.ok(warnings.some((w) => w.includes("symlink")));
+      assert.ok(warnings.every((w) => !w.includes("outside-content")));
+    });
+
+    test("saveManifest refuses to write through a symlink", () => {
+      const target = join(testDir, "target.txt");
+      writeFileSync(target, "original");
+      symlinkSync(target, join(testDir, MANIFEST_FILENAME));
+
+      assert.throws(
+        () => saveManifest(testDir, createEmptyManifest()),
+        /symlink/
+      );
+      assert.equal(readFileSync(target, "utf-8"), "original");
     });
   });
 });

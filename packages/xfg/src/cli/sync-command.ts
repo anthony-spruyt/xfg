@@ -9,6 +9,7 @@ import {
 import { ValidationError, SyncError } from "../shared/errors.js";
 import { validateBranchName } from "./branch-utils.js";
 import { createTokenManagerFromEnv } from "../vcs/index.js";
+import { createGitHubHostPolicyFromEnv } from "../shared/github-host-policy.js";
 import { RepositoryProcessor } from "../sync/index.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { Logger } from "../shared/logger.js";
@@ -146,13 +147,15 @@ export async function runSync(
   logger.log(`Target files: ${formatFileNames(fileNames)}`);
   logger.log(`Branch: ${branchName}\n`);
 
-  const tokenManager = createTokenManagerFromEnv(process.env);
+  const hostPolicy = createGitHubHostPolicyFromEnv(process.env);
+  const tokenManager = createTokenManagerFromEnv(process.env, hostPolicy);
 
   const processor = deps.processorFactory
     ? deps.processorFactory()
     : new RepositoryProcessor(undefined, logger, {
         tokenManager,
         envToken: process.env.GH_TOKEN,
+        hostPolicy,
         aiEnv: process.env,
       });
 
@@ -171,6 +174,7 @@ export async function runSync(
         logger
       ),
     tokenManager,
+    hostPolicy,
     reportResults: [],
     lifecycleReportInputs: [],
     settingsCollector: new ResultsCollector(),

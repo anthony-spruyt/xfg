@@ -10,6 +10,7 @@ import {
   type InterpolationConfig,
 } from "../shared/interpolation-engine.js";
 import { ValidationError } from "../shared/errors.js";
+import { isCredentialEnvName } from "../shared/credential-env.js";
 
 export interface EnvInterpolationOptions {
   /**
@@ -46,6 +47,15 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
  */
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
+function assertNotCredential(varName: string): void {
+  if (isCredentialEnvName(varName)) {
+    throw new ValidationError(
+      `Refusing to interpolate \${${varName}}: it is a credential xfg uses for authentication. ` +
+        `Use a separate environment variable, or $\${${varName}} for a literal.`
+    );
+  }
+}
+
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
   const envSource = options.env;
   function resolveEnvVar(
@@ -54,6 +64,7 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
     modifier: string | undefined,
     defaultOrMsg: string | undefined
   ): string {
+    assertNotCredential(varName);
     // Resolution follows bash parameter expansion semantics:
     // ${VAR} → value or error, ${VAR:-fallback} → value or fallback,
     // ${VAR:?msg} → value or throw with msg.
