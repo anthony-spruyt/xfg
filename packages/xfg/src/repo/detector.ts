@@ -127,36 +127,30 @@ export function parseGitUrl(
   return parseGitHubUrl(gitUrl, host);
 }
 
+// gh reads a dotted first segment of OWNER/REPO as a host, so both are strict.
+const GITHUB_OWNER = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+const GITHUB_REPO = /^[A-Za-z0-9._-]+$/;
+
 function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
-  // Handle SSH format: git@hostname:owner/repo.git
   // Use (.+?) with end anchor to handle repo names with dots (e.g., my.repo.git)
-  const sshMatch = gitUrl.match(/^git@[^:]+:([^/]+)\/(.+?)(?:\.git)?$/);
-  if (sshMatch) {
-    return {
-      type: "github",
-      gitUrl,
-      owner: sshMatch[1],
-      repo: sshMatch[2],
-      host,
-    };
+  const match =
+    gitUrl.match(/^git@[^:]+:([^/]+)\/(.+?)(?:\.git)?$/) ??
+    gitUrl.match(/^https?:\/\/[^/]+\/([^/]+)\/(.+?)(?:\.git)?$/);
+  if (!match) {
+    throw new ValidationError(`Unable to parse GitHub URL: ${gitUrl}`);
   }
 
-  // Handle HTTPS format: https://hostname/owner/repo.git
-  // Use (.+?) with end anchor to handle repo names with dots
-  const httpsMatch = gitUrl.match(
-    /^https?:\/\/[^/]+\/([^/]+)\/(.+?)(?:\.git)?$/
-  );
-  if (httpsMatch) {
-    return {
-      type: "github",
-      gitUrl,
-      owner: httpsMatch[1],
-      repo: httpsMatch[2],
-      host,
-    };
+  const [, owner, repo] = match;
+  if (
+    !GITHUB_OWNER.test(owner) ||
+    !GITHUB_REPO.test(repo) ||
+    /^\.+$/.test(repo)
+  ) {
+    throw new ValidationError(
+      `Invalid GitHub owner/repo in ${gitUrl}: expected OWNER/REPO with letters, digits, '-', '_' (and '.' in the repo name)`
+    );
   }
-
-  throw new ValidationError(`Unable to parse GitHub URL: ${gitUrl}`);
+  return { type: "github", gitUrl, owner, repo, host };
 }
 
 function parseAzureDevOpsUrl(gitUrl: string): AzureDevOpsRepoInfo {

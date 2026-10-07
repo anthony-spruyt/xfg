@@ -45,6 +45,36 @@ describe("createTokenManagerFromEnv", () => {
     );
   });
 
+  test("refuses a GHES host that XFG_ALLOWED_GITHUB_HOSTS does not list", async () => {
+    const manager = createTokenManagerFromEnv({
+      XFG_GITHUB_CLIENT_ID: "12345",
+      XFG_GITHUB_APP_PRIVATE_KEY: "test-private-key",
+    });
+    await assert.rejects(
+      () =>
+        manager!.getTokenForRepo({
+          type: "github",
+          gitUrl: "https://ghe.corp/o/r.git",
+          owner: "o",
+          repo: "r",
+          host: "ghe.corp",
+        }),
+      /not in XFG_ALLOWED_GITHUB_HOSTS/
+    );
+  });
+
+  test("rejects an invalid XFG_ALLOWED_GITHUB_HOSTS entry", () => {
+    assert.throws(
+      () =>
+        createTokenManagerFromEnv({
+          XFG_GITHUB_CLIENT_ID: "12345",
+          XFG_GITHUB_APP_PRIVATE_KEY: "test-private-key",
+          XFG_ALLOWED_GITHUB_HOSTS: "user@ghe.corp",
+        }),
+      /XFG_ALLOWED_GITHUB_HOSTS/
+    );
+  });
+
   test("returns token manager when both app env vars are set", () => {
     const manager = createTokenManagerFromEnv({
       XFG_GITHUB_CLIENT_ID: "12345",

@@ -501,3 +501,34 @@ describe("GitHub Enterprise Server support", () => {
     });
   });
 });
+
+describe("GitHub owner and repo validation", () => {
+  for (const url of [
+    "https://github.com/evil.ghe.com/x/y",
+    "git@github.com:evil.test/x/y.git",
+    "https://github.com/owner/repo/extra",
+    "git@github.com:owner/a/b.git",
+    "https://github.com/own%2Fer/repo",
+    "git@github.com:-x/repo.git",
+  ]) {
+    test(`rejects ${url}`, () => {
+      assert.throws(() => parseGitUrl(url), /owner|repo/i);
+    });
+  }
+
+  test("rejects a host smuggled through a GHES owner", () => {
+    assert.throws(
+      () =>
+        parseGitUrl("git@ghe.corp:evil.test/x/y.git", {
+          githubHosts: ["ghe.corp"],
+        }),
+      /owner|repo/i
+    );
+  });
+
+  test("accepts EMU-style owners and dotted repo names", () => {
+    const info = parseGitUrl("git@github.com:octo_acme/my.repo-name_1.git");
+    assert.equal(info.owner, "octo_acme");
+    assert.equal(info.repo, "my.repo-name_1");
+  });
+});

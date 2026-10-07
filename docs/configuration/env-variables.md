@@ -32,6 +32,17 @@ export SECRET=my-secret-key
 xfg sync --config ./config.yaml
 ```
 
+## Credential Variables
+
+xfg refuses to interpolate the credentials it uses itself, so a config can't write them into a file in a target repo. These names fail validation in any case, with or without `:-` or `:?`:
+
+- `GH_TOKEN`, `GITHUB_TOKEN`, `GH_ENTERPRISE_TOKEN`, `GITHUB_ENTERPRISE_TOKEN`
+- `XFG_GITHUB_CLIENT_ID`, `XFG_GITHUB_APP_PRIVATE_KEY`
+- `AZURE_DEVOPS_EXT_PAT`, `GITLAB_TOKEN`
+- `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
+
+To ship one of these values to a repo on purpose, export it under another name. `$${GH_TOKEN}` still writes the literal text `${GH_TOKEN}`.
+
 ## Escaping Variable Syntax
 
 If your target file needs literal `${VAR}` syntax (e.g., for devcontainer.json, shell scripts, or other templating systems), use `$$` to escape:

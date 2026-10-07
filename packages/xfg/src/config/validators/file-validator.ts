@@ -2,6 +2,7 @@ import { extname, isAbsolute } from "node:path";
 import { isTextContent, type ArrayMergeStrategy } from "../merge.js";
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { hasGitDirSegment } from "../../shared/path-safety.js";
 
 export { isTextContent };
 export { isPlainObject as isObjectContent };
@@ -37,7 +38,6 @@ export function validateFileName(fileName: string): void {
     throw new ValidationError("File name must be a non-empty string");
   }
 
-  // Validate fileName doesn't allow path traversal
   if (fileName.includes("..") || isAbsolute(fileName)) {
     throw new ValidationError(
       `Invalid fileName '${fileName}': must be a relative path without '..' components`
@@ -48,6 +48,12 @@ export function validateFileName(fileName: string): void {
   if (/[\n\r\0]/.test(fileName)) {
     throw new ValidationError(
       `Invalid fileName '${fileName}': cannot contain newlines or null bytes`
+    );
+  }
+
+  if (hasGitDirSegment(fileName)) {
+    throw new ValidationError(
+      `Invalid fileName '${fileName}': cannot write inside a '.git' directory`
     );
   }
 }

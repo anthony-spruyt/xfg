@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ManifestManager } from "../../../src/sync/manifest-manager.js";
@@ -11,13 +17,14 @@ import {
 import type { FileWriteResult } from "../../../src/sync/types.js";
 import { MANIFEST_FILENAME } from "../../../src/sync/manifest.js";
 
-const testDir = join(tmpdir(), "manifest-manager-test-" + Date.now());
+let testDir: string;
 
 describe("ManifestManager", () => {
   let workDir: string;
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
+    testDir = mkdtempSync(join(tmpdir(), "xfg-manifest-manager-"));
+    workDir = join(testDir, "workspace");
     mkdirSync(workDir, { recursive: true });
   });
 
