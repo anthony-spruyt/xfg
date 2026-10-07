@@ -12,11 +12,18 @@ set -euo pipefail
 # without modifying any files.
 
 # Pinned in repo-operator (src/groups.yaml, or src/repos.yaml for a per-repo flavor), where Renovate bumps it
+# shellcheck disable=SC2154
 MEGALINTER_IMAGE="ghcr.io/anthony-spruyt/megalinter-typescript:1.0.0@sha256:eff9e99ce247e889db56729df5695df7625c70d34b695dd91fcbf36e0197337b"
 # "all" skips MegaLinter's flavor check, which rejects custom images
 MEGALINTER_FLAVOR="all"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Only when set: an empty value would override the lists in .mega-linter.yml
+linter_args=()
+[[ -z "${ENABLE_LINTERS:-}" ]] || linter_args+=(-e ENABLE_LINTERS="$ENABLE_LINTERS")
+[[ -z "${DISABLE_LINTERS:-}" ]] || linter_args+=(-e DISABLE_LINTERS="$DISABLE_LINTERS")
+[[ -z "${ENABLE_DISABLE_LINTERS_PRIORITY:-}" ]] || linter_args+=(-e ENABLE_DISABLE_LINTERS_PRIORITY="$ENABLE_DISABLE_LINTERS_PRIORITY")
 
 if [[ "${1:-}" == "--ci" ]]; then
   docker_args=(
@@ -25,7 +32,6 @@ if [[ "${1:-}" == "--ci" ]]; then
     -e LOG_LEVEL=ERROR
     -e PRINT_ALPACA=false
     -e SHOW_SKIPPED_LINTERS=false
-    -e GITHUB_TOKEN="${GITHUB_TOKEN:-}"
     -e VALIDATE_ALL_CODEBASE="${VALIDATE_ALL_CODEBASE:-}"
     -e DEFAULT_WORKSPACE=/tmp/lint
     -e GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-}"
@@ -35,6 +41,12 @@ if [[ "${1:-}" == "--ci" ]]; then
     -v "$REPO_ROOT:/tmp/lint:rw"
     --rm
   )
+  docker_args+=("${linter_args[@]}")
+
+  # By name, so the value stays out of argv
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    docker_args+=(-e GITHUB_TOKEN)
+  fi
 
   if [[ -n "${GITHUB_STEP_SUMMARY:-}" && -f "${GITHUB_STEP_SUMMARY}" ]]; then
     docker_args+=(-e GITHUB_STEP_SUMMARY="${GITHUB_STEP_SUMMARY}")
@@ -71,6 +83,7 @@ else
     -e APPLY_FIXES="${APPLY_FIXES:-all}" \
     -e UPDATED_SOURCES_REPORTER="true" \
     -e REPORT_OUTPUT_FOLDER="/tmp/lint/.output" \
+    "${linter_args[@]}" \
     -v "$REPO_ROOT:/tmp/lint:rw" \
     --rm \
     "$MEGALINTER_IMAGE" >/dev/null 2>&1 ||
