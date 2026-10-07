@@ -44,6 +44,7 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - Inline configs via `writeConfig()` (from `packages/xfg/test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
 - All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access), stored only in the `integration` and `integration-main` environments
+- A reusable workflow sees an environment secret only when the caller passes it by name, even if the caller has no value for it: every secret `_integration-tests.yaml` uses must be declared in its `workflow_call.secrets` and passed by `ci.yaml` (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
 - **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane
 - Every environment job runs `require-env-secrets.sh` before any step that uses a secret, listing each environment secret it uses; `test/unit/ci/integration-workflow.test.ts` enforces this and `timeout-minutes` on every lane
