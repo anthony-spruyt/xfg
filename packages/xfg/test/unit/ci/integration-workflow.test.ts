@@ -94,6 +94,40 @@ describe("environment-gated jobs", () => {
   }
 });
 
+interface Workflow {
+  on: { workflow_call?: { secrets?: Record<string, unknown> } };
+  jobs: Record<string, Job & { secrets?: Record<string, string> }>;
+}
+
+function workflow(name: string): Workflow {
+  return parse(
+    readFileSync(join(repoRoot, ".github/workflows", name), "utf-8")
+  ) as Workflow;
+}
+
+describe("integration workflow secrets", () => {
+  const called = workflow("_integration-tests.yaml");
+  const declared = Object.keys(called.on.workflow_call?.secrets ?? {});
+  const passed = workflow("ci.yaml").jobs["integration-tests"].secrets ?? {};
+
+  test("every secret the lanes use is declared", () => {
+    const used = new Set<string>();
+    for (const job of Object.values(called.jobs)) {
+      for (const secret of secretsUsed(job.steps)) used.add(secret);
+    }
+    for (const secret of used) {
+      assert.ok(declared.includes(secret), `${secret} is not declared`);
+    }
+  });
+
+  // A called workflow only sees secrets its caller passes, environment secrets included
+  for (const secret of declared) {
+    test(`ci.yaml passes ${secret} by name`, () => {
+      assert.equal(passed[secret], `\${{ secrets.${secret} }}`);
+    });
+  }
+});
+
 describe("integration lanes", () => {
   for (const [name, job] of jobs("_integration-tests.yaml")) {
     test(`${name} has a timeout`, () => {

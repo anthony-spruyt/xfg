@@ -176,10 +176,14 @@ jobs:
     uses: ./.github/workflows/_integration-tests.yaml
     with:
       environment: ${{ github.event_name == 'push' && 'integration-main' || 'integration' }}
-    # GitHub credentials live only in the integration environments, never at repo level
+    # Environment secrets reach a called workflow only if named here; the lane's environment supplies the value
     secrets:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
       GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+      GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
 
   # Summary job for branch protection - references reusable workflow job
   summary:
