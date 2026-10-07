@@ -1,7 +1,7 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  mkdirSync,
+  mkdtempSync,
   rmSync,
   existsSync,
   readFileSync,
@@ -22,7 +22,7 @@ import {
   type ExecutorMockResult,
 } from "../../mocks/executor.mock.js";
 
-const testDir = join(tmpdir(), "test-azure-strategy-tmp");
+let testDir: string;
 
 describe("AdoPRStrategy with mock executor", () => {
   const azureRepoInfo: AzureDevOpsRepoInfo = {
@@ -38,16 +38,11 @@ describe("AdoPRStrategy with mock executor", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   describe("findExistingPRUrl", () => {
@@ -471,16 +466,11 @@ describe("AdoPRStrategy cleanup error handling", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("succeeds and cleans up temp file on success", async () => {
@@ -555,16 +545,11 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("escapes @/path format for description file to prevent shell injection", async () => {
@@ -643,16 +628,11 @@ describe("AdoPRStrategy merge", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   const validPRUrl =
@@ -894,20 +874,15 @@ describe("AdoPRStrategy closeExistingPR", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirClose = join(tmpdir(), "test-azure-strategy-close-tmp");
+  let testDirClose: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
-    mkdirSync(testDirClose, { recursive: true });
+    testDirClose = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirClose)) {
-      rmSync(testDirClose, { recursive: true, force: true });
-    }
+    rmSync(testDirClose, { recursive: true, force: true });
   });
 
   test("returns no_pr when no PR exists", async () => {
@@ -1039,20 +1014,15 @@ describe("AdoPRStrategy URL extraction edge cases", () => {
   };
 
   let mockExecutor: ExecutorMockResult;
-  const testDirEdge = join(tmpdir(), "test-azure-strategy-edge-tmp");
+  let testDirEdge: string;
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
-    mkdirSync(testDirEdge, { recursive: true });
+    testDirEdge = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDirEdge)) {
-      rmSync(testDirEdge, { recursive: true, force: true });
-    }
+    rmSync(testDirEdge, { recursive: true, force: true });
   });
 
   test("handles PR ID with whitespace in output", async () => {
@@ -1112,16 +1082,11 @@ describe("AdoPRStrategy type guards", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("closeExistingPR throws for non-Azure repo", async () => {
@@ -1164,7 +1129,7 @@ describe("AdoPRStrategy merge unknown mode", () => {
         "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/123",
       repoInfo: azureRepoInfo,
       config: { mode: "unknown" as "manual" },
-      workDir: testDir,
+      workDir: "/work/repo",
       retries: 0,
     });
 
@@ -1188,16 +1153,11 @@ describe("AdoPRStrategy logger coverage", () => {
 
   beforeEach(() => {
     mockExecutor = createMockExecutor();
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
   });
 
   afterEach(() => {
-    if (existsSync(testDir)) {
-      rmSync(testDir, { recursive: true, force: true });
-    }
+    rmSync(testDir, { recursive: true, force: true });
   });
 
   test("findExistingPRUrl logs debug on error with stderr", async () => {

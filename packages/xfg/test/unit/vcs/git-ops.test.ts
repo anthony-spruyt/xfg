@@ -2,6 +2,7 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   mkdirSync,
+  mkdtempSync,
   rmSync,
   writeFileSync,
   readFileSync,
@@ -23,7 +24,7 @@ const stubExecutor: ICommandExecutor = {
   exec: async (_exe: string, _args: string[], _cwd: string) => "",
 };
 
-const testDir = join(tmpdir(), "git-ops-test-" + Date.now());
+let testDir: string;
 
 describe("sanitizeBranchName", () => {
   test("removes file extension", () => {
@@ -250,8 +251,8 @@ describe("GitOps", () => {
   let workDir: string;
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-git-ops-"));
+    workDir = join(testDir, "workspace");
   });
 
   afterEach(() => {

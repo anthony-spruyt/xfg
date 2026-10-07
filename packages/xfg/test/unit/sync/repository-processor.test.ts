@@ -2,6 +2,7 @@ import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -29,7 +30,7 @@ import {
   createMockExecutor as createExecutorMockFull,
 } from "../../mocks/index.js";
 
-const testDir = join(tmpdir(), "repo-processor-test-" + Date.now());
+let testDir: string;
 
 function createMockExecutor(): ICommandExecutor {
   return createExecutorMockFull({}).mock;
@@ -105,8 +106,8 @@ describe("RepositoryProcessor", () => {
   };
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-repo-processor-"));
+    workDir = join(testDir, "workspace");
     const { mock: defaultMockLogger } = createMockLogger();
     processor = new RepositoryProcessor(undefined, defaultMockLogger);
   });

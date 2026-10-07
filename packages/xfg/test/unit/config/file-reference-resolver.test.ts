@@ -1,6 +1,12 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { writeFileSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
+import {
+  writeFileSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  symlinkSync,
+} from "node:fs";
 import { join, dirname, normalize, relative, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -15,12 +21,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const fixturesDir = join(__dirname, "..", "..", "fixtures");
 
-// Create a temporary directory for test fixtures
-const testDir = join(tmpdir(), "xfg-file-ref-test-" + Date.now());
+let testDir: string;
 
 describe("File Reference Resolver", () => {
   beforeEach(() => {
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-file-ref-"));
     mkdirSync(join(testDir, "templates"), { recursive: true });
   });
 
@@ -51,10 +56,10 @@ describe("File Reference Resolver", () => {
   });
 
   describe("resolveFileReference symlinks", () => {
-    const outsideDir = testDir + "-outside";
+    let outsideDir: string;
 
     beforeEach(() => {
-      mkdirSync(outsideDir, { recursive: true });
+      outsideDir = mkdtempSync(join(tmpdir(), "xfg-file-ref-outside-"));
       writeFileSync(join(outsideDir, "loot.txt"), "outside-content");
     });
 

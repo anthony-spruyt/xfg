@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { FileSyncOrchestrator } from "../../../src/sync/file-sync-orchestrator.js";
@@ -21,7 +21,7 @@ import type {
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { RepoConfig } from "../../../src/config/types.js";
 
-const testDir = join(tmpdir(), "file-sync-orchestrator-test-" + Date.now());
+let testDir: string;
 
 const noopRenderWriter: IRenderWriter = { write: () => {} };
 
@@ -37,7 +37,8 @@ describe("FileSyncOrchestrator", () => {
   };
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
+    testDir = mkdtempSync(join(tmpdir(), "xfg-file-sync-orchestrator-"));
+    workDir = join(testDir, "workspace");
     mkdirSync(workDir, { recursive: true });
   });
 

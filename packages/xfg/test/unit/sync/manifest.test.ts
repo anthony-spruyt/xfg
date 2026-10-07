@@ -1,7 +1,7 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
 import {
-  mkdirSync,
+  mkdtempSync,
   rmSync,
   writeFileSync,
   readFileSync,
@@ -21,10 +21,10 @@ import {
 } from "../../../src/sync/manifest.js";
 
 describe("manifest", () => {
-  const testDir = join(tmpdir(), "tmp-manifest-test");
+  let testDir: string;
 
   beforeEach(() => {
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-manifest-"));
   });
 
   afterEach(() => {
