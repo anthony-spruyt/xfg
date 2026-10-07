@@ -9,6 +9,8 @@ import type {
 import { validateFileName } from "./validators/file-validator.js";
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import { isValidHostname } from "../shared/github-host-policy.js";
+import { isCredentialEnvName } from "../shared/credential-env.js";
 import { validateBranchName } from "../shared/branch-validation.js";
 import { validateAiOption } from "./validators/ai-validator.js";
 import {
@@ -159,6 +161,11 @@ function validateGithubHosts(config: RawConfig): void {
     if (host.includes("/")) {
       throw new ValidationError(
         `githubHosts entries must be hostnames only, not paths. Got: ${host}`
+      );
+    }
+    if (!isValidHostname(host)) {
+      throw new ValidationError(
+        `githubHosts entries must be hostnames (no userinfo, port, whitespace or trailing dot). Got: ${host}`
       );
     }
   }
@@ -515,6 +522,11 @@ function validateSecretEntry(name: string, config: SecretConfig): void {
   if (!config.env || typeof config.env !== "string") {
     throw new ValidationError(
       `Secret '${name}' requires an 'env' field (string) specifying the environment variable source.`
+    );
+  }
+  if (isCredentialEnvName(config.env)) {
+    throw new ValidationError(
+      `Secret '${name}' cannot use '${config.env}' as its source: it is a credential xfg uses for authentication.`
     );
   }
 }

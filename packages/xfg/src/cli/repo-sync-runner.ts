@@ -14,6 +14,7 @@ import type { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { resolveGitHubToken } from "../shared/gh-token-utils.js";
+import type { IGitHubHostPolicy } from "../shared/github-host-policy.js";
 import {
   runLifecycleCheck,
   type IRepoLifecycleManager,
@@ -35,6 +36,7 @@ export interface RepoIterationContext {
   processor: IRepositoryProcessor;
   lifecycleManager: IRepoLifecycleManager;
   tokenManager: ReturnType<typeof createTokenManager>;
+  hostPolicy?: IGitHubHostPolicy;
   reportResults: SyncResultEntry[];
   lifecycleReportInputs: LifecycleAction[];
   settingsCollector: ResultsCollector;
@@ -213,17 +215,25 @@ export async function runSingleRepo(
     join(options.workDir ?? "./tmp", generateWorkspaceName(index))
   );
 
-  const repoToken = isGitHubRepo(repoInfo)
-    ? (
-        await resolveGitHubToken({
-          repoInfo: repoInfo as GitHubRepoInfo,
-          tokenManager: ctx.tokenManager,
-          context: repoName,
-          log: logger,
-          envToken: process.env.GH_TOKEN,
-        })
-      ).token
-    : undefined;
+  let repoToken: string | undefined;
+  try {
+    repoToken = isGitHubRepo(repoInfo)
+      ? (
+          await resolveGitHubToken({
+            repoInfo: repoInfo as GitHubRepoInfo,
+            tokenManager: ctx.tokenManager,
+            context: repoName,
+            log: logger,
+            envToken: process.env.GH_TOKEN,
+            hostPolicy: ctx.hostPolicy,
+          })
+        ).token
+      : undefined;
+  } catch (error) {
+    logger.error(repoNumber, repoName, toErrorMessage(error));
+    pushFailure(ctx.reportResults, repoName, error);
+    return;
+  }
 
   const repo: RepoPhaseParams = {
     repoConfig: effectiveRepoConfig,

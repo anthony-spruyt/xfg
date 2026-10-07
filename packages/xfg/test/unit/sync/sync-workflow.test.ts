@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { SyncWorkflow } from "../../../src/sync/sync-workflow.js";
@@ -30,7 +30,7 @@ import {
 } from "../../mocks/index.js";
 
 describe("SyncWorkflow", () => {
-  const testDir = join(tmpdir(), `sync-workflow-test-${Date.now()}`);
+  let testDir: string;
   let workDir: string;
 
   const mockRepoConfig: RepoConfig = {
@@ -47,7 +47,8 @@ describe("SyncWorkflow", () => {
   };
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
+    testDir = mkdtempSync(join(tmpdir(), "xfg-sync-workflow-"));
+    workDir = join(testDir, "workspace");
     mkdirSync(workDir, { recursive: true });
   });
 

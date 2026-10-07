@@ -95,7 +95,7 @@ describe("GitHubPRStrategy type guards", () => {
       body: "Test body",
       branchName: "test-branch",
       baseBranch: "main",
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
     };
 
     await assert.rejects(
@@ -121,7 +121,7 @@ describe("GitHubPRStrategy type guards", () => {
       body: "Test body",
       branchName: "test-branch",
       baseBranch: "main",
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
     };
 
     await assert.rejects(
@@ -148,7 +148,7 @@ describe("AdoPRStrategy type guards", () => {
       body: "Test body",
       branchName: "test-branch",
       baseBranch: "main",
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
     };
 
     await assert.rejects(
@@ -173,7 +173,7 @@ describe("AdoPRStrategy type guards", () => {
       body: "Test body",
       branchName: "test-branch",
       baseBranch: "main",
-      workDir: "/tmp/test",
+      workDir: "/work/repo",
     };
 
     await assert.rejects(
@@ -248,7 +248,7 @@ describe("PRWorkflowExecutor", () => {
     body: "Test body",
     branchName: "test-branch",
     baseBranch: "main",
-    workDir: "/tmp/test",
+    workDir: "/work/repo",
   };
 
   test("delegates to strategy.findExistingPRUrl and creates when none found", async () => {

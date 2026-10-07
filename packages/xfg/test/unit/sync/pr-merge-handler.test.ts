@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { PRMergeHandler } from "../../../src/sync/pr-merge-handler.js";
@@ -8,7 +8,7 @@ import { createMockLogger, createMockExecutor } from "../../mocks/index.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { FileAction } from "../../../src/vcs/pr-creator.js";
 
-const testDir = join(tmpdir(), "pr-merge-handler-test-" + Date.now());
+let testDir: string;
 
 describe("PRMergeHandler", () => {
   let workDir: string;
@@ -22,7 +22,8 @@ describe("PRMergeHandler", () => {
   };
 
   beforeEach(() => {
-    workDir = join(testDir, `workspace-${Date.now()}`);
+    testDir = mkdtempSync(join(tmpdir(), "xfg-pr-merge-handler-"));
+    workDir = join(testDir, "workspace");
     mkdirSync(workDir, { recursive: true });
   });
 

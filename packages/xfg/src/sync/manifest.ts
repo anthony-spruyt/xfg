@@ -1,5 +1,6 @@
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
+import { isSymlink, writeFileNoFollow } from "../shared/path-safety.js";
 import { toErrorMessage, isPlainObject } from "../shared/type-guards.js";
 import { SyncError } from "../shared/errors.js";
 import type { DebugWarnLog } from "../shared/logger.js";
@@ -147,6 +148,11 @@ export function loadManifest(
 ): XfgManifest | null {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
 
+  if (isSymlink(manifestPath)) {
+    log?.warn(`Ignoring manifest ${manifestPath}: it is a symlink`);
+    return null;
+  }
+
   if (!existsSync(manifestPath)) {
     return null;
   }
@@ -206,7 +212,7 @@ export function saveManifest(workDir: string, manifest: XfgManifest): void {
   const manifestPath = join(workDir, MANIFEST_FILENAME);
   const content = JSON.stringify(manifest, null, 2) + "\n";
   try {
-    writeFileSync(manifestPath, content, "utf-8");
+    writeFileNoFollow(manifestPath, content);
   } catch (error) {
     throw new SyncError(
       `Failed to save manifest ${manifestPath}: ${toErrorMessage(error)}`,

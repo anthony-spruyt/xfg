@@ -440,6 +440,66 @@ repos:
     });
   });
 
+  describe("GitHub host allowlist", () => {
+    const originalGhToken = process.env.GH_TOKEN;
+
+    beforeEach(() => {
+      process.env.GH_TOKEN = "env-token";
+    });
+
+    afterEach(() => {
+      delete process.env.XFG_ALLOWED_GITHUB_HOSTS;
+      if (originalGhToken === undefined) delete process.env.GH_TOKEN;
+      else process.env.GH_TOKEN = originalGhToken;
+    });
+
+    async function tokensPassed(
+      expectFailure = false
+    ): Promise<(string | undefined)[]> {
+      writeFileSync(
+        testConfigPath,
+        `id: test-config
+${MINIMAL_FILES}
+githubHosts:
+  - ghe.corp
+repos:
+  - git: https://github.com/test/repo
+  - git: https://ghe.corp/test/repo
+`
+      );
+      const mockProcessor = createMockProcessor();
+      const run = runSync(
+        { config: testConfigPath, dryRun: true, workDir: testDir },
+        {
+          processorFactory: () => mockProcessor,
+          lifecycleManager: noopLifecycleManager,
+        }
+      );
+      if (expectFailure) {
+        await assert.rejects(run, /had errors/);
+      } else {
+        await run;
+      }
+      const calls = (mockProcessor.process as unknown as MockFn).mock.calls;
+      return calls.map((c) => (c.arguments[2] as { token?: string }).token);
+    }
+
+    test("fails a githubHosts repo that is not allowlisted before touching it", async () => {
+      assert.deepEqual(await tokensPassed(true), ["env-token"]);
+      assert.match(consoleOutput.join("\n"), /XFG_ALLOWED_GITHUB_HOSTS/);
+    });
+
+    test("passes GH_TOKEN to a host listed in XFG_ALLOWED_GITHUB_HOSTS", async () => {
+      process.env.XFG_ALLOWED_GITHUB_HOSTS = "ghe.corp";
+      assert.deepEqual(await tokensPassed(), ["env-token", "env-token"]);
+    });
+
+    test("rejects an invalid XFG_ALLOWED_GITHUB_HOSTS before touching any repo", async () => {
+      process.env.XFG_ALLOWED_GITHUB_HOSTS = "user@ghe.corp";
+      await assert.rejects(() => tokensPassed(), /XFG_ALLOWED_GITHUB_HOSTS/);
+    });
+  });
+
   describe("settings processing", () => {
     // Valid config snippets for settings
     const VALID_RULESET = `

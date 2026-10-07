@@ -1,6 +1,7 @@
 import type { RepoConfig } from "../config/index.js";
 import type { RepoInfo } from "../repo/index.js";
 import type { ILogger } from "../shared/logger.js";
+import type { IGitHubHostPolicy } from "../shared/github-host-policy.js";
 import {
   GitOps,
   AuthenticatedGitOps,
@@ -64,6 +65,7 @@ export class RepositoryProcessor implements IRepositoryProcessor {
       changeDescriber?: IChangeDescriber;
       tokenManager?: GitHubAppTokenManager | null;
       envToken?: string;
+      hostPolicy?: IGitHubHostPolicy;
       /** Environment the AI client reads API keys from */
       aiEnv?: Record<string, string | undefined>;
       fetch?: FetchFn;
@@ -91,7 +93,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const branchManager = components?.branchManager ?? new BranchManager(log);
     const authOptionsBuilder =
       components?.authOptionsBuilder ??
-      new AuthOptionsBuilder(tokenManager, log, components?.envToken);
+      new AuthOptionsBuilder(
+        tokenManager,
+        log,
+        components?.envToken,
+        components?.hostPolicy
+      );
     const repositorySession =
       components?.repositorySession ?? new RepositorySession(factory, log);
     const commitPushManager =

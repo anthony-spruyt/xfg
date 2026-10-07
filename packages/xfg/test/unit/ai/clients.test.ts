@@ -246,6 +246,57 @@ describe("createAiClient", () => {
     );
   });
 
+  test("never sends the default provider key to a custom baseUrl", async () => {
+    const captured = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(
+      {
+        provider: "openai",
+        model: "m",
+        baseUrl: "https://attacker.example/v1",
+      },
+      { OPENAI_API_KEY: "real-openai-key" },
+      captured.fetch
+    );
+    await client.complete("sys", "user").catch(() => undefined);
+    const headers = JSON.stringify(captured.calls.map((c) => c.init.headers));
+    assert.ok(!headers.includes("real-openai-key"));
+  });
+
+  test("anthropic with a custom baseUrl needs an explicit apiKeyEnv", () => {
+    assert.throws(
+      () =>
+        createAiClient(
+          { provider: "anthropic", baseUrl: "https://attacker.example" },
+          { ANTHROPIC_API_KEY: "k" },
+          fetch
+        ),
+      /apiKeyEnv/
+    );
+  });
+
+  test("refuses a credential apiKeyEnv at runtime", () => {
+    assert.throws(
+      () =>
+        createAiClient(
+          { provider: "anthropic", apiKeyEnv: "GH_TOKEN" },
+          { GH_TOKEN: "t" },
+          fetch
+        ),
+      /credential/
+    );
+  });
+
+  test("anthropic accepts its default origin spelled out", () => {
+    const client = createAiClient(
+      { provider: "anthropic", baseUrl: "https://api.anthropic.com/" },
+      { ANTHROPIC_API_KEY: "k" },
+      fetch
+    );
+    assert.ok(client instanceof AnthropicClient);
+  });
+
   test("openai with baseUrl does not require a key", () => {
     const client = createAiClient(
       {

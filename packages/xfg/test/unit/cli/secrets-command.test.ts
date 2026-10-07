@@ -683,6 +683,33 @@ repos:
       });
     });
 
+    test("token provider refuses a GHES host that is not allowlisted", async () => {
+      const provider = await captureProvider({
+        getTokenForRepo: async () => "app-token",
+      });
+      const gheRepo = { ...repoA, host: "ghe.corp" };
+
+      await assert.rejects(
+        () => provider.getToken(gheRepo, "org-a/repo-a"),
+        /not in XFG_ALLOWED_GITHUB_HOSTS/
+      );
+    });
+
+    test("token provider honours XFG_ALLOWED_GITHUB_HOSTS", async () => {
+      process.env.XFG_ALLOWED_GITHUB_HOSTS = "ghe.corp";
+      try {
+        const provider = await captureProvider(null);
+        const gheRepo = { ...repoA, host: "ghe.corp" };
+
+        assert.deepEqual(await provider.getToken(gheRepo, "org-a/repo-a"), {
+          token: "env-token",
+          skipped: false,
+        });
+      } finally {
+        delete process.env.XFG_ALLOWED_GITHUB_HOSTS;
+      }
+    });
+
     test("processes repos without resolving tokens in the CLI", async () => {
       writeFileSync(testConfigPath, appConfig);
       const tokenManager = {

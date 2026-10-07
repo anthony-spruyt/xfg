@@ -501,3 +501,75 @@ describe("escape mechanism with $$ syntax", () => {
     assert.deepEqual(result, ["${VAR}", "static"]);
   });
 });
+
+describe("credential env vars", () => {
+  const env = {
+    XFG_GITHUB_APP_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----",
+    XFG_GITHUB_CLIENT_ID: "Iv23abc",
+    GH_TOKEN: "ghp_secret",
+    GITHUB_TOKEN: "ghs_secret",
+    GH_ENTERPRISE_TOKEN: "ghe_secret",
+    GITHUB_ENTERPRISE_TOKEN: "ghe_secret",
+    AZURE_DEVOPS_EXT_PAT: "ado_secret",
+    GITLAB_TOKEN: "glpat_secret",
+    ANTHROPIC_API_KEY: "sk-ant",
+    OPENAI_API_KEY: "sk-openai",
+    API_URL: "https://api.example.com",
+  };
+  const opts = (): EnvInterpolationOptions => ({ strict: true, env });
+
+  for (const name of Object.keys(env).filter((k) => k !== "API_URL")) {
+    test(`refuses to interpolate \${${name}}`, () => {
+      assert.throws(
+        () => interpolateContent(`key: \${${name}}`, opts()),
+        (err: unknown) =>
+          err instanceof Error &&
+          err.message.includes(name) &&
+          err.message.includes("credential") &&
+          !err.message.includes(env[name as keyof typeof env])
+      );
+    });
+  }
+
+  test("refuses credential vars even with a default or message modifier", () => {
+    for (const ref of [
+      "${GH_TOKEN:-fallback}",
+      "${XFG_GITHUB_APP_PRIVATE_KEY:?required}",
+    ]) {
+      assert.throws(() => interpolateContent(ref, opts()), /credential/, ref);
+    }
+  });
+
+  test("refuses credential vars when unset, in non-strict mode", () => {
+    assert.throws(
+      () => interpolateContent("${GH_TOKEN}", { strict: false, env: {} }),
+      /credential/
+    );
+  });
+
+  test("matches credential var names case-insensitively", () => {
+    assert.throws(
+      () => interpolateContent("${gh_token}", opts()),
+      /credential/
+    );
+  });
+
+  test("refuses credential vars in objects and arrays", () => {
+    assert.throws(
+      () => interpolateContent({ a: { b: "${GH_TOKEN}" } }, opts()),
+      /credential/
+    );
+    assert.throws(
+      () => interpolateContent(["ok", "${GITLAB_TOKEN}"], opts()),
+      /credential/
+    );
+  });
+
+  test("still outputs an escaped credential reference literally", () => {
+    assert.equal(interpolateContent("$${GH_TOKEN}", opts()), "${GH_TOKEN}");
+  });
+
+  test("still interpolates other vars", () => {
+    assert.equal(interpolateContent("${API_URL}", opts()), env.API_URL);
+  });
+});
