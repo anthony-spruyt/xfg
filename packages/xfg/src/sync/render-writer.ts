@@ -24,8 +24,7 @@ function readIndex(indexPath: string): RenderIndex {
 
 // Not localeCompare: render.json must be byte-stable across machines and locales
 function compareCodeUnits(a: string, b: string): number {
-  if (a < b) return -1;
-  return a > b ? 1 : 0;
+  return Number(a > b) - Number(a < b);
 }
 
 function resolveInside(root: string, path: string): string {
