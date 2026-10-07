@@ -981,6 +981,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#credential-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credential Variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#escaping-variable-syntax" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2663,6 +2674,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#credential-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Credential Variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#escaping-variable-syntax" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2745,6 +2767,15 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SECRET</span><span class="o">=</span>my-secret-key
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
 </span></code></pre></div>
+<h2 id="credential-variables">Credential Variables<a class="headerlink" href="#credential-variables" title="Permanent link">&para;</a></h2>
+<p>xfg refuses to interpolate the credentials it uses itself, so a config can't write them into a file in a target repo. These names fail validation in any case, with or without <code>:-</code> or <code>:?</code>:</p>
+<ul>
+<li><code>GH_TOKEN</code>, <code>GITHUB_TOKEN</code>, <code>GH_ENTERPRISE_TOKEN</code>, <code>GITHUB_ENTERPRISE_TOKEN</code></li>
+<li><code>XFG_GITHUB_CLIENT_ID</code>, <code>XFG_GITHUB_APP_PRIVATE_KEY</code></li>
+<li><code>AZURE_DEVOPS_EXT_PAT</code>, <code>GITLAB_TOKEN</code></li>
+<li><code>ANTHROPIC_API_KEY</code>, <code>OPENAI_API_KEY</code></li>
+</ul>
+<p>To ship one of these values to a repo on purpose, export it under another name. <code>$${GH_TOKEN}</code> still writes the literal text <code>${GH_TOKEN}</code>.</p>
 <h2 id="escaping-variable-syntax">Escaping Variable Syntax<a class="headerlink" href="#escaping-variable-syntax" title="Permanent link">&para;</a></h2>
 <p>If your target file needs literal <code>${VAR}</code> syntax (e.g., for devcontainer.json, shell scripts, or other templating systems), use <code>$$</code> to escape:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">files</span><span class="p">:</span>

@@ -2960,6 +2960,7 @@
 </tr>
 </tbody>
 </table>
+<p>The default key (<code>ANTHROPIC_API_KEY</code> / <code>OPENAI_API_KEY</code>) is only sent to that provider's own API. With any other <code>baseUrl</code>, name a dedicated variable in <code>apiKeyEnv</code>. <code>apiKeyEnv</code> can't name a credential xfg uses elsewhere, such as <code>GH_TOKEN</code> (see <a href="../env-variables/#credential-variables">Environment Variables</a>).</p>
 <p><code>ai</code> lives on <code>prOptions</code>, so it follows the normal root → group → repo override chain. An <code>ai</code> object at a lower level replaces the one above it (it is not deep-merged). Set <code>ai: false</code> on a repo or group to turn it off there. A later <code>ai: true</code> turns it back on with the <code>ai</code> object from above.</p>
 <h2 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h2>
 <h3 id="anthropic">Anthropic<a class="headerlink" href="#anthropic" title="Permanent link">&para;</a></h3>
