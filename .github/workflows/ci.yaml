@@ -11,17 +11,14 @@ on:
     branches:
       - "main"
 
-permissions:
-  actions: write
-  contents: write
-  pull-requests: "write"
-  statuses: "write"
-  security-events: "write"
+permissions: {}
 
 jobs:
   check-changes:
     if: github.event.action != 'labeled' || github.event.label.name == 'run-integration'
     runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
     outputs:
       build-needed: ${{ steps.filter.outputs.build-needed }}
       integration-needed: ${{ steps.filter.outputs.integration-needed }}
@@ -98,6 +95,10 @@ jobs:
 
   lint:
     if: github.event.action != 'labeled' || github.event.label.name == 'run-integration'
+    permissions:
+      actions: "read"
+      contents: "read"
+      security-events: "write"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@5cbe1a184d32fd631420e30e20b46a85b5aa244f" # main
 
   build:
@@ -111,6 +112,8 @@ jobs:
       && needs.check-changes.outputs.build-needed == 'true'
       && (github.event_name == 'push' || needs.lint.result != 'failure') }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
 
     concurrency:
       group: ci-${{ github.ref }}
@@ -173,6 +176,8 @@ jobs:
       - "build"
       - "check-changes"
     if: ${{ !cancelled() && needs.build.result == 'success' && needs.check-changes.outputs.integration-needed == 'true' }}
+    permissions:
+      contents: "read"
     uses: ./.github/workflows/_integration-tests.yaml
     with:
       environment: ${{ github.event_name == 'push' && 'integration-main' || 'integration' }}
@@ -185,7 +190,7 @@ jobs:
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
       TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
 
-  # Summary job for branch protection - references reusable workflow job
+  # Required by branch protection
   summary:
     needs:
       - "check-changes"
@@ -193,4 +198,7 @@ jobs:
       - "build"
       - "integration-tests"
     if: "always()"
+    permissions:
+      actions: "read"
+      contents: "read"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@5cbe1a184d32fd631420e30e20b46a85b5aa244f" # main
