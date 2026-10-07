@@ -55,7 +55,21 @@ merge_protections:
       - "-label=autorelease: pending"
       - "-head~=^chore/megalinter-refresh-"
     success_conditions:
-      - "#approved-reviews-by >= 1"
+      - or:
+          - "approved-reviews-by = anthony-spruyt"
+          - and:
+              - "author = renovate[bot]"
+              - "#approved-reviews-by >= 1"
+          - and:
+              - "author = anthony-spruyt"
+              - "#approved-reviews-by >= 1"
+  - name: "ci-config-owner-approval"
+    if:
+      - "base = main"
+      - "-author = anthony-spruyt"
+      - "files~=^(\\.github/|\\.mergify\\.yml$)"
+    success_conditions:
+      - "approved-reviews-by = anthony-spruyt"
   - name: "megalinter-refresh"
     if:
       - "base = main"
@@ -76,7 +90,7 @@ merge_protections:
       - "base = main"
       - "label = agent/revert"
     success_conditions:
-      - "author~=.*\\[bot\\]$"
+      - "author = skynet-rw[bot]"
   - name: "emergency-merge"
     if:
       - "base = main"
