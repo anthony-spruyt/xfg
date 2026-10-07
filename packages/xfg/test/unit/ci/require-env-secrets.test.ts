@@ -55,9 +55,13 @@ describe("require-env-secrets.sh", () => {
       GITHUB_REPOSITORY: "owner/repo",
     });
 
-    assert.match(
-      result.output,
-      /https:\/\/github\.com\/owner\/repo\/settings\/environments/
+    assert.ok(
+      result.output
+        .split("\n")
+        .includes(
+          "Add the secrets at https://github.com/owner/repo/settings/environments"
+        ),
+      result.output
     );
   });
 
