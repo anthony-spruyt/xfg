@@ -43,12 +43,12 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - **Never share a repo** between two test jobs
 - Inline configs via `writeConfig()` (from `packages/xfg/test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
-- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access), stored only in the `integration` and `integration-main` environments
+- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access); the ADO and GitLab jobs use `AZURE_DEVOPS_EXT_PAT` and `GITLAB_TOKEN`. All integration secrets are stored only in the `integration` and `integration-main` environments, and every job that reads one runs in `environment: ${{ inputs.environment }}` (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - A reusable workflow sees an environment secret only when the caller passes it by name, even if the caller has no value for it: every secret `_integration-tests.yaml` uses must be declared in its `workflow_call.secrets` and passed by `ci.yaml` (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
 - **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane
 - Every environment job runs `require-env-secrets.sh` before any step that uses a secret, listing each environment secret it uses; `test/unit/ci/integration-workflow.test.ts` enforces this and `timeout-minutes` on every lane
-- ADO and GitLab jobs use persistent repos with concurrency groups
+- ADO and GitLab jobs use persistent repos with cross-run concurrency groups. A PR job waiting for approval holds its group: main's job waits behind it, and a third run in the group cancels the waiting one. Approve or reject PR runs promptly
 
 ## CI Workflow
 
@@ -56,5 +56,5 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - On PRs, integration tests only run when:
   - The `run-integration` label is added to the PR, OR
   - Integration test files (`packages/xfg/test/integration/`) are changed
-- PR runs use the `integration` environment: the owner approves once per run, then all GitHub lanes start together. Merge-queue and fork PRs skip integration
+- PR runs use the `integration` environment: the owner approves once per run, then all lanes start together. Merge-queue and fork PRs skip integration
 - GitHub tests run in 5 parallel lanes to stay under API secondary rate limits

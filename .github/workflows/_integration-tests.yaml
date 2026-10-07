@@ -36,6 +36,9 @@ jobs:
   integration-test-cli-sync-ado-pat:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     concurrency:
       group: integration-ado
@@ -48,6 +51,13 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" AZURE_DEVOPS_EXT_PAT
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install Azure CLI DevOps Extension
@@ -70,6 +80,9 @@ jobs:
   integration-test-cli-sync-gitlab-pat:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     concurrency:
       group: integration-gitlab
@@ -82,6 +95,13 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GITLAB_TOKEN
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install GitLab CLI
@@ -213,7 +233,8 @@ jobs:
           GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
           GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
           TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG GH_PAT_BOT TEST_APP_PRIVATE_KEY
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG GH_PAT_BOT TEST_APP_PRIVATE_KEY AZURE_DEVOPS_EXT_PAT
 
       - uses: ./.github/actions/integration-test-setup
 

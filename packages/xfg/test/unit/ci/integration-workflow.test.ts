@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
@@ -19,8 +19,9 @@ interface Step {
 }
 
 interface Job {
-  environment?: { name: string } | string;
+  environment?: { name: string; deployment?: boolean } | string;
   "timeout-minutes"?: number;
+  env?: Record<string, string>;
   steps: Step[];
 }
 
@@ -54,7 +55,7 @@ const environmentJobs = [
 
 describe("environment-gated jobs", () => {
   test("exist", () => {
-    assert.ok(environmentJobs.length >= 7, "expected 5 lanes + 2 cleanups");
+    assert.ok(environmentJobs.length >= 9, "expected 7 lanes + 2 cleanups");
   });
 
   for (const [name, job] of environmentJobs) {
@@ -74,9 +75,7 @@ describe("environment-gated jobs", () => {
 
       const preflight = job.steps[index];
       const checked = secretsUsed([preflight]);
-      // Repo-level secret passed by ci.yaml, not an environment secret
       const used = secretsUsed(job.steps.slice(index + 1));
-      used.delete("AZURE_DEVOPS_EXT_PAT");
       for (const secret of used) {
         assert.ok(checked.has(secret), `${name}: preflight skips ${secret}`);
         assert.equal(
@@ -88,6 +87,83 @@ describe("environment-gated jobs", () => {
           preflight.run ?? "",
           new RegExp(`\\b${secret}\\b`),
           `${name}: preflight does not name ${secret}`
+        );
+      }
+    });
+  }
+});
+
+const EXTERNAL_PLATFORM_SECRETS = ["AZURE_DEVOPS_EXT_PAT", "GITLAB_TOKEN"];
+// Reusable lanes take the environment as an input; standalone workflows run on main only
+const GATED_ENVIRONMENTS = ["${{ inputs.environment }}", "integration-main"];
+
+describe("ADO and GitLab credentials", () => {
+  const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
+    .filter((file) => /\.ya?ml$/.test(file))
+    .sort();
+  const reads = (node: unknown, secret: string): boolean =>
+    JSON.stringify(node ?? {}).includes(`secrets.${secret}`);
+  const readers = workflowFiles.flatMap((file) =>
+    jobs(file)
+      // Jobs that call a reusable workflow have no steps; the called jobs are checked instead
+      .filter(([, job]) => Array.isArray(job.steps))
+      .map(([name, job]): [string, Job, string[]] => [
+        `${file}: ${name}`,
+        job,
+        EXTERNAL_PLATFORM_SECRETS.filter((secret) => reads(job, secret)),
+      ])
+      .filter(([, , secrets]) => secrets.length > 0)
+  );
+
+  test("are read by the ADO, GitLab and lifecycle lanes", () => {
+    const names = readers.map(([name]) => name);
+    for (const lane of [
+      "integration-test-cli-sync-ado-pat",
+      "integration-test-cli-sync-gitlab-pat",
+      "integration-test-github-lifecycle",
+    ]) {
+      assert.ok(
+        names.includes(`_integration-tests.yaml: ${lane}`),
+        `${lane} no longer reads ADO/GitLab credentials`
+      );
+    }
+  });
+
+  for (const [name, job, secrets] of readers) {
+    test(`${name} reads ${secrets.join(", ")} only behind the integration environment`, () => {
+      assert.ok(
+        typeof job.environment === "object" &&
+          GATED_ENVIRONMENTS.includes(job.environment.name) &&
+          job.environment.deployment === false,
+        `${name} must run in the integration environment with deployment: false`
+      );
+
+      const index = job.steps.findIndex((step) =>
+        step.run?.includes(PREFLIGHT)
+      );
+      assert.ok(index >= 0, `${name} has no preflight step`);
+      const preflight = job.steps[index];
+      for (const secret of secrets) {
+        assert.ok(
+          !reads(job.env, secret),
+          `${name}: ${secret} must not be in job-level env, which runs before the preflight`
+        );
+        assert.equal(
+          preflight.env?.[secret],
+          `\${{ secrets.${secret} }}`,
+          `${name}: preflight does not receive ${secret}`
+        );
+        assert.match(
+          preflight.run ?? "",
+          new RegExp(`\\b${secret}\\b`),
+          `${name}: preflight does not name ${secret}`
+        );
+        const firstUse = job.steps.findIndex(
+          (step, i) => i !== index && reads(step, secret)
+        );
+        assert.ok(
+          firstUse === -1 || index < firstUse,
+          `${name}: preflight must run before the first step using ${secret}`
         );
       }
     });
