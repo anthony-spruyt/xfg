@@ -1,5 +1,17 @@
 # Changelog
 
+## [7.5.2](https://github.com/anthony-spruyt/xfg/compare/v7.5.1...v7.5.2) (2026-10-07)
+
+
+### Bug Fixes
+
+* **test:** stop matching 429 inside repo names as a rate limit ([#1108](https://github.com/anthony-spruyt/xfg/issues/1108)) ([6c6916c](https://github.com/anthony-spruyt/xfg/commit/6c6916c44111b6fdf8a854b069995ea2a46e861c))
+
+
+### Continuous Integration
+
+* gate ADO and GitLab credentials behind the integration environments ([#1107](https://github.com/anthony-spruyt/xfg/issues/1107)) ([4485bca](https://github.com/anthony-spruyt/xfg/commit/4485bcace36f5fba84c27fcdb56bfdf894d04dd6))
+
 ## [7.5.1](https://github.com/anthony-spruyt/xfg/compare/v7.5.0...v7.5.1) (2026-10-07)
 
 
