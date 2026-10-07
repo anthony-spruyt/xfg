@@ -120,7 +120,10 @@ describe("classifyCommand", () => {
     "gh label create bug --color ededed --force --repo o/r": "create",
     "gh pr close 3 --repo o/r": "write",
     "node dist/cli.js sync --config /tmp/c.yaml": "cli",
-    "bash .github/scripts/reset-test-repo-ado.sh a b c": "cli",
+    "bash .github/scripts/reset-test-repo-ado.sh a b c": "external",
+    "az repos pr list --org x": "external",
+    "glab api --method DELETE projects/1": "external",
+    "curl -s https://dev.azure.com/x": "external",
   };
   for (const [command, expected] of Object.entries(cases)) {
     test(`${command} is ${expected}`, () => {
@@ -282,6 +285,7 @@ describe("formatRequestStats", () => {
       write: 12,
       create: 7,
       cli: 9,
+      external: 4,
       queueWaitMs: 15_400,
       maxQueueWaitMs: 1_900,
       rateLimitHits: 1,
@@ -292,6 +296,7 @@ describe("formatRequestStats", () => {
     assert.match(text, /\| write \| 12 \|/);
     assert.match(text, /\| create \| 7 \|/);
     assert.match(text, /\| cli \| 9 \|/);
+    assert.match(text, /\| external \| 4 \|/);
     assert.match(text, /15\.4s total, 1\.9s max/);
     assert.match(text, /Rate-limit hits: 1/);
   });
@@ -331,7 +336,8 @@ describe("secondaryLimitPoints", () => {
     assert.equal(secondaryLimitPoints("create"), 5);
   });
 
-  test("leaves xfg CLI runs to xfg's own retry handling", () => {
+  test("leaves xfg CLI runs and other services out of the GitHub budget", () => {
     assert.equal(secondaryLimitPoints("cli"), 0);
+    assert.equal(secondaryLimitPoints("external"), 0);
   });
 });

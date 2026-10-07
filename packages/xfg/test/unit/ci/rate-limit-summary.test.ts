@@ -93,6 +93,18 @@ describe("rate-limit-summary.sh", () => {
     );
   });
 
+  test("reports n/a for a resource the start snapshot lacks", () => {
+    run("start", "core\\t1\\t4999\\t5000\\t4102444800\\n");
+    const result = run(
+      "end",
+      "core\\t2\\t4998\\t5000\\t4102444800\\ngraphql\\t5\\t4995\\t5000\\t4102444800\\n"
+    );
+
+    assert.equal(result.status, 0, result.output);
+    assert.match(result.summary, /\| core \| 2 \| 4998 \| 5000 \| \+1 \|/);
+    assert.match(result.summary, /\| graphql \| 5 \| 4995 \| 5000 \| n\/a \|/);
+  });
+
   test("warns without failing the job when the API call fails", () => {
     const result = run("start", "", { FAKE_GH_FAIL: "1" });
 

@@ -49,7 +49,7 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane, or as a new parallel lane when the critical path needs it
 - Every lane that uses `GH_PAT_ORG` records its rate-limit headroom with `rate-limit-summary.sh start` and `end` (enforced by `test/unit/ci/integration-workflow.test.ts`). `test-helpers.ts` also writes per-process request counts to the job summary
 - `github.test.ts` is split across lanes with `XFG_TEST_SHARD` (`1/2`, `2/2`). Add shards as whole sets; the unit test checks each suite's shards are complete
-- `exec()` in `test-helpers.ts` paces GitHub reads, mutations and content-creating calls separately, under a per-process secondary-limit budget sized for 8 lanes on one PAT. Revisit it, using the rate-limit summaries, before adding lanes
+- `exec()` in `test-helpers.ts` paces GitHub reads, mutations and content-creating calls separately, under a per-process secondary-limit budget sized for 8 lanes on one PAT. The budget excludes xfg's own CLI requests and non-GitHub tools. Revisit it, using the rate-limit summaries, before adding lanes
 - Every environment job runs `require-env-secrets.sh` before any step that uses a secret, listing each environment secret it uses; `test/unit/ci/integration-workflow.test.ts` enforces this and `timeout-minutes` on every lane
 - ADO and GitLab jobs use persistent repos with cross-run concurrency groups. A PR job waiting for approval holds its group: main's job waits behind it, and a third run in the group cancels the waiting one. Approve or reject PR runs promptly
 

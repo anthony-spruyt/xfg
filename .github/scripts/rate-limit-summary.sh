@@ -42,7 +42,9 @@ fi
     fi
     DELTA="n/a"
     if [ -f "${STATE}" ]; then
-      read -r _ START_USED _ _ START_RESET < <(grep "^${RESOURCE}"$'\t' "${STATE}" || true)
+      START_USED=""
+      START_RESET=""
+      read -r _ START_USED _ _ START_RESET < <(grep "^${RESOURCE}"$'\t' "${STATE}") || true
       if [ -n "${START_USED:-}" ]; then
         # The delta counts every user of the token, other lanes included
         if [ "$(date +%s)" -lt "${START_RESET}" ]; then

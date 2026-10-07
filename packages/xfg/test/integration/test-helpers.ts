@@ -8,12 +8,12 @@ import Bottleneck from "bottleneck";
 
 const execFileAsync = promisify(execFile);
 
-export type RequestClass = "read" | "write" | "create" | "cli";
+export type RequestClass = "read" | "write" | "create" | "cli" | "external";
 
-type PacedClass = Exclude<RequestClass, "cli">;
+type PacedClass = Exclude<RequestClass, "cli" | "external">;
 
-// Per test process; up to 8 lanes share GH_PAT_ORG. Per lane, helper calls get 100
-// secondary-limit points/min (of GitHub's 900) and 10 content creations/min (of 80).
+// Per test process; up to 8 lanes share GH_PAT_ORG. Per lane, helper calls get 100 secondary-limit
+// points/min (of GitHub's 900) and 10 creations/min (of 80); xfg's own requests come on top.
 const limiters: Record<PacedClass, Bottleneck> = {
   read: new Bottleneck({ maxConcurrent: 2, minTime: 500 }),
   write: new Bottleneck({ maxConcurrent: 1, minTime: 1000 }),
@@ -29,13 +29,14 @@ const limiters: Record<PacedClass, Bottleneck> = {
 const pointsBudget = new Bottleneck({
   reservoir: 40,
   reservoirIncreaseAmount: 1,
-  reservoirIncreaseInterval: 600,
+  // Bottleneck refills on a 250ms heartbeat, so the interval must be a multiple of it
+  reservoirIncreaseInterval: 500,
   reservoirIncreaseMaximum: 40,
 });
 
 /** Cost of a request against GitHub's secondary rate limit (GET 1, mutation 5). */
 export function secondaryLimitPoints(requestClass: RequestClass): number {
-  if (requestClass === "cli") return 0;
+  if (requestClass === "cli" || requestClass === "external") return 0;
   return requestClass === "read" ? 1 : 5;
 }
 
@@ -43,12 +44,13 @@ const READ_SUBCOMMANDS = new Set(["list", "view", "status", "checks", "diff"]);
 const CREATE_SUBCOMMANDS = new Set(["create", "fork", "comment"]);
 
 /**
- * Classify a command for pacing: GitHub reads, mutations, content-creating
- * mutations (POST/PUT), or anything else (xfg CLI runs), which runs unpaced.
+ * Classify a command for pacing: GitHub reads, mutations and content-creating mutations
+ * (POST/PUT) are paced; xfg CLI runs and other tools (az, glab, curl, scripts) are not.
  */
 export function classifyCommand(command: string): RequestClass {
   const words = command.trim().split(/\s+/);
-  if (words[0] !== "gh") return "cli";
+  if (words[0] === "node" && words[1]?.endsWith("cli.js")) return "cli";
+  if (words[0] !== "gh") return "external";
   if (words[1] !== "api") {
     const sub = words[2] ?? "";
     if (READ_SUBCOMMANDS.has(sub)) return "read";
@@ -72,6 +74,7 @@ interface RequestStats {
   write: number;
   create: number;
   cli: number;
+  external: number;
   queueWaitMs: number;
   maxQueueWaitMs: number;
   rateLimitHits: number;
@@ -82,6 +85,7 @@ const stats: RequestStats = {
   write: 0,
   create: 0,
   cli: 0,
+  external: 0,
   queueWaitMs: 0,
   maxQueueWaitMs: 0,
   rateLimitHits: 0,
@@ -98,6 +102,7 @@ export function formatRequestStats(label: string, s: RequestStats): string {
     `| write | ${s.write} |`,
     `| create | ${s.create} |`,
     `| cli | ${s.cli} |`,
+    `| external | ${s.external} |`,
     "",
     `Limiter queue wait: ${seconds(s.queueWaitMs)} total, ${seconds(s.maxQueueWaitMs)} max. Rate-limit hits: ${s.rateLimitHits}.`,
     "",
@@ -105,7 +110,9 @@ export function formatRequestStats(label: string, s: RequestStats): string {
 }
 
 process.once("exit", () => {
-  if (stats.read + stats.write + stats.create + stats.cli === 0) return;
+  const total =
+    stats.read + stats.write + stats.create + stats.cli + stats.external;
+  if (total === 0) return;
   const shard = process.env.XFG_TEST_SHARD;
   const label = `${basename(process.argv[1] ?? "unknown")}${shard ? ` (shard ${shard})` : ""}`;
   const text = formatRequestStats(label, stats);
@@ -180,7 +187,7 @@ export async function exec(
       throw error;
     }
   };
-  if (requestClass === "cli") return run();
+  if (requestClass === "cli" || requestClass === "external") return run();
   const weight = secondaryLimitPoints(requestClass);
   return limiters[requestClass].schedule(() =>
     pointsBudget.schedule({ weight }, run)
