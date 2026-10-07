@@ -59,24 +59,26 @@ export async function exec(
   });
 }
 
+// Status codes must follow an HTTP/status prefix: bare digits also match
+// the Date.now() timestamps in generateRepoName() repo names.
+const HTTP_429 = /\b(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*429\b/i;
+const HTTP_5XX = /\b(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*50[0-4]\b/i;
+
 /**
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
  */
 const TRANSIENT_ERROR_PATTERNS = [
   // HTTP status codes and server errors
-  /502/i,
-  /503/i,
-  /504/i,
-  /500/i,
+  HTTP_5XX,
   /Server Error/i,
   /Service Unavailable/i,
+  /Bad Gateway/i,
   /rate limit/i,
   /secondary rate/i,
   /abuse detection/i,
   /too many requests/i,
   /retry-after/i,
-  /429/,
-  /403.*rate/i,
+  HTTP_429,
   // Network / timeout errors (covers az, glab, curl)
   /timed?\s*out/i,
   /ETIMEDOUT/,
@@ -105,9 +107,16 @@ const RATE_LIMIT_PATTERNS = [
   /secondary rate/i,
   /abuse detection/i,
   /too many requests/i,
-  /429/,
-  /403.*rate/i,
+  HTTP_429,
 ];
+
+export function isTransientErrorText(text: string): boolean {
+  return TRANSIENT_ERROR_PATTERNS.some((p) => p.test(text));
+}
+
+export function isRateLimitText(text: string): boolean {
+  return RATE_LIMIT_PATTERNS.some((p) => p.test(text));
+}
 
 /**
  * Parse a Retry-After value from error text (seconds → ms).
@@ -169,7 +178,7 @@ export async function withTestRetry<T>(
           ? `${error.message} ${(error as { stderr?: string }).stderr ?? ""} ${(error as { stdout?: string }).stdout ?? ""}`
           : String(error);
 
-      const isRateLimit = RATE_LIMIT_PATTERNS.some((p) => p.test(errorText));
+      const isRateLimit = isRateLimitText(errorText);
 
       let waitMs: number;
       if (isRateLimit) {
@@ -252,9 +261,7 @@ export async function execWithRetry(
           message?: string;
         };
         const errorText = `${err.message ?? ""} ${err.stderr ?? ""} ${err.stdout ?? ""}`;
-        const isTransient = TRANSIENT_ERROR_PATTERNS.some((p) =>
-          p.test(errorText)
-        );
+        const isTransient = isTransientErrorText(errorText);
         if (!isTransient) {
           throw Object.assign(new Error(`Permanent error: ${errorText}`), {
             permanent: true,
@@ -559,7 +566,6 @@ export async function resetTestRepo(
   _options?: { deleteLabels?: boolean }
 ): Promise<void> {
   console.log("\n=== Resetting ephemeral repo ===\n");
-  // Close open PRs
   try {
     const prs = await exec(`gh api repos/${repo}/pulls --jq '.[].number'`);
     for (const pr of prs.split("\n").filter(Boolean)) {
@@ -570,7 +576,6 @@ export async function resetTestRepo(
   } catch {
     /* no PRs */
   }
-  // Delete non-default branches
   try {
     const branches = await exec(
       `gh api repos/${repo}/branches --jq '.[].name'`
@@ -589,7 +594,6 @@ export async function resetTestRepo(
   } catch {
     /* no branches */
   }
-  // Delete all files on main
   try {
     const files = await exec(`gh api repos/${repo}/contents --jq '.[].name'`);
     for (const file of files.split("\n").filter(Boolean)) {
@@ -607,7 +611,6 @@ export async function resetTestRepo(
   } catch {
     /* empty repo */
   }
-  // Delete rulesets
   try {
     const rulesets = await exec(`gh api repos/${repo}/rulesets --jq '.[].id'`);
     for (const id of rulesets.split("\n").filter(Boolean)) {
@@ -616,7 +619,6 @@ export async function resetTestRepo(
   } catch {
     /* no rulesets */
   }
-  // Delete labels
   try {
     const labels = await exec(`gh api repos/${repo}/labels --jq '.[].name'`);
     for (const label of labels.split("\n").filter(Boolean)) {
