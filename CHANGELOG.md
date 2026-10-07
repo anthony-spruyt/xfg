@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.5.1](https://github.com/anthony-spruyt/xfg/compare/v7.5.0...v7.5.1) (2026-10-07)
+
+
+### Continuous Integration
+
+* gate integration-test secrets behind environments and lint pushes to main ([#1099](https://github.com/anthony-spruyt/xfg/issues/1099)) ([283b7c2](https://github.com/anthony-spruyt/xfg/commit/283b7c2a047d2b06cb5f8b30c0f1e984a81a1fe4))
+* pass environment secrets to the integration workflow by name ([#1104](https://github.com/anthony-spruyt/xfg/issues/1104)) ([5806c6c](https://github.com/anthony-spruyt/xfg/commit/5806c6c06d1d4e47219f8558a03d0ad3da95e317)), closes [#1093](https://github.com/anthony-spruyt/xfg/issues/1093)
+
 ## [7.5.0](https://github.com/anthony-spruyt/xfg/compare/v7.4.0...v7.5.0) (2026-10-06)
 
 
