@@ -36,6 +36,7 @@ concurrency:
 jobs:
   integration-test-cli-sync-ado-pat:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     concurrency:
       group: integration-ado
@@ -69,6 +70,7 @@ jobs:
 
   integration-test-cli-sync-gitlab-pat:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     concurrency:
       group: integration-gitlab
@@ -104,6 +106,7 @@ jobs:
 
   integration-test-github-sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -115,6 +118,13 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -130,6 +140,7 @@ jobs:
 
   integration-test-github-app:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -141,6 +152,14 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+          TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG TEST_APP_PRIVATE_KEY
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -176,6 +195,7 @@ jobs:
 
   integration-test-github-lifecycle:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -187,6 +207,15 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+          TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG GH_PAT_BOT TEST_APP_PRIVATE_KEY
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -233,6 +262,7 @@ jobs:
 
   integration-test-github-settings:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -244,6 +274,14 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG OPENROUTER_API_KEY
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -284,6 +322,7 @@ jobs:
   # Scenarios gate on their own earlier steps so one failure doesn't skip the rest
   integration-test-action:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -298,6 +337,14 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+          TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG TEST_APP_PRIVATE_KEY
+
       - uses: ./.github/actions/integration-test-setup
         id: setup
         with:

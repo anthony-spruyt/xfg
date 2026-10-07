@@ -46,6 +46,7 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access), stored only in the `integration` and `integration-main` environments
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
 - **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane
+- Every environment job runs `require-env-secrets.sh` before any step that uses a secret, listing each environment secret it uses; `test/unit/ci/integration-workflow.test.ts` enforces this and `timeout-minutes` on every lane
 - ADO and GitLab jobs use persistent repos with concurrency groups
 
 ## CI Workflow

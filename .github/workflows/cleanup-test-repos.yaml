@@ -15,6 +15,7 @@ permissions:
 jobs:
   cleanup-org:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: integration-main
       deployment: false
@@ -25,6 +26,11 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/require-env-secrets.sh integration-main GH_PAT_ORG
 
       - name: Delete stale test repos in spruyt-labs
         env:
@@ -34,6 +40,7 @@ jobs:
 
   cleanup-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: integration-main
       deployment: false
@@ -44,6 +51,11 @@ jobs:
           egress-policy: audit
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+        run: .github/scripts/require-env-secrets.sh integration-main GH_PAT_BOT
 
       - name: Delete stale test repos in spruyt-labs-bot
         env:
