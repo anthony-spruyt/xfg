@@ -21,6 +21,7 @@ interface Step {
 interface Job {
   environment?: { name: string; deployment?: boolean } | string;
   "timeout-minutes"?: number;
+  env?: Record<string, string>;
   steps: Step[];
 }
 
@@ -100,16 +101,16 @@ describe("ADO and GitLab credentials", () => {
   const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
     .filter((file) => /\.ya?ml$/.test(file))
     .sort();
+  const reads = (node: unknown, secret: string): boolean =>
+    JSON.stringify(node ?? {}).includes(`secrets.${secret}`);
   const readers = workflowFiles.flatMap((file) =>
     jobs(file)
-      // Jobs that call a reusable workflow have no steps
+      // Jobs that call a reusable workflow have no steps; the called jobs are checked instead
       .filter(([, job]) => Array.isArray(job.steps))
       .map(([name, job]): [string, Job, string[]] => [
         `${file}: ${name}`,
         job,
-        EXTERNAL_PLATFORM_SECRETS.filter((secret) =>
-          secretsUsed(job.steps).has(secret)
-        ),
+        EXTERNAL_PLATFORM_SECRETS.filter((secret) => reads(job, secret)),
       ])
       .filter(([, , secrets]) => secrets.length > 0)
   );
@@ -137,9 +138,16 @@ describe("ADO and GitLab credentials", () => {
         `${name} must run in the integration environment with deployment: false`
       );
 
-      const preflight = job.steps.find((step) => step.run?.includes(PREFLIGHT));
-      assert.ok(preflight, `${name} has no preflight step`);
+      const index = job.steps.findIndex((step) =>
+        step.run?.includes(PREFLIGHT)
+      );
+      assert.ok(index >= 0, `${name} has no preflight step`);
+      const preflight = job.steps[index];
       for (const secret of secrets) {
+        assert.ok(
+          !reads(job.env, secret),
+          `${name}: ${secret} must not be in job-level env, which runs before the preflight`
+        );
         assert.equal(
           preflight.env?.[secret],
           `\${{ secrets.${secret} }}`,
@@ -149,6 +157,13 @@ describe("ADO and GitLab credentials", () => {
           preflight.run ?? "",
           new RegExp(`\\b${secret}\\b`),
           `${name}: preflight does not name ${secret}`
+        );
+        const firstUse = job.steps.findIndex(
+          (step, i) => i !== index && reads(step, secret)
+        );
+        assert.ok(
+          firstUse === -1 || index < firstUse,
+          `${name}: preflight must run before the first step using ${secret}`
         );
       }
     });

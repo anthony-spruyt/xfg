@@ -57,6 +57,7 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" AZURE_DEVOPS_EXT_PAT
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install Azure CLI DevOps Extension
@@ -100,6 +101,7 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GITLAB_TOKEN
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Install GitLab CLI
