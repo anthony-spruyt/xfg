@@ -22,6 +22,12 @@ function readIndex(indexPath: string): RenderIndex {
   }
 }
 
+// Not localeCompare: render.json must be byte-stable across machines and locales
+function compareCodeUnits(a: string, b: string): number {
+  if (a < b) return -1;
+  return a > b ? 1 : 0;
+}
+
 function resolveInside(root: string, path: string): string {
   const target = resolve(root, path);
   const rel = relative(root, target);
@@ -62,7 +68,9 @@ export class RenderWriter implements IRenderWriter {
 
     const indexPath = resolve(root, RENDER_INDEX_FILE);
     const index = readIndex(indexPath);
-    index.repos[repoName] = { files: files.sort(), deleted: deleted.sort() };
+    files.sort(compareCodeUnits);
+    deleted.sort(compareCodeUnits);
+    index.repos[repoName] = { files, deleted };
     mkdirSync(root, { recursive: true });
     writeFileSync(indexPath, JSON.stringify(index, null, 2) + "\n", {
       mode: FILE_MODE,
