@@ -20,6 +20,7 @@ const RATE_LIMIT_ERRORS = {
   "HTTP 429 status": "Command failed: sh -c curl ...\nHTTP 429",
   "HTTP/2 429 status line": "HTTP/2.0 429 Too Many Requests\nRetry-After: 30",
   "status: 429": "Request failed with status: 429",
+  "status code 429": "Request failed with status code 429",
   "API rate limit exceeded":
     "gh: API rate limit exceeded for user ID 12345. (HTTP 403)",
   "secondary rate limit":
@@ -78,6 +79,12 @@ describe("isTransientErrorText", () => {
   test("is true for a curl -w status glued to the response body", () => {
     assert.equal(isTransientErrorText("Retry laterHTTP 429"), true);
     assert.equal(isRateLimitText("Retry laterHTTP 429"), true);
+  });
+
+  test("is false for a status number inside a JSON body", () => {
+    const text = 'Assertion failed: {"status": 500, "count": 429}';
+    assert.equal(isTransientErrorText(text), false);
+    assert.equal(isRateLimitText(text), false);
   });
 
   test("is false for HTTP 501 Not Implemented", () => {
