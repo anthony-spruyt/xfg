@@ -4,14 +4,20 @@ name: Integration Tests
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        description: "Environment holding the GitHub test credentials (integration for PRs, integration-main for main)"
+        type: string
+        required: true
+    # The rest come from the job's environment; declared so linters know the secrets context
     secrets:
       AZURE_DEVOPS_EXT_PAT:
+        required: false
+      GITLAB_TOKEN:
         required: false
       GH_PAT_BOT:
         required: false
       GH_PAT_ORG:
-        required: false
-      GITLAB_TOKEN:
         required: false
       OPENROUTER_API_KEY:
         required: false
@@ -21,10 +27,12 @@ on:
 permissions:
   contents: read
 
+# Per-ref: a run waiting for approval holds its group, so a shared group would let one PR stall main
 concurrency:
-  group: integration-tests
-  cancel-in-progress: false
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# GitHub lanes have no needs between them: one approval releases only the jobs waiting at that moment
 jobs:
   integration-test-cli-sync-ado-pat:
     runs-on: ubuntu-latest
@@ -49,7 +57,6 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # Use credential helper that reads from env var (more secure than URL-embedded PAT)
           chmod +x .github/scripts/git-credential-ado.sh
           git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
           git config --global credential."https://dev.azure.com".useHttpPath true
@@ -95,8 +102,11 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:gitlab
 
-  integration-test-cli-sync-github-pat:
+  integration-test-github-sync:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     steps:
       - name: Harden Runner
@@ -118,9 +128,11 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:github
 
-  integration-test-cli-ai-github-pat:
+  integration-test-github-app:
     runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     steps:
       - name: Harden Runner
@@ -132,131 +144,15 @@ jobs:
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub AI commit message integration tests (PAT)
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-ai
-
-  integration-test-cli-secrets-github-pat:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub secrets integration tests (PAT)
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-secrets
-
-  integration-test-cli-variables-github-pat:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub variables integration tests (PAT)
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-variables
-
-  integration-test-cli-collaborators-github-pat:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub collaborators integration tests (PAT)
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-collaborators
-
-  integration-test-cli-code-scanning-github-pat:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub code scanning integration tests (PAT)
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-code-scanning
-
-  integration-test-cli-sync-github-app:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
+        id: git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       # GH_TOKEN needed for createRepo()/deleteRepo() in tests (spruyt-labs org access).
       # xfg commands strip GH_TOKEN via xfgEnv — only App credentials are used.
-      - name: Act — run GitHub App integration tests
+      - name: Run GitHub App integration tests
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
@@ -264,324 +160,25 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:github-app
 
-  integration-test-cli-sync-rulesets-pat:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub rulesets integration tests
+      - name: Run GitHub secrets integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-rulesets
+        run: npm run test:integration:github-secrets
 
-  integration-test-cli-sync-repo-settings-pat:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Run GitHub repo settings integration tests
+      - name: Run GitHub variables integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-repo-settings
+        run: npm run test:integration:github-variables
 
-  integration-test-action-sync-pat:
+  integration-test-github-lifecycle:
     runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-        with:
-          download-package: "true"
-
-      # Arrange — create ephemeral repo and config from fixture template
-      - name: Arrange — create ephemeral repo and config
-        id: ephemeral
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          .github/scripts/create-ephemeral-repo-config.sh \
-            --fixture "action-pat" "spruyt-labs" \
-            "${{ runner.temp }}/config.yaml" \
-            "packages/xfg/test/fixtures/integration-test-action-github-pat.yaml"
-
-      # Arrange — seed manifest and configure git identity
-      - name: Arrange — seed manifest
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-pat"
-
-      - name: Arrange — configure custom git identity
-        run: |
-          git config --global user.name "test-user"
-          git config --global user.email "test@example.com"
-
-      # Act — run xfg action with PAT
-      - name: Act — run xfg action
-        uses: ./
-        with:
-          config: ${{ runner.temp }}/config.yaml
-          branch: chore/sync-my-config
-          github-token: ${{ secrets.GH_PAT_ORG }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      # Assert — verify PR created and git identity preserved
-      - name: Assert — verify PR created and git identity preserved
-        id: pat-validate
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          echo "Verifying PR was created..."
-          PR_INFO=$(.github/scripts/wait-for-pr.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "chore/sync-my-config")
-          echo "PR created successfully:"
-          echo "$PR_INFO" | jq .
-
-          # Verify commit author is preserved (not overwritten to github-actions[bot])
-          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].oid')
-          COMMIT_AUTHOR=$(gh pr view $PR_NUMBER --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].authors[0].name')
-          echo "Commit author: $COMMIT_AUTHOR"
-          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
-            echo "ERROR: Git identity was overwritten to github-actions[bot]"
-            exit 1
-          fi
-          echo "Git identity preserved correctly"
-
-          # Export commit SHA for next step
-          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Assert — verify file count in commit message
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/verify-commit-file-count.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "${{ steps.pat-validate.outputs.commit_sha }}"
-
-      - name: Cleanup — delete ephemeral repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
-
-  integration-test-action-sync-app:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-        with:
-          download-package: "true"
-
-      # Arrange — create ephemeral repo and config from fixture template
-      - name: Arrange — create ephemeral repo and config
-        id: ephemeral
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          .github/scripts/create-ephemeral-repo-config.sh \
-            --fixture "action-app" "spruyt-labs" \
-            "${{ runner.temp }}/config.yaml" \
-            "packages/xfg/test/fixtures/integration-test-action-github-app.yaml"
-
-      # Arrange — seed manifest
-      - name: Arrange — seed manifest
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/seed-manifest.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "integration-test-action-github-app"
-
-      # Act — run xfg action with GitHub App credentials (NO GH_TOKEN)
-      - name: Act — run xfg action with GitHub App credentials
-        uses: ./
-        with:
-          config: ${{ runner.temp }}/config.yaml
-          branch: chore/sync-app-test
-          # Include github-token to simulate real usage where both are set
-          # This tests that GitHub App credentials take precedence over PAT
-          github-token: ${{ github.token }}
-          github-client-id: ${{ vars.TEST_CLIENT_ID }}
-          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      # Assert — verify commit author is GitHub App
-      - name: Assert — verify commit author is GitHub App
-        id: app-validate
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          echo "Verifying PR was created..."
-          PR_INFO=$(.github/scripts/wait-for-pr.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "chore/sync-app-test")
-          echo "PR created successfully:"
-          echo "$PR_INFO" | jq .
-
-          # Get commit author - should be GitHub App, NOT github-actions[bot]
-          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
-          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo spruyt-labs/${{ steps.ephemeral.outputs.repo_name }} --json commits --jq '.commits[-1].oid')
-          COMMIT_AUTHOR=$(gh api "repos/spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
-          echo "Commit author: $COMMIT_AUTHOR"
-
-          # Verify commit author is GitHub App, not github-actions[bot] (issue #268)
-          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
-            echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
-            echo "This indicates the GitHub App token is not being used for GraphQL commits"
-            exit 1
-          fi
-          echo "Commit author is correct (GitHub App)"
-
-          # Export commit SHA for next step
-          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
-
-      - name: Assert — verify file count in commit message
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/verify-commit-file-count.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "${{ steps.app-validate.outputs.commit_sha }}"
-
-      - name: Cleanup — delete ephemeral repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
-
-  integration-test-action-sync-settings-app:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-lifecycle-github-app, integration-test-action-sync-pat, integration-test-action-sync-app]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-        with:
-          download-package: "true"
-
-      # Arrange — create ephemeral repo and config from fixture template
-      - name: Arrange — create ephemeral repo and config
-        id: ephemeral
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          .github/scripts/create-ephemeral-repo-config.sh \
-            --fixture "action-settings" "spruyt-labs" \
-            "${{ runner.temp }}/config.yaml" \
-            "packages/xfg/test/fixtures/integration-test-action-settings-app.yaml"
-
-      # Act — run xfg action (sync handles settings)
-      - name: Act — run xfg action
-        uses: ./
-        with:
-          config: ${{ runner.temp }}/config.yaml
-          github-token: ${{ secrets.GH_PAT_ORG }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      # Assert — verify ruleset was created
-      - name: Assert — verify ruleset was created
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          RULESET=$(gh api repos/spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}/rulesets --jq '.[] | select(.name == "xfg-test-ruleset")')
-          if [ -z "$RULESET" ]; then
-            echo "ERROR: Ruleset was not created"
-            exit 1
-          fi
-          echo "Ruleset created successfully"
-
-      - name: Cleanup — delete ephemeral repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
-
-  integration-test-action-secrets-app:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-lifecycle-github-app, integration-test-action-sync-pat, integration-test-action-sync-app]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-        with:
-          download-package: "true"
-
-      - name: Arrange — create ephemeral repo and config
-        id: ephemeral
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: |
-          .github/scripts/create-ephemeral-repo-config.sh \
-            --fixture "action-secrets" "spruyt-labs" \
-            "${{ runner.temp }}/config.yaml" \
-            "packages/xfg/test/fixtures/integration-test-action-secrets-app.yaml"
-
-      # github.token cannot write secrets to another repo, so success proves the App token was used
-      - name: Act — run xfg action (secrets-sync, App auth)
-        uses: ./
-        env:
-          XFG_TEST_SECRET_VALUE: integration-test-secret
-        with:
-          command: secrets-sync
-          config: ${{ runner.temp }}/config.yaml
-          github-token: ${{ github.token }}
-          github-client-id: ${{ vars.TEST_CLIENT_ID }}
-          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      - name: Assert — verify secret was created
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/wait-for-secret.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}" "XFG_ACTION_APP_SECRET"
-
-      - name: Cleanup — delete ephemeral repo
-        if: always()
-        env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        run: .github/scripts/delete-ephemeral-repo.sh "spruyt-labs/${{ steps.ephemeral.outputs.repo_name }}"
-
-  integration-test-cli-lifecycle-github-pat:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-github-pat, integration-test-cli-sync-github-app, integration-test-cli-sync-labels-pat]
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     steps:
       - name: Harden Runner
@@ -593,6 +190,7 @@ jobs:
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
+        id: git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -601,34 +199,15 @@ jobs:
           git config --global credential."https://dev.azure.com".useHttpPath true
 
       - name: Run lifecycle integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         working-directory: packages/xfg
         run: npm run test:integration:github-lifecycle
 
-  integration-test-cli-lifecycle-github-app:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-sync-rulesets-pat, integration-test-cli-sync-repo-settings-pat, integration-test-cli-lifecycle-github-pat]
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-
-      - name: Configure git
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          chmod +x .github/scripts/git-credential-ado.sh
-          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
-          git config --global credential."https://dev.azure.com".useHttpPath true
-
       - name: Run lifecycle integration tests (GitHub App)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
@@ -637,8 +216,26 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:github-lifecycle-app
 
-  integration-test-cli-sync-labels-pat:
+      - name: Run GitHub code scanning integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-code-scanning
+
+      - name: Run GitHub collaborators integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-collaborators
+
+  integration-test-github-settings:
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     steps:
       - name: Harden Runner
@@ -650,19 +247,46 @@ jobs:
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
+        id: git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Run GitHub labels integration tests
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
         run: npm run test:integration:github-labels
 
-  integration-test-action-lifecycle-pat:
+      - name: Run GitHub rulesets integration tests
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-rulesets
+
+      - name: Run GitHub repo settings integration tests
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-repo-settings
+
+      - name: Run GitHub AI commit message integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        working-directory: packages/xfg
+        run: npm run test:integration:github-ai
+
+  # Scenarios gate on their own earlier steps so one failure doesn't skip the rest
+  integration-test-action:
     runs-on: ubuntu-latest
-    needs: [integration-test-cli-lifecycle-github-app, integration-test-action-sync-pat, integration-test-action-sync-app]
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
 
     env:
       OWNER: spruyt-labs
@@ -675,95 +299,309 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: ./.github/actions/integration-test-setup
+        id: setup
         with:
           download-package: "true"
 
-      - name: Arrange — generate unique repo name and config
-        id: arrange
-        run: >-
-          .github/scripts/create-ephemeral-repo-config.sh
-          "action-pat" "${{ env.OWNER }}"
-          "/tmp/lifecycle-action-pat-config.yaml"
-          "lifecycle-action-pat-test"
-          "lifecycle-action-test.json"
-          '{"createdByAction": true}'
-
-      - name: Act — run xfg action (create repo via lifecycle)
-        uses: ./
-        with:
-          config: /tmp/lifecycle-action-pat-config.yaml
-          merge: direct
-          github-token: ${{ secrets.GH_PAT_ORG }}
-          xfg-package: "./${{ env.XFG_PACKAGE }}"
-
-      - name: Assert — verify repo was created
+      - name: Arrange (sync, App) — create ephemeral repo and config
+        id: sync_app_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
         run: >-
-          .github/scripts/assert-ephemeral-repo.sh
-          "${OWNER}/${REPO_NAME}"
-          "lifecycle-action-test.json"
-          '.createdByAction == true'
+          .github/scripts/create-ephemeral-repo-config.sh
+          --fixture "action-app" "${OWNER}"
+          "${RUNNER_TEMP}/sync-app-config.yaml"
+          "packages/xfg/test/fixtures/integration-test-action-github-app.yaml"
 
-      - name: Cleanup — delete ephemeral repo
+      - name: Arrange (sync, App) — seed manifest
+        id: sync_app_seed
+        if: ${{ !cancelled() && steps.sync_app_repo.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.sync_app_repo.outputs.repo_name }}
+        run: .github/scripts/seed-manifest.sh "${OWNER}/${REPO_NAME}" "integration-test-action-github-app"
+
+      # github-token is set too, as in real usage, to prove App credentials take precedence
+      - name: Act (sync, App) — run xfg action with GitHub App credentials
+        id: sync_app_act
+        if: ${{ !cancelled() && steps.sync_app_seed.outcome == 'success' }}
+        uses: ./
+        with:
+          config: ${{ runner.temp }}/sync-app-config.yaml
+          branch: chore/sync-app-test
+          github-token: ${{ github.token }}
+          github-client-id: ${{ vars.TEST_CLIENT_ID }}
+          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Assert (sync, App) — commit author is the GitHub App
+        id: sync_app_assert
+        if: ${{ !cancelled() && steps.sync_app_act.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.sync_app_repo.outputs.repo_name }}
+        run: |
+          echo "Verifying PR was created..."
+          PR_INFO=$(.github/scripts/wait-for-pr.sh "${REPO}" "chore/sync-app-test")
+          echo "PR created successfully:"
+          echo "$PR_INFO" | jq .
+
+          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo "${REPO}" --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh api "repos/${REPO}/commits/${COMMIT_SHA}" --jq '.commit.author.name')
+          echo "Commit author: $COMMIT_AUTHOR"
+
+          # github-actions[bot] means the App token was not used for GraphQL commits (issue #268)
+          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
+            echo "ERROR: Commit author is github-actions[bot] but should be the GitHub App"
+            exit 1
+          fi
+          echo "Commit author is correct (GitHub App)"
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Assert (sync, App) — file count in commit message
+        if: ${{ !cancelled() && steps.sync_app_assert.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.sync_app_repo.outputs.repo_name }}
+          COMMIT_SHA: ${{ steps.sync_app_assert.outputs.commit_sha }}
+        run: .github/scripts/verify-commit-file-count.sh "${REPO}" "${COMMIT_SHA}"
+
+      - name: Cleanup (sync, App) — delete ephemeral repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
+          REPO_NAME: ${{ steps.sync_app_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
 
-  integration-test-action-lifecycle-app:
-    runs-on: ubuntu-latest
-    needs: [integration-test-cli-lifecycle-github-app, integration-test-action-sync-pat, integration-test-action-sync-app]
-
-    env:
-      OWNER: spruyt-labs
-
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: ./.github/actions/integration-test-setup
-        with:
-          download-package: "true"
-
-      - name: Arrange — generate unique repo name and config
-        id: arrange
+      - name: Arrange (settings) — create ephemeral repo and config
+        id: settings_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         run: >-
           .github/scripts/create-ephemeral-repo-config.sh
-          "action-app" "${{ env.OWNER }}"
-          "/tmp/lifecycle-action-app-config.yaml"
+          --fixture "action-settings" "${OWNER}"
+          "${RUNNER_TEMP}/settings-config.yaml"
+          "packages/xfg/test/fixtures/integration-test-action-settings-app.yaml"
+
+      - name: Act (settings) — run xfg action
+        id: settings_act
+        if: ${{ !cancelled() && steps.settings_repo.outcome == 'success' }}
+        uses: ./
+        with:
+          config: ${{ runner.temp }}/settings-config.yaml
+          github-token: ${{ secrets.GH_PAT_ORG }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Assert (settings) — ruleset was created
+        if: ${{ !cancelled() && steps.settings_act.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.settings_repo.outputs.repo_name }}
+        run: |
+          RULESET=$(gh api "repos/${REPO}/rulesets" --jq '.[] | select(.name == "xfg-test-ruleset")')
+          if [ -z "$RULESET" ]; then
+            echo "ERROR: Ruleset was not created"
+            exit 1
+          fi
+          echo "Ruleset created successfully"
+
+      - name: Cleanup (settings) — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.settings_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
+
+      - name: Arrange (secrets, App) — create ephemeral repo and config
+        id: secrets_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          --fixture "action-secrets" "${OWNER}"
+          "${RUNNER_TEMP}/secrets-config.yaml"
+          "packages/xfg/test/fixtures/integration-test-action-secrets-app.yaml"
+
+      # github.token cannot write secrets to another repo, so success proves the App token was used
+      - name: Act (secrets, App) — run xfg action secrets-sync
+        id: secrets_act
+        if: ${{ !cancelled() && steps.secrets_repo.outcome == 'success' }}
+        uses: ./
+        env:
+          XFG_TEST_SECRET_VALUE: integration-test-secret
+        with:
+          command: secrets-sync
+          config: ${{ runner.temp }}/secrets-config.yaml
+          github-token: ${{ github.token }}
+          github-client-id: ${{ vars.TEST_CLIENT_ID }}
+          github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Assert (secrets, App) — secret was created
+        if: ${{ !cancelled() && steps.secrets_act.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.secrets_repo.outputs.repo_name }}
+        run: .github/scripts/wait-for-secret.sh "${REPO}" "XFG_ACTION_APP_SECRET"
+
+      - name: Cleanup (secrets, App) — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.secrets_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
+
+      - name: Arrange (lifecycle, App) — generate unique repo name and config
+        id: lifecycle_app_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          "action-app" "${OWNER}"
+          "${RUNNER_TEMP}/lifecycle-action-app-config.yaml"
           "lifecycle-action-app-test"
           "lifecycle-action-test.json"
           '{"createdByAction": true}'
 
-      - name: Act — run xfg action (create repo via lifecycle, App auth)
+      - name: Act (lifecycle, App) — run xfg action to create the repo
+        id: lifecycle_app_act
+        if: ${{ !cancelled() && steps.lifecycle_app_repo.outcome == 'success' }}
         uses: ./
         with:
-          config: /tmp/lifecycle-action-app-config.yaml
+          config: ${{ runner.temp }}/lifecycle-action-app-config.yaml
           merge: direct
           github-token: ${{ github.token }}
           github-client-id: ${{ vars.TEST_CLIENT_ID }}
           github-app-private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           xfg-package: "./${{ env.XFG_PACKAGE }}"
 
-      - name: Assert — verify repo was created
+      - name: Assert (lifecycle, App) — repo was created
+        if: ${{ !cancelled() && steps.lifecycle_app_act.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
+          REPO_NAME: ${{ steps.lifecycle_app_repo.outputs.repo_name }}
         run: >-
           .github/scripts/assert-ephemeral-repo.sh
           "${OWNER}/${REPO_NAME}"
           "lifecycle-action-test.json"
           '.createdByAction == true'
 
-      - name: Cleanup — delete ephemeral repo
+      - name: Cleanup (lifecycle, App) — delete ephemeral repo
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          REPO_NAME: ${{ steps.arrange.outputs.repo_name }}
-        run: .github/scripts/delete-ephemeral-repo.sh "${OWNER}/${REPO_NAME}"
+          REPO_NAME: ${{ steps.lifecycle_app_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
+
+      - name: Arrange (lifecycle, PAT) — generate unique repo name and config
+        id: lifecycle_pat_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          "action-pat" "${OWNER}"
+          "${RUNNER_TEMP}/lifecycle-action-pat-config.yaml"
+          "lifecycle-action-pat-test"
+          "lifecycle-action-test.json"
+          '{"createdByAction": true}'
+
+      - name: Act (lifecycle, PAT) — run xfg action to create the repo
+        id: lifecycle_pat_act
+        if: ${{ !cancelled() && steps.lifecycle_pat_repo.outcome == 'success' }}
+        uses: ./
+        with:
+          config: ${{ runner.temp }}/lifecycle-action-pat-config.yaml
+          merge: direct
+          github-token: ${{ secrets.GH_PAT_ORG }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Assert (lifecycle, PAT) — repo was created
+        if: ${{ !cancelled() && steps.lifecycle_pat_act.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.lifecycle_pat_repo.outputs.repo_name }}
+        run: >-
+          .github/scripts/assert-ephemeral-repo.sh
+          "${OWNER}/${REPO_NAME}"
+          "lifecycle-action-test.json"
+          '.createdByAction == true'
+
+      - name: Cleanup (lifecycle, PAT) — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.lifecycle_pat_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
+
+      # Last: its custom global git identity must not leak into the scenarios above
+      - name: Arrange (sync, PAT) — create ephemeral repo and config
+        id: sync_pat_repo
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: >-
+          .github/scripts/create-ephemeral-repo-config.sh
+          --fixture "action-pat" "${OWNER}"
+          "${RUNNER_TEMP}/sync-pat-config.yaml"
+          "packages/xfg/test/fixtures/integration-test-action-github-pat.yaml"
+
+      - name: Arrange (sync, PAT) — seed manifest and custom git identity
+        id: sync_pat_seed
+        if: ${{ !cancelled() && steps.sync_pat_repo.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.sync_pat_repo.outputs.repo_name }}
+        run: |
+          .github/scripts/seed-manifest.sh "${OWNER}/${REPO_NAME}" "integration-test-action-github-pat"
+          git config --global user.name "test-user"
+          git config --global user.email "test@example.com"
+
+      - name: Act (sync, PAT) — run xfg action
+        id: sync_pat_act
+        if: ${{ !cancelled() && steps.sync_pat_seed.outcome == 'success' }}
+        uses: ./
+        with:
+          config: ${{ runner.temp }}/sync-pat-config.yaml
+          branch: chore/sync-my-config
+          github-token: ${{ secrets.GH_PAT_ORG }}
+          xfg-package: "./${{ env.XFG_PACKAGE }}"
+
+      - name: Assert (sync, PAT) — PR created and git identity preserved
+        id: sync_pat_assert
+        if: ${{ !cancelled() && steps.sync_pat_act.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.sync_pat_repo.outputs.repo_name }}
+        run: |
+          echo "Verifying PR was created..."
+          PR_INFO=$(.github/scripts/wait-for-pr.sh "${REPO}" "chore/sync-my-config")
+          echo "PR created successfully:"
+          echo "$PR_INFO" | jq .
+
+          PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+          COMMIT_SHA=$(gh pr view "$PR_NUMBER" --repo "${REPO}" --json commits --jq '.commits[-1].oid')
+          COMMIT_AUTHOR=$(gh pr view "$PR_NUMBER" --repo "${REPO}" --json commits --jq '.commits[-1].authors[0].name')
+          echo "Commit author: $COMMIT_AUTHOR"
+          if [ "$COMMIT_AUTHOR" = "github-actions[bot]" ]; then
+            echo "ERROR: Git identity was overwritten to github-actions[bot]"
+            exit 1
+          fi
+          echo "Git identity preserved correctly"
+          echo "commit_sha=${COMMIT_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Assert (sync, PAT) — file count in commit message
+        if: ${{ !cancelled() && steps.sync_pat_assert.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO: ${{ env.OWNER }}/${{ steps.sync_pat_repo.outputs.repo_name }}
+          COMMIT_SHA: ${{ steps.sync_pat_assert.outputs.commit_sha }}
+        run: .github/scripts/verify-commit-file-count.sh "${REPO}" "${COMMIT_SHA}"
+
+      - name: Cleanup (sync, PAT) — delete ephemeral repo
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          REPO_NAME: ${{ steps.sync_pat_repo.outputs.repo_name }}
+        run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"

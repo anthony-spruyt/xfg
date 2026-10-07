@@ -10,7 +10,6 @@ on:
   push:
     branches:
       - "main"
-  # workflow_dispatch:  # Uncomment to enable manual runs
 
 permissions:
   actions: write
@@ -43,6 +42,8 @@ jobs:
           COMMIT_SHA: ${{ github.sha }}
           EVENT_NAME: ${{ github.event_name }}
           HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'run-integration') }}
+          HEAD_REF: ${{ github.head_ref }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
         run: |
           set -euo pipefail
 
@@ -55,15 +56,24 @@ jobs:
           if echo "$CHANGED" | grep -qE '^packages/xfg/(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
             echo "build-needed=true" >> "$GITHUB_OUTPUT"
             echo "Code changes detected"
+          elif [ "$HAS_LABEL" = "true" ]; then
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
+            echo "PR has 'run-integration' label — integration tests need the build artifact"
           else
             echo "build-needed=false" >> "$GITHUB_OUTPUT"
             echo "No code changes, will skip build and integration tests"
           fi
 
-          # Integration tests: always on push to main (source changes),
-          # on PRs only with 'run-integration' label or integration test changes
+          # PR runs wait for owner approval: merge-queue PRs would ask a second time and main runs
+          # the suite after merge anyway; fork PRs never receive the secrets
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            if [ "$HAS_LABEL" = "true" ]; then
+            if [[ "$HEAD_REF" == mergify/merge-queue/* ]]; then
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "Merge queue PR — integration tests run on the push to main"
+            elif [ "$IS_FORK" = "true" ]; then
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "Fork PR — integration secrets unavailable, skipping integration tests"
+            elif [ "$HAS_LABEL" = "true" ]; then
               echo "integration-needed=true" >> "$GITHUB_OUTPUT"
               echo "PR has 'run-integration' label — integration tests enabled"
             elif echo "$CHANGED" | grep -qE '^packages/xfg/test/integration/'; then
@@ -87,14 +97,19 @@ jobs:
           echo "$CHANGED"
 
   lint:
-    if: github.event_name == 'pull_request' && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')
+    if: github.event.action != 'labeled' || github.event.label.name == 'run-integration'
     uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
 
   build:
     needs:
       - "lint"
       - "check-changes"
-    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.build-needed == 'true' }}
+    # A lint failure on main must not skip the integration run behind it
+    if: >-
+      ${{ !cancelled()
+      && needs.check-changes.result == 'success'
+      && needs.check-changes.outputs.build-needed == 'true'
+      && (github.event_name == 'push' || needs.lint.result != 'failure') }}
     runs-on: ubuntu-latest
 
     concurrency:
@@ -157,15 +172,14 @@ jobs:
     needs:
       - "build"
       - "check-changes"
-    if: ${{ !failure() && !cancelled() && needs.check-changes.outputs.integration-needed == 'true' }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && needs.check-changes.outputs.integration-needed == 'true' }}
     uses: ./.github/workflows/_integration-tests.yaml
+    with:
+      environment: ${{ github.event_name == 'push' && 'integration-main' || 'integration' }}
+    # GitHub credentials live only in the integration environments, never at repo level
     secrets:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
-      GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
-      GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
       GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
 
   # Summary job for branch protection - references reusable workflow job
   summary:
