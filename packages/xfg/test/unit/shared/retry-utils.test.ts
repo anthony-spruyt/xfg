@@ -94,6 +94,13 @@ describe("isPermanentError", () => {
     const error = new Error("Validation Failed (HTTP 422)");
     assert.equal(isPermanentError(error), true);
   });
+
+  test("returns false for a timeout whose repo name ends a token in 401", () => {
+    const error = new Error(
+      "git push https://github.com/o/xfg-sync-test-1759842940401-a1b2c3: connection timed out"
+    );
+    assert.equal(isPermanentError(error), false);
+  });
 });
 
 describe("isTransientError", () => {
@@ -151,6 +158,31 @@ describe("isTransientError", () => {
     const error = new Error("Some random error");
     assert.equal(isTransientError(error), false);
   });
+
+  for (const repo of [
+    "spruyt-labs/xfg-sync-test-1759842943429-a1b2c3",
+    "spruyt-labs/xfg-sync-test-1759842943500-a1b2c3",
+    "spruyt-labs/xfg-sync-test-1759842943503-a1b2c3",
+  ]) {
+    test(`returns false for a 404 whose repo name ends a token in a status code: ${repo}`, () => {
+      const error = new Error(
+        `Command failed: gh api repos/${repo}/contents/x\ngh: Not Found (HTTP 404)`
+      );
+      assert.equal(isTransientError(error), false);
+    });
+  }
+
+  for (const message of [
+    "GitHub App access token: 503 - upstream unavailable",
+    "fatal: unable to fetch: The requested URL returned error: 502",
+    "gh: Server Error (HTTP 500)",
+    "HTTP 504: Gateway Timeout",
+    "Request failed with status 429",
+  ]) {
+    test(`returns true for a standalone status code: ${message}`, () => {
+      assert.equal(isTransientError(new Error(message)), true);
+    });
+  }
 });
 
 describe("isRateLimitError", () => {

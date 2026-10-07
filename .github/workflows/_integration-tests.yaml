@@ -6,7 +6,7 @@ on:
   workflow_call:
     inputs:
       environment:
-        description: "Environment holding the GitHub test credentials (integration for PRs, integration-main for main)"
+        description: "Environment holding every lane's test credentials, GitHub, ADO and GitLab (integration for PRs, integration-main for main)"
         type: string
         required: true
     secrets:
@@ -75,7 +75,7 @@ jobs:
         env:
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         working-directory: packages/xfg
-        run: npm run test:integration:ado
+        run: npm run test:integration:ci -- test/integration/ado.test.ts
 
   integration-test-cli-sync-gitlab-pat:
     runs-on: ubuntu-latest
@@ -121,11 +121,11 @@ jobs:
         env:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
         working-directory: packages/xfg
-        run: npm run test:integration:gitlab
+        run: npm run test:integration:ci -- test/integration/gitlab.test.ts
 
-  integration-test-github-sync:
+  integration-test-github-sync-1:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -144,18 +144,80 @@ jobs:
           GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG
 
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-sync-1/GH_PAT_ORG
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
+        id: git
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Run GitHub integration tests (PAT)
+      - name: Run GitHub integration tests (PAT, shard 1/2)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          XFG_TEST_SHARD: "1/2"
         working-directory: packages/xfg
-        run: npm run test:integration:github
+        run: npm run test:integration:ci -- test/integration/github.test.ts
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end github-sync-1/GH_PAT_ORG
+
+  integration-test-github-sync-2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG
+
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-sync-2/GH_PAT_ORG
+
+      - uses: ./.github/actions/integration-test-setup
+
+      - name: Configure git
+        id: git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run GitHub integration tests (PAT, shard 2/2)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          XFG_TEST_SHARD: "2/2"
+        working-directory: packages/xfg
+        run: npm run test:integration:ci -- test/integration/github.test.ts
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end github-sync-2/GH_PAT_ORG
 
   integration-test-github-app:
     runs-on: ubuntu-latest
@@ -179,6 +241,27 @@ jobs:
           TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG TEST_APP_PRIVATE_KEY
 
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-app/GH_PAT_ORG
+
+      - name: Mint test App token for the rate-limit summary
+        id: app_rate_limit_token
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.TEST_CLIENT_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          owner: spruyt-labs
+          permission-metadata: read
+
+      - name: Rate limit at start (test App)
+        if: ${{ steps.app_rate_limit_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh start github-app/test-app
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -196,25 +279,37 @@ jobs:
           XFG_GITHUB_CLIENT_ID: ${{ vars.TEST_CLIENT_ID }}
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-app
+        run: npm run test:integration:ci -- test/integration/github-app.test.ts
 
       - name: Run GitHub secrets integration tests (PAT)
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-secrets
+        run: npm run test:integration:ci -- test/integration/github-secrets.test.ts
 
       - name: Run GitHub variables integration tests (PAT)
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-variables
+        run: npm run test:integration:ci -- test/integration/github-variables.test.ts
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end github-app/GH_PAT_ORG
+
+      - name: Rate limit at end (test App)
+        if: ${{ always() && steps.app_rate_limit_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh end github-app/test-app
 
   integration-test-github-lifecycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     environment:
       name: ${{ inputs.environment }}
       deployment: false
@@ -232,9 +327,13 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
           GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
-          TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
-        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG GH_PAT_BOT TEST_APP_PRIVATE_KEY AZURE_DEVOPS_EXT_PAT
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG GH_PAT_BOT AZURE_DEVOPS_EXT_PAT
+
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-lifecycle/GH_PAT_ORG
 
       - uses: ./.github/actions/integration-test-setup
 
@@ -253,7 +352,83 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-lifecycle
+        run: npm run test:integration:ci -- test/integration/github-lifecycle.test.ts
+
+      - name: Run GitHub code scanning integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:ci -- test/integration/github-code-scanning.test.ts
+
+      - name: Run GitHub collaborators integration tests (PAT)
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+        working-directory: packages/xfg
+        run: npm run test:integration:ci -- test/integration/github-collaborators.test.ts
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end github-lifecycle/GH_PAT_ORG
+
+  integration-test-github-lifecycle-app:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: ${{ inputs.environment }}
+      deployment: false
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Check environment secrets
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+          GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+          TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG TEST_APP_PRIVATE_KEY AZURE_DEVOPS_EXT_PAT
+
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-lifecycle-app/GH_PAT_ORG
+
+      - name: Mint test App token for the rate-limit summary
+        id: app_rate_limit_token
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.TEST_CLIENT_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          owner: spruyt-labs
+          permission-metadata: read
+
+      - name: Rate limit at start (test App)
+        if: ${{ steps.app_rate_limit_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh start github-lifecycle-app/test-app
+
+      - uses: ./.github/actions/integration-test-setup
+
+      - name: Configure git
+        id: git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          chmod +x .github/scripts/git-credential-ado.sh
+          git config --global credential."https://dev.azure.com".helper "$(pwd)/.github/scripts/git-credential-ado.sh"
+          git config --global credential."https://dev.azure.com".useHttpPath true
 
       - name: Run lifecycle integration tests (GitHub App)
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
@@ -263,22 +438,19 @@ jobs:
           XFG_GITHUB_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
           AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-lifecycle-app
+        run: npm run test:integration:ci -- test/integration/github-lifecycle-app.test.ts
 
-      - name: Run GitHub code scanning integration tests (PAT)
-        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-code-scanning
+        run: .github/scripts/rate-limit-summary.sh end github-lifecycle-app/GH_PAT_ORG
 
-      - name: Run GitHub collaborators integration tests (PAT)
-        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+      - name: Rate limit at end (test App)
+        if: ${{ always() && steps.app_rate_limit_token.outcome == 'success' }}
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
-        working-directory: packages/xfg
-        run: npm run test:integration:github-collaborators
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh end github-lifecycle-app/test-app
 
   integration-test-github-settings:
     runs-on: ubuntu-latest
@@ -302,6 +474,11 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG OPENROUTER_API_KEY
 
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start github-settings/GH_PAT_ORG
+
       - uses: ./.github/actions/integration-test-setup
 
       - name: Configure git
@@ -315,21 +492,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-labels
+        run: npm run test:integration:ci -- test/integration/github-labels.test.ts
 
       - name: Run GitHub rulesets integration tests
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-rulesets
+        run: npm run test:integration:ci -- test/integration/github-rulesets.test.ts
 
       - name: Run GitHub repo settings integration tests
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-repo-settings
+        run: npm run test:integration:ci -- test/integration/github-repo-settings.test.ts
 
       - name: Run GitHub AI commit message integration tests (PAT)
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
@@ -337,7 +514,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         working-directory: packages/xfg
-        run: npm run test:integration:github-ai
+        run: npm run test:integration:ci -- test/integration/github-ai.test.ts
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end github-settings/GH_PAT_ORG
 
   # Scenarios gate on their own earlier steps so one failure doesn't skip the rest
   integration-test-action:
@@ -364,6 +547,27 @@ jobs:
           GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
           TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}
         run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG TEST_APP_PRIVATE_KEY
+
+      - name: Rate limit at start (GH_PAT_ORG)
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh start action/GH_PAT_ORG
+
+      - name: Mint test App token for the rate-limit summary
+        id: app_rate_limit_token
+        continue-on-error: true
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.TEST_CLIENT_ID }}
+          private-key: ${{ secrets.TEST_APP_PRIVATE_KEY }}
+          owner: spruyt-labs
+          permission-metadata: read
+
+      - name: Rate limit at start (test App)
+        if: ${{ steps.app_rate_limit_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh start action/test-app
 
       - uses: ./.github/actions/integration-test-setup
         id: setup
@@ -672,3 +876,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
           REPO_NAME: ${{ steps.sync_pat_repo.outputs.repo_name }}
         run: .github/scripts/delete-ephemeral-repo.sh "${REPO_NAME:+${OWNER}/${REPO_NAME}}"
+
+      - name: Rate limit at end (GH_PAT_ORG)
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        run: .github/scripts/rate-limit-summary.sh end action/GH_PAT_ORG
+
+      - name: Rate limit at end (test App)
+        if: ${{ always() && steps.app_rate_limit_token.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ steps.app_rate_limit_token.outputs.token }}
+        run: .github/scripts/rate-limit-summary.sh end action/test-app
