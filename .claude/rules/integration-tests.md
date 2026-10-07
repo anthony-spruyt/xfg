@@ -43,14 +43,17 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - **Never share a repo** between two test jobs
 - Inline configs via `writeConfig()` (from `packages/xfg/test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
-- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access)
+- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access), stored only in the `integration` and `integration-main` environments
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
+- **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane
+- Every environment job runs `require-env-secrets.sh` before any step that uses a secret, listing each environment secret it uses; `test/unit/ci/integration-workflow.test.ts` enforces this and `timeout-minutes` on every lane
 - ADO and GitLab jobs use persistent repos with concurrency groups
 
 ## CI Workflow
 
-- Integration tests always run on `push` to `main` (when source changes detected)
+- Integration tests always run on `push` to `main` (when source changes detected), using the `integration-main` environment (main branch only, no approval)
 - On PRs, integration tests only run when:
   - The `run-integration` label is added to the PR, OR
   - Integration test files (`packages/xfg/test/integration/`) are changed
-- GitHub integration jobs are chained via `needs` in batches to avoid API rate limits
+- PR runs use the `integration` environment: the owner approves once per run, then all GitHub lanes start together. Merge-queue and fork PRs skip integration
+- GitHub tests run in 5 parallel lanes to stay under API secondary rate limits
