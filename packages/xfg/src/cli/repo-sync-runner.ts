@@ -215,18 +215,25 @@ export async function runSingleRepo(
     join(options.workDir ?? "./tmp", generateWorkspaceName(index))
   );
 
-  const repoToken = isGitHubRepo(repoInfo)
-    ? (
-        await resolveGitHubToken({
-          repoInfo: repoInfo as GitHubRepoInfo,
-          tokenManager: ctx.tokenManager,
-          context: repoName,
-          log: logger,
-          envToken: process.env.GH_TOKEN,
-          hostPolicy: ctx.hostPolicy,
-        })
-      ).token
-    : undefined;
+  let repoToken: string | undefined;
+  try {
+    repoToken = isGitHubRepo(repoInfo)
+      ? (
+          await resolveGitHubToken({
+            repoInfo: repoInfo as GitHubRepoInfo,
+            tokenManager: ctx.tokenManager,
+            context: repoName,
+            log: logger,
+            envToken: process.env.GH_TOKEN,
+            hostPolicy: ctx.hostPolicy,
+          })
+        ).token
+      : undefined;
+  } catch (error) {
+    logger.error(repoNumber, repoName, toErrorMessage(error));
+    pushFailure(ctx.reportResults, repoName, error);
+    return;
+  }
 
   const repo: RepoPhaseParams = {
     repoConfig: effectiveRepoConfig,

@@ -71,7 +71,7 @@ xfg only hands GitHub credentials (App JWTs, installation tokens, `GH_TOKEN`) to
 export XFG_ALLOWED_GITHUB_HOSTS="github.mycompany.com,ghe.internal.net"
 ```
 
-For a GHE host that isn't listed, xfg logs a warning and runs without an xfg-supplied token. Entries must be plain hostnames: no scheme, port, path, userinfo or IP address.
+xfg fails every repo on a GHE host that isn't listed, before running any `gh` or `git` command against it. Entries must be plain hostnames, with no scheme, port, path, userinfo or IP address. The same applies to `githubHosts` entries.
 
 ### Mixed Environments
 

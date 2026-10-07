@@ -7,11 +7,22 @@ import {
 } from "node:fs";
 import { ValidationError } from "./errors.js";
 
-/** Case-insensitive: case-insensitive filesystems treat `.GIT` as `.git`. */
+// Characters HFS+ ignores in names, so `.g<ZWNJ>it` opens `.git` on macOS.
+const IGNORABLE_CHARS = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\uFEFF]/g;
+
+/**
+ * Matches every spelling filesystems resolve to `.git`: any case, Windows
+ * trailing dots/spaces, NTFS `::$` streams and the `GIT~1` short name.
+ */
 export function hasGitDirSegment(fileName: string): boolean {
-  return fileName
-    .split(/[/\\]/)
-    .some((segment) => segment.toLowerCase() === ".git");
+  return fileName.split(/[/\\]/).some((raw) => {
+    const segment = raw
+      .replace(IGNORABLE_CHARS, "")
+      .replace(/:.*$/, "")
+      .replace(/[. ]+$/, "")
+      .toLowerCase();
+    return segment === ".git" || /^git~\d+$/.test(segment);
+  });
 }
 
 /** True if `path` itself is a symlink, dangling or not. */

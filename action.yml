@@ -56,7 +56,7 @@ inputs:
     description: "GitHub App private key (PEM format) for JWT signing"
     required: false
   allowed-github-hosts:
-    description: "Comma-separated GitHub Enterprise Server hostnames trusted with GitHub credentials. Without this, xfg sends tokens only to github.com"
+    description: "Comma-separated GitHub Enterprise Server hostnames trusted with GitHub credentials. Repos on unlisted GitHub hosts other than github.com fail"
     required: false
   no-delete:
     description: "Skip deletion of orphaned resources even if deleteOrphaned is configured"

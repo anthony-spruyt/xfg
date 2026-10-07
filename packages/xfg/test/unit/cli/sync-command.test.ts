@@ -453,7 +453,9 @@ repos:
       else process.env.GH_TOKEN = originalGhToken;
     });
 
-    async function tokensPassed(): Promise<(string | undefined)[]> {
+    async function tokensPassed(
+      expectFailure = false
+    ): Promise<(string | undefined)[]> {
       writeFileSync(
         testConfigPath,
         `id: test-config
@@ -466,19 +468,24 @@ repos:
 `
       );
       const mockProcessor = createMockProcessor();
-      await runSync(
+      const run = runSync(
         { config: testConfigPath, dryRun: true, workDir: testDir },
         {
           processorFactory: () => mockProcessor,
           lifecycleManager: noopLifecycleManager,
         }
       );
+      if (expectFailure) {
+        await assert.rejects(run, /had errors/);
+      } else {
+        await run;
+      }
       const calls = (mockProcessor.process as unknown as MockFn).mock.calls;
       return calls.map((c) => (c.arguments[2] as { token?: string }).token);
     }
 
-    test("withholds GH_TOKEN from a githubHosts entry that is not allowlisted", async () => {
-      assert.deepEqual(await tokensPassed(), ["env-token", undefined]);
+    test("fails a githubHosts repo that is not allowlisted before touching it", async () => {
+      assert.deepEqual(await tokensPassed(true), ["env-token"]);
       assert.match(consoleOutput.join("\n"), /XFG_ALLOWED_GITHUB_HOSTS/);
     });
 

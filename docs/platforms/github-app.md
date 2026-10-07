@@ -88,7 +88,7 @@ This uses GitHub's `createCommitOnBranch` mutation instead of git commands, whic
 | `GH_TOKEN`                   | PAT        | Personal Access Token for GitHub API                   |
 | `XFG_ALLOWED_GITHUB_HOSTS`   | Both       | GitHub Enterprise Server hosts trusted with credentials |
 
-xfg sends App JWTs, installation tokens and `GH_TOKEN` only to github.com unless a host is listed in `XFG_ALLOWED_GITHUB_HOSTS` (comma- or space-separated hostnames). See [GitHub Enterprise Server](github.md#ghe-authentication).
+xfg sends App JWTs, installation tokens and `GH_TOKEN` only to github.com, unless a host is listed in `XFG_ALLOWED_GITHUB_HOSTS` (comma- or space-separated hostnames). Repos on any other GitHub host fail. See [GitHub Enterprise Server](github.md#ghe-authentication).
 
 When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.
 

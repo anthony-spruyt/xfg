@@ -2875,7 +2875,7 @@ describe("RepositoryProcessor", () => {
       ["without", undefined, false],
       ["with", new GitHubHostPolicy(["ghe.corp"]), true],
     ] as const) {
-      test(`${label} an allowlisted GHES host, ${expectAuth ? "sends" : "withholds"} GH_TOKEN`, async () => {
+      test(`${label} an allowlisted GHES host, ${expectAuth ? "sends GH_TOKEN" : "refuses the repo"}`, async () => {
         const { mock: mockLogger } = createMockLogger();
         let capturedAuth: unknown = "unset";
         const mockGitOpsFactory = createTypedGitOpsFactory({
@@ -2890,7 +2890,7 @@ describe("RepositoryProcessor", () => {
           { envToken: "ghp_test_pat_token", hostPolicy }
         );
 
-        await processor.process(
+        const run = processor.process(
           {
             git: "git@ghe.corp:test-owner/repo.git",
             files: [{ fileName: "test.json", content: { key: "value" } }],
@@ -2910,6 +2910,12 @@ describe("RepositoryProcessor", () => {
             executor: createMockExecutor(),
           }
         );
+        if (!expectAuth) {
+          await assert.rejects(run, /not in XFG_ALLOWED_GITHUB_HOSTS/);
+          assert.equal(capturedAuth, "unset");
+          return;
+        }
+        await run;
 
         assert.notEqual(capturedAuth, "unset", "factory should be called");
         const token = (capturedAuth as GitAuthOptions | undefined)?.token;

@@ -274,3 +274,82 @@ describe("prOptions.ai normalization", () => {
     assert.deepEqual(result.repos[0].prOptions, { merge: "manual" });
   });
 });
+
+describe("prOptions.ai credential guard", () => {
+  for (const apiKeyEnv of ["GH_TOKEN", "github_token", "XFG_GITHUB_APP_PRIVATE_KEY", "OPENAI_API_KEY"]) {
+    test(`rejects apiKeyEnv ${apiKeyEnv} for anthropic`, () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            baseConfig({ prOptions: { ai: { provider: "anthropic", apiKeyEnv } } })
+          ),
+        /credential/
+      );
+    });
+  }
+
+  test("allows the provider's own key against its default API", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        baseConfig({
+          prOptions: {
+            ai: { provider: "anthropic", apiKeyEnv: "ANTHROPIC_API_KEY" },
+          },
+        })
+      )
+    );
+  });
+
+  test("rejects the provider's own key sent to a custom baseUrl", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          baseConfig({
+            prOptions: {
+              ai: {
+                provider: "openai",
+                model: "m",
+                baseUrl: "https://attacker.example/v1",
+                apiKeyEnv: "OPENAI_API_KEY",
+              },
+            },
+          })
+        ),
+      /credential/
+    );
+  });
+
+  test("rejects a credential apiKeyEnv in a repo override", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          baseConfig({
+            repos: [
+              {
+                git: "git@github.com:org/repo.git",
+                prOptions: { ai: { provider: "anthropic", apiKeyEnv: "GH_TOKEN" } },
+              },
+            ],
+          })
+        ),
+      /credential/
+    );
+  });
+
+  test("allows a dedicated key name for a custom baseUrl", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        baseConfig({
+          prOptions: {
+            ai: {
+              provider: "openai",
+              model: "m",
+              baseUrl: "https://openrouter.ai/api/v1",
+              apiKeyEnv: "OPENROUTER_API_KEY",
+            },
+          },
+        })
+      )
+    );
+  });
+});

@@ -10,6 +10,7 @@ import {
   type InterpolationConfig,
 } from "../shared/interpolation-engine.js";
 import { ValidationError } from "../shared/errors.js";
+import { isCredentialEnvName } from "../shared/credential-env.js";
 
 export interface EnvInterpolationOptions {
   /**
@@ -46,22 +47,8 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
  */
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
-/** Credentials xfg itself reads; config content must never render them. */
-export const CREDENTIAL_ENV_VARS: ReadonlySet<string> = new Set([
-  "XFG_GITHUB_APP_PRIVATE_KEY",
-  "XFG_GITHUB_CLIENT_ID",
-  "GH_TOKEN",
-  "GITHUB_TOKEN",
-  "GH_ENTERPRISE_TOKEN",
-  "GITHUB_ENTERPRISE_TOKEN",
-  "AZURE_DEVOPS_EXT_PAT",
-  "GITLAB_TOKEN",
-  "ANTHROPIC_API_KEY",
-  "OPENAI_API_KEY",
-]);
-
 function assertNotCredential(varName: string): void {
-  if (CREDENTIAL_ENV_VARS.has(varName.toUpperCase())) {
+  if (isCredentialEnvName(varName)) {
     throw new ValidationError(
       `Refusing to interpolate \${${varName}}: it is a credential xfg uses for authentication. ` +
         `Use a separate environment variable, or $\${${varName}} for a literal.`

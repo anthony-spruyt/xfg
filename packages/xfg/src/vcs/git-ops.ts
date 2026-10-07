@@ -45,11 +45,8 @@ export class GitOps implements ILocalGitOps {
   }
 
   /**
-   * Validates that a file path stays inside the workspace: no traversal, no
-   * `.git` segment, and no symlink at any existing segment (a target repo can
-   * commit a symlink pointing at `.git` or outside the clone).
+   * Rejects traversal, `.git` segments and symlinks: a cloned repo can commit a symlink to anywhere.
    * @returns The absolute file path
-   * @throws ValidationError if the path is unsafe
    */
   private validatePath(fileName: string): string {
     const filePath = join(this.workDir, fileName);

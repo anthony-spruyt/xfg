@@ -97,3 +97,26 @@ describe("validateFileName", () => {
     );
   });
 });
+
+describe("validateFileName .git aliases", () => {
+  for (const name of [
+    ".git./config",
+    ".git /config",
+    ".git. . /config",
+    "GIT~1/config",
+    "git~12/config",
+    ".git::$INDEX_ALLOCATION/config",
+    ".g\u200Cit/config",
+    "\uFEFF.git/config",
+  ]) {
+    test(`rejects ${JSON.stringify(name)}`, () => {
+      assert.throws(() => validateFileName(name), /'\.git'/);
+    });
+  }
+
+  test("still accepts lookalikes that are not .git", () => {
+    for (const name of [".github/x", ".gitignore", "foo.git/x", "git/x", "git~x/y"]) {
+      assert.doesNotThrow(() => validateFileName(name), name);
+    }
+  });
+});

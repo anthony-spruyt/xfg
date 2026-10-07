@@ -41,6 +41,8 @@ const DEFAULT_HOST_POLICY = new GitHubHostPolicy();
  * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
  * Returns { token, skipped } where skipped=true means no App installation found
  * for this owner (token will be undefined). Both sync and settings paths use this.
+ * @throws GitHubHostNotAllowedError for a host outside the policy. Running
+ * tokenless is not safe there: `gh` would still send ambient credentials.
  */
 export async function resolveGitHubToken(
   options: ResolveGitHubTokenOptions
@@ -48,10 +50,7 @@ export async function resolveGitHubToken(
   const { repoInfo, tokenManager, context, log, envToken } = options;
   const hostPolicy = options.hostPolicy ?? DEFAULT_HOST_POLICY;
   if (!hostPolicy.isAllowed(repoInfo.host)) {
-    log?.warn(
-      `${new GitHubHostNotAllowedError(repoInfo.host).message} Continuing ${context} without a token.`
-    );
-    return { token: undefined, skipped: false };
+    throw new GitHubHostNotAllowedError(repoInfo.host);
   }
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
@@ -60,10 +59,7 @@ export async function resolveGitHubToken(
     }
     return { token: appToken ?? envToken, skipped: false };
   } catch (error) {
-    if (error instanceof GitHubHostNotAllowedError) {
-      log?.warn(`${error.message} Continuing ${context} without a token.`);
-      return { token: undefined, skipped: false };
-    }
+    if (error instanceof GitHubHostNotAllowedError) throw error;
     const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
     if (envToken) {
       log?.warn(`${errorMsg}; falling back to the environment token`);

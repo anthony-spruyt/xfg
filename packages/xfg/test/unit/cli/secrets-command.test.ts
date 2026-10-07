@@ -683,16 +683,16 @@ repos:
       });
     });
 
-    test("token provider withholds tokens from a GHES host that is not allowlisted", async () => {
+    test("token provider refuses a GHES host that is not allowlisted", async () => {
       const provider = await captureProvider({
         getTokenForRepo: async () => "app-token",
       });
       const gheRepo = { ...repoA, host: "ghe.corp" };
 
-      assert.deepEqual(await provider.getToken(gheRepo, "org-a/repo-a"), {
-        token: undefined,
-        skipped: false,
-      });
+      await assert.rejects(
+        () => provider.getToken(gheRepo, "org-a/repo-a"),
+        /not in XFG_ALLOWED_GITHUB_HOSTS/
+      );
     });
 
     test("token provider honours XFG_ALLOWED_GITHUB_HOSTS", async () => {

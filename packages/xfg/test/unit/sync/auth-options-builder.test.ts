@@ -71,18 +71,18 @@ describe("AuthOptionsBuilder", () => {
       }
     });
 
-    test("sends no env token to a GHES host outside the allowlist", async () => {
+    test("refuses a GHES host outside the allowlist", async () => {
       const gheRepo: GitHubRepoInfo = {
         ...mockRepoInfo,
         host: "ghe.corp",
         gitUrl: "git@ghe.corp:test/repo.git",
       };
       const builder = new AuthOptionsBuilder(null, undefined, "pat-token-456");
-      const result = await builder.resolve(gheRepo, "test/repo");
 
-      assert.equal(result.ok, true);
-      assert.equal(result.ok && result.token, undefined);
-      assert.equal(result.ok && result.authOptions, undefined);
+      await assert.rejects(
+        () => builder.resolve(gheRepo, "test/repo"),
+        /not in XFG_ALLOWED_GITHUB_HOSTS/
+      );
     });
 
     test("sends the env token to an allowlisted GHES host", async () => {

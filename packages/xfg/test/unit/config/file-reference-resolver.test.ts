@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { writeFileSync, mkdirSync, rmSync, symlinkSync } from "node:fs";
 import { join, dirname, normalize, relative, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -47,6 +47,44 @@ describe("File Reference Resolver", () => {
       assert.strictEqual(isFileReference(undefined), false);
       assert.strictEqual(isFileReference({ key: "value" }), false);
       assert.strictEqual(isFileReference(["@array"]), false);
+    });
+  });
+
+  describe("resolveFileReference symlinks", () => {
+    const outsideDir = testDir + "-outside";
+
+    beforeEach(() => {
+      mkdirSync(outsideDir, { recursive: true });
+      writeFileSync(join(outsideDir, "loot.txt"), "outside-content");
+    });
+
+    afterEach(() => {
+      rmSync(outsideDir, { recursive: true, force: true });
+    });
+
+    test("refuses a symlinked file that points outside the config dir", () => {
+      symlinkSync(join(outsideDir, "loot.txt"), join(testDir, "x.txt"));
+      assert.throws(
+        () => resolveFileReference("@x.txt", testDir),
+        /escapes config directory/
+      );
+    });
+
+    test("refuses a symlinked directory that points outside the config dir", () => {
+      symlinkSync(outsideDir, join(testDir, "linked"), "dir");
+      assert.throws(
+        () => resolveFileReference("@linked/loot.txt", testDir),
+        /escapes config directory/
+      );
+    });
+
+    test("allows a symlink that stays inside the config dir", () => {
+      writeFileSync(join(testDir, "templates", "real.txt"), "inside");
+      symlinkSync(
+        join(testDir, "templates", "real.txt"),
+        join(testDir, "alias.txt")
+      );
+      assert.equal(resolveFileReference("@alias.txt", testDir), "inside");
     });
   });
 
