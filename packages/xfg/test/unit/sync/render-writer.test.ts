@@ -131,6 +131,38 @@ describe("RenderWriter", () => {
     });
   });
 
+  test("orders render.json entries by UTF-16 code unit, not locale", () => {
+    new RenderWriter().write(
+      renderDir,
+      "org/repo",
+      changes(
+        { fileName: "b.txt", content: "b", action: "create" },
+        { fileName: "a.txt", content: "a", action: "create" },
+        { fileName: "_x.txt", content: "x", action: "create" },
+        { fileName: "～.txt", content: "~", action: "create" },
+        { fileName: "Z.txt", content: "z", action: "create" },
+        { fileName: "\u{1F600}.txt", content: "s", action: "create" },
+        { fileName: "é.txt", content: "e", action: "create" },
+        { fileName: "e.txt", content: null, action: "delete" },
+        { fileName: "E.txt", content: null, action: "delete" },
+        { fileName: "-.txt", content: null, action: "delete" }
+      )
+    );
+
+    assert.deepEqual(readIndex(renderDir).repos["org/repo"], {
+      files: [
+        "Z.txt",
+        "_x.txt",
+        "a.txt",
+        "b.txt",
+        "é.txt",
+        "\u{1F600}.txt",
+        "～.txt",
+      ],
+      deleted: ["-.txt", "E.txt", "e.txt"],
+    });
+  });
+
   test("refuses a file path that escapes the repo directory", () => {
     assert.throws(
       () =>
