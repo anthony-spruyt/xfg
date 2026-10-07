@@ -2,6 +2,10 @@ import { test, describe, beforeEach, afterEach, mock } from "node:test";
 import { strict as assert } from "node:assert";
 import { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
 import {
+  GitHubHostNotAllowedError,
+  GitHubHostPolicy,
+} from "../../../src/shared/github-host-policy.js";
+import {
   TEST_PRIVATE_KEY,
   TEST_CLIENT_ID,
 } from "../../fixtures/test-fixtures.js";
@@ -311,7 +315,8 @@ describe("GitHubAppTokenManager", () => {
     test("handles GitHub Enterprise API host", async () => {
       const manager = new GitHubAppTokenManager(
         TEST_CLIENT_ID,
-        TEST_PRIVATE_KEY
+        TEST_PRIVATE_KEY,
+        new GitHubHostPolicy(["ghe.example.com"])
       );
 
       let capturedUrl: string | undefined;
@@ -640,7 +645,8 @@ describe("GitHubAppTokenManager", () => {
     test("derives GHE API host with /api/v3 suffix", async () => {
       const manager = new GitHubAppTokenManager(
         TEST_CLIENT_ID,
-        TEST_PRIVATE_KEY
+        TEST_PRIVATE_KEY,
+        new GitHubHostPolicy(["ghe.example.com"])
       );
 
       let capturedUrl: string | undefined;
@@ -873,6 +879,144 @@ describe("GitHubAppTokenManager", () => {
       );
 
       assert.equal(callCount, 1, "Should not retry on 4xx errors");
+    });
+  });
+  describe("host allowlist", () => {
+    function countingFetch(): { calls: string[] } {
+      const state = { calls: [] as string[] };
+      globalThis.fetch = mock.fn(async (url: string | URL) => {
+        state.calls.push(url.toString());
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }) as typeof fetch;
+      return state;
+    }
+
+    const attackerRepo = {
+      type: "github" as const,
+      host: "attacker.example",
+      owner: "org",
+      repo: "repo",
+      gitUrl: "https://attacker.example/org/repo.git",
+    };
+
+    test("getTokenForRepo refuses a host that is not allowed, before any request", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+      const state = countingFetch();
+
+      await assert.rejects(
+        () => manager.getTokenForRepo(attackerRepo),
+        (err: unknown) =>
+          err instanceof GitHubHostNotAllowedError &&
+          err.message.includes("attacker.example") &&
+          err.message.includes("XFG_ALLOWED_GITHUB_HOSTS")
+      );
+      assert.deepEqual(state.calls, []);
+    });
+
+    test("getTokenForRepo refuses hosts with userinfo or a port", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY,
+        new GitHubHostPolicy(["ghe.corp"])
+      );
+      const state = countingFetch();
+
+      for (const host of ["user@ghe.corp", "ghe.corp:8443", "user@github.com"]) {
+        await assert.rejects(
+          () => manager.getTokenForRepo({ ...attackerRepo, host }),
+          GitHubHostNotAllowedError,
+          host
+        );
+      }
+      assert.deepEqual(state.calls, []);
+    });
+
+    test("getTokenForRepo uses an explicitly allowed GHES host", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY,
+        new GitHubHostPolicy(["ghe.corp"])
+      );
+      const state = countingFetch();
+
+      const token = await manager.getTokenForRepo({
+        ...attackerRepo,
+        host: "ghe.corp",
+      });
+
+      assert.equal(token, null);
+      assert.deepEqual(state.calls, [
+        "https://ghe.corp/api/v3/app/installations?per_page=100",
+      ]);
+    });
+
+    test("discoverInstallations refuses an API host outside the allowlist", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+      const state = countingFetch();
+
+      for (const apiHost of [
+        "attacker.example/api/v3",
+        "attacker.example",
+        "api.github.com.attacker.example",
+        "api.github.com@attacker.example",
+        "github.com/api/v3",
+      ]) {
+        await assert.rejects(
+          () => manager.discoverInstallations(apiHost),
+          GitHubHostNotAllowedError,
+          apiHost
+        );
+      }
+      assert.deepEqual(state.calls, []);
+    });
+
+    test("getTokenForOwner refuses an API host outside the allowlist", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+      const state = countingFetch();
+
+      await assert.rejects(
+        () => manager.getTokenForOwner("attacker.example/api/v3", "org"),
+        GitHubHostNotAllowedError
+      );
+      assert.deepEqual(state.calls, []);
+    });
+
+    test("does not follow a pagination link to another origin", async () => {
+      const manager = new GitHubAppTokenManager(
+        TEST_CLIENT_ID,
+        TEST_PRIVATE_KEY
+      );
+      const urls: string[] = [];
+      globalThis.fetch = mock.fn(async (url: string | URL) => {
+        urls.push(url.toString());
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+            Link: '<https://attacker.example/app/installations?page=2>; rel="next"',
+          },
+        });
+      }) as typeof fetch;
+
+      await assert.rejects(
+        () => manager.discoverInstallations("api.github.com"),
+        /attacker\.example/
+      );
+      assert.deepEqual(urls, [
+        "https://api.github.com/app/installations?per_page=100",
+      ]);
     });
   });
 });

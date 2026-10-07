@@ -55,6 +55,9 @@ inputs:
   github-app-private-key:
     description: "GitHub App private key (PEM format) for JWT signing"
     required: false
+  allowed-github-hosts:
+    description: "Comma-separated GitHub Enterprise Server hostnames trusted with GitHub credentials. Without this, xfg sends tokens only to github.com"
+    required: false
   no-delete:
     description: "Skip deletion of orphaned resources even if deleteOrphaned is configured"
     required: false
@@ -146,6 +149,7 @@ runs:
         GH_TOKEN: ${{ inputs.github-token }}
         XFG_GITHUB_CLIENT_ID: ${{ inputs.github-client-id }}
         XFG_GITHUB_APP_PRIVATE_KEY: ${{ inputs.github-app-private-key }}
+        XFG_ALLOWED_GITHUB_HOSTS: ${{ inputs.allowed-github-hosts }}
         AZURE_DEVOPS_EXT_PAT: ${{ inputs.azure-devops-token }}
         GITLAB_TOKEN: ${{ inputs.gitlab-token }}
         INPUT_COMMAND: ${{ inputs.command }}

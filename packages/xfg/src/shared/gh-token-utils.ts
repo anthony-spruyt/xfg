@@ -2,6 +2,11 @@ import { toErrorMessage } from "./type-guards.js";
 
 import type { DebugWarnLog } from "./logger.js";
 import type { GitHubApiTarget } from "./gh-api-utils.js";
+import {
+  GitHubHostNotAllowedError,
+  GitHubHostPolicy,
+  type IGitHubHostPolicy,
+} from "./github-host-policy.js";
 
 export interface ITokenManager {
   getTokenForRepo(repoInfo: GitHubApiTarget): Promise<string | null>;
@@ -26,7 +31,11 @@ export interface ResolveGitHubTokenOptions {
   context: string;
   log?: DebugWarnLog;
   envToken?: string;
+  /** Hosts allowed to receive any token. Defaults to github.com only. */
+  hostPolicy?: IGitHubHostPolicy;
 }
+
+const DEFAULT_HOST_POLICY = new GitHubHostPolicy();
 
 /**
  * Resolve a GitHub token for a repo: GitHub App token → envToken fallback.
@@ -37,6 +46,13 @@ export async function resolveGitHubToken(
   options: ResolveGitHubTokenOptions
 ): Promise<GitHubTokenResult> {
   const { repoInfo, tokenManager, context, log, envToken } = options;
+  const hostPolicy = options.hostPolicy ?? DEFAULT_HOST_POLICY;
+  if (!hostPolicy.isAllowed(repoInfo.host)) {
+    log?.warn(
+      `${new GitHubHostNotAllowedError(repoInfo.host).message} Continuing ${context} without a token.`
+    );
+    return { token: undefined, skipped: false };
+  }
   try {
     const appToken = await tokenManager?.getTokenForRepo(repoInfo);
     if (appToken === null) {
@@ -44,6 +60,10 @@ export async function resolveGitHubToken(
     }
     return { token: appToken ?? envToken, skipped: false };
   } catch (error) {
+    if (error instanceof GitHubHostNotAllowedError) {
+      log?.warn(`${error.message} Continuing ${context} without a token.`);
+      return { token: undefined, skipped: false };
+    }
     const errorMsg = `GitHub App token resolution failed for ${context}: ${toErrorMessage(error)}`;
     if (envToken) {
       log?.warn(`${errorMsg}; falling back to the environment token`);
@@ -62,7 +82,8 @@ export class GitHubTokenProvider implements IGitHubTokenProvider {
   constructor(
     private readonly tokenManager: ITokenManager | null,
     private readonly envToken?: string,
-    private readonly log?: DebugWarnLog
+    private readonly log?: DebugWarnLog,
+    private readonly hostPolicy?: IGitHubHostPolicy
   ) {}
 
   getToken(
@@ -75,6 +96,7 @@ export class GitHubTokenProvider implements IGitHubTokenProvider {
       context,
       log: this.log,
       envToken: this.envToken,
+      hostPolicy: this.hostPolicy,
     });
   }
 }

@@ -1,4 +1,5 @@
-import { existsSync, writeFileSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync } from "node:fs";
+import { writeFileNoFollow } from "../shared/path-safety.js";
 import { join } from "node:path";
 import {
   type AzureDevOpsRepoInfo,
@@ -264,7 +265,7 @@ export class AdoPRStrategy extends BasePRStrategy {
 
     const descFile = join(workDir, this.bodyFilePath);
     try {
-      writeFileSync(descFile, body, "utf-8");
+      writeFileNoFollow(descFile, body);
     } catch (err) {
       throw new SyncError(
         `Failed to write PR description to ${descFile}: ${toErrorMessage(err)}`,

@@ -3,6 +3,7 @@ import type { GitHubRepoInfo } from "../repo/index.js";
 import type { GitAuthOptions, GitHubAppTokenManager } from "../vcs/index.js";
 import type { AuthResult, IAuthOptionsBuilder } from "./types.js";
 import type { ILogger } from "../shared/logger.js";
+import type { IGitHubHostPolicy } from "../shared/github-host-policy.js";
 import {
   noAppInstallationMessage,
   resolveGitHubToken,
@@ -12,7 +13,8 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
   constructor(
     private readonly tokenManager: GitHubAppTokenManager | null,
     private readonly log?: ILogger,
-    private readonly envToken?: string
+    private readonly envToken?: string,
+    private readonly hostPolicy?: IGitHubHostPolicy
   ) {}
 
   async resolve(
@@ -37,6 +39,7 @@ export class AuthOptionsBuilder implements IAuthOptionsBuilder {
       context: repoName,
       log: this.log,
       envToken: this.envToken,
+      hostPolicy: this.hostPolicy,
     });
 
     if (resolved.skipped) {

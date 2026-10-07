@@ -9,6 +9,7 @@ import type {
 import { validateFileName } from "./validators/file-validator.js";
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import { isValidHostname } from "../shared/github-host-policy.js";
 import { validateBranchName } from "../shared/branch-validation.js";
 import { validateAiOption } from "./validators/ai-validator.js";
 import {
@@ -159,6 +160,11 @@ function validateGithubHosts(config: RawConfig): void {
     if (host.includes("/")) {
       throw new ValidationError(
         `githubHosts entries must be hostnames only, not paths. Got: ${host}`
+      );
+    }
+    if (!isValidHostname(host)) {
+      throw new ValidationError(
+        `githubHosts entries must be hostnames (no userinfo, port, whitespace or trailing dot). Got: ${host}`
       );
     }
   }

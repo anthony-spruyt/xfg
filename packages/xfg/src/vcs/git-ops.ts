@@ -3,11 +3,12 @@ import {
   existsSync,
   statSync,
   mkdirSync,
-  writeFileSync,
   readFileSync,
   chmodSync,
+  lstatSync,
 } from "node:fs";
-import { join, resolve, relative, isAbsolute, dirname } from "node:path";
+import { join, resolve, relative, isAbsolute, dirname, sep } from "node:path";
+import { hasGitDirSegment, writeFileNoFollow } from "../shared/path-safety.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import type { DebugLog } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
@@ -44,9 +45,11 @@ export class GitOps implements ILocalGitOps {
   }
 
   /**
-   * Validates that a file path doesn't escape the workspace directory.
-   * @returns The resolved absolute file path
-   * @throws ValidationError if path traversal is detected
+   * Validates that a file path stays inside the workspace: no traversal, no
+   * `.git` segment, and no symlink at any existing segment (a target repo can
+   * commit a symlink pointing at `.git` or outside the clone).
+   * @returns The absolute file path
+   * @throws ValidationError if the path is unsafe
    */
   private validatePath(fileName: string): string {
     const filePath = join(this.workDir, fileName);
@@ -56,7 +59,37 @@ export class GitOps implements ILocalGitOps {
     if (relativePath.startsWith("..") || isAbsolute(relativePath)) {
       throw new ValidationError(`Path traversal detected: ${fileName}`);
     }
+    if (hasGitDirSegment(relativePath)) {
+      throw new ValidationError(
+        `Refusing to access '${fileName}': path is inside a '.git' directory`
+      );
+    }
+    this.assertNoSymlinks(resolvedWorkDir, relativePath, fileName);
     return filePath;
+  }
+
+  private assertNoSymlinks(
+    root: string,
+    relativePath: string,
+    fileName: string
+  ): void {
+    let current = root;
+    for (const segment of relativePath.split(sep).filter(Boolean)) {
+      current = join(current, segment);
+      let stats;
+      try {
+        stats = lstatSync(current);
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code === "ENOENT" || code === "ENOTDIR") return;
+        throw error;
+      }
+      if (stats.isSymbolicLink()) {
+        throw new ValidationError(
+          `Refusing to access '${fileName}': '${relative(root, current)}' is a symlink`
+        );
+      }
+    }
   }
 
   cleanWorkspace(): void {
@@ -100,7 +133,7 @@ export class GitOps implements ILocalGitOps {
       mkdirSync(dirname(filePath), { recursive: true });
 
       const normalized = content.endsWith("\n") ? content : content + "\n";
-      writeFileSync(filePath, normalized, "utf-8");
+      writeFileNoFollow(filePath, normalized);
     } catch (error) {
       throw new SyncError(
         `Failed to write file '${fileName}': ${toErrorMessage(error)}`,

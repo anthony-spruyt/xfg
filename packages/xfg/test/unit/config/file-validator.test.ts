@@ -43,6 +43,45 @@ describe("validateFileName", () => {
     assert.throws(() => validateFileName("dir/../file"), /relative path/);
   });
 
+  test("rejects any .git path segment, case-insensitively", () => {
+    for (const name of [
+      ".git",
+      ".git/config",
+      ".git/hooks/post-checkout",
+      "sub/.git/config",
+      "a/b/.git",
+      ".GIT/config",
+      "sub/.Git/hooks/x",
+      ".git\\config",
+      "sub\\.git\\config",
+      "./.git/config",
+      "sub//.git/config",
+    ]) {
+      assert.throws(
+        () => validateFileName(name),
+        /'\.git'/,
+        JSON.stringify(name)
+      );
+    }
+  });
+
+  test("allows names that only resemble .git", () => {
+    for (const name of [
+      ".github/workflows/ci.yml",
+      ".gitignore",
+      ".gitattributes",
+      ".gitmodules",
+      ".gitkeep",
+      "foo.git/file",
+      "foo.git",
+      "sub/.github/CODEOWNERS",
+      ".git-blame-ignore-revs",
+      "git/config",
+    ]) {
+      assert.doesNotThrow(() => validateFileName(name), name);
+    }
+  });
+
   test("rejects absolute paths", () => {
     assert.throws(() => validateFileName("/etc/passwd"), /relative path/);
   });

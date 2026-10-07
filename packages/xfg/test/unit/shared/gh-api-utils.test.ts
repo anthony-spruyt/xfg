@@ -15,6 +15,10 @@ import {
   resolveGitHubToken,
 } from "../../../src/shared/gh-token-utils.js";
 import { parseApiJson } from "../../../src/shared/json-utils.js";
+import {
+  GitHubHostNotAllowedError,
+  GitHubHostPolicy,
+} from "../../../src/shared/github-host-policy.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 
 function makeRepoInfo(overrides: Partial<GitHubRepoInfo> = {}): GitHubRepoInfo {
@@ -213,6 +217,96 @@ describe("resolveGitHubToken", () => {
     });
     assert.equal(warnMessages.length, 1);
     assert.match(warnMessages[0], /no fallback token available/);
+  });
+});
+
+describe("resolveGitHubToken host allowlist", () => {
+  const gheRepo = makeRepoInfo({
+    host: "attacker.example",
+    gitUrl: "https://attacker.example/test-owner/test-repo.git",
+  });
+
+  test("does not hand the env token to a host outside the allowlist", async () => {
+    const warnings: string[] = [];
+    const result = await resolveGitHubToken({
+      repoInfo: gheRepo,
+      tokenManager: null,
+      context: "ctx",
+      envToken: "env-token",
+      hostPolicy: new GitHubHostPolicy(),
+      log: { debug: () => {}, warn: (m: string) => warnings.push(m) },
+    });
+    assert.deepEqual(result, { token: undefined, skipped: false });
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /attacker\.example/);
+    assert.match(warnings[0], /XFG_ALLOWED_GITHUB_HOSTS/);
+  });
+
+  test("never asks the token manager about a host outside the allowlist", async () => {
+    let calls = 0;
+    const result = await resolveGitHubToken({
+      repoInfo: gheRepo,
+      tokenManager: {
+        getTokenForRepo: async () => {
+          calls++;
+          return "app-token";
+        },
+      },
+      context: "ctx",
+      envToken: "env-token",
+      hostPolicy: new GitHubHostPolicy(),
+    });
+    assert.equal(calls, 0);
+    assert.deepEqual(result, { token: undefined, skipped: false });
+  });
+
+  test("does not fall back to the env token when the manager rejects the host", async () => {
+    const result = await resolveGitHubToken({
+      repoInfo: gheRepo,
+      tokenManager: {
+        getTokenForRepo: async () => {
+          throw new GitHubHostNotAllowedError("attacker.example");
+        },
+      },
+      context: "ctx",
+      envToken: "env-token",
+      hostPolicy: new GitHubHostPolicy(["attacker.example"]),
+    });
+    assert.deepEqual(result, { token: undefined, skipped: false });
+  });
+
+  test("defaults to github.com only when no policy is passed", async () => {
+    const result = await resolveGitHubToken({
+      repoInfo: gheRepo,
+      tokenManager: null,
+      context: "ctx",
+      envToken: "env-token",
+    });
+    assert.deepEqual(result, { token: undefined, skipped: false });
+  });
+
+  test("hands the env token to an allowed GHES host", async () => {
+    const result = await resolveGitHubToken({
+      repoInfo: gheRepo,
+      tokenManager: null,
+      context: "ctx",
+      envToken: "env-token",
+      hostPolicy: new GitHubHostPolicy(["attacker.example"]),
+    });
+    assert.deepEqual(result, { token: "env-token", skipped: false });
+  });
+
+  test("GitHubTokenProvider applies its host policy", async () => {
+    const provider = new GitHubTokenProvider(
+      { getTokenForRepo: async () => "app-token" },
+      "env-token",
+      undefined,
+      new GitHubHostPolicy()
+    );
+    assert.deepEqual(await provider.getToken(gheRepo, "ctx"), {
+      token: undefined,
+      skipped: false,
+    });
   });
 });
 

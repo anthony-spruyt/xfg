@@ -46,6 +46,29 @@ const ENV_VAR_REGEX = /\$\{([A-Za-z_][A-Za-z0-9_.]*)(?::([?-])([^}]*))?\}/g;
  */
 const ESCAPED_VAR_REGEX = /\$\$\{((?!xfg:)[^}]+)\}/g;
 
+/** Credentials xfg itself reads; config content must never render them. */
+export const CREDENTIAL_ENV_VARS: ReadonlySet<string> = new Set([
+  "XFG_GITHUB_APP_PRIVATE_KEY",
+  "XFG_GITHUB_CLIENT_ID",
+  "GH_TOKEN",
+  "GITHUB_TOKEN",
+  "GH_ENTERPRISE_TOKEN",
+  "GITHUB_ENTERPRISE_TOKEN",
+  "AZURE_DEVOPS_EXT_PAT",
+  "GITLAB_TOKEN",
+  "ANTHROPIC_API_KEY",
+  "OPENAI_API_KEY",
+]);
+
+function assertNotCredential(varName: string): void {
+  if (CREDENTIAL_ENV_VARS.has(varName.toUpperCase())) {
+    throw new ValidationError(
+      `Refusing to interpolate \${${varName}}: it is a credential xfg uses for authentication. ` +
+        `Use a separate environment variable, or $\${${varName}} for a literal.`
+    );
+  }
+}
+
 function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
   const envSource = options.env;
   function resolveEnvVar(
@@ -54,6 +77,7 @@ function buildEnvConfig(options: EnvInterpolationOptions): InterpolationConfig {
     modifier: string | undefined,
     defaultOrMsg: string | undefined
   ): string {
+    assertNotCredential(varName);
     // Resolution follows bash parameter expansion semantics:
     // ${VAR} → value or error, ${VAR:-fallback} → value or fallback,
     // ${VAR:?msg} → value or throw with msg.

@@ -1,6 +1,13 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync } from "node:fs";
+import {
+  mkdirSync,
+  rmSync,
+  existsSync,
+  writeFileSync,
+  readFileSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GitHubPRStrategy } from "../../../src/vcs/github-pr-strategy.js";
@@ -270,6 +277,32 @@ describe("GitHubPRStrategy with mock executor", () => {
 
       const bodyFile = join(testDir, ".pr-body.md");
       assert.equal(existsSync(bodyFile), false);
+    });
+
+    test("does not write the PR body through a symlink", async () => {
+      const target = join(testDir, "target.txt");
+      writeFileSync(target, "original");
+      symlinkSync(target, join(testDir, ".pr-body.md"));
+      mockExecutor.responses.set(
+        "gh pr create",
+        "https://github.com/owner/repo/pull/123"
+      );
+
+      const strategy = new GitHubPRStrategy(mockExecutor.mock);
+      await assert.rejects(
+        () =>
+          strategy.create({
+            repoInfo: githubRepoInfo,
+            title: "Test PR",
+            body: "body",
+            branchName: "test-branch",
+            baseBranch: "main",
+            workDir: testDir,
+            retries: 0,
+          }),
+        /Failed to write PR description/
+      );
+      assert.equal(readFileSync(target, "utf-8"), "original");
     });
 
     test("cleans up body file after error", async () => {

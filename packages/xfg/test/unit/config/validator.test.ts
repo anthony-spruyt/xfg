@@ -1204,6 +1204,22 @@ describe("validateRawConfig", () => {
       );
     });
 
+    for (const host of [
+      "user@ghe.corp",
+      "ghe.corp:8443",
+      " ghe.corp",
+      "ghe corp",
+      "ghe.corp.",
+    ]) {
+      test(`throws when githubHosts entry is not a hostname: ${JSON.stringify(host)}`, () => {
+        const config = createValidConfig({ githubHosts: [host] });
+        assert.throws(
+          () => validateRawConfig(config),
+          /githubHosts entries must be hostnames/
+        );
+      });
+    }
+
     test("throws when githubHosts contains path", () => {
       const config = createValidConfig({
         githubHosts: ["github.mycompany.com/path"],
@@ -2890,6 +2906,49 @@ describe("validateRawConfig", () => {
         () => validateRawConfig(config),
         /duplicate group 'mygroup'/
       );
+    });
+
+    test("rejects a group file key inside .git", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: {
+            files: { ".git/hooks/post-checkout": { content: "x" } },
+          },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+      });
+      assert.throws(() => validateRawConfig(config), /'\.git'/);
+    });
+
+    test("rejects a group file key with path traversal", () => {
+      const config = createValidConfig({
+        groups: {
+          mygroup: { files: { "../escape.txt": { content: "x" } } },
+        },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+      });
+      assert.throws(() => validateRawConfig(config), /relative path/);
+    });
+
+    test("rejects a conditional group file key inside .git", () => {
+      const config = createValidConfig({
+        groups: { a: { files: { "a.txt": { content: "a" } } } },
+        conditionalGroups: [
+          {
+            when: { allOf: ["a"] },
+            files: { "sub/.GIT/config": { content: "x" } },
+          },
+        ],
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["a"] }],
+      });
+      assert.throws(() => validateRawConfig(config), /'\.git'/);
+    });
+
+    test("rejects a repo file override key inside .git", () => {
+      const config = createValidConfig({
+        files: { ".git/config": { content: "x" } },
+      });
+      assert.throws(() => validateRawConfig(config), /'\.git'/);
     });
 
     test("throws for reserved group name 'inherit'", () => {

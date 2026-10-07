@@ -14,6 +14,7 @@ import type { Logger } from "../shared/logger.js";
 import { generateWorkspaceName } from "../shared/workspace-utils.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import { resolveGitHubToken } from "../shared/gh-token-utils.js";
+import type { IGitHubHostPolicy } from "../shared/github-host-policy.js";
 import {
   runLifecycleCheck,
   type IRepoLifecycleManager,
@@ -35,6 +36,7 @@ export interface RepoIterationContext {
   processor: IRepositoryProcessor;
   lifecycleManager: IRepoLifecycleManager;
   tokenManager: ReturnType<typeof createTokenManager>;
+  hostPolicy?: IGitHubHostPolicy;
   reportResults: SyncResultEntry[];
   lifecycleReportInputs: LifecycleAction[];
   settingsCollector: ResultsCollector;
@@ -221,6 +223,7 @@ export async function runSingleRepo(
           context: repoName,
           log: logger,
           envToken: process.env.GH_TOKEN,
+          hostPolicy: ctx.hostPolicy,
         })
       ).token
     : undefined;

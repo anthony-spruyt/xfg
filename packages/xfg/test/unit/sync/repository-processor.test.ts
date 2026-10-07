@@ -21,6 +21,7 @@ import { GitHubRepoInfo } from "../../../src/repo/index.js";
 import { ICommandExecutor } from "../../../src/shared/command-executor.js";
 import type { GitAuthOptions } from "../../../src/vcs/types.js";
 import { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+import { GitHubHostPolicy } from "../../../src/shared/github-host-policy.js";
 import type { AuthenticatedGitOpsMockConfig } from "../../mocks/index.js";
 import {
   createMockLogger,
@@ -2869,6 +2870,52 @@ describe("RepositoryProcessor", () => {
       assert.strictEqual(auth.owner, "test-owner", "Owner should match");
       assert.strictEqual(auth.repo, "repo", "Repo should match");
     });
+
+    for (const [label, hostPolicy, expectAuth] of [
+      ["without", undefined, false],
+      ["with", new GitHubHostPolicy(["ghe.corp"]), true],
+    ] as const) {
+      test(`${label} an allowlisted GHES host, ${expectAuth ? "sends" : "withholds"} GH_TOKEN`, async () => {
+        const { mock: mockLogger } = createMockLogger();
+        let capturedAuth: unknown = "unset";
+        const mockGitOpsFactory = createTypedGitOpsFactory({
+          onAuth: (auth) => {
+            capturedAuth = auth;
+          },
+        });
+
+        const processor = new RepositoryProcessor(
+          mockGitOpsFactory,
+          mockLogger,
+          { envToken: "ghp_test_pat_token", hostPolicy }
+        );
+
+        await processor.process(
+          {
+            git: "git@ghe.corp:test-owner/repo.git",
+            files: [{ fileName: "test.json", content: { key: "value" } }],
+          },
+          {
+            type: "github",
+            gitUrl: "git@ghe.corp:test-owner/repo.git",
+            owner: "test-owner",
+            repo: "repo",
+            host: "ghe.corp",
+          },
+          {
+            branchName: "chore/sync-config",
+            workDir: join(testDir, `ghe-policy-${label}`),
+            configId: "test-config",
+            dryRun: false,
+            executor: createMockExecutor(),
+          }
+        );
+
+        assert.notEqual(capturedAuth, "unset", "factory should be called");
+        const token = (capturedAuth as GitAuthOptions | undefined)?.token;
+        assert.equal(token, expectAuth ? "ghp_test_pat_token" : undefined);
+      });
+    }
   });
 
   describe("deletion-only commit messages", () => {

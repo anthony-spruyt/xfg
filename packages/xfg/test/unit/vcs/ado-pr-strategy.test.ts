@@ -1,6 +1,13 @@
 import { describe, test, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { mkdirSync, rmSync, existsSync, readFileSync } from "node:fs";
+import {
+  mkdirSync,
+  rmSync,
+  existsSync,
+  readFileSync,
+  writeFileSync,
+  symlinkSync,
+} from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { AdoPRStrategy } from "../../../src/vcs/ado-pr-strategy.js";
@@ -253,6 +260,29 @@ describe("AdoPRStrategy with mock executor", () => {
 
       const descFile = join(testDir, ".pr-description.md");
       assert.equal(existsSync(descFile), false);
+    });
+
+    test("does not write the PR description through a symlink", async () => {
+      const target = join(testDir, "target.txt");
+      writeFileSync(target, "original");
+      symlinkSync(target, join(testDir, ".pr-description.md"));
+      mockExecutor.responses.set("az repos pr create", "123");
+
+      const strategy = new AdoPRStrategy(mockExecutor.mock);
+      await assert.rejects(
+        () =>
+          strategy.create({
+            repoInfo: azureRepoInfo,
+            title: "Test PR",
+            body: "body",
+            branchName: "test-branch",
+            baseBranch: "main",
+            workDir: testDir,
+            retries: 0,
+          }),
+        /Failed to write PR description/
+      );
+      assert.equal(readFileSync(target, "utf-8"), "original");
     });
 
     test("truncates descriptions over the 4000 character limit", async () => {

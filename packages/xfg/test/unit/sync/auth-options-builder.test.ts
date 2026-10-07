@@ -3,6 +3,7 @@ import { strict as assert } from "node:assert";
 import { AuthOptionsBuilder } from "../../../src/sync/auth-options-builder.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { GitHubAppTokenManager } from "../../../src/vcs/github-app-token-manager.js";
+import { GitHubHostPolicy } from "../../../src/shared/github-host-policy.js";
 
 /** Mock token manager - only needs getTokenForRepo method */
 type MockTokenManager = Pick<GitHubAppTokenManager, "getTokenForRepo">;
@@ -68,6 +69,37 @@ describe("AuthOptionsBuilder", () => {
       if (result.ok && result.authOptions) {
         assert.equal(result.authOptions.token, "pat-token-456");
       }
+    });
+
+    test("sends no env token to a GHES host outside the allowlist", async () => {
+      const gheRepo: GitHubRepoInfo = {
+        ...mockRepoInfo,
+        host: "ghe.corp",
+        gitUrl: "git@ghe.corp:test/repo.git",
+      };
+      const builder = new AuthOptionsBuilder(null, undefined, "pat-token-456");
+      const result = await builder.resolve(gheRepo, "test/repo");
+
+      assert.equal(result.ok, true);
+      assert.equal(result.ok && result.token, undefined);
+      assert.equal(result.ok && result.authOptions, undefined);
+    });
+
+    test("sends the env token to an allowlisted GHES host", async () => {
+      const gheRepo: GitHubRepoInfo = {
+        ...mockRepoInfo,
+        host: "ghe.corp",
+        gitUrl: "git@ghe.corp:test/repo.git",
+      };
+      const builder = new AuthOptionsBuilder(
+        null,
+        undefined,
+        "pat-token-456",
+        new GitHubHostPolicy(["ghe.corp"])
+      );
+      const result = await builder.resolve(gheRepo, "test/repo");
+
+      assert.equal(result.ok && result.token, "pat-token-456");
     });
 
     test("falls back gracefully on token fetch error", async () => {

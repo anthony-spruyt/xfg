@@ -2,6 +2,11 @@ import { createSign } from "node:crypto";
 import { withRetry } from "../shared/retry-utils.js";
 import { SyncError } from "../shared/errors.js";
 import type { GitHubRepoInfo } from "../repo/index.js";
+import {
+  GitHubHostNotAllowedError,
+  GitHubHostPolicy,
+  type IGitHubHostPolicy,
+} from "../shared/github-host-policy.js";
 
 /** Duration to cache tokens (45 minutes in milliseconds) */
 const TOKEN_CACHE_DURATION_MS = 45 * 60 * 1000;
@@ -46,9 +51,22 @@ export class GitHubAppTokenManager {
   /** Map of "apiHost:owner" -> cached token */
   private tokenCache = new Map<string, CachedToken>();
 
-  constructor(clientId: string, privateKey: string) {
+  private readonly hostPolicy: IGitHubHostPolicy;
+
+  constructor(
+    clientId: string,
+    privateKey: string,
+    hostPolicy: IGitHubHostPolicy = new GitHubHostPolicy()
+  ) {
     this.clientId = clientId;
     this.privateKey = privateKey;
+    this.hostPolicy = hostPolicy;
+  }
+
+  private assertApiHostAllowed(apiHost: string): void {
+    if (!this.hostPolicy.isAllowedApiHost(apiHost)) {
+      throw new GitHubHostNotAllowedError(apiHost);
+    }
   }
 
   /**
@@ -87,11 +105,19 @@ export class GitHubAppTokenManager {
    * Stores installations in an internal map for later lookup.
    */
   async discoverInstallations(apiHost: string): Promise<void> {
+    this.assertApiHostAllowed(apiHost);
     const jwt = this.generateJWT();
-    let url: string | undefined =
-      `https://${apiHost}/app/installations?per_page=100`;
+    const firstUrl = `https://${apiHost}/app/installations?per_page=100`;
+    const origin = new URL(firstUrl).origin;
+    let url: string | undefined = firstUrl;
 
     while (url) {
+      const pageOrigin = new URL(url).origin;
+      if (pageOrigin !== origin) {
+        throw new SyncError(
+          `GitHub App installations: refusing to follow a pagination link to ${pageOrigin}`
+        );
+      }
       const pageUrl: string = url;
       const response = await withRetry(async () => {
         const res = await fetch(pageUrl, {
@@ -136,6 +162,7 @@ export class GitHubAppTokenManager {
     apiHost: string,
     owner: string
   ): Promise<string | null> {
+    this.assertApiHostAllowed(apiHost);
     const installationId = this.getInstallationId(apiHost, owner);
     if (installationId === undefined) {
       return null;
@@ -184,6 +211,9 @@ export class GitHubAppTokenManager {
    * Derives the API host from the repository host.
    */
   async getTokenForRepo(repoInfo: GitHubRepoInfo): Promise<string | null> {
+    if (!this.hostPolicy.isAllowed(repoInfo.host)) {
+      throw new GitHubHostNotAllowedError(repoInfo.host);
+    }
     const apiHost = deriveApiHost(repoInfo.host);
 
     // Auto-discover if needed
@@ -233,8 +263,9 @@ function base64UrlEncode(data: string | Buffer): string {
  * - ghe.example.com -> ghe.example.com/api/v3
  */
 function deriveApiHost(host: string): string {
-  if (host === "github.com") {
+  const lower = host.toLowerCase();
+  if (lower === "github.com") {
     return "api.github.com";
   }
-  return `${host}/api/v3`;
+  return `${lower}/api/v3`;
 }

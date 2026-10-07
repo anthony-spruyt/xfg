@@ -1,4 +1,5 @@
-import { existsSync, writeFileSync, unlinkSync } from "node:fs";
+import { existsSync, unlinkSync } from "node:fs";
+import { writeFileNoFollow } from "../shared/path-safety.js";
 import { join } from "node:path";
 import { escapeRegExp } from "../shared/regex-utils.js";
 import { assertGitHubRepo, type GitHubRepoInfo } from "../repo/index.js";
@@ -159,7 +160,7 @@ export class GitHubPRStrategy extends BasePRStrategy {
 
     const bodyFile = join(workDir, this.bodyFilePath);
     try {
-      writeFileSync(bodyFile, body, "utf-8");
+      writeFileNoFollow(bodyFile, body);
     } catch (err) {
       throw new SyncError(
         `Failed to write PR description to ${bodyFile}: ${toErrorMessage(err)}`,
