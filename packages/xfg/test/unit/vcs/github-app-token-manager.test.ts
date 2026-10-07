@@ -927,7 +927,11 @@ describe("GitHubAppTokenManager", () => {
       );
       const state = countingFetch();
 
-      for (const host of ["user@ghe.corp", "ghe.corp:8443", "user@github.com"]) {
+      for (const host of [
+        "user@ghe.corp",
+        "ghe.corp:8443",
+        "user@github.com",
+      ]) {
         await assert.rejects(
           () => manager.getTokenForRepo({ ...attackerRepo, host }),
           GitHubHostNotAllowedError,

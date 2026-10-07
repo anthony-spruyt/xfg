@@ -8,7 +8,8 @@ import {
 import { ValidationError } from "./errors.js";
 
 // Characters HFS+ ignores in names, so `.g<ZWNJ>it` opens `.git` on macOS.
-const IGNORABLE_CHARS = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\uFEFF]/g;
+const IGNORABLE_CHARS =
+  /[\u00AD\u200B-\u200F\u202A-\u202E\u2060-\u2064\u206A-\u206F\uFEFF]/g;
 
 /**
  * Matches every spelling filesystems resolve to `.git`: any case, Windows

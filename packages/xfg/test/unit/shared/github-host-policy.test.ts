@@ -94,10 +94,7 @@ describe("parseAllowedGitHubHosts", () => {
   });
 
   test("rejects IP literals", () => {
-    assert.throws(
-      () => parseAllowedGitHubHosts("192.0.2.10"),
-      /IP address/
-    );
+    assert.throws(() => parseAllowedGitHubHosts("192.0.2.10"), /IP address/);
   });
 });
 

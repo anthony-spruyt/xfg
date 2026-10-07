@@ -276,12 +276,19 @@ describe("prOptions.ai normalization", () => {
 });
 
 describe("prOptions.ai credential guard", () => {
-  for (const apiKeyEnv of ["GH_TOKEN", "github_token", "XFG_GITHUB_APP_PRIVATE_KEY", "OPENAI_API_KEY"]) {
+  for (const apiKeyEnv of [
+    "GH_TOKEN",
+    "github_token",
+    "XFG_GITHUB_APP_PRIVATE_KEY",
+    "OPENAI_API_KEY",
+  ]) {
     test(`rejects apiKeyEnv ${apiKeyEnv} for anthropic`, () => {
       assert.throws(
         () =>
           validateRawConfig(
-            baseConfig({ prOptions: { ai: { provider: "anthropic", apiKeyEnv } } })
+            baseConfig({
+              prOptions: { ai: { provider: "anthropic", apiKeyEnv } },
+            })
           ),
         /credential/
       );
@@ -327,7 +334,9 @@ describe("prOptions.ai credential guard", () => {
             repos: [
               {
                 git: "git@github.com:org/repo.git",
-                prOptions: { ai: { provider: "anthropic", apiKeyEnv: "GH_TOKEN" } },
+                prOptions: {
+                  ai: { provider: "anthropic", apiKeyEnv: "GH_TOKEN" },
+                },
               },
             ],
           })

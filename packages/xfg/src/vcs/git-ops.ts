@@ -233,11 +233,9 @@ export class GitOps implements ILocalGitOps {
   wouldChange(fileName: string, content: string): boolean {
     const filePath = this.validatePath(fileName);
 
-    // Normalize trailing newline - ensure exactly one
     const newContent = content.endsWith("\n") ? content : content + "\n";
 
     if (!existsSync(filePath)) {
-      // File doesn't exist, so writing it would be a change
       return true;
     }
 

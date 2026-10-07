@@ -115,7 +115,13 @@ describe("validateFileName .git aliases", () => {
   }
 
   test("still accepts lookalikes that are not .git", () => {
-    for (const name of [".github/x", ".gitignore", "foo.git/x", "git/x", "git~x/y"]) {
+    for (const name of [
+      ".github/x",
+      ".gitignore",
+      "foo.git/x",
+      "git/x",
+      "git~x/y",
+    ]) {
       assert.doesNotThrow(() => validateFileName(name), name);
     }
   });

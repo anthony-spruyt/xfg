@@ -35,7 +35,6 @@ export function resolveFileReference(
     );
   }
 
-  // Security: block absolute paths
   if (isAbsolute(relativePath)) {
     throw new ValidationError(
       `File reference "${reference}" uses absolute path. Use relative paths only.`
@@ -46,10 +45,6 @@ export function resolveFileReference(
   const normalizedResolved = normalize(resolvedPath);
   const normalizedConfigDir = normalize(configDir);
 
-  // Security: ensure path stays within config directory tree
-  // Fix for issue #89: Use path.relative() instead of hardcoded "/" separator
-  // The old approach (!path.startsWith(configDir + "/")) fails on Windows
-  // where normalize() returns paths with backslash separators.
   const escapes = (from: string, to: string): boolean => {
     const rel = relative(from, to);
     return rel.startsWith("..") || isAbsolute(rel);
@@ -69,7 +64,6 @@ export function resolveFileReference(
     }
   }
 
-  // Load file
   let content: string;
   try {
     content = readFileSync(resolvedPath, "utf-8");
@@ -81,7 +75,6 @@ export function resolveFileReference(
     );
   }
 
-  // Parse based on extension
   const ext = extname(relativePath).toLowerCase();
   if (ext === ".json") {
     return parseWithContext(

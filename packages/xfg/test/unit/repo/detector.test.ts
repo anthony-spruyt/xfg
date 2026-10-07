@@ -509,6 +509,7 @@ describe("GitHub owner and repo validation", () => {
     "https://github.com/owner/repo/extra",
     "git@github.com:owner/a/b.git",
     "https://github.com/own%2Fer/repo",
+    "git@github.com:-x/repo.git",
   ]) {
     test(`rejects ${url}`, () => {
       assert.throws(() => parseGitUrl(url), /owner|repo/i);

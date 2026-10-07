@@ -548,7 +548,10 @@ describe("credential env vars", () => {
   });
 
   test("matches credential var names case-insensitively", () => {
-    assert.throws(() => interpolateContent("${gh_token}", opts()), /credential/);
+    assert.throws(
+      () => interpolateContent("${gh_token}", opts()),
+      /credential/
+    );
   });
 
   test("refuses credential vars in objects and arrays", () => {

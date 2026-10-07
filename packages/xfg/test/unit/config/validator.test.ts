@@ -5519,7 +5519,11 @@ describe("group extends validation", () => {
     });
 
     test("rejects xfg credentials as a secret source", () => {
-      for (const env of ["GH_TOKEN", "xfg_github_app_private_key", "GITLAB_TOKEN"]) {
+      for (const env of [
+        "GH_TOKEN",
+        "xfg_github_app_private_key",
+        "GITLAB_TOKEN",
+      ]) {
         const config = createValidConfig({
           settings: { secrets: { MY_SECRET: { env } } },
         });

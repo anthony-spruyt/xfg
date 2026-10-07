@@ -128,7 +128,7 @@ export function parseGitUrl(
 }
 
 // gh reads a dotted first segment of OWNER/REPO as a host, so both are strict.
-const GITHUB_OWNER = /^[A-Za-z0-9_-]+$/;
+const GITHUB_OWNER = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
 const GITHUB_REPO = /^[A-Za-z0-9._-]+$/;
 
 function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
@@ -141,7 +141,11 @@ function parseGitHubUrl(gitUrl: string, host: string): GitHubRepoInfo {
   }
 
   const [, owner, repo] = match;
-  if (!GITHUB_OWNER.test(owner) || !GITHUB_REPO.test(repo) || /^\.+$/.test(repo)) {
+  if (
+    !GITHUB_OWNER.test(owner) ||
+    !GITHUB_REPO.test(repo) ||
+    /^\.+$/.test(repo)
+  ) {
     throw new ValidationError(
       `Invalid GitHub owner/repo in ${gitUrl}: expected OWNER/REPO with letters, digits, '-', '_' (and '.' in the repo name)`
     );
