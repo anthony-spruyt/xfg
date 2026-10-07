@@ -1,4 +1,10 @@
-import { test, describe, before, after, beforeEach } from "node:test";
+import {
+  test as nodeTest,
+  describe,
+  before,
+  after,
+  beforeEach,
+} from "node:test";
 import { strict as assert } from "node:assert";
 import {
   existsSync,
@@ -15,6 +21,7 @@ import {
   execWithRetry,
   projectRoot,
   generateRepoName,
+  inShard,
   createRepo,
   deleteRepo,
   writeConfig,
@@ -32,6 +39,13 @@ const BRANCH_NAME = "chore/sync-my-config";
 let repoName: string;
 let testRepo: string;
 let tmpDir: string;
+
+// CI splits this file across jobs; skipped tests also skip their beforeEach reset
+let testIndex = 0;
+function test(name: string, fn: () => Promise<void>): void {
+  const runHere = inShard(testIndex++, process.env.XFG_TEST_SHARD);
+  nodeTest(name, { skip: !runHere && "runs in another shard" }, fn);
+}
 
 async function waitForFileVisible(filePath: string): Promise<string> {
   return waitForFileVisibleBase(testRepo, filePath);
@@ -52,7 +66,7 @@ describe("GitHub Integration Test", () => {
   });
 
   beforeEach(async () => {
-    await resetTestRepo(testRepo, { deleteLabels: true });
+    await resetTestRepo(testRepo);
   });
 
   test("sync creates a PR in the test repository", async () => {
@@ -752,10 +766,10 @@ repos:
     const prLabelsBranch = "chore/sync-pr-labels-test";
 
     await execWithRetry(
-      `gh api --method POST repos/${testRepo}/labels -f name="bug" -f color="ededed"`
+      `gh label create bug --color ededed --force --repo ${testRepo}`
     );
     await execWithRetry(
-      `gh api --method POST repos/${testRepo}/labels -f name="enhancement" -f color="ededed"`
+      `gh label create enhancement --color ededed --force --repo ${testRepo}`
     );
 
     const configPath = writeConfig(
@@ -795,7 +809,7 @@ repos:
     const prLabelsOverrideBranch = "chore/sync-pr-labels-override-test";
 
     await execWithRetry(
-      `gh api --method POST repos/${testRepo}/labels -f name="documentation" -f color="ededed"`
+      `gh label create documentation --color ededed --force --repo ${testRepo}`
     );
 
     const configPath = writeConfig(

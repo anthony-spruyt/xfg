@@ -1,17 +1,134 @@
 import { execFile } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { appendFileSync, writeFileSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import Bottleneck from "bottleneck";
 
 const execFileAsync = promisify(execFile);
 
-const limiter = new Bottleneck({
-  maxConcurrent: 2,
-  minTime: 2000,
+export type RequestClass = "read" | "write" | "create" | "cli";
+
+type PacedClass = Exclude<RequestClass, "cli">;
+
+// Per test process; up to 8 lanes share GH_PAT_ORG. Per lane, helper calls get 100
+// secondary-limit points/min (of GitHub's 900) and 10 content creations/min (of 80).
+const limiters: Record<PacedClass, Bottleneck> = {
+  read: new Bottleneck({ maxConcurrent: 2, minTime: 500 }),
+  write: new Bottleneck({ maxConcurrent: 1, minTime: 1000 }),
+  create: new Bottleneck({
+    maxConcurrent: 1,
+    minTime: 1000,
+    reservoir: 3,
+    reservoirIncreaseAmount: 1,
+    reservoirIncreaseInterval: 6000,
+    reservoirIncreaseMaximum: 3,
+  }),
+};
+const pointsBudget = new Bottleneck({
+  reservoir: 40,
+  reservoirIncreaseAmount: 1,
+  reservoirIncreaseInterval: 600,
+  reservoirIncreaseMaximum: 40,
 });
+
+/** Cost of a request against GitHub's secondary rate limit (GET 1, mutation 5). */
+export function secondaryLimitPoints(requestClass: RequestClass): number {
+  if (requestClass === "cli") return 0;
+  return requestClass === "read" ? 1 : 5;
+}
+
+const READ_SUBCOMMANDS = new Set(["list", "view", "status", "checks", "diff"]);
+const CREATE_SUBCOMMANDS = new Set(["create", "fork", "comment"]);
+
+/**
+ * Classify a command for pacing: GitHub reads, mutations, content-creating
+ * mutations (POST/PUT), or anything else (xfg CLI runs), which runs unpaced.
+ */
+export function classifyCommand(command: string): RequestClass {
+  const words = command.trim().split(/\s+/);
+  if (words[0] !== "gh") return "cli";
+  if (words[1] !== "api") {
+    const sub = words[2] ?? "";
+    if (READ_SUBCOMMANDS.has(sub)) return "read";
+    return CREATE_SUBCOMMANDS.has(sub) ? "create" : "write";
+  }
+  if (words[2] === "graphql") {
+    return /\bmutation\b/.test(command) ? "write" : "read";
+  }
+  const method = /(?:--method[\s=]|-X\s*)([A-Za-z]+)/.exec(command)?.[1];
+  const verb =
+    method?.toUpperCase() ??
+    (/\s(?:-f|-F|--field|--raw-field|--input)[\s=]/.test(command)
+      ? "POST"
+      : "GET");
+  if (verb === "GET") return "read";
+  return verb === "POST" || verb === "PUT" ? "create" : "write";
+}
+
+interface RequestStats {
+  read: number;
+  write: number;
+  create: number;
+  cli: number;
+  queueWaitMs: number;
+  maxQueueWaitMs: number;
+  rateLimitHits: number;
+}
+
+const stats: RequestStats = {
+  read: 0,
+  write: 0,
+  create: 0,
+  cli: 0,
+  queueWaitMs: 0,
+  maxQueueWaitMs: 0,
+  rateLimitHits: 0,
+};
+
+export function formatRequestStats(label: string, s: RequestStats): string {
+  const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+  return [
+    `#### Requests: ${label}`,
+    "",
+    "| Class | Count |",
+    "| --- | --- |",
+    `| read | ${s.read} |`,
+    `| write | ${s.write} |`,
+    `| create | ${s.create} |`,
+    `| cli | ${s.cli} |`,
+    "",
+    `Limiter queue wait: ${seconds(s.queueWaitMs)} total, ${seconds(s.maxQueueWaitMs)} max. Rate-limit hits: ${s.rateLimitHits}.`,
+    "",
+  ].join("\n");
+}
+
+process.once("exit", () => {
+  if (stats.read + stats.write + stats.create + stats.cli === 0) return;
+  const shard = process.env.XFG_TEST_SHARD;
+  const label = `${basename(process.argv[1] ?? "unknown")}${shard ? ` (shard ${shard})` : ""}`;
+  const text = formatRequestStats(label, stats);
+  process.stderr.write(`\n${text}\n`);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${text}\n`);
+  }
+});
+
+/**
+ * Whether test number `index` (0-based, in file order) runs in this shard.
+ * `shard` is XFG_TEST_SHARD, e.g. "1/2"; tests are dealt round-robin.
+ */
+export function inShard(index: number, shard: string | undefined): boolean {
+  if (!shard) return true;
+  const match = /^(\d+)\/(\d+)$/.exec(shard);
+  const part = Number(match?.[1]);
+  const total = Number(match?.[2]);
+  if (!match || total < 1 || part < 1 || part > total) {
+    throw new Error(`XFG_TEST_SHARD must look like 1/2, got "${shard}"`);
+  }
+  return index % total === part - 1;
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,7 +141,7 @@ export const repoRoot = join(projectRoot, "../..");
  * Execute a shell command and return output.
  * This helper is only used in integration tests with hardcoded commands.
  * The commands are controlled and not derived from external/user input.
- * All outbound commands are paced through a shared bottleneck limiter.
+ * Commands are paced per request class (see classifyCommand).
  *
  * Note: Uses execFile("sh", ["-c", command]) which requires shell features
  * (pipes, env expansion). All command arguments are controlled test constants
@@ -38,7 +155,13 @@ export async function exec(
     quiet?: boolean;
   }
 ): Promise<string> {
-  return limiter.schedule(async () => {
+  const requestClass = classifyCommand(command);
+  const queuedAt = Date.now();
+  const run = async (): Promise<string> => {
+    const waitMs = Date.now() - queuedAt;
+    stats[requestClass]++;
+    stats.queueWaitMs += waitMs;
+    stats.maxQueueWaitMs = Math.max(stats.maxQueueWaitMs, waitMs);
     try {
       const { stdout } = await execFileAsync("sh", ["-c", command], {
         cwd: options?.cwd ?? projectRoot,
@@ -56,7 +179,12 @@ export async function exec(
       }
       throw error;
     }
-  });
+  };
+  if (requestClass === "cli") return run();
+  const weight = secondaryLimitPoints(requestClass);
+  return limiters[requestClass].schedule(() =>
+    pointsBudget.schedule({ weight }, run)
+  );
 }
 
 // Status codes must follow an HTTP/status prefix: bare digits also match
@@ -68,7 +196,6 @@ const HTTP_5XX = /(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*50[0234]\b/i;
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
  */
 const TRANSIENT_ERROR_PATTERNS = [
-  // HTTP status codes and server errors
   HTTP_5XX,
   /Server Error/i,
   /Service Unavailable/i,
@@ -92,7 +219,6 @@ const TRANSIENT_ERROR_PATTERNS = [
   /internal\s*server\s*error/i,
   /temporary\s*(failure|error)/i,
   /please try again later/i,
-  // DNS
   /could\s*not\s*resolve\s*host/i,
   /unable\s*to\s*access/i,
 ];
@@ -179,10 +305,11 @@ export async function withTestRetry<T>(
 
       let waitMs: number;
       if (isRateLimit) {
+        stats.rateLimitHits++;
         const retryAfter = parseRetryAfter(errorText);
         waitMs = retryAfter ?? 60_000;
         console.log(
-          `  ${description}: attempt ${attempt}/${retries + 1} hit rate limit, waiting ${waitMs}ms...`
+          `::warning title=Rate limited::${description}: attempt ${attempt}/${retries + 1} hit a rate limit at ${new Date().toISOString()}, waiting ${waitMs}ms`
         );
       } else {
         waitMs = baseDelayMs * 2 ** (attempt - 1);
@@ -195,7 +322,6 @@ export async function withTestRetry<T>(
     }
   }
 
-  // Unreachable — loop always returns or throws
   throw new Error("withTestRetry: unexpected code path");
 }
 
@@ -363,7 +489,6 @@ export async function waitForFileDeleted(
           `gh api repos/${repo}/contents/${filePath} --jq '.sha'`,
           envOptions
         );
-        // If exec succeeded, file still exists — throw to trigger retry
         throw new Error(`File ${filePath} still exists`);
       } catch (error) {
         if (
@@ -547,85 +672,81 @@ export async function isForkedFrom(
   return parentName === upstreamFullName;
 }
 
+const EMPTY_TREE = "4b825dc642cb6eb9a060e54bf8d69288fbee4904";
+
+async function listOrEmpty(
+  run: (command: string) => Promise<string>,
+  command: string
+): Promise<string[]> {
+  try {
+    return (await run(command)).split("\n").filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 /**
- * Reset an ephemeral test repo to a clean state:
- * close open PRs, delete non-default branches, delete all files on main,
- * delete rulesets, and optionally delete labels.
+ * Reset an ephemeral test repo to a clean state: delete rulesets, close open
+ * PRs, delete non-default branches, and empty main in one commit. Labels are
+ * kept unless `deleteLabels` is set.
  *
  * Note: repo is a hardcoded test constant (e.g. "spruyt-labs/xfg-sync-test-..."),
  * not user input.
  */
 export async function resetTestRepo(
   repo: string,
-  _options?: { deleteLabels?: boolean }
+  options: { deleteLabels?: boolean } = {},
+  run: (command: string) => Promise<string> = (command) =>
+    execWithRetry(command, { quiet: true })
 ): Promise<void> {
   console.log("\n=== Resetting ephemeral repo ===\n");
-  try {
-    const prs = await exec(`gh api repos/${repo}/pulls --jq '.[].number'`);
-    for (const pr of prs.split("\n").filter(Boolean)) {
-      await exec(
-        `gh api --method PATCH repos/${repo}/pulls/${pr} -f state=closed`
-      );
+  const [rulesets, prs, branches, labels, head] = await Promise.all([
+    listOrEmpty(run, `gh api repos/${repo}/rulesets --jq '.[].id'`),
+    listOrEmpty(run, `gh api repos/${repo}/pulls --jq '.[].number'`),
+    listOrEmpty(run, `gh api repos/${repo}/branches --jq '.[].name'`),
+    options.deleteLabels
+      ? listOrEmpty(run, `gh api repos/${repo}/labels --jq '.[].name'`)
+      : Promise.resolve([]),
+    run(
+      `gh api repos/${repo}/branches/main --jq '.commit.sha + " " + .commit.commit.tree.sha'`
+    ),
+  ]);
+
+  // Rulesets first: they can block the branch deletes and the update to main
+  const cleanup = [
+    ...rulesets.map(
+      (id) => `gh api --method DELETE repos/${repo}/rulesets/${id}`
+    ),
+    ...prs.map(
+      (pr) => `gh api --method PATCH repos/${repo}/pulls/${pr} -f state=closed`
+    ),
+    ...branches
+      .filter((branch) => branch !== "main")
+      .map(
+        (branch) =>
+          `gh api --method DELETE repos/${repo}/git/refs/heads/${branch}`
+      ),
+    ...labels.map(
+      (label) =>
+        `gh api --method DELETE repos/${repo}/labels/${encodeURIComponent(label)}`
+    ),
+  ];
+  for (const command of cleanup) {
+    try {
+      await run(command);
+    } catch {
+      /* already gone */
     }
-  } catch {
-    /* no PRs */
   }
-  try {
-    const branches = await exec(
-      `gh api repos/${repo}/branches --jq '.[].name'`
+
+  const [headSha, treeSha] = head.split(" ");
+  if (treeSha !== EMPTY_TREE) {
+    const commitSha = await run(
+      `gh api --method POST repos/${repo}/git/commits -f message=reset -f tree=${EMPTY_TREE} -f 'parents[]=${headSha}' --jq '.sha'`
     );
-    for (const branch of branches.split("\n").filter(Boolean)) {
-      if (branch !== "main") {
-        try {
-          await exec(
-            `gh api --method DELETE repos/${repo}/git/refs/heads/${branch}`
-          );
-        } catch {
-          /* already gone */
-        }
-      }
-    }
-  } catch {
-    /* no branches */
-  }
-  try {
-    const files = await exec(`gh api repos/${repo}/contents --jq '.[].name'`);
-    for (const file of files.split("\n").filter(Boolean)) {
-      try {
-        const sha = await exec(
-          `gh api repos/${repo}/contents/${file} --jq '.sha'`
-        );
-        await exec(
-          `gh api --method DELETE repos/${repo}/contents/${file} -f message="reset" -f sha="${sha}"`
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* empty repo */
-  }
-  try {
-    const rulesets = await exec(`gh api repos/${repo}/rulesets --jq '.[].id'`);
-    for (const id of rulesets.split("\n").filter(Boolean)) {
-      await exec(`gh api --method DELETE repos/${repo}/rulesets/${id}`);
-    }
-  } catch {
-    /* no rulesets */
-  }
-  try {
-    const labels = await exec(`gh api repos/${repo}/labels --jq '.[].name'`);
-    for (const label of labels.split("\n").filter(Boolean)) {
-      try {
-        await exec(
-          `gh api --method DELETE repos/${repo}/labels/${encodeURIComponent(label)}`
-        );
-      } catch {
-        /* ignore */
-      }
-    }
-  } catch {
-    /* no labels */
+    await run(
+      `gh api --method PATCH repos/${repo}/git/refs/heads/main -f sha=${commitSha}`
+    );
   }
   console.log("=== Reset complete ===\n");
 }

@@ -14,10 +14,10 @@ export const CORE_PERMANENT_ERROR_PATTERNS: RegExp[] = [
   /bad\s*credentials/i,
   /invalid\s*(token|credentials)/i,
   /unauthorized/i,
-  /401\b/,
-  /403\b/,
-  /404\b/,
-  /422\b/,
+  /\b401\b/,
+  /\b403\b/,
+  /\b404\b/,
+  /\b422\b/,
   /not\s*found/i,
   /does\s*not\s*exist/i,
   /repository\s*not\s*found/i,
@@ -65,11 +65,11 @@ const DEFAULT_TRANSIENT_ERROR_PATTERNS: RegExp[] = [
   /network\s*(error|unreachable)/i,
   /rate\s*limit/i,
   /too\s*many\s*requests/i,
-  /429\b/,
-  /500\b/,
-  /502\b/,
-  /503\b/,
-  /504\b/,
+  /\b429\b/,
+  /\b500\b/,
+  /\b502\b/,
+  /\b503\b/,
+  /\b504\b/,
   /service\s*unavailable/i,
   /temporarily\s*unavailable/i,
   /internal\s*server\s*error/i,
@@ -145,7 +145,6 @@ export function isPermanentError(
   const message = error instanceof Error ? error.message : String(error ?? "");
   const combined = `${message} ${getStderr(error)}`;
 
-  // Check permanent patterns first - these always stop retries
   for (const pattern of patterns) {
     if (pattern.test(combined)) {
       return true;
@@ -200,7 +199,6 @@ export async function withRetry<T>(
           !isTransientError(error, options?.transientErrorPatterns) &&
           isPermanentError(error, permanentPatterns)
         ) {
-          // Wrap in AbortError to stop retrying immediately
           throw new AbortError(error);
         }
         throw error;
@@ -209,7 +207,6 @@ export async function withRetry<T>(
     {
       retries,
       onFailedAttempt: async (context) => {
-        // Apply rate-limit-specific delay before the next retry
         if (context.retriesLeft > 0 && isRateLimitError(context.error)) {
           const retryAfterSeconds =
             (context.error as RateLimitedError).retryAfter ??
@@ -220,7 +217,6 @@ export async function withRetry<T>(
           await (options?._delay ?? delay)(retryAfterSeconds * 1000);
         }
 
-        // Log the failure (existing behavior)
         if (context.retriesLeft > 0) {
           const msg =
             sanitizeCredentials(context.error.message) || "Unknown error";

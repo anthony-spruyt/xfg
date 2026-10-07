@@ -23,12 +23,26 @@ if [ "${1:-}" = "--fixture" ]; then
   # Create the ephemeral repo (action jobs sync TO an existing repo)
   gh repo create "${OWNER}/${REPO_NAME}" --public --add-readme
 
+  # Fine-grained PAT permissions (issues:write here) can lag a new repo by a few seconds
+  echo "Waiting for PAT permissions to propagate to ${OWNER}/${REPO_NAME}..."
+  for ELAPSED in $(seq 0 30); do
+    if gh api "repos/${OWNER}/${REPO_NAME}/labels" --jq '.[0].name' >/dev/null 2>&1; then
+      echo "Repo permissions ready after ${ELAPSED}s"
+      break
+    fi
+    if [ "${ELAPSED}" -eq 30 ]; then
+      echo "WARNING: Repo permissions not ready after 30s — PAT may lack issues:write scope"
+      break
+    fi
+    sleep 1
+  done
+
   # Substitute placeholder in fixture template
   sed "s|OWNER/REPO_PLACEHOLDER|${OWNER}/${REPO_NAME}|g" "${FIXTURE_PATH}" >"${CONFIG_PATH}"
 
   echo "Wrote config to ${CONFIG_PATH} (from fixture ${FIXTURE_PATH})"
 else
-  # Inline config mode (backward compatible)
+  # Inline config mode: the repo does not exist yet, because xfg creates it
   PREFIX="${1:?Usage: create-ephemeral-repo-config.sh <prefix> <owner> <config-path> <config-id> <file-name> <file-content-json>}"
   OWNER="${2:?Missing owner}"
   CONFIG_PATH="${3:?Missing config-path}"
@@ -49,24 +63,6 @@ repos:
 ENDCONFIG
 
   echo "Wrote config to ${CONFIG_PATH}"
-fi
-
-# Wait for fine-grained PAT permissions to propagate to the new repo.
-# When a PAT is scoped to "All repositories", issues:write and pull_requests:write
-# may take seconds to propagate to dynamically created repos.
-echo "Waiting for PAT permissions to propagate to ${OWNER}/${REPO_NAME}..."
-TIMEOUT=30
-ELAPSED=0
-while [ "$ELAPSED" -lt "$TIMEOUT" ]; do
-  if gh api "repos/${OWNER}/${REPO_NAME}/labels" --jq '.[0].name' >/dev/null 2>&1; then
-    echo "Repo permissions ready after ${ELAPSED}s"
-    break
-  fi
-  sleep 2
-  ELAPSED=$((ELAPSED + 2))
-done
-if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
-  echo "WARNING: Repo permissions not ready after ${TIMEOUT}s — PAT may lack issues:write scope"
 fi
 
 # Output for GitHub Actions
