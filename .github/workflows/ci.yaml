@@ -98,7 +98,7 @@ jobs:
 
   lint:
     if: github.event.action != 'labeled' || github.event.label.name == 'run-integration'
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@main"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@5cbe1a184d32fd631420e30e20b46a85b5aa244f" # main
 
   build:
     needs:
@@ -193,4 +193,4 @@ jobs:
       - "build"
       - "integration-tests"
     if: "always()"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@main"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@5cbe1a184d32fd631420e30e20b46a85b5aa244f" # main
