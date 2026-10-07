@@ -9,7 +9,6 @@ on:
         description: "Environment holding the GitHub test credentials (integration for PRs, integration-main for main)"
         type: string
         required: true
-    # The rest come from the job's environment; declared so linters know the secrets context
     secrets:
       AZURE_DEVOPS_EXT_PAT:
         required: false
