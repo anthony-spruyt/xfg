@@ -68,9 +68,19 @@ describe("isTransientErrorText", () => {
     "gh: HTTP 503",
     "Command failed: sh -c curl ...\nHTTP 504",
     "<html><head><title>502 Bad Gateway</title></head></html>",
+    "curl: (22) The requested URL returned error: 503\nerror code: 503HTTP 503",
   ]) {
     test(`is true for 5xx: ${text}`, () => {
       assert.equal(isTransientErrorText(text), true);
     });
   }
+
+  test("is true for a curl -w status glued to the response body", () => {
+    assert.equal(isTransientErrorText("Retry laterHTTP 429"), true);
+    assert.equal(isRateLimitText("Retry laterHTTP 429"), true);
+  });
+
+  test("is false for HTTP 501 Not Implemented", () => {
+    assert.equal(isTransientErrorText("gh: Not Implemented (HTTP 501)"), false);
+  });
 });

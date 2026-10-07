@@ -61,8 +61,8 @@ export async function exec(
 
 // Status codes must follow an HTTP/status prefix: bare digits also match
 // the Date.now() timestamps in generateRepoName() repo names.
-const HTTP_429 = /\b(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*429\b/i;
-const HTTP_5XX = /\b(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*50[0-4]\b/i;
+const HTTP_429 = /(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*429\b/i;
+const HTTP_5XX = /(?:HTTP(?:\/[\d.]+)?|status(?:\s+code)?:?)\s*50[0234]\b/i;
 
 /**
  * Transient HTTP error patterns from the GitHub API that warrant a retry.
@@ -129,9 +129,6 @@ function parseRetryAfter(errorText: string): number | null {
   return null;
 }
 
-/**
- * Async delay helper.
- */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -427,9 +424,6 @@ export async function waitForCommitVerified(
 // All inputs are controlled test constants (owner, repoName from
 // randomBytes), not user input. Uses the same exec() wrapper above.
 
-/**
- * Generate a unique ephemeral repo name for lifecycle tests.
- */
 export function generateRepoName(prefix = "lifecycle"): string {
   return `xfg-${prefix}-test-${Date.now()}-${randomBytes(3).toString("hex")}`;
 }
@@ -636,9 +630,6 @@ export async function resetTestRepo(
   console.log("=== Reset complete ===\n");
 }
 
-/**
- * Write a YAML config file and return its path.
- */
 export function writeConfig(tmpDir: string, configYaml: string): string {
   const configPath = join(
     tmpDir,
