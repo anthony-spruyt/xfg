@@ -23,21 +23,6 @@ pull_request_rules:
           - "agent/fixing"
           - "agent/fixable"
           - "agent/needs-review"
-  - name: "release"
-    conditions:
-      - "base = main"
-      - "label=autorelease: pending"
-      - "author = repo-operator-release-bot[bot]"
-      - "head~=^release-please--branches--"
-      - "files~=^\\.release-please-manifest\\.json$"
-      - "-commits[*].author~=^(?!repo-operator-release-bot\\[bot\\]$)"
-      - "-commits[*].email_author~=^(?!321986956\\+repo-operator-release-bot\\[bot\\]@users\\.noreply\\.github\\.com$)"
-      - "-commits[*].email_committer~=^(?!noreply@github\\.com$)"
-      - "#commits-unverified = 0"
-      - "schedule = Mon-Mon 09:00-12:00[Australia/Melbourne]"
-    actions:
-      review:
-        type: "APPROVE"
 merge_protections:
   - name: "approval"
     if:
@@ -77,7 +62,4 @@ merge_protections:
 merge_protections_settings:
   reporting_method: "check-runs"
   auto_merge_conditions:
-    - or:
-        - "-label=autorelease: pending"
-        - "schedule = Mon-Mon 09:00-12:00[Australia/Melbourne]"
     - "-label = blocked"
