@@ -1316,6 +1316,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../configuration/environments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Environments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../configuration/code-scanning/" class="md-nav__link">
         
   
@@ -2752,6 +2780,50 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#rootenvironmentconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rootEnvironmentConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environmentconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        environmentConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploymentbranchpolicy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deploymentBranchPolicy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploymentbranchpattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deploymentBranchPattern
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3601,6 +3673,50 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#rootenvironmentconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        rootEnvironmentConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environmentconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        environmentConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploymentbranchpolicy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deploymentBranchPolicy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deploymentbranchpattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        deploymentBranchPattern
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4413,6 +4529,13 @@
 <td>Direct collaborators for personal (user-owned) repos.</td>
 </tr>
 <tr>
+<td><code>environments</code></td>
+<td><code>object</code> of <code>false</code> | <a href="#rootenvironmentconfig"><code>rootEnvironmentConfig</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub deployment environments keyed by name.</td>
+</tr>
+<tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
 <td>No</td>
@@ -4427,6 +4550,7 @@
 <li><code>variables</code> — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.</li>
 <li><code>secrets</code> — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
 <li><code>collaborators</code> — Org repos are skipped with a warning.</li>
+<li><code>environments</code> — Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -4497,6 +4621,13 @@
 <td>Direct collaborators for personal (user-owned) repos.</td>
 </tr>
 <tr>
+<td><code>environments</code></td>
+<td><code>object</code> of <code>false</code> | <a href="#environmentconfig"><code>environmentConfig</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub deployment environments keyed by name, merged over inherited ones.</td>
+</tr>
+<tr>
 <td><code>deleteOrphaned</code></td>
 <td><code>boolean</code></td>
 <td>No</td>
@@ -4513,6 +4644,7 @@
 <li><code>variables</code> — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.</li>
 <li><code>secrets</code> — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
 <li><code>collaborators</code> — Users are added to inherited users. Set inherit: false to drop inherited users.</li>
+<li><code>environments</code> — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -4746,7 +4878,7 @@
 <td><code>replace</code> | <code>append</code> | <code>prepend</code> | <code>merge</code></td>
 <td>Yes</td>
 <td>-</td>
-<td>How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id)</td>
+<td>How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id)</td>
 </tr>
 <tr>
 <td><code>$values</code></td>
@@ -4788,6 +4920,13 @@
 <td>-</td>
 <td>Bypass actor values to merge</td>
 </tr>
+<tr>
+<td><code>$matchBy</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values</td>
+</tr>
 </tbody>
 </table>
 <!-- xfg:generated:end -->
@@ -4820,6 +4959,13 @@
 <td>Yes</td>
 <td>-</td>
 <td>Rule values to merge</td>
+</tr>
+<tr>
+<td><code>$matchBy</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values</td>
 </tr>
 </tbody>
 </table>
@@ -5610,6 +5756,150 @@
 </table>
 <!-- xfg:generated:end -->
 
+<h3 id="rootenvironmentconfig">rootEnvironmentConfig<a class="headerlink" href="#rootenvironmentconfig" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated schema:rootEnvironmentConfig -->
+
+<p>A GitHub deployment environment</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deploymentBranchPolicy</code></td>
+<td><a href="#deploymentbranchpolicy"><code>deploymentBranchPolicy</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>Which refs can deploy.</td>
+</tr>
+<tr>
+<td><code>secrets</code></td>
+<td><code>object</code> of <code>false</code> | <a href="#secretconfig"><code>secretConfig</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>Environment secrets keyed by name.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>deploymentBranchPolicy</code> — Omit to let any branch deploy.</li>
+<li><code>secrets</code> — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.</li>
+</ul>
+<!-- xfg:generated:end -->
+
+<h3 id="environmentconfig">environmentConfig<a class="headerlink" href="#environmentconfig" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated schema:environmentConfig -->
+
+<p>A GitHub deployment environment, merged over the inherited one</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>deploymentBranchPolicy</code></td>
+<td><code>false</code> | <a href="#deploymentbranchpolicy"><code>deploymentBranchPolicy</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>Which refs can deploy.</td>
+</tr>
+<tr>
+<td><code>secrets</code></td>
+<td><code>object</code> of <code>false</code> | <a href="#secretconfig"><code>secretConfig</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>Environment secrets keyed by name.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>deploymentBranchPolicy</code> — Replaces the inherited policy as a whole.</li>
+<li><code>secrets</code> — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.</li>
+</ul>
+<!-- xfg:generated:end -->
+
+<h3 id="deploymentbranchpolicy">deploymentBranchPolicy<a class="headerlink" href="#deploymentbranchpolicy" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated schema:deploymentBranchPolicy -->
+
+<p>Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>protectedBranches</code></td>
+<td><code>true</code></td>
+<td>No</td>
+<td>-</td>
+<td>Only branches with branch protection rules can deploy</td>
+</tr>
+<tr>
+<td><code>custom</code></td>
+<td><a href="#deploymentbranchpattern"><code>deploymentBranchPattern</code></a>[]</td>
+<td>No</td>
+<td>-</td>
+<td>Only refs matching these patterns can deploy.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>custom</code> — Patterns on GitHub that are not listed here are left in place with a warning.</li>
+</ul>
+<!-- xfg:generated:end -->
+
+<h3 id="deploymentbranchpattern">deploymentBranchPattern<a class="headerlink" href="#deploymentbranchpattern" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated schema:deploymentBranchPattern -->
+
+<p>A branch or tag name pattern allowed to deploy</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>branch</code> | <code>tag</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>Whether the pattern matches branches or tags</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>string</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>fnmatch-style name pattern, e.g. main, release/<em>, v</em>.<em>.</em></td>
+</tr>
+</tbody>
+</table>
+<!-- xfg:generated:end -->
+
+<p>See <a href="../../configuration/environments/">Environments</a>.</p>
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
 <p>The schema validates:</p>
 <ul>
