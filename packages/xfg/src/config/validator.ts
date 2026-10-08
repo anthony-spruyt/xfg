@@ -135,6 +135,15 @@ function validateRootSettings(config: RawConfig): void {
       "'inherit' is not allowed in root-level collaborators (nothing to inherit from)"
     );
   }
+
+  if (
+    config.settings.environments &&
+    "inherit" in config.settings.environments
+  ) {
+    throw new ValidationError(
+      "'inherit' is not allowed in root-level environments (nothing to inherit from)"
+    );
+  }
 }
 
 function validateGithubHosts(config: RawConfig): void {
@@ -486,6 +495,16 @@ export function hasActionableSettings(
     return true;
   }
 
+  // An environment holding only secrets still needs `xfg sync` to create it.
+  if (
+    settings.environments &&
+    Object.entries(settings.environments).some(
+      ([name, env]) => name !== "inherit" && isPlainObject(env)
+    )
+  ) {
+    return true;
+  }
+
   // Secrets are deliberately absent: `xfg sync` must never process them.
   // A secrets-only config leaves `xfg sync` with nothing to do.
   return false;
@@ -568,7 +587,12 @@ function validateSecretsLayer(secrets: Record<string, unknown>): void {
 
 export function validateSecretsConfig(config: RawConfig): void {
   for (const settings of collectAllSettings(config)) {
-    if (!settings?.secrets) continue;
-    validateSecretsLayer(settings.secrets as Record<string, unknown>);
+    if (settings?.secrets) {
+      validateSecretsLayer(settings.secrets as Record<string, unknown>);
+    }
+    for (const [name, env] of Object.entries(settings?.environments ?? {})) {
+      if (name === "inherit" || !isPlainObject(env) || !env.secrets) continue;
+      validateSecretsLayer(env.secrets as Record<string, unknown>);
+    }
   }
 }

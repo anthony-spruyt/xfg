@@ -11,6 +11,8 @@ import { formatActionCountEntry } from "../../shared/count-format.js";
 export interface SecretsPlanEntry {
   name: string;
   action: ActiveAction;
+  /** Set for environment secrets */
+  environment?: string;
 }
 
 export interface SecretsPlanResult {
@@ -24,17 +26,26 @@ const ACTION_ORDER: Record<ActiveAction, number> = {
   delete: 2,
 };
 
+/** `secret "X"` plus its notes, e.g. `secret "X" (environment "release", update, value write-only)`. */
+export function formatSecretLabel(entry: SecretsPlanEntry): string {
+  const notes: string[] = [];
+  if (entry.environment !== undefined) {
+    notes.push(`environment ${quoted(entry.environment)}`);
+  }
+  if (entry.action === "update") notes.push("update", "value write-only");
+  const suffix = notes.length > 0 ? ` (${notes.join(", ")})` : "";
+  return `secret ${quoted(entry.name)}${suffix}`;
+}
+
 // Names only: this formatter must never receive or print a secret value.
 function formatEntry(entry: SecretsPlanEntry): string {
   switch (entry.action) {
     case "create":
-      return chalk.green(`    + secret ${quoted(entry.name)}`);
+      return chalk.green(`    + ${formatSecretLabel(entry)}`);
     case "update":
-      return chalk.yellow(
-        `    ~ secret ${quoted(entry.name)} (update, value write-only)`
-      );
+      return chalk.yellow(`    ~ ${formatSecretLabel(entry)}`);
     case "delete":
-      return chalk.red(`    - secret ${quoted(entry.name)}`);
+      return chalk.red(`    - ${formatSecretLabel(entry)}`);
   }
 }
 
@@ -44,7 +55,11 @@ export function formatSecretsPlan(
 ): SecretsPlanResult {
   const entries: SecretsPlanEntry[] = changes
     .filter(isActiveAction)
-    .map((c) => ({ name: c.name, action: c.action }))
+    .map((c) =>
+      c.environment === undefined
+        ? { name: c.name, action: c.action }
+        : { name: c.name, action: c.action, environment: c.environment }
+    )
     .sort((a, b) => ACTION_ORDER[a.action] - ACTION_ORDER[b.action]);
 
   const summary = formatActionCountEntry(

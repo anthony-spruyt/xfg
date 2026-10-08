@@ -9,6 +9,7 @@ import type {
   ICodeScanningProcessor,
   IVariablesProcessor,
   ICollaboratorsProcessor,
+  IEnvironmentsProcessor,
   BaseProcessorResult,
 } from "../settings/index.js";
 import type { RepoInfo } from "../repo/index.js";
@@ -30,6 +31,8 @@ export type VariablesProcessorFactory =
   SettingsProcessorFactory<IVariablesProcessor>;
 export type CollaboratorsProcessorFactory =
   SettingsProcessorFactory<ICollaboratorsProcessor>;
+export type EnvironmentsProcessorFactory =
+  SettingsProcessorFactory<IEnvironmentsProcessor>;
 
 export type SettingsKind =
   | "rulesets"
@@ -37,7 +40,8 @@ export type SettingsKind =
   | "repo"
   | "codeScanning"
   | "variables"
-  | "collaborators";
+  | "collaborators"
+  | "environments";
 
 export interface SettingsProcessorFactories {
   rulesets: RulesetProcessorFactory;
@@ -46,6 +50,7 @@ export interface SettingsProcessorFactories {
   codeScanning: CodeScanningProcessorFactory;
   variables: VariablesProcessorFactory;
   collaborators: CollaboratorsProcessorFactory;
+  environments: EnvironmentsProcessorFactory;
 }
 
 /**

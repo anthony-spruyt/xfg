@@ -39,6 +39,9 @@ function logSettingsResult(
     }
   } else if (!result.skipped && result.success) {
     logger.success(repoNumber, repoName, `${label}: ${result.message}`);
+    for (const warning of result.warnings ?? []) {
+      logger.warn(warning);
+    }
   } else if (result.skipped) {
     for (const warning of result.warnings ?? []) {
       logger.warn(warning);
@@ -172,6 +175,22 @@ function buildSettingsDescriptors(
           settingsCollector,
           (e, r) => {
             e.collaboratorsResult = r;
+          }
+        ),
+    },
+    {
+      key: "environments" as const,
+      label: "Environments",
+      run: () =>
+        runAndStoreResult(
+          factories.environments,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.environmentsResult = r;
           }
         ),
     },

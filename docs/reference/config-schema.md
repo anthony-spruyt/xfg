@@ -276,22 +276,24 @@ GitHub code scanning default setup configuration
 
 Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.
 
-| Field            | Type                                                   | Required | Default | Description                                                     |
-| ---------------- | ------------------------------------------------------ | -------- | ------- | --------------------------------------------------------------- |
-| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)           | No       | -       | Map of ruleset names to configurations.                         |
-| `repo`           | [`githubRepoSettings`](#githubreposettings)            | No       | -       | GitHub repository settings (features, merge options, security). |
-| `labels`         | `object` of `false` \| [`label`](#label)               | No       | -       | Map of label names to configurations.                           |
-| `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)        | No       | -       | GitHub code scanning default setup configuration.               |
-| `variables`      | `object` of `false` \| `string`                        | No       | -       | Map of GitHub Actions variable names to values.                 |
-| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig) | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
-| `collaborators`  | `object`                                               | No       | -       | Direct collaborators for personal (user-owned) repos.           |
-| `deleteOrphaned` | `boolean`                                              | No       | `false` | Track managed resources for orphan deletion.                    |
+| Field            | Type                                                                     | Required | Default | Description                                                     |
+| ---------------- | ------------------------------------------------------------------------ | -------- | ------- | --------------------------------------------------------------- |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                             | No       | -       | Map of ruleset names to configurations.                         |
+| `repo`           | [`githubRepoSettings`](#githubreposettings)                              | No       | -       | GitHub repository settings (features, merge options, security). |
+| `labels`         | `object` of `false` \| [`label`](#label)                                 | No       | -       | Map of label names to configurations.                           |
+| `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)                          | No       | -       | GitHub code scanning default setup configuration.               |
+| `variables`      | `object` of `false` \| `string`                                          | No       | -       | Map of GitHub Actions variable names to values.                 |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)                   | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
+| `collaborators`  | `object`                                                                 | No       | -       | Direct collaborators for personal (user-owned) repos.           |
+| `environments`   | `object` of `false` \| [`rootEnvironmentConfig`](#rootenvironmentconfig) | No       | -       | GitHub deployment environments keyed by name.                   |
+| `deleteOrphaned` | `boolean`                                                                | No       | `false` | Track managed resources for orphan deletion.                    |
 
 - `rulesets` — Set a ruleset to false to disable it.
 - `labels` — Set a label to false to disable it.
 - `variables` — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.
 - `secrets` — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Org repos are skipped with a warning.
+- `environments` — Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->
@@ -304,16 +306,17 @@ See [Secrets](../configuration/secrets.md) and [GitHub Variables](../configurati
 
 Repository settings including GitHub Rulesets and repository features
 
-| Field            | Type                                                       | Required | Default | Description                                                     |
-| ---------------- | ---------------------------------------------------------- | -------- | ------- | --------------------------------------------------------------- |
-| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)               | No       | -       | Map of ruleset names to configurations.                         |
-| `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)     | No       | -       | GitHub repository settings (features, merge options, security). |
-| `labels`         | `object` of `false` \| [`label`](#label)                   | No       | -       | Map of label names to configurations.                           |
-| `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings) | No       | -       | GitHub code scanning default setup configuration.               |
-| `variables`      | `object` of `false` \| `string`                            | No       | -       | Map of GitHub Actions variable names to values.                 |
-| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)     | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
-| `collaborators`  | `object`                                                   | No       | -       | Direct collaborators for personal (user-owned) repos.           |
-| `deleteOrphaned` | `boolean`                                                  | No       | `false` | Track managed resources for orphan deletion.                    |
+| Field            | Type                                                             | Required | Default | Description                                                               |
+| ---------------- | ---------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------- |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                     | No       | -       | Map of ruleset names to configurations.                                   |
+| `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)           | No       | -       | GitHub repository settings (features, merge options, security).           |
+| `labels`         | `object` of `false` \| [`label`](#label)                         | No       | -       | Map of label names to configurations.                                     |
+| `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings)       | No       | -       | GitHub code scanning default setup configuration.                         |
+| `variables`      | `object` of `false` \| `string`                                  | No       | -       | Map of GitHub Actions variable names to values.                           |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)           | No       | -       | Map of GitHub Actions secret names to SecretConfig.                       |
+| `collaborators`  | `object`                                                         | No       | -       | Direct collaborators for personal (user-owned) repos.                     |
+| `environments`   | `object` of `false` \| [`environmentConfig`](#environmentconfig) | No       | -       | GitHub deployment environments keyed by name, merged over inherited ones. |
+| `deleteOrphaned` | `boolean`                                                        | No       | `false` | Track managed resources for orphan deletion.                              |
 
 - `rulesets` — Set a ruleset to false to opt out. Set inherit: false to skip all inherited rulesets.
 - `repo` — Set to false at per-repo level to opt out of inherited settings.
@@ -322,6 +325,7 @@ Repository settings including GitHub Rulesets and repository features
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
+- `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->
@@ -738,6 +742,68 @@ Secret configuration mapping to an environment variable source
 | `env` | `string` | Yes      | -       | Name of the environment variable containing the secret value |
 
 <!-- xfg:generated:end -->
+
+### rootEnvironmentConfig
+
+<!-- xfg:generated schema:rootEnvironmentConfig -->
+
+A GitHub deployment environment
+
+| Field                    | Type                                                   | Required | Default | Description                        |
+| ------------------------ | ------------------------------------------------------ | -------- | ------- | ---------------------------------- |
+| `deploymentBranchPolicy` | [`deploymentBranchPolicy`](#deploymentbranchpolicy)    | No       | -       | Which refs can deploy.             |
+| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig) | No       | -       | Environment secrets keyed by name. |
+
+- `deploymentBranchPolicy` — Omit to let any branch deploy.
+- `secrets` — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.
+
+<!-- xfg:generated:end -->
+
+### environmentConfig
+
+<!-- xfg:generated schema:environmentConfig -->
+
+A GitHub deployment environment, merged over the inherited one
+
+| Field                    | Type                                                           | Required | Default | Description                        |
+| ------------------------ | -------------------------------------------------------------- | -------- | ------- | ---------------------------------- |
+| `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.             |
+| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name. |
+
+- `deploymentBranchPolicy` — Replaces the inherited policy as a whole.
+- `secrets` — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.
+
+<!-- xfg:generated:end -->
+
+### deploymentBranchPolicy
+
+<!-- xfg:generated schema:deploymentBranchPolicy -->
+
+Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.
+
+| Field               | Type                                                    | Required | Default | Description                                           |
+| ------------------- | ------------------------------------------------------- | -------- | ------- | ----------------------------------------------------- |
+| `protectedBranches` | `true`                                                  | No       | -       | Only branches with branch protection rules can deploy |
+| `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] | No       | -       | Only refs matching these patterns can deploy.         |
+
+- `custom` — Patterns on GitHub that are not listed here are left in place with a warning.
+
+<!-- xfg:generated:end -->
+
+### deploymentBranchPattern
+
+<!-- xfg:generated schema:deploymentBranchPattern -->
+
+A branch or tag name pattern allowed to deploy
+
+| Field  | Type              | Required | Default | Description                                              |
+| ------ | ----------------- | -------- | ------- | -------------------------------------------------------- |
+| `type` | `branch` \| `tag` | Yes      | -       | Whether the pattern matches branches or tags             |
+| `name` | `string`          | Yes      | -       | fnmatch-style name pattern, e.g. main, release/*, v*.*.* |
+
+<!-- xfg:generated:end -->
+
+See [Environments](../configuration/environments.md).
 
 ## Validation
 

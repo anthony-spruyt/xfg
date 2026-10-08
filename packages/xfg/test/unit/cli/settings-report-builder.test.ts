@@ -648,3 +648,54 @@ describe("buildSettingsReport collaborators", () => {
     });
   });
 });
+
+describe("buildSettingsReport environments", () => {
+  test("keeps environment changes and totals them", () => {
+    const report = buildSettingsReport([
+      {
+        repoName: "me/repo",
+        environmentsResult: {
+          planOutput: {
+            entries: [
+              {
+                name: "release",
+                action: "create" as const,
+                desiredKind: "custom" as const,
+                addedPatterns: [{ type: "branch" as const, name: "main" }],
+              },
+              {
+                name: "prod",
+                action: "update" as const,
+                currentKind: "all" as const,
+                desiredKind: "protected" as const,
+                addedPatterns: [],
+              },
+            ],
+          },
+        },
+      },
+    ]);
+
+    assert.equal(report.repos[0].environments?.length, 2);
+    assert.deepEqual(report.totals.environments, { create: 1, update: 1 });
+  });
+
+  test("keeps the environment of an environment secret", () => {
+    const report = buildSettingsReport([
+      {
+        repoName: "me/repo",
+        secretsResult: {
+          planOutput: {
+            entries: [
+              { name: "KEY", action: "create" as const, environment: "release" },
+            ],
+          },
+        },
+      },
+    ]);
+
+    assert.deepEqual(report.repos[0].secrets, [
+      { name: "KEY", action: "create", environment: "release" },
+    ]);
+  });
+});

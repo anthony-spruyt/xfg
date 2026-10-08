@@ -142,6 +142,8 @@ function buildCtx(
       neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
     collaborators:
       neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+    environments:
+      neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
   };
   return {
     repoConfig: { name: "org/repo" } as unknown as RepoConfig,
@@ -188,6 +190,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -222,6 +226,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -261,6 +267,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -304,6 +312,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -349,6 +359,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -400,6 +412,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -445,6 +459,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -483,6 +499,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -532,6 +550,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -577,6 +597,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -621,6 +643,8 @@ describe("applyRepoSettings", () => {
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
           neverCalledFactory() as unknown as SettingsProcessorFactories["collaborators"],
+        environments:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["environments"],
       },
       logger,
     });
@@ -681,5 +705,55 @@ describe("applyRepoSettings", () => {
       .filter((c) => c.method === "warn")
       .map((c) => c.args[0]);
     assert.deepEqual(warns, ["personal repos only"]);
+  });
+
+  test("runs environments and stores the result", async () => {
+    const collector = new ResultsCollector();
+    const { logger } = createMockLogger();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { environments: { release: {} } },
+      } as unknown as RepoConfig,
+      settingsCollector: collector,
+      factories: {
+        ...buildCtx({}).factories,
+        environments: createMockFactory(
+          successResult
+        ) as unknown as SettingsProcessorFactories["environments"],
+      },
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+
+    assert.ok("environmentsResult" in collector.getAll()[0]);
+  });
+
+  test("logs warnings from successful results without plan lines", async () => {
+    const { logger, calls } = createMockLogger();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { environments: { release: {} } },
+      } as unknown as RepoConfig,
+      factories: {
+        ...buildCtx({}).factories,
+        environments: createMockFactory({
+          ...successResult,
+          warnings: ['environment "release" has tag "v*" not in config'],
+        }) as unknown as SettingsProcessorFactories["environments"],
+      },
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+
+    const warns = calls
+      .filter((c) => c.method === "warn")
+      .map((c) => c.args[0]);
+    assert.deepEqual(warns, [
+      'environment "release" has tag "v*" not in config',
+    ]);
   });
 });

@@ -50,6 +50,15 @@ export {
   GitHubCollaboratorsStrategy,
 } from "./collaborators/index.js";
 
+export {
+  type EnvironmentsPlanEntry,
+  type EnvironmentsProcessorResult,
+  EnvironmentsProcessor,
+  type IEnvironmentsProcessor,
+  type IEnvironmentSecretsStrategy,
+  GitHubEnvironmentsStrategy,
+} from "./environments/index.js";
+
 // Secrets — not wired into `xfg sync`; driven by `xfg secrets sync` only.
 export {
   SecretsProcessor,
