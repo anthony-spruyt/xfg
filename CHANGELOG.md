@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.1.0](https://github.com/anthony-spruyt/xfg/compare/v8.0.0...v8.1.0) (2026-10-08)
+
+
+### Features
+
+* manage GitHub repository environments ([#1139](https://github.com/anthony-spruyt/xfg/issues/1139)) ([ed52de4](https://github.com/anthony-spruyt/xfg/commit/ed52de48348a5cad8a78aeee03d7daa54bb762d2))
+* match array items by a chosen key when merging ([#1140](https://github.com/anthony-spruyt/xfg/issues/1140)) ([d978699](https://github.com/anthony-spruyt/xfg/commit/d97869941c42c38c9faad9aee692c91cc8a28c80))
+
 ## [8.0.0](https://github.com/anthony-spruyt/xfg/compare/v7.5.2...v8.0.0) (2026-10-07)
 
 
