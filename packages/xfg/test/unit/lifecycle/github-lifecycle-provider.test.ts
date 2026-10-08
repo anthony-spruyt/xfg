@@ -1753,6 +1753,103 @@ describe("GitHubLifecycleProvider", () => {
       );
     });
 
+    test("create() retries a 502 for a repo named with 403", async () => {
+      const { provider, repoCreateCalls } = setup(
+        new Error(
+          "Command failed: gh repo create someuser/x-403 --private\nHTTP 502: Bad Gateway"
+        ),
+        1
+      );
+
+      await assert.rejects(
+        () =>
+          provider.create({
+            repo: { ...personalRepoInfo, repo: "x-403" },
+            token: "ghs_app_token",
+          }),
+        (error: Error) => {
+          assert.match(error.message, /502/);
+          assert.doesNotMatch(error.message, /Repository creation/);
+          return true;
+        }
+      );
+      assert.equal(repoCreateCalls().length, 2);
+    });
+
+    test("create() reports permissions for an App 403 on a repo named with 403", async () => {
+      const { provider, repoCreateCalls } = setup(
+        new Error(
+          "Command failed: gh repo create someuser/x-403 --private\nHTTP 403: Rate Limit Exceeded"
+        )
+      );
+
+      await assert.rejects(
+        () =>
+          provider.create({
+            repo: { ...personalRepoInfo, repo: "x-403" },
+            token: "ghs_app_token",
+          }),
+        CREATE_PERMISSIONS
+      );
+      assert.equal(repoCreateCalls().length, 1);
+    });
+
+    for (const [label, message] of [
+      ["REST rate limit", "HTTP 403: API rate limit exceeded for installation"],
+      [
+        "GraphQL rate limit",
+        "HTTP 403: API rate limit already exceeded for installation ID 123",
+      ],
+      [
+        "secondary rate limit",
+        "HTTP 403: You have exceeded a secondary rate limit",
+      ],
+      ["429", "HTTP 429: Too Many Requests"],
+    ] as const) {
+      test(`create() retries an App ${label}`, async () => {
+        const error = Object.assign(new Error(message), { retryAfter: 0 });
+        const { provider, repoCreateCalls } = setup(error, 1);
+
+        await assert.rejects(
+          () =>
+            provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
+          (thrown: Error) => {
+            assert.doesNotMatch(thrown.message, /Repository creation/);
+            return true;
+          }
+        );
+        assert.equal(repoCreateCalls().length, 2);
+      });
+    }
+
+    test("create() with a PAT retries a masked 403", async () => {
+      const error = Object.assign(new Error(MASKED_403), { retryAfter: 0 });
+      const { provider, repoCreateCalls } = setup(error, 1);
+
+      await assert.rejects(
+        () =>
+          provider.create({ repo: personalRepoInfo, token: "github_pat_abc" }),
+        /Rate Limit Exceeded/
+      );
+      assert.equal(repoCreateCalls().length, 2);
+    });
+
+    test("fork() names the upstream installation in the needed permissions", async () => {
+      const { provider } = setup(
+        new Error("HTTP 403: Resource not accessible by integration")
+      );
+
+      await assert.rejects(
+        () =>
+          provider.fork!({
+            upstream: upstreamRepoInfo,
+            target: personalRepoInfo,
+            token: "ghs_app_token",
+          }),
+        /on the upstream account with access to the upstream repository/
+      );
+    });
+
     test("create() still retries transient errors", async () => {
       const { provider, repoCreateCalls } = setup(
         new Error("HTTP 502: Bad Gateway"),

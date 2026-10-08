@@ -79,15 +79,15 @@ const FORK_POLL_INTERVAL_MS = 2_000;
 const CREATE_REPO_APP_PERMISSIONS =
   "Administration: Read and write or Repository creation: Read and write";
 const FORK_REPO_APP_PERMISSIONS =
-  "Administration: Read and write and Contents: Read, and be installed on the target account with access to all repositories";
+  "Administration: Read and write and Contents: Read, and be installed on the target account with access to all repositories and on the upstream account with access to the upstream repository";
 
 const APP_PERMISSION_DENIED_PATTERNS = [
-  /\b403\b/,
+  /\bHTTP\s*403\b/,
   /not\s*accessible\s*by\s*integration/i,
 ];
 
 const GITHUB_RATE_LIMIT_PATTERNS = [
-  /API rate limit exceeded/i,
+  /API rate limit/i,
   /secondary rate limit/i,
   /abuse detection/i,
   /too many requests/i,
