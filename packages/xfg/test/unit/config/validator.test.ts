@@ -2563,6 +2563,66 @@ describe("validateRawConfig", () => {
       assert.doesNotThrow(() => validateRawConfig(config));
     });
 
+    test("accepts $matchBy on a bypassActors merge directive", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              bypassActors: {
+                $arrayMerge: "merge",
+                $matchBy: "actorId",
+                $values: [{ actorId: 123, actorType: "Integration" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("accepts $matchBy on a rules merge directive", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "merge",
+                $matchBy: "type",
+                $values: [{ type: "required_signatures" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.doesNotThrow(() => validateRawConfig(config));
+    });
+
+    test("rejects a non-string $matchBy on a rules directive", () => {
+      const config = createValidConfig({
+        settings: {
+          rulesets: {
+            "main-protection": {
+              target: "branch",
+              rules: {
+                $arrayMerge: "merge",
+                $matchBy: 1,
+                $values: [{ type: "required_signatures" }],
+              } as never,
+            },
+          },
+        },
+      });
+
+      assert.throws(
+        () => validateRawConfig(config),
+        /rules must be an array or \$arrayMerge directive/
+      );
+    });
+
     test("accepts $arrayMerge directive on conditions.refName.include", () => {
       const config = createValidConfig({
         settings: {

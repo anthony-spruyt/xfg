@@ -123,7 +123,7 @@ rules:
 ```
 
 !!! note "Directives are stripped"
-    Both `$arrayMerge` and `$values` are internal directives and do not appear in the final output.
+    `$arrayMerge`, `$values` and `$matchBy` are internal directives and do not appear in the final output.
 
 ### Merge by Key
 
@@ -131,7 +131,7 @@ The `merge` strategy matches array items by an identity key and deep-merges matc
 
 **How it works:**
 
-1. xfg auto-detects the identity key by checking candidates in order: `type`, `actor_id`
+1. xfg uses the [`$matchBy`](#match-by-a-chosen-key) key if the directive sets one; otherwise it auto-detects the identity key by checking candidates in order: `type`, `actor_id`
 2. The first candidate key present in every item of both arrays wins
 3. For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended
 4. Unmatched base items are preserved in their original position
@@ -171,6 +171,51 @@ conditionalGroups:
 ```
 
 Result for repos with `has-mergify`: the `required_status_checks` rule has both `ci / build` and `mergify / queue` checks — no duplication of the rule itself, and the nested `$arrayMerge: append` adds the check inside the matched item.
+
+### Match by a Chosen Key
+
+For lists keyed by anything other than `type` or `actor_id`, name the key with `$matchBy`. Mergify's `queue_rules`, for example, are keyed by `name`:
+
+```yaml
+files:
+  .mergify.yml:
+    content:
+      queue_rules:
+        - name: default
+          merge_conditions:
+            - check-success = lint
+        - name: hotfix
+          merge_conditions:
+            - label = hotfix
+
+groups:
+  ci-repo:
+    files:
+      .mergify.yml:
+        content:
+          queue_rules:
+            $arrayMerge: merge
+            $matchBy: name
+            $values:
+              - name: default
+                merge_conditions:
+                  $arrayMerge: append
+                  $values:
+                    - check-success = repo-summary / Check Results
+```
+
+Result for repos in `ci-repo`: the `default` rule's `merge_conditions` are `check-success = lint` and `check-success = repo-summary / Check Results`, and the `hotfix` rule is unchanged.
+
+Items with the same `$matchBy` value are deep-merged, so nested directives apply. Overlay items with no match are appended. `$matchBy` works everywhere `$arrayMerge` works, in file content and in settings.
+
+`$matchBy` fails closed. Each of these is a config error that names the file or ruleset and the path to the array:
+
+- `$matchBy` with any strategy other than `$arrayMerge: merge`
+- An item in either array without the `$matchBy` key
+- A `$matchBy` value that is not a string, number, boolean or null
+- Two items in the same array with the same `$matchBy` value
+
+Without `$matchBy`, `merge` auto-detects `type` or `actor_id` as before. `name` is deliberately not auto-detected: many lists have `name` fields (workflow steps, for example), and matching them automatically would silently change existing merges.
 
 ## Text File Merge Strategies
 
@@ -267,7 +312,7 @@ conditionalGroups:
 Repos with the `github-ci` group get both the `pull_request` rule and the `required_status_checks` rule. Repos without `github-ci` only get the `pull_request` rule.
 
 !!! note "Same syntax as file content"
-    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`.
+    The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`. `merge` accepts [`$matchBy`](#match-by-a-chosen-key) here too.
 
 ## Example: Different Strategies per File
 

@@ -1,5 +1,7 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
+import { parse as parseYaml } from "yaml";
+import { validateForSync } from "../../../src/config/validator.js";
 import {
   normalizeConfig,
   mergeSettings,
@@ -6723,6 +6725,301 @@ describe("mergeRawSettings collaborators", () => {
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
       users: ["root-bot", "cond-bot"],
+    });
+  });
+});
+
+describe("$matchBy through normalizeConfig", () => {
+  test("merges the issue's Mergify queue_rules example end to end", () => {
+    const raw = parseYaml(`
+id: test-config
+files:
+  .mergify.yml:
+    content:
+      queue_rules:
+        - name: default
+          merge_conditions:
+            - check-success = lint
+        - name: hotfix
+          merge_conditions:
+            - label = hotfix
+groups:
+  ci-repo:
+    files:
+      .mergify.yml:
+        content:
+          queue_rules:
+            $arrayMerge: merge
+            $matchBy: name
+            $values:
+              - name: default
+                merge_conditions:
+                  $arrayMerge: append
+                  $values:
+                    - check-success = repo-summary / Check Results
+repos:
+  - git: git@github.com:org/plain.git
+  - git: git@github.com:org/ci.git
+    groups: [ci-repo]
+`) as RawConfig;
+
+    validateForSync(raw);
+    const result = normalizeConfig(raw, process.env);
+
+    assert.deepStrictEqual(result.repos[0].files[0].content, {
+      queue_rules: [
+        { name: "default", merge_conditions: ["check-success = lint"] },
+        { name: "hotfix", merge_conditions: ["label = hotfix"] },
+      ],
+    });
+    assert.deepStrictEqual(result.repos[1].files[0].content, {
+      queue_rules: [
+        {
+          name: "default",
+          merge_conditions: [
+            "check-success = lint",
+            "check-success = repo-summary / Check Results",
+          ],
+        },
+        { name: "hotfix", merge_conditions: ["label = hotfix"] },
+      ],
+    });
+  });
+
+  test("names the file when a group layer misuses $matchBy", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": { content: { queue_rules: [{ name: "default" }] } },
+      },
+      groups: {
+        "ci-repo": {
+          files: {
+            ".mergify.yml": {
+              content: {
+                queue_rules: {
+                  $arrayMerge: "append",
+                  $matchBy: "name",
+                  $values: [{ name: "default" }],
+                },
+              },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["ci-repo"] }],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+    });
+  });
+
+  test("names the file when a repo override has a duplicate key value", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": {
+          content: { queue_rules: [{ name: "default" }, { name: "default" }] },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              content: {
+                queue_rules: {
+                  $arrayMerge: "merge",
+                  $matchBy: "name",
+                  $values: [{ name: "default", batch_size: 2 }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: base items 0 and 1 share $matchBy name 'default'",
+    });
+  });
+
+  test("names the file when root content misuses $matchBy under a repo override", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": {
+          content: {
+            queue_rules: {
+              $arrayMerge: "append",
+              $matchBy: "name",
+              $values: [{ name: "a" }],
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              content: {
+                queue_rules: {
+                  $arrayMerge: "append",
+                  $values: [{ name: "b" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+    });
+  });
+
+  test("names the file when override content misuses $matchBy", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { ".mergify.yml": { content: { queue_rules: [] } } },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              override: true,
+              content: {
+                queue_rules: {
+                  $arrayMerge: "prepend",
+                  $matchBy: "name",
+                  $values: [{ name: "default" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got 'prepend'",
+    });
+  });
+
+  test("names the file when override content has $matchBy without $arrayMerge", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { ".mergify.yml": { content: { queue_rules: [] } } },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              override: true,
+              content: {
+                queue_rules: {
+                  $matchBy: "name",
+                  $values: [{ name: "default" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got none",
+    });
+  });
+
+  test("matches ruleset bypass actors by the chosen key in a group layer", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      settings: {
+        rulesets: {
+          main: {
+            bypassActors: [
+              { actorId: 1, actorType: "Team", bypassMode: "always" },
+              { actorId: 2, actorType: "Team", bypassMode: "always" },
+            ],
+          },
+        },
+      },
+      groups: {
+        strict: {
+          settings: {
+            rulesets: {
+              main: {
+                bypassActors: {
+                  $arrayMerge: "merge",
+                  $matchBy: "actorId",
+                  $values: [{ actorId: 2, bypassMode: "pull_request" }],
+                },
+              },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["strict"] }],
+    } as unknown as RawConfig;
+
+    validateForSync(raw);
+    const result = normalizeConfig(raw, process.env);
+
+    assert.deepStrictEqual(
+      result.repos[0].settings?.rulesets?.main.bypassActors,
+      [
+        { actorId: 1, actorType: "Team", bypassMode: "always" },
+        { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
+      ]
+    );
+  });
+
+  test("names the ruleset when a repo override misuses $matchBy", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      settings: {
+        rulesets: {
+          main: { bypassActors: [{ actorId: 1, actorType: "Team" }] },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          settings: {
+            rulesets: {
+              main: {
+                bypassActors: {
+                  $arrayMerge: "merge",
+                  $matchBy: "actorId",
+                  $values: [{ actorType: "Team" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    } as unknown as RawConfig;
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        "ruleset 'main': bypassActors: overlay item 0 has no $matchBy key 'actorId'",
     });
   });
 });

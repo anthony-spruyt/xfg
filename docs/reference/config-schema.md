@@ -376,10 +376,10 @@ GitHub repository settings for features, merge options, and security
 
 Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.
 
-| Field         | Type                                          | Required | Default | Description                                                                                                                                                                   |
-| ------------- | --------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id) |
-| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                           |
+| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                    |
+| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id) |
+| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                            |
 
 <!-- xfg:generated:end -->
 
@@ -389,10 +389,11 @@ Merge directive for arrays. Instead of replacing the base array, append, prepend
 
 Merge directive for bypassActors array
 
-| Field         | Type                                          | Required | Default | Description                      |
-| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array |
-| `$values`     | [`bypassActor`](#bypassactor)[]               | Yes      | -       | Bypass actor values to merge     |
+| Field         | Type                                          | Required | Default | Description                                                                                                |
+| ------------- | --------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array                                                                           |
+| `$values`     | [`bypassActor`](#bypassactor)[]               | Yes      | -       | Bypass actor values to merge                                                                               |
+| `$matchBy`    | `string`                                      | No       | -       | Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values |
 
 <!-- xfg:generated:end -->
 
@@ -402,10 +403,11 @@ Merge directive for bypassActors array
 
 Merge directive for rules array
 
-| Field         | Type                                          | Required | Default | Description                      |
-| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array |
-| `$values`     | [`rulesetRule`](#rulesetrule)[]               | Yes      | -       | Rule values to merge             |
+| Field         | Type                                          | Required | Default | Description                                                                                                |
+| ------------- | --------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array                                                                           |
+| `$values`     | [`rulesetRule`](#rulesetrule)[]               | Yes      | -       | Rule values to merge                                                                                       |
+| `$matchBy`    | `string`                                      | No       | -       | Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values |
 
 <!-- xfg:generated:end -->
 
