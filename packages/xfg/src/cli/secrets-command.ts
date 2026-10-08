@@ -11,7 +11,11 @@ import {
   SodiumEncryptor,
 } from "../settings/secrets/index.js";
 import { GitHubEnvironmentsStrategy } from "../settings/environments/index.js";
-import { GitHubRepoMetadataProvider } from "../repo/index.js";
+import {
+  GitHubRepoMetadataProvider,
+  parseGitUrl,
+  getRepoDisplayName,
+} from "../repo/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { createTokenManagerFromEnv } from "../vcs/index.js";
@@ -21,7 +25,6 @@ import {
   type IGitHubTokenProvider,
   type ITokenManager,
 } from "../shared/gh-token-utils.js";
-import { parseGitUrl, getRepoDisplayName } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import {

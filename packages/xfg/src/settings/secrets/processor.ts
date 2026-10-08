@@ -7,6 +7,7 @@ import type { RepoConfig, SecretConfig } from "../../config/index.js";
 import type { ISecretsStrategy, GitHubPublicKey } from "./types.js";
 import type { IEnvironmentSecretsStrategy } from "../environments/types.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
+import { runSequentially } from "../../shared/sequential.js";
 import { quoted } from "../../shared/string-utils.js";
 import type { ISecretEncryptor } from "./encryption.js";
 import type { IEnvResolver } from "../../shared/env-resolver.js";
@@ -216,23 +217,26 @@ export class SecretsProcessor implements ISecretsProcessor {
         publicKey: await this.strategy.getPublicKey(githubRepo, strategyOptions),
       });
     }
-    for (const [i, g] of writableGroups.entries()) {
-      scopes.set(g.environment, {
-        values: envValues[i],
-        publicKey: await this.environments!.strategy.getSecretsPublicKey(
+    const envKeys = await Promise.all(
+      writableGroups.map((g) =>
+        this.environments!.strategy.getSecretsPublicKey(
           githubRepo,
           g.environment,
           strategyOptions
-        ),
-      });
+        )
+      )
+    );
+    for (const [i, g] of writableGroups.entries()) {
+      scopes.set(g.environment, { values: envValues[i], publicKey: envKeys[i] });
     }
 
     const applied: SecretChange[] = [];
     try {
-      for (const change of changes.filter(isActiveAction)) {
+      // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+      await runSequentially(changes.filter(isActiveAction), async (change) => {
         await this.writeChange(githubRepo, change, scopes, strategyOptions);
         applied.push(change);
-      }
+      });
     } catch (error) {
       // Report what already landed: the writes are not rolled back.
       return {
@@ -350,20 +354,23 @@ export class SecretsProcessor implements ISecretsProcessor {
     groups: EnvironmentSecrets[],
     strategyOptions: GhApiOptions
   ): Promise<SecretChange[]> {
-    const changes: SecretChange[] = [];
-    for (const group of groups) {
-      const current = group.exists
-        ? await this.environments!.strategy.listSecrets(
-            githubRepo,
-            group.environment,
-            strategyOptions
-          )
-        : [];
-      const names = group.entries.map(([name]) => name);
-      for (const change of diffSecrets(current, names, false)) {
-        changes.push({ ...change, environment: group.environment });
-      }
-    }
-    return changes;
+    const currentByGroup = await Promise.all(
+      groups.map((group) =>
+        group.exists
+          ? this.environments!.strategy.listSecrets(
+              githubRepo,
+              group.environment,
+              strategyOptions
+            )
+          : []
+      )
+    );
+    return groups.flatMap((group, i) =>
+      diffSecrets(
+        currentByGroup[i],
+        group.entries.map(([name]) => name),
+        false
+      ).map((change) => ({ ...change, environment: group.environment }))
+    );
   }
 }

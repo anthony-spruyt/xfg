@@ -381,14 +381,21 @@ function finalizeEnvironment(env: RawEnvironmentConfig): EnvironmentConfig {
   return result;
 }
 
+// Matches the entries mergeNamedEntries acts on; anything else is ignored there.
+function isMergeableEntry(entry: unknown): boolean {
+  return entry === false || (typeof entry === "object" && entry !== null);
+}
+
 // GitHub environment names are case-insensitive; base entries take the overlay's spelling so they merge.
 function mergeEnvironmentEntries(
   base: Record<string, RawEnvironmentConfig | false> | undefined,
-  overlay: Record<string, RawEnvironmentConfig | false | boolean | undefined>
+  overlay: Record<string, RawEnvironmentConfig | boolean | undefined>
 ): Record<string, RawEnvironmentConfig | false> {
   const overlayNames = new Map<string, string>();
-  for (const name of Object.keys(overlay)) {
-    if (name !== "inherit") overlayNames.set(name.toLowerCase(), name);
+  for (const [name, entry] of Object.entries(overlay)) {
+    if (name !== "inherit" && isMergeableEntry(entry)) {
+      overlayNames.set(name.toLowerCase(), name);
+    }
   }
 
   const rekeyed: Record<string, RawEnvironmentConfig | false> = {};

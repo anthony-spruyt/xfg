@@ -8,6 +8,7 @@ import type {
   RepoInfo,
 } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
+import { runSequentially } from "../../shared/sequential.js";
 import { quoted } from "../../shared/string-utils.js";
 import { toErrorMessage } from "../../shared/type-guards.js";
 import {
@@ -98,14 +99,12 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
     names: string[],
     strategyOptions: GhApiOptions
   ): Promise<Map<string, DeploymentBranchPattern[]>> {
-    const patterns = new Map<string, DeploymentBranchPattern[]>();
-    for (const name of names) {
-      patterns.set(
-        name.toLowerCase(),
-        await this.strategy.listBranchPolicies(githubRepo, name, strategyOptions)
-      );
-    }
-    return patterns;
+    const lists = await Promise.all(
+      names.map((name) =>
+        this.strategy.listBranchPolicies(githubRepo, name, strategyOptions)
+      )
+    );
+    return new Map(names.map((name, i) => [name.toLowerCase(), lists[i]]));
   }
 
   private async applySettings(
@@ -142,11 +141,14 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
     const progress = { writes: 0 };
     let appliedCount = 0;
     try {
-      for (const change of changes) {
-        if (change.action === "unchanged") continue;
-        await this.applyChange(githubRepo, change, strategyOptions, progress);
-        appliedCount++;
-      }
+      // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+      await runSequentially(
+        changes.filter((c) => c.action !== "unchanged"),
+        async (change) => {
+          await this.applyChange(githubRepo, change, strategyOptions, progress);
+          appliedCount++;
+        }
+      );
     } catch (error) {
       if (progress.writes > 0 || !isPaidPlanError(error)) throw error;
       return this.skipIfNotPublic(githubRepo, strategyOptions, repoName, error);
@@ -191,7 +193,8 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
       );
     }
 
-    for (const pattern of missing) {
+    // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+    await runSequentially(missing, async (pattern) => {
       await this.strategy.createBranchPolicy(
         githubRepo,
         change.name,
@@ -199,7 +202,7 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
         strategyOptions
       );
       progress.writes++;
-    }
+    });
   }
 
   // GitHub can't report the plan up front: listing a free private repo's environments still succeeds.

@@ -59,6 +59,10 @@ function formatEntry(entry: EnvironmentsPlanEntry): string[] {
   return lines;
 }
 
+function actionRank(entry: EnvironmentsPlanEntry): number {
+  return entry.action === "create" ? 0 : 1;
+}
+
 export function formatEnvironmentsPlan(
   changes: EnvironmentChange[],
   dryRun: boolean
@@ -66,9 +70,7 @@ export function formatEnvironmentsPlan(
   const entries = changes
     .map(toEntry)
     .filter((e): e is EnvironmentsPlanEntry => e !== null)
-    .sort((a, b) =>
-      a.action === b.action ? 0 : a.action === "create" ? -1 : 1
-    );
+    .sort((a, b) => actionRank(a) - actionRank(b));
 
   const summary = formatActionCountEntry(
     "environment",

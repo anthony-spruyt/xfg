@@ -4,7 +4,10 @@ import {
   mergeSettings,
   normalizeConfig,
 } from "../../../src/config/normalizer.js";
-import type { RawConfig } from "../../../src/config/types.js";
+import type {
+  RawConfig,
+  RawRepoSettings,
+} from "../../../src/config/types.js";
 
 const mainOnly = { custom: [{ type: "branch" as const, name: "main" }] };
 
@@ -134,6 +137,18 @@ describe("mergeSettings - environments", () => {
         deploymentBranchPolicy: mainOnly,
         secrets: { A: { env: "A_SRC" }, B: { env: "B_SRC" } },
       },
+    });
+  });
+
+  test("a non-object, non-false overlay entry does not rename the base key", () => {
+    const result = mergeSettings(
+      { environments: { Release: { deploymentBranchPolicy: mainOnly } } },
+      {
+        environments: { release: true } as unknown as RawRepoSettings["environments"],
+      }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      Release: { deploymentBranchPolicy: mainOnly },
     });
   });
 

@@ -18,6 +18,20 @@ interface SettingsDescriptor {
   run: () => Promise<SettingsResult>;
 }
 
+function logWarnings(logger: Logger, warnings: string[] | undefined): void {
+  for (const warning of warnings ?? []) {
+    logger.warn(warning);
+  }
+}
+
+function logPlanLines(logger: Logger, header: string, lines: string[]): void {
+  logger.info("");
+  logger.info(header);
+  for (const line of lines) {
+    logger.info(line);
+  }
+}
+
 function logSettingsResult(
   logger: Logger,
   result: SettingsResult,
@@ -26,26 +40,14 @@ function logSettingsResult(
   repoName: string,
   settingsCollector: ResultsCollector
 ): void {
-  if (result.planOutput?.lines?.length) {
-    logger.info("");
-    logger.info(`${repoName} - ${label}:`);
-    for (const line of result.planOutput.lines) {
-      logger.info(line);
-    }
-    if (result.warnings?.length) {
-      for (const warning of result.warnings) {
-        logger.warn(warning);
-      }
-    }
+  const planLines = result.planOutput?.lines;
+  if (planLines?.length) {
+    logPlanLines(logger, `${repoName} - ${label}:`, planLines);
   } else if (!result.skipped && result.success) {
     logger.success(repoNumber, repoName, `${label}: ${result.message}`);
-    for (const warning of result.warnings ?? []) {
-      logger.warn(warning);
-    }
-  } else if (result.skipped) {
-    for (const warning of result.warnings ?? []) {
-      logger.warn(warning);
-    }
+  }
+  if (planLines?.length || result.skipped || result.success) {
+    logWarnings(logger, result.warnings);
   }
   if (!result.success && !result.skipped) {
     logger.error(repoNumber, repoName, `${label}: ${result.message}`);

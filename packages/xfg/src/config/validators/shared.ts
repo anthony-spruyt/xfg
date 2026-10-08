@@ -528,45 +528,64 @@ function validateSettingsEnvironments(
   const seenNames = new Map<string, string>();
   for (const [name, env] of Object.entries(settings.environments)) {
     if (name === "inherit") {
-      if (typeof env !== "boolean") {
-        throw new ValidationError(
-          `${context}: environments.inherit must be a boolean`
-        );
-      }
+      validateEnvironmentsInherit(env, context);
       continue;
     }
-    if (name.trim() === "") {
-      throw new ValidationError(
-        `${context}: environment name must not be blank`
-      );
+    validateEnvironmentName(name, context, seenNames);
+    if (env !== false) {
+      validateEnvironmentEntry(env, `${context}: environment '${name}'`, !rootCtx);
     }
-    if (name.length > ENVIRONMENT_NAME_MAX_LENGTH) {
-      throw new ValidationError(
-        `${context}: environment name '${name.slice(0, 40)}...' exceeds ${ENVIRONMENT_NAME_MAX_LENGTH} characters`
-      );
-    }
-    const firstSpelling = seenNames.get(name.toLowerCase());
-    if (firstSpelling !== undefined) {
-      throw new ValidationError(
-        `${context}: environment '${name}' duplicates '${firstSpelling}'; GitHub environment names ignore case`
-      );
-    }
-    seenNames.set(name.toLowerCase(), name);
-    if (env === false) continue;
+  }
+}
 
-    const envCtx = `${context}: environment '${name}'`;
-    if (!isPlainObject(env)) {
-      throw new ValidationError(
-        `${envCtx} must be an object, or false to opt out`
-      );
-    }
-    assertKnownKeys(env, ENVIRONMENT_KEYS, envCtx);
-    if (env.deploymentBranchPolicy !== undefined) {
-      validateDeploymentBranchPolicy(env.deploymentBranchPolicy, envCtx, !rootCtx);
-    }
-    if (env.secrets !== undefined) {
-      validateEnvironmentSecrets(env.secrets, envCtx);
-    }
+function validateEnvironmentsInherit(value: unknown, context: string): void {
+  if (typeof value !== "boolean") {
+    throw new ValidationError(
+      `${context}: environments.inherit must be a boolean`
+    );
+  }
+}
+
+function validateEnvironmentName(
+  name: string,
+  context: string,
+  seenNames: Map<string, string>
+): void {
+  if (name.trim() === "") {
+    throw new ValidationError(
+      `${context}: environment name must not be blank`
+    );
+  }
+  if (name.length > ENVIRONMENT_NAME_MAX_LENGTH) {
+    throw new ValidationError(
+      `${context}: environment name '${name.slice(0, 40)}...' exceeds ${ENVIRONMENT_NAME_MAX_LENGTH} characters`
+    );
+  }
+  const firstSpelling = seenNames.get(name.toLowerCase());
+  if (firstSpelling !== undefined) {
+    throw new ValidationError(
+      `${context}: environment '${name}' duplicates '${firstSpelling}'; GitHub environment names ignore case`
+    );
+  }
+  seenNames.set(name.toLowerCase(), name);
+}
+
+function validateEnvironmentEntry(
+  env: unknown,
+  envCtx: string,
+  isRoot: boolean
+): void {
+  if (!isPlainObject(env)) {
+    throw new ValidationError(
+      `${envCtx} must be an object, or false to opt out`
+    );
+  }
+  assertKnownKeys(env, ENVIRONMENT_KEYS, envCtx);
+  if (env.deploymentBranchPolicy !== undefined) {
+    validateDeploymentBranchPolicy(env.deploymentBranchPolicy, envCtx, isRoot);
+  }
+  if (env.secrets !== undefined) {
+    validateEnvironmentSecrets(env.secrets, envCtx);
   }
 }
 

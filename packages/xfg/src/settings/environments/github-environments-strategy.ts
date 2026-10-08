@@ -27,7 +27,7 @@ const LABEL = "GitHub Environments strategy";
 export class GitHubEnvironmentsStrategy
   implements IEnvironmentsStrategy, IEnvironmentSecretsStrategy
 {
-  private api: GhApiClient;
+  private readonly api: GhApiClient;
 
   constructor(
     executor: ICommandExecutor,
