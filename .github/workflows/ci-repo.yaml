@@ -6,9 +6,163 @@ on:
   workflow_call: {}
 permissions: {}
 jobs:
-  no-repo-jobs:
-    name: "No repo jobs yet"
-    if: "github.event_name == 'never'"
-    runs-on: "ubuntu-latest"
+  check-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+    outputs:
+      build-needed: ${{ steps.filter.outputs.build-needed }}
+      integration-needed: ${{ steps.filter.outputs.integration-needed }}
     steps:
-      - run: "true"
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Check for integration-relevant changes
+        id: filter
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          COMMIT_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          HAS_LABEL: ${{ contains(github.event.pull_request.labels.*.name, 'run-integration') }}
+          HEAD_REF: ${{ github.head_ref }}
+          IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only "origin/${BASE_REF}..${COMMIT_SHA}")
+          else
+            CHANGED=$(git diff --name-only HEAD~1)
+          fi
+
+          if echo "$CHANGED" | grep -qE '^packages/xfg/(src/|test/|scripts/|package\.json$|package-lock\.json$)'; then
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
+            echo "Code changes detected"
+          elif [ "$HAS_LABEL" = "true" ]; then
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
+            echo "PR has 'run-integration' label — integration tests need the build artifact"
+          else
+            echo "build-needed=false" >> "$GITHUB_OUTPUT"
+            echo "No code changes, will skip build and integration tests"
+          fi
+
+          # PR runs wait for owner approval: merge-queue PRs would ask a second time and main runs
+          # the suite after merge anyway; fork PRs never receive the secrets
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            if [[ "$HEAD_REF" == mergify/merge-queue/* ]]; then
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "Merge queue PR — integration tests run on the push to main"
+            elif [ "$IS_FORK" = "true" ]; then
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "Fork PR — integration secrets unavailable, skipping integration tests"
+            elif [ "$HAS_LABEL" = "true" ]; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "PR has 'run-integration' label — integration tests enabled"
+            elif echo "$CHANGED" | grep -qE '^packages/xfg/test/integration/'; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "Integration test files changed — integration tests enabled"
+            else
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "PR without integration label — skipping integration tests"
+            fi
+          else
+            if echo "$CHANGED" | grep -qE '^packages/xfg/(src/|test/|scripts/)'; then
+              echo "integration-needed=true" >> "$GITHUB_OUTPUT"
+              echo "Source changes detected — integration tests needed"
+            else
+              echo "integration-needed=false" >> "$GITHUB_OUTPUT"
+              echo "No source changes — skipping integration tests"
+            fi
+          fi
+
+          echo "Changed files:"
+          echo "$CHANGED"
+
+  build:
+    needs:
+      - "check-changes"
+    if: needs.check-changes.outputs.build-needed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+
+    concurrency:
+      group: ci-${{ github.ref }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+    defaults:
+      run:
+        working-directory: packages/xfg
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: "24"
+          cache: "npm"
+          cache-dependency-path: packages/xfg/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: packages/xfg/coverage/lcov.info
+          fail_ci_if_error: true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: dist
+          path: packages/xfg/dist/
+          retention-days: 1
+
+      - name: Create package for action tests
+        run: npm pack
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: package
+          path: "packages/xfg/*.tgz"
+          retention-days: 1
+
+  integration-tests:
+    needs:
+      - "build"
+      - "check-changes"
+    if: needs.check-changes.outputs.integration-needed == 'true'
+    permissions:
+      contents: "read"
+    uses: ./.github/workflows/_integration-tests.yaml
+    with:
+      environment: ${{ github.event_name == 'push' && 'integration-main' || 'integration' }}
+    # Environment secrets reach a called workflow only if named here; the lane's environment supplies the value
+    secrets:
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
+      GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      GH_PAT_BOT: ${{ secrets.GH_PAT_BOT }}
+      GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      TEST_APP_PRIVATE_KEY: ${{ secrets.TEST_APP_PRIVATE_KEY }}

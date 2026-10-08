@@ -1,5 +1,5 @@
 ---
-paths: [packages/xfg/test/integration/**/*, packages/xfg/test/fixtures/integration-*, .github/workflows/ci.yaml, .github/workflows/_integration-tests.yaml, .github/scripts/*]
+paths: [packages/xfg/test/integration/**/*, packages/xfg/test/fixtures/integration-*, .github/workflows/ci.yaml, .github/workflows/ci-repo.yaml, .github/workflows/_integration-tests.yaml, .github/scripts/*]
 ---
 
 # Integration Test Guidelines
@@ -43,8 +43,8 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - **Never share a repo** between two test jobs
 - Inline configs via `writeConfig()` (from `packages/xfg/test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
-- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access); the ADO and GitLab jobs use `AZURE_DEVOPS_EXT_PAT` and `GITLAB_TOKEN`. All integration secrets are stored only in the `integration` and `integration-main` environments, and every job that reads one runs in one of them with `deployment: false`: lanes in `_integration-tests.yaml` use `environment: ${{ inputs.environment }}`, and the main-only cleanup jobs use `integration-main` directly (enforced by `test/unit/ci/integration-workflow.test.ts`, which also treats `secrets['NAME']` and `secrets: inherit` as reads)
-- A reusable workflow sees an environment secret only when the caller passes it by name, even if the caller has no value for it: every secret `_integration-tests.yaml` uses must be declared in its `workflow_call.secrets` and passed by `ci.yaml` (enforced by `test/unit/ci/integration-workflow.test.ts`)
+- All GitHub jobs use `GH_PAT_ORG` secret (spruyt-labs org access); the ADO and GitLab jobs use `AZURE_DEVOPS_EXT_PAT` and `GITLAB_TOKEN`. All integration secrets are stored only in the `integration` and `integration-main` environments, and every job that reads one runs in one of them with `deployment: false`: lanes in `_integration-tests.yaml` use `environment: ${{ inputs.environment }}`, and the main-only cleanup jobs use `integration-main` directly (enforced by `test/unit/ci/integration-workflow.test.ts`, which also treats `secrets['NAME']` and `secrets: inherit` into a workflow outside this repo as reads; a local called workflow's jobs are checked themselves)
+- A reusable workflow sees an environment secret only when the caller passes it by name, even if the caller has no value for it: every secret `_integration-tests.yaml` uses must be declared in its `workflow_call.secrets` and passed by `ci-repo.yaml` (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - **No concurrency groups** on GitHub jobs (ephemeral repos can't collide)
 - **No `needs` between GitHub jobs**: approval is per waiting job, so a chained job asks the owner again. Add new suites as steps in an existing lane, or as a new parallel lane when the critical path needs it
 - Every lane that uses `GH_PAT_ORG` records its rate-limit headroom with `rate-limit-summary.sh start` and `end` (enforced by `test/unit/ci/integration-workflow.test.ts`). `test-helpers.ts` also writes per-process request counts to the job summary
@@ -55,6 +55,8 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 
 ## CI Workflow
 
+- `ci.yaml` (synced from repo-operator) runs `lint`, then `repo`, which calls `ci-repo.yaml` (`check-changes`, `build`, `integration-tests`), then `summary`. The jobs show as `repo / <job>`, and `summary / Check Results` is the one required check
+- Adding a label other than `run-integration` starts a run where every `ci.yaml` job skips, `summary` included, so it posts no `summary / Check Results` over the real result (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - Integration tests always run on `push` to `main` (when source changes detected), using the `integration-main` environment (main branch only, no approval)
 - On PRs, integration tests only run when:
   - The `run-integration` label is added to the PR, OR
