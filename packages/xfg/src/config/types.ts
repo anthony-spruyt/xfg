@@ -408,6 +408,33 @@ export type SecretsConfig = Record<string, SecretConfig | boolean> & {
   deleteOrphaned?: boolean;
 };
 
+export type DeploymentBranchPatternType = "branch" | "tag";
+
+export interface DeploymentBranchPattern {
+  type: DeploymentBranchPatternType;
+  /** fnmatch-style name pattern, e.g. `main` or `v*.*.*` */
+  name: string;
+}
+
+/** Exactly one of `protectedBranches: true` or a non-empty `custom` list. */
+export interface DeploymentBranchPolicy {
+  protectedBranches?: boolean;
+  custom?: DeploymentBranchPattern[];
+}
+
+export interface EnvironmentConfig {
+  /** Omitted: any branch can deploy */
+  deploymentBranchPolicy?: DeploymentBranchPolicy;
+  /** Environment secrets keyed by name; only `xfg secrets sync` writes them */
+  secrets?: Record<string, SecretConfig>;
+}
+
+export interface RawEnvironmentConfig {
+  /** `false` clears an inherited policy so any branch can deploy */
+  deploymentBranchPolicy?: DeploymentBranchPolicy | false;
+  secrets?: Record<string, SecretConfig | false>;
+}
+
 export interface CollaboratorsConfig {
   /** GitHub usernames granted write access (personal repos only) */
   users?: string[];
@@ -434,6 +461,8 @@ export interface RepoSettings {
   secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
   /** Direct collaborators on personal (user-owned) repos */
   collaborators?: CollaboratorsConfig;
+  /** GitHub deployment environments keyed by name */
+  environments?: Record<string, EnvironmentConfig>;
   deleteOrphaned?: boolean;
 }
 
@@ -510,6 +539,7 @@ export interface RawRootSettings {
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
   collaborators?: CollaboratorsConfig;
+  environments?: Record<string, RawEnvironmentConfig | false>;
   deleteOrphaned?: boolean;
 }
 
@@ -525,6 +555,9 @@ export interface RawRepoSettings {
   };
   secrets?: SecretsConfig & { inherit?: boolean };
   collaborators?: RawCollaboratorsConfig;
+  environments?: Record<string, RawEnvironmentConfig | false> & {
+    inherit?: boolean;
+  };
   deleteOrphaned?: boolean;
 }
 

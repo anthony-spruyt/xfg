@@ -10,6 +10,12 @@ import {
   GitHubSecretsStrategy,
   SodiumEncryptor,
 } from "../settings/secrets/index.js";
+import { GitHubEnvironmentsStrategy } from "../settings/environments/index.js";
+import {
+  GitHubRepoMetadataProvider,
+  parseGitUrl,
+  getRepoDisplayName,
+} from "../repo/index.js";
 import { EnvResolver } from "../shared/env-resolver.js";
 import { ProcessExecutor } from "../shared/command-executor.js";
 import { createTokenManagerFromEnv } from "../vcs/index.js";
@@ -19,7 +25,6 @@ import {
   type IGitHubTokenProvider,
   type ITokenManager,
 } from "../shared/gh-token-utils.js";
-import { parseGitUrl, getRepoDisplayName } from "../repo/index.js";
 import { Logger } from "../shared/logger.js";
 import { toErrorMessage } from "../shared/type-guards.js";
 import {
@@ -68,7 +73,13 @@ function createDefaultProcessor(
     cwd,
     retries,
   });
-  return new SecretsProcessor(strategy, encryptor, envResolver, tokenProvider);
+  return new SecretsProcessor(strategy, encryptor, envResolver, tokenProvider, {
+    strategy: new GitHubEnvironmentsStrategy(executor, { cwd, retries }),
+    metadataProvider: new GitHubRepoMetadataProvider(executor, {
+      cwd,
+      retries,
+    }),
+  });
 }
 
 type ParsedRepo = { repoInfo: RepoInfo } | { error: unknown };
@@ -160,6 +171,9 @@ export async function runSecretsSync(
       }
 
       anySecretsConfigured = true;
+      for (const warning of result.warnings ?? []) {
+        logger.warn(warning);
+      }
 
       if (result.skipped) {
         logger.skip(i + 1, displayName, result.message);

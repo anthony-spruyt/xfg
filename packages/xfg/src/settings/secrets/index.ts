@@ -1,11 +1,13 @@
 export { SecretsProcessor } from "./processor.js";
 export type {
+  EnvironmentSecretsDependencies,
   ISecretsProcessor,
   SecretsProcessorOptions,
   SecretsProcessorResult,
 } from "./processor.js";
 export {
   formatSecretsPlan,
+  formatSecretLabel,
   type SecretsPlanEntry,
   type SecretsPlanResult,
 } from "./formatter.js";

@@ -6,6 +6,8 @@ export type SecretAction = SettingsAction;
 export interface SecretChange {
   action: SecretAction;
   name: string;
+  /** Set for environment secrets */
+  environment?: string;
 }
 
 /**

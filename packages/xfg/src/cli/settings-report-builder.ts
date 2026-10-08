@@ -7,6 +7,7 @@ import {
   type VariablesPlanEntry,
   type CollaboratorsPlanEntry,
   type SecretsPlanEntry,
+  type EnvironmentsPlanEntry,
   countActions,
   isActiveAction,
 } from "../settings/index.js";
@@ -48,6 +49,11 @@ export interface ProcessorResults {
       entries?: SecretsPlanEntry[];
     };
   };
+  environmentsResult?: {
+    planOutput?: {
+      entries?: EnvironmentsPlanEntry[];
+    };
+  };
   error?: string;
 }
 
@@ -62,6 +68,7 @@ export function buildSettingsReport(
     variables: { create: 0, update: 0, delete: 0 },
     secrets: { create: 0, update: 0, delete: 0 },
     collaborators: { create: 0, update: 0, delete: 0 },
+    environments: { create: 0, update: 0 },
   };
 
   for (const result of results) {
@@ -73,6 +80,7 @@ export function buildSettingsReport(
       variables: [],
       secrets: [],
       collaborators: [],
+      environments: [],
     };
 
     if (result.settingsResult?.planOutput?.entries) {
@@ -156,7 +164,7 @@ export function buildSettingsReport(
 
     if (result.secretsResult?.planOutput?.entries) {
       for (const entry of result.secretsResult.planOutput.entries) {
-        repoChanges.secrets!.push({ name: entry.name, action: entry.action });
+        repoChanges.secrets!.push({ ...entry });
       }
       const counts = countActions(repoChanges.secrets!);
       totals.secrets.create += counts.create;
@@ -175,6 +183,11 @@ export function buildSettingsReport(
       const counts = countActions(repoChanges.collaborators!);
       totals.collaborators.create += counts.create;
       totals.collaborators.delete += counts.delete;
+    }
+
+    for (const entry of result.environmentsResult?.planOutput?.entries ?? []) {
+      repoChanges.environments!.push(entry);
+      totals.environments[entry.action]++;
     }
 
     if (result.error) {

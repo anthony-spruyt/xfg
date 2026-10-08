@@ -29,6 +29,12 @@ export type {
   CodeScanningState,
   CodeScanningQuerySuite,
   CodeScanningLanguage,
+  // Environments
+  DeploymentBranchPatternType,
+  DeploymentBranchPattern,
+  DeploymentBranchPolicy,
+  EnvironmentConfig,
+  RawEnvironmentConfig,
   RepoSettings,
   // Raw Config
   RawFileConfig,

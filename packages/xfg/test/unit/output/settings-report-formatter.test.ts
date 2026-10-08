@@ -2113,3 +2113,85 @@ describe("renderRepoSettingsDiffLines collaborators", () => {
     assert.equal(lines[i - 1], "");
   });
 });
+
+describe("renderRepoSettingsDiffLines environments", () => {
+  const repo = (overrides: Partial<RepoChanges>): RepoChanges => ({
+    repoName: "me/repo",
+    settings: [],
+    rulesets: [],
+    labels: [],
+    ...overrides,
+  });
+
+  test("renders created and updated environments", () => {
+    const lines: string[] = [];
+    renderRepoSettingsDiffLines(
+      repo({
+        environments: [
+          {
+            name: "release",
+            action: "create",
+            desiredKind: "custom",
+            addedPatterns: [{ type: "branch", name: "main" }],
+          },
+          {
+            name: "prod",
+            action: "update",
+            currentKind: "all",
+            desiredKind: "protected",
+            addedPatterns: [],
+          },
+        ],
+      }),
+      lines
+    );
+    assert.deepEqual(lines, [
+      '+ environment "release"',
+      "+   deployment branches: custom",
+      '+   branch "main"',
+      '! environment "prod"',
+      "!   deployment branches: all → protected",
+    ]);
+  });
+
+  test("tags environment secrets with their environment", () => {
+    const lines: string[] = [];
+    renderRepoSettingsDiffLines(
+      repo({
+        secrets: [
+          { name: "A", action: "create", environment: "release" },
+          { name: "B", action: "update", environment: "release" },
+        ],
+      }),
+      lines
+    );
+    assert.deepEqual(lines, [
+      '+ secret "A" (environment "release")',
+      '! secret "B" (environment "release", update, value write-only)',
+    ]);
+  });
+
+  test("counts environments in the summary", () => {
+    const output = formatSettingsReportCLI({
+      repos: [
+        repo({
+          environments: [
+            {
+              name: "release",
+              action: "create",
+              desiredKind: "all",
+              addedPatterns: [],
+            },
+          ],
+        }),
+      ],
+      totals: {
+        settings: { create: 0, update: 0 },
+        rulesets: { create: 0, update: 0, delete: 0 },
+        labels: { create: 0, update: 0, delete: 0 },
+        environments: { create: 1, update: 0 },
+      },
+    }).join("\n");
+    assert.ok(output.includes("1 environment (1 to create)"), output);
+  });
+});

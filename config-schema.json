@@ -712,6 +712,23 @@
           },
           "additionalProperties": false
         },
+        "environments": {
+          "type": "object",
+          "description": "GitHub deployment environments keyed by name. Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.",
+          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to disable this environment"
+              },
+              {
+                "$ref": "#/definitions/rootEnvironmentConfig"
+              }
+            ]
+          }
+        },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
@@ -871,6 +888,29 @@
             }
           },
           "additionalProperties": false
+        },
+        "environments": {
+          "type": "object",
+          "description": "GitHub deployment environments keyed by name, merged over inherited ones. Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.",
+          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "properties": {
+            "inherit": {
+              "type": "boolean",
+              "description": "Set to false to skip all inherited environments. Default: true"
+            }
+          },
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited environment"
+              },
+              {
+                "$ref": "#/definitions/environmentConfig"
+              }
+            ]
+          }
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -1820,6 +1860,111 @@
           "type": "string",
           "minLength": 1,
           "description": "Name of the environment variable containing the secret value"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deploymentBranchPattern": {
+      "type": "object",
+      "description": "A branch or tag name pattern allowed to deploy",
+      "required": ["type", "name"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["branch", "tag"],
+          "description": "Whether the pattern matches branches or tags"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "fnmatch-style name pattern, e.g. main, release/*, v*.*.*"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deploymentBranchPolicy": {
+      "type": "object",
+      "description": "Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.",
+      "properties": {
+        "protectedBranches": {
+          "type": "boolean",
+          "const": true,
+          "description": "Only branches with branch protection rules can deploy"
+        },
+        "custom": {
+          "type": "array",
+          "minItems": 1,
+          "description": "Only refs matching these patterns can deploy. Patterns on GitHub that are not listed here are left in place with a warning.",
+          "items": {
+            "$ref": "#/definitions/deploymentBranchPattern"
+          }
+        }
+      },
+      "oneOf": [
+        { "required": ["protectedBranches"] },
+        { "required": ["custom"] }
+      ],
+      "additionalProperties": false
+    },
+    "rootEnvironmentConfig": {
+      "type": "object",
+      "description": "A GitHub deployment environment",
+      "properties": {
+        "deploymentBranchPolicy": {
+          "$ref": "#/definitions/deploymentBranchPolicy",
+          "description": "Which refs can deploy. Omit to let any branch deploy."
+        },
+        "secrets": {
+          "type": "object",
+          "description": "Environment secrets keyed by name. Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited secret"
+              },
+              {
+                "$ref": "#/definitions/secretConfig"
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "environmentConfig": {
+      "type": "object",
+      "description": "A GitHub deployment environment, merged over the inherited one",
+      "properties": {
+        "deploymentBranchPolicy": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "const": false,
+              "description": "Set to false to clear an inherited policy so any branch can deploy"
+            },
+            {
+              "$ref": "#/definitions/deploymentBranchPolicy"
+            }
+          ],
+          "description": "Which refs can deploy. Replaces the inherited policy as a whole."
+        },
+        "secrets": {
+          "type": "object",
+          "description": "Environment secrets keyed by name. Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "const": false,
+                "description": "Set to false to opt out of this inherited secret"
+              },
+              {
+                "$ref": "#/definitions/secretConfig"
+              }
+            ]
+          }
         }
       },
       "additionalProperties": false
