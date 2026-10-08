@@ -26,6 +26,7 @@
         ".devcontainer/setup-devcontainer.sh",
         ".editorconfig",
         ".github/actionlint.yaml",
+        ".github/workflows/ci-repo.yaml",
         ".github/workflows/ci.yaml",
         ".github/workflows/trivy-scan.yaml",
         ".gitignore",

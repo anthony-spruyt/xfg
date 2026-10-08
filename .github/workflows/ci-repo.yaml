@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+# Repo-owned CI jobs; ci.yaml calls this after lint. See https://github.com/anthony-spruyt/repo-operator/blob/main/docs/ci.md
+
+name: "CI (repo)"
+on:
+  workflow_call: {}
+permissions: {}
+jobs:
+  no-repo-jobs:
+    name: "No repo jobs yet"
+    if: "github.event_name == 'never'"
+    runs-on: "ubuntu-latest"
+    steps:
+      - run: "true"
