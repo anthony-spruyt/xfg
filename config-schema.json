@@ -1060,7 +1060,7 @@
         "$arrayMerge": {
           "type": "string",
           "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id)"
+          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id)"
         },
         "$values": {
           "type": "array",
@@ -1086,6 +1086,11 @@
             "$ref": "#/definitions/bypassActor"
           },
           "description": "Bypass actor values to merge"
+        },
+        "$matchBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values"
         }
       },
       "additionalProperties": false
@@ -1106,6 +1111,11 @@
             "$ref": "#/definitions/rulesetRule"
           },
           "description": "Rule values to merge"
+        },
+        "$matchBy": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values"
         }
       },
       "additionalProperties": false

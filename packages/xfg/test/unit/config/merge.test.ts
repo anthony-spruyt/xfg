@@ -1,6 +1,7 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
+  createMergeContext,
   deepMerge,
   stripMergeDirectives,
   isTextContent,
@@ -545,6 +546,450 @@ describe("$arrayMerge: merge strategy", () => {
   });
 });
 
+describe("$matchBy directive", () => {
+  test("deep-merges items matched by the chosen key", () => {
+    const base = {
+      queue_rules: [
+        { name: "default", batch_size: 1 },
+        { name: "hotfix", batch_size: 5 },
+      ],
+    };
+    const overlay = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "hotfix", batch_size: 10 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      queue_rules: [
+        { name: "default", batch_size: 1 },
+        { name: "hotfix", batch_size: 10 },
+      ],
+    });
+  });
+
+  test("honors nested directives inside matched items", () => {
+    const base = {
+      queue_rules: [{ name: "default", merge_conditions: ["check-a"] }],
+    };
+    const overlay = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [
+          {
+            name: "default",
+            merge_conditions: { $arrayMerge: "append", $values: ["check-b"] },
+          },
+        ],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      queue_rules: [
+        { name: "default", merge_conditions: ["check-a", "check-b"] },
+      ],
+    });
+  });
+
+  test("appends overlay items with no match", () => {
+    const base = { queue_rules: [{ name: "default", batch_size: 1 }] };
+    const overlay = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "lowprio", batch_size: 20 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      queue_rules: [
+        { name: "default", batch_size: 1 },
+        { name: "lowprio", batch_size: 20 },
+      ],
+    });
+  });
+
+  test("matches by the chosen key even when an auto-detect key is present", () => {
+    const base = {
+      steps: [
+        { type: "run", name: "build", cmd: "make" },
+        { type: "run", name: "test", cmd: "make test" },
+      ],
+    };
+    const overlay = {
+      steps: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ type: "run", name: "test", cmd: "npm test" }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      steps: [
+        { type: "run", name: "build", cmd: "make" },
+        { type: "run", name: "test", cmd: "npm test" },
+      ],
+    });
+  });
+
+  test("does not match by name without $matchBy", () => {
+    const base = { queue_rules: [{ name: "default", batch_size: 1 }] };
+    const overlay = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $values: [{ name: "default", batch_size: 10 }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      queue_rules: [
+        { name: "default", batch_size: 1 },
+        { name: "default", batch_size: 10 },
+      ],
+    });
+  });
+
+  test("strips $matchBy from merged output", () => {
+    const base = { list: [{ name: "a", nested: { x: 1 } }] };
+    const overlay = {
+      list: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "a", nested: { y: 2 } }],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, { list: [{ name: "a", nested: { x: 1, y: 2 } }] });
+    assert.ok(!JSON.stringify(result).includes("$matchBy"));
+  });
+
+  describe("errors", () => {
+    const queueRules = (values: unknown[], strategy = "merge") => ({
+      queue_rules: { $arrayMerge: strategy, $matchBy: "name", $values: values },
+    });
+
+    for (const strategy of ["append", "prepend", "replace"]) {
+      test(`rejects $matchBy with $arrayMerge: ${strategy}`, () => {
+        assert.throws(
+          () =>
+            deepMerge(
+              { queue_rules: [{ name: "a" }] },
+              queueRules([{ name: "a" }], strategy),
+              createContext()
+            ),
+          {
+            name: "ValidationError",
+            message: `queue_rules: $matchBy requires $arrayMerge: merge, got '${strategy}'`,
+          }
+        );
+      });
+    }
+
+    test("rejects $matchBy without merge even when there is no base array", () => {
+      assert.throws(
+        () =>
+          deepMerge({}, queueRules([{ name: "a" }], "append"), createContext()),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+        }
+      );
+    });
+
+    test("rejects $matchBy without $arrayMerge", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }] },
+            { queue_rules: { $matchBy: "name", $values: [{ name: "a" }] } },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got none",
+        }
+      );
+    });
+
+    test("shows a non-string $arrayMerge as JSON in the error", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }] },
+            {
+              queue_rules: {
+                $arrayMerge: { mode: "merge" },
+                $matchBy: "name",
+                $values: [{ name: "a" }],
+              },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            'queue_rules: $matchBy requires $arrayMerge: merge, got {"mode":"merge"}',
+        }
+      );
+    });
+
+    test("rejects a $matchBy that is not a non-empty string", () => {
+      for (const matchBy of ["", 42, null]) {
+        assert.throws(
+          () =>
+            deepMerge(
+              { list: [{ name: "a" }] },
+              {
+                list: { $arrayMerge: "merge", $matchBy: matchBy, $values: [] },
+              },
+              createContext()
+            ),
+          {
+            name: "ValidationError",
+            message: "list: $matchBy must be a non-empty string",
+          }
+        );
+      }
+    });
+
+    test("rejects a base item missing the key", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }, { batch_size: 2 }] },
+            queueRules([{ name: "a" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: base item 1 has no $matchBy key 'name'",
+        }
+      );
+    });
+
+    test("rejects an overlay item missing the key, including non-objects", () => {
+      for (const item of [{ batch_size: 2 }, "name"]) {
+        assert.throws(
+          () =>
+            deepMerge(
+              { queue_rules: [{ name: "a" }] },
+              queueRules([{ name: "a" }, item]),
+              createContext()
+            ),
+          {
+            name: "ValidationError",
+            message: "queue_rules: overlay item 1 has no $matchBy key 'name'",
+          }
+        );
+      }
+    });
+
+    test("rejects duplicate key values in the base array", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }, { name: "a" }] },
+            queueRules([{ name: "a" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: base items 0 and 1 share $matchBy name 'a'",
+        }
+      );
+    });
+
+    test("rejects duplicate key values in the overlay array", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }] },
+            queueRules([{ name: "b" }, { name: "c" }, { name: "b" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: overlay items 0 and 2 share $matchBy name 'b'",
+        }
+      );
+    });
+
+    test("rejects a key the items only inherit", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { list: [{ a: 1 }] },
+            {
+              list: {
+                $arrayMerge: "merge",
+                $matchBy: "toString",
+                $values: [{ a: 2 }],
+              },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "list: overlay item 0 has no $matchBy key 'toString'",
+        }
+      );
+    });
+
+    test("rejects object and array key values", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: { x: 1 }, v: 1 }] },
+            queueRules([{ name: { x: 1 }, v: 2 }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: overlay item 0 $matchBy name must be a string, number, boolean or null",
+        }
+      );
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: ["a"] }] },
+            queueRules([{ name: "a" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: base item 0 $matchBy name must be a string, number, boolean or null",
+        }
+      );
+    });
+
+    test("matches number, boolean and null key values", () => {
+      const result = deepMerge(
+        { list: [{ id: 1 }, { id: true }, { id: null }] },
+        {
+          list: {
+            $arrayMerge: "merge",
+            $matchBy: "id",
+            $values: [
+              { id: null, v: "n" },
+              { id: 1, v: "1" },
+              { id: true, v: "t" },
+            ],
+          },
+        },
+        createContext()
+      );
+      assert.deepEqual(result.list, [
+        { id: 1, v: "1" },
+        { id: true, v: "t" },
+        { id: null, v: "n" },
+      ]);
+    });
+
+    test("validates the $matchBy of a base directive left unresolved", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            queueRules([{ name: "a" }], "append"),
+            {
+              queue_rules: { $arrayMerge: "append", $values: [{ name: "b" }] },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+        }
+      );
+      assert.throws(
+        () =>
+          deepMerge(
+            queueRules([{ name: "a" }, { name: "a" }]),
+            {
+              queue_rules: { $arrayMerge: "append", $values: [{ name: "b" }] },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: base items 0 and 1 share $matchBy name 'a'",
+        }
+      );
+    });
+
+    test("validates the overlay array when there is no base array", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            {},
+            queueRules([{ name: "a" }, { name: "a" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: overlay items 0 and 1 share $matchBy name 'a'",
+        }
+      );
+    });
+
+    test("names the nested path, through objects and matched items", () => {
+      const base = {
+        pull_request_rules: [
+          { name: "x", actions: { queue: { rules: [{ name: "a" }] } } },
+        ],
+      };
+      const overlay = {
+        pull_request_rules: {
+          $arrayMerge: "merge",
+          $matchBy: "name",
+          $values: [
+            {
+              name: "x",
+              actions: {
+                queue: {
+                  rules: {
+                    $arrayMerge: "merge",
+                    $matchBy: "name",
+                    $values: [{ id: 1 }],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      };
+      assert.throws(() => deepMerge(base, overlay, createContext()), {
+        name: "ValidationError",
+        message:
+          "pull_request_rules[0].actions.queue.rules: overlay item 0 has no $matchBy key 'name'",
+      });
+    });
+
+    test("prefixes errors with the context location", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }] },
+            queueRules([{ name: "a" }], "append"),
+            createMergeContext("replace", ".mergify.yml")
+          ),
+        {
+          name: "ValidationError",
+          message:
+            ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+        }
+      );
+    });
+  });
+});
+
 describe("stripMergeDirectives", () => {
   test("removes $arrayMerge keys", () => {
     const obj = { $arrayMerge: "append", key: "value" };
@@ -677,6 +1122,77 @@ describe("stripMergeDirectives", () => {
     const result = stripMergeDirectives(obj);
     assert.deepEqual(result, {
       outer: { inner: ["a", "b"], keep: "yes" },
+    });
+  });
+
+  test("resolves an unmerged $matchBy directive to its $values array", () => {
+    const obj = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "default" }, { name: "hotfix" }],
+      },
+    };
+    const result = stripMergeDirectives(obj);
+    assert.deepEqual(result, {
+      queue_rules: [{ name: "default" }, { name: "hotfix" }],
+    });
+  });
+
+  test("rejects an unmerged $matchBy directive without merge, naming its path", () => {
+    const obj = {
+      outer: {
+        queue_rules: {
+          $arrayMerge: "append",
+          $matchBy: "name",
+          $values: [{ name: "default" }],
+        },
+      },
+    };
+    assert.throws(() => stripMergeDirectives(obj, ".mergify.yml"), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: outer.queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+    });
+  });
+
+  test("rejects an unmerged $matchBy directive without $arrayMerge", () => {
+    const obj = {
+      outer: {
+        queue_rules: { $matchBy: "name", $values: [{ name: "default" }] },
+      },
+    };
+    assert.throws(() => stripMergeDirectives(obj, ".mergify.yml"), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: outer.queue_rules: $matchBy requires $arrayMerge: merge, got none",
+    });
+  });
+
+  test("rejects an invalid $matchBy on an object that is not a directive", () => {
+    const obj = { k: { $matchBy: "", $arrayMerge: "merge", other: 1 } };
+    assert.throws(() => stripMergeDirectives(obj), {
+      name: "ValidationError",
+      message: "k: $matchBy must be a non-empty string",
+    });
+  });
+
+  test("rejects duplicate values in an unmerged $matchBy directive", () => {
+    const obj = {
+      list: [
+        {
+          queue_rules: {
+            $arrayMerge: "merge",
+            $matchBy: "name",
+            $values: [{ name: "a" }, { name: "a" }],
+          },
+        },
+      ],
+    };
+    assert.throws(() => stripMergeDirectives(obj), {
+      name: "ValidationError",
+      message:
+        "list[0].queue_rules: overlay items 0 and 1 share $matchBy name 'a'",
     });
   });
 });
