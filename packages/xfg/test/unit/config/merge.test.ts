@@ -716,6 +716,28 @@ describe("$matchBy directive", () => {
       );
     });
 
+    test("shows a non-string $arrayMerge as JSON in the error", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: "a" }] },
+            {
+              queue_rules: {
+                $arrayMerge: { mode: "merge" },
+                $matchBy: "name",
+                $values: [{ name: "a" }],
+              },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            'queue_rules: $matchBy requires $arrayMerge: merge, got {"mode":"merge"}',
+        }
+      );
+    });
+
     test("rejects a $matchBy that is not a non-empty string", () => {
       for (const matchBy of ["", 42, null]) {
         assert.throws(

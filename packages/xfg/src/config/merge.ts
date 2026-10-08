@@ -84,7 +84,9 @@ function readMatchBy(
   }
   const strategy = directive.$arrayMerge;
   if (strategy !== "merge") {
-    const got = strategy === undefined ? "none" : `'${String(strategy)}'`;
+    let got = "none";
+    if (typeof strategy === "string") got = `'${strategy}'`;
+    else if (strategy !== undefined) got = JSON.stringify(strategy);
     throw mergeError(
       ctx,
       path,
@@ -208,8 +210,7 @@ function isUnresolvedDirective(
   if (!isPlainObject(value)) return false;
   return (
     Object.keys(value).every((k) => XFG_DIRECTIVES.has(k)) &&
-    typeof value.$arrayMerge === "string" &&
-    arrayMergeStrategies.has(value.$arrayMerge as ArrayMergeStrategy) &&
+    isArrayMergeStrategy(value.$arrayMerge) &&
     Array.isArray(value.$values)
   );
 }
@@ -259,73 +260,94 @@ function mergeObjects(
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
     if (XFG_DIRECTIVES.has(key)) continue;
-
-    const keyPath = childPath(path, key);
-    const baseValue = base[key];
-
-    // If base is an unresolved directive (from a previous layer with no base array),
-    // resolve it to its $values array before proceeding with merge logic.
-    const resolvedBase = isUnresolvedDirective(baseValue)
-      ? baseValue.$values
-      : baseValue;
-
-    if (
-      isPlainObject(overlayValue) &&
-      ("$arrayMerge" in overlayValue || "$matchBy" in overlayValue)
-    ) {
-      const strategy = overlayValue.$arrayMerge;
-      const values = overlayValue.$values;
-      const matchBy = readMatchBy(overlayValue, ctx, keyPath);
-
-      if (matchBy !== undefined && Array.isArray(values)) {
-        assertKeyedItems(values, matchBy, "overlay", ctx, keyPath);
-      }
-
-      if (
-        (strategy === "replace" ||
-          strategy === "append" ||
-          strategy === "prepend" ||
-          strategy === "merge") &&
-        Array.isArray(values) &&
-        Array.isArray(resolvedBase)
-      ) {
-        if (matchBy === undefined) {
-          result[key] = mergeArrays(
-            resolvedBase,
-            values,
-            strategy,
-            ctx,
-            keyPath
-          );
-        } else {
-          assertKeyedItems(resolvedBase, matchBy, "base", ctx, keyPath);
-          result[key] = mergeByKey(resolvedBase, values, matchBy, ctx, keyPath);
-        }
-        continue;
-      }
-    }
-
-    if (Array.isArray(resolvedBase) && Array.isArray(overlayValue)) {
-      result[key] = mergeArrays(
-        resolvedBase,
-        overlayValue,
-        ctx.defaultArrayStrategy,
-        ctx,
-        keyPath
-      );
-      continue;
-    }
-
-    if (isPlainObject(resolvedBase) && isPlainObject(overlayValue)) {
-      result[key] = mergeObjects(resolvedBase, overlayValue, ctx, keyPath);
-      continue;
-    }
-
-    // Otherwise, overlay wins (including null values)
-    result[key] = overlayValue;
+    result[key] = mergeValue(
+      base[key],
+      overlayValue,
+      ctx,
+      childPath(path, key)
+    );
   }
 
   return result;
+}
+
+function mergeValue(
+  baseValue: unknown,
+  overlayValue: unknown,
+  ctx: MergeContext,
+  path: string
+): unknown {
+  // A directive left unresolved by an earlier layer with no base array acts as its $values
+  const resolvedBase = isUnresolvedDirective(baseValue)
+    ? baseValue.$values
+    : baseValue;
+
+  if (isArrayDirective(overlayValue)) {
+    const merged = applyArrayDirective(resolvedBase, overlayValue, ctx, path);
+    if (merged !== undefined) return merged;
+  }
+
+  if (Array.isArray(resolvedBase) && Array.isArray(overlayValue)) {
+    return mergeArrays(
+      resolvedBase,
+      overlayValue,
+      ctx.defaultArrayStrategy,
+      ctx,
+      path
+    );
+  }
+
+  if (isPlainObject(resolvedBase) && isPlainObject(overlayValue)) {
+    return mergeObjects(resolvedBase, overlayValue, ctx, path);
+  }
+
+  return overlayValue;
+}
+
+function isArrayDirective(value: unknown): value is Record<string, unknown> {
+  return (
+    isPlainObject(value) && ("$arrayMerge" in value || "$matchBy" in value)
+  );
+}
+
+function isArrayMergeStrategy(value: unknown): value is ArrayMergeStrategy {
+  return (
+    typeof value === "string" &&
+    arrayMergeStrategies.has(value as ArrayMergeStrategy)
+  );
+}
+
+/**
+ * Applies an overlay directive to the base array.
+ * Returns undefined when it doesn't apply, so the caller falls back to a plain merge.
+ */
+function applyArrayDirective(
+  base: unknown,
+  directive: Record<string, unknown>,
+  ctx: MergeContext,
+  path: string
+): unknown[] | undefined {
+  const strategy = directive.$arrayMerge;
+  const values = directive.$values;
+  const matchBy = readMatchBy(directive, ctx, path);
+
+  if (matchBy !== undefined && Array.isArray(values)) {
+    assertKeyedItems(values, matchBy, "overlay", ctx, path);
+  }
+
+  if (
+    !isArrayMergeStrategy(strategy) ||
+    !Array.isArray(values) ||
+    !Array.isArray(base)
+  ) {
+    return undefined;
+  }
+
+  if (matchBy === undefined) {
+    return mergeArrays(base, values, strategy, ctx, path);
+  }
+  assertKeyedItems(base, matchBy, "base", ctx, path);
+  return mergeByKey(base, values, matchBy, ctx, path);
 }
 
 /**
