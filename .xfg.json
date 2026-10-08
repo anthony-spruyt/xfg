@@ -27,7 +27,6 @@
         ".editorconfig",
         ".github/actionlint.yaml",
         ".github/CODEOWNERS",
-        ".github/renovate.json5",
         ".github/workflows/ci.yaml",
         ".github/workflows/trivy-scan.yaml",
         ".gitignore",
@@ -53,6 +52,8 @@
         "eslint.config.js",
         "LICENSE",
         "lint.sh",
+        "renovate-overrides.json5",
+        "renovate.json",
         "trivy-mega-linter.yaml"
       ]
     }
