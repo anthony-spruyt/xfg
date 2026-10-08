@@ -381,17 +381,35 @@ function finalizeEnvironment(env: RawEnvironmentConfig): EnvironmentConfig {
   return result;
 }
 
+// GitHub environment names are case-insensitive; base entries take the overlay's spelling so they merge.
+function mergeEnvironmentEntries(
+  base: Record<string, RawEnvironmentConfig | false> | undefined,
+  overlay: Record<string, RawEnvironmentConfig | false | boolean | undefined>
+): Record<string, RawEnvironmentConfig | false> {
+  const overlayNames = new Map<string, string>();
+  for (const name of Object.keys(overlay)) {
+    if (name !== "inherit") overlayNames.set(name.toLowerCase(), name);
+  }
+
+  const rekeyed: Record<string, RawEnvironmentConfig | false> = {};
+  for (const [name, env] of Object.entries(base ?? {})) {
+    rekeyed[overlayNames.get(name.toLowerCase()) ?? name] = env;
+  }
+
+  return mergeNamedEntries<RawEnvironmentConfig>(
+    rekeyed,
+    overlay,
+    mergeEnvironmentLayer
+  );
+}
+
 function mergeEnvironments(
   root: RawRootSettings["environments"],
   perRepo: RawRepoSettings["environments"]
 ): Record<string, EnvironmentConfig> | undefined {
   if (!root && !perRepo) return undefined;
 
-  const merged = mergeNamedEntries<RawEnvironmentConfig>(
-    root,
-    perRepo ?? {},
-    mergeEnvironmentLayer
-  );
+  const merged = mergeEnvironmentEntries(root, perRepo ?? {});
 
   const result: Record<string, EnvironmentConfig> = {};
   for (const [name, env] of Object.entries(merged)) {
@@ -745,10 +763,9 @@ function mergeRawSettings(
   }
 
   if (overlay.environments) {
-    result.environments = mergeNamedEntries(
+    result.environments = mergeEnvironmentEntries(
       result.environments,
-      overlay.environments,
-      mergeEnvironmentLayer
+      overlay.environments
     );
   }
 

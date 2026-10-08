@@ -109,6 +109,34 @@ describe("mergeSettings - environments", () => {
     assert.deepStrictEqual(result?.environments, { staging: {} });
   });
 
+  test("environment: false opts out of an inherited environment regardless of case", () => {
+    const result = mergeSettings(
+      { environments: { Release: {}, staging: {} } },
+      { environments: { release: false } }
+    );
+    assert.deepStrictEqual(result?.environments, { staging: {} });
+  });
+
+  test("environment names merge case-insensitively, overlay key wins", () => {
+    const result = mergeSettings(
+      {
+        environments: {
+          Release: {
+            deploymentBranchPolicy: mainOnly,
+            secrets: { A: { env: "A_SRC" } },
+          },
+        },
+      },
+      { environments: { release: { secrets: { B: { env: "B_SRC" } } } } }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: {
+        deploymentBranchPolicy: mainOnly,
+        secrets: { A: { env: "A_SRC" }, B: { env: "B_SRC" } },
+      },
+    });
+  });
+
   test("inherit: false drops inherited environments", () => {
     const result = mergeSettings(
       { environments: { release: {} } },
@@ -210,6 +238,45 @@ describe("normalizeConfig - environments via groups", () => {
     const raw: RawConfig = {
       id: "test",
       settings: { environments: { release: {} } },
+      groups: { plain: { settings: { environments: { release: false } } } },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["plain"] }],
+    };
+
+    const result = normalizeConfig(raw, {});
+    assert.strictEqual(result.repos[0].settings?.environments, undefined);
+  });
+
+  test("group environment merges with a root environment of different case", () => {
+    const raw: RawConfig = {
+      id: "test",
+      settings: {
+        environments: { Release: { deploymentBranchPolicy: mainOnly } },
+      },
+      groups: {
+        npm: {
+          settings: {
+            environments: {
+              release: { secrets: { NPM: { env: "NPM_SRC" } } },
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["npm"] }],
+    };
+
+    const result = normalizeConfig(raw, {});
+    assert.deepStrictEqual(result.repos[0].settings?.environments, {
+      release: {
+        deploymentBranchPolicy: mainOnly,
+        secrets: { NPM: { env: "NPM_SRC" } },
+      },
+    });
+  });
+
+  test("group environment: false removes a root environment of different case", () => {
+    const raw: RawConfig = {
+      id: "test",
+      settings: { environments: { Release: {} } },
       groups: { plain: { settings: { environments: { release: false } } } },
       repos: [{ git: "git@github.com:org/repo.git", groups: ["plain"] }],
     };

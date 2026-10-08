@@ -134,6 +134,24 @@ describe("settings.environments validation", () => {
     );
   });
 
+  test("rejects environment names that differ only in case", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(base({ environments: { Release: {}, release: {} } })),
+      /environment 'release' duplicates 'Release'/
+    );
+  });
+
+  test("rejects case-insensitive duplicates in a repo, including opt-outs", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          base(undefined, { environments: { release: false, RELEASE: {} } })
+        ),
+      /environment 'RELEASE' duplicates 'release'/
+    );
+  });
+
   describe("deploymentBranchPolicy", () => {
     const withPolicy = (policy: unknown) =>
       base({

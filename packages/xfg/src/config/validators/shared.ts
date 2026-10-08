@@ -525,6 +525,7 @@ function validateSettingsEnvironments(
     throw new ValidationError(`${context}: environments must be an object`);
   }
 
+  const seenNames = new Map<string, string>();
   for (const [name, env] of Object.entries(settings.environments)) {
     if (name === "inherit") {
       if (typeof env !== "boolean") {
@@ -544,6 +545,13 @@ function validateSettingsEnvironments(
         `${context}: environment name '${name.slice(0, 40)}...' exceeds ${ENVIRONMENT_NAME_MAX_LENGTH} characters`
       );
     }
+    const firstSpelling = seenNames.get(name.toLowerCase());
+    if (firstSpelling !== undefined) {
+      throw new ValidationError(
+        `${context}: environment '${name}' duplicates '${firstSpelling}'; GitHub environment names ignore case`
+      );
+    }
+    seenNames.set(name.toLowerCase(), name);
     if (env === false) continue;
 
     const envCtx = `${context}: environment '${name}'`;

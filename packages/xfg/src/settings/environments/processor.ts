@@ -56,6 +56,16 @@ function unmanagedWarnings(
   );
 }
 
+// GitHub's plan-gate replies: 422 for environment protection rules, 403 for other plan-gated features.
+function isPaidPlanError(error: unknown): boolean {
+  const message = toErrorMessage(error);
+  return (
+    (message.includes("HTTP 422") && /billing plan/i.test(message)) ||
+    (message.includes("HTTP 403") &&
+      message.includes("Upgrade to GitHub Pro or make this repository public"))
+  );
+}
+
 function withWarnings<T extends object>(
   extra: T,
   warnings: string[]
@@ -138,7 +148,7 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
         appliedCount++;
       }
     } catch (error) {
-      if (progress.writes > 0) throw error;
+      if (progress.writes > 0 || !isPaidPlanError(error)) throw error;
       return this.skipIfNotPublic(githubRepo, strategyOptions, repoName, error);
     }
 

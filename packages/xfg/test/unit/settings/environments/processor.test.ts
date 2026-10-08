@@ -23,6 +23,7 @@ class MockStrategy implements IEnvironmentsStrategy {
   environments: GitHubEnvironment[] = [];
   patterns = new Map<string, DeploymentBranchPattern[]>();
   failOn?: string;
+  failWith = "HTTP 404: Not Found";
 
   async list(): Promise<GitHubEnvironment[]> {
     return this.environments;
@@ -32,7 +33,7 @@ class MockStrategy implements IEnvironmentsStrategy {
     name: string,
     policy: GitHubDeploymentBranchPolicy | null
   ): Promise<void> {
-    if (this.failOn === "createOrUpdate") throw new Error("HTTP 404: Not Found");
+    if (this.failOn === "createOrUpdate") throw new Error(this.failWith);
     this.calls.push({ method: "createOrUpdate", args: [name, policy] });
   }
   async listBranchPolicies(
@@ -47,7 +48,7 @@ class MockStrategy implements IEnvironmentsStrategy {
     env: string,
     pattern: DeploymentBranchPattern
   ): Promise<void> {
-    if (this.failOn === "createBranchPolicy") throw new Error("boom");
+    if (this.failOn === "createBranchPolicy") throw new Error(this.failWith);
     this.calls.push({ method: "createBranchPolicy", args: [env, pattern] });
   }
 }
@@ -81,6 +82,10 @@ function config(environments?: Record<string, EnvironmentConfig>): RepoConfig {
 }
 
 const custom = { protected_branches: false, custom_branch_policies: true };
+const billingError =
+  "gh: Failed to create the environment protection rule. Please ensure the billing plan supports the required reviewers protection rule. (HTTP 422)";
+const upgradeError =
+  "gh: Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)";
 const main: DeploymentBranchPattern = { type: "branch", name: "main" };
 
 describe("EnvironmentsProcessor", () => {
@@ -200,9 +205,10 @@ describe("EnvironmentsProcessor", () => {
     ]);
   });
 
-  test("skips a private repo with a warning when the first write fails", async () => {
+  test("skips a private repo with a warning when GitHub reports a billing plan limit", async () => {
     const strategy = new MockStrategy();
     strategy.failOn = "createOrUpdate";
+    strategy.failWith = billingError;
     const meta = metadata("private");
     const processor = new EnvironmentsProcessor(strategy, meta);
     const result = await processor.process(config({ release: {} }), repo, {});
@@ -210,22 +216,60 @@ describe("EnvironmentsProcessor", () => {
     assert.equal(result.skipped, true);
     assert.equal(meta.called, 1);
     assert.deepEqual(result.warnings, [
-      "me/r: environments on private repos need a paid GitHub plan (Pro, Team or Enterprise) - skipped (HTTP 404: Not Found)",
+      `me/r: environments on private repos need a paid GitHub plan (Pro, Team or Enterprise) - skipped (${billingError})`,
     ]);
+  });
+
+  test("skips a private repo when the first pattern write needs an upgrade", async () => {
+    const strategy = new MockStrategy();
+    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.failOn = "createBranchPolicy";
+    strategy.failWith = upgradeError;
+    const processor = new EnvironmentsProcessor(strategy, metadata("private"));
+    const result = await processor.process(
+      config({ release: { deploymentBranchPolicy: { custom: [main] } } }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, true);
+    assert.equal(result.skipped, true);
+  });
+
+  test("surfaces other errors on a private repo instead of skipping", async () => {
+    const strategy = new MockStrategy();
+    strategy.failOn = "createOrUpdate";
+    const meta = metadata("private");
+    const processor = new EnvironmentsProcessor(strategy, meta);
+    const result = await processor.process(config({ release: {} }), repo, {});
+    assert.equal(result.success, false);
+    assert.match(result.message, /HTTP 404/);
+    assert.equal(meta.called, 0);
+  });
+
+  test("surfaces a 422 that is not a billing plan limit", async () => {
+    const strategy = new MockStrategy();
+    strategy.failOn = "createOrUpdate";
+    strategy.failWith = "gh: Validation Failed (HTTP 422) [name: is invalid]";
+    const processor = new EnvironmentsProcessor(strategy, metadata("private"));
+    const result = await processor.process(config({ release: {} }), repo, {});
+    assert.equal(result.success, false);
+    assert.match(result.message, /Validation Failed/);
   });
 
   test("fails on a public repo when a write fails", async () => {
     const strategy = new MockStrategy();
     strategy.failOn = "createOrUpdate";
+    strategy.failWith = billingError;
     const processor = new EnvironmentsProcessor(strategy, metadata("public"));
     const result = await processor.process(config({ release: {} }), repo, {});
     assert.equal(result.success, false);
-    assert.match(result.message, /HTTP 404/);
+    assert.match(result.message, /billing plan/);
   });
 
   test("fails without the plan check once something was written", async () => {
     const strategy = new MockStrategy();
     strategy.failOn = "createBranchPolicy";
+    strategy.failWith = upgradeError;
     const meta = metadata("private");
     const processor = new EnvironmentsProcessor(strategy, meta);
     const result = await processor.process(
