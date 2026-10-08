@@ -1034,7 +1034,6 @@ describe("GitHubLifecycleProvider", () => {
         target: mockRepoInfo,
       });
 
-      // Should have polled exists() 3 times (2 not-found + 1 success)
       assert.equal(apiCallCount, 3);
     });
 
@@ -1393,10 +1392,7 @@ describe("GitHubLifecycleProvider", () => {
 
     test("create() passes GH_TOKEN via env when token provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
-        responses: new Map([
-          ["gh users/test-org", '{"type": "Organization"}'],
-          ["gh contents/README.md --jq", "abc123def"],
-        ]),
+        responses: new Map([["gh contents/README.md --jq", "abc123def"]]),
         defaultResponse: "",
       });
 
@@ -1407,11 +1403,10 @@ describe("GitHubLifecycleProvider", () => {
       });
       await provider.create({ repo: mockRepoInfo, token: "ghs_test_token" });
 
-      // calls[0] = owner type check, calls[1] = gh repo create,
-      // calls[2] = GET README sha, calls[3] = DELETE README
-      assert.equal(calls.length, 4);
+      // calls[0] = gh repo create, calls[1] = GET README sha, calls[2] = DELETE README
+      assert.equal(calls.length, 3);
       assert.ok(
-        calls[1].executable === "gh" && calls[1].args.includes("create")
+        calls[0].executable === "gh" && calls[0].args.includes("create")
       );
       for (const call of calls) {
         assert.equal(call.options?.env?.GH_TOKEN, "ghs_test_token");
@@ -1419,8 +1414,7 @@ describe("GitHubLifecycleProvider", () => {
     });
 
     test("receiveMigration() passes GH_TOKEN via env when token provided", async () => {
-      const { mock: executor, calls: allCalls } = createMockExecutor({
-        responses: new Map([["gh users/test-org", '{"type": "Organization"}']]),
+      const { mock: executor, calls } = createMockExecutor({
         defaultResponse: "",
       });
 
@@ -1435,8 +1429,6 @@ describe("GitHubLifecycleProvider", () => {
         token: "ghs_test_token",
       });
 
-      assert.ok(allCalls[0].args.includes("users/test-org"));
-      const calls = allCalls.slice(1);
       // calls[0] = git remote remove origin, calls[1] = git for-each-ref,
       // calls[2] = gh repo create, calls[3] = git remote add origin, calls[4] = git push --mirror
       assert.equal(calls.length, 5);
@@ -1574,105 +1566,45 @@ describe("GitHubLifecycleProvider", () => {
       return { provider, calls, repoCreateCalls };
     }
 
-    test("create() fails fast without calling gh repo create", async () => {
-      const { provider, repoCreateCalls } = setup();
-
-      await assert.rejects(
-        () =>
-          provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
-        /installation token \(GitHub App or Actions GITHUB_TOKEN\) cannot create repositories for personal account 'someuser'/
-      );
-      assert.equal(repoCreateCalls().length, 0);
-    });
-
-    test("fork() fails fast without calling gh repo fork", async () => {
-      const { provider, repoCreateCalls } = setup();
-
-      await assert.rejects(
-        () =>
-          provider.fork!({
-            upstream: upstreamRepoInfo,
-            target: personalRepoInfo,
-            token: "ghs_app_token",
-          }),
-        /personal account 'someuser'/
-      );
-      assert.equal(repoCreateCalls().length, 0);
-    });
-
-    test("receiveMigration() fails fast before touching the mirror clone", async () => {
-      const { provider, calls } = setup();
-
-      await assert.rejects(
-        () =>
-          provider.receiveMigration({
-            repo: personalRepoInfo,
-            sourceDir: "/tmp/source",
-            token: "ghs_app_token",
-          }),
-        /personal account 'someuser'/
-      );
-      assert.equal(calls.length, 1);
-      assert.ok(calls[0].args.includes("users/someuser"));
-    });
-
-    test("create() proceeds when the owner check fails transiently", async () => {
-      const { mock: executor, calls } = createMockExecutor({
-        responses: new Map<string, string | Error>([
-          ["gh users/someuser", new Error("connection reset")],
-          ["gh contents/README.md --jq", "abc123def"],
-        ]),
-        defaultResponse: "",
-      });
-      const provider = new GitHubLifecycleProvider({
-        executor,
-        retries: 0,
-        cwd: "/test",
-      });
+    test("create() calls gh repo create without an owner lookup", async () => {
+      const { provider, calls, repoCreateCalls } = setup();
 
       await provider.create({ repo: personalRepoInfo, token: "ghs_app_token" });
 
-      assert.ok(
-        calls.some((c) => c.args[0] === "repo" && c.args[1] === "create")
-      );
+      assert.equal(repoCreateCalls().length, 1);
+      assert.ok(repoCreateCalls()[0].args.includes("someuser/new-repo"));
+      assert.ok(!calls.some((c) => c.args.some((a) => a.startsWith("users/"))));
     });
 
-    test("create() proceeds when the owner check fails permanently", async () => {
-      const { mock: executor, calls } = createMockExecutor({
-        responses: new Map<string, string | Error>([
-          ["gh users/test-org", new Error("HTTP 403: Forbidden")],
-          ["gh contents/README.md --jq", "abc123def"],
-        ]),
-        defaultResponse: "",
-      });
-      const provider = new GitHubLifecycleProvider({
-        executor,
-        retries: 0,
-        cwd: "/test",
+    test("fork() forks without --org", async () => {
+      const { provider, repoCreateCalls } = setup();
+
+      await provider.fork!({
+        upstream: upstreamRepoInfo,
+        target: personalRepoInfo,
+        token: "ghs_app_token",
       });
 
-      await provider.create({ repo: mockRepoInfo, token: "ghs_app_token" });
-
-      assert.ok(
-        calls.some((c) => c.args[0] === "repo" && c.args[1] === "create")
-      );
+      const forkCalls = repoCreateCalls();
+      assert.equal(forkCalls.length, 1);
+      assert.ok(!forkCalls[0].args.includes("--org"));
     });
 
-    test("owner check passes --hostname for GHE", async () => {
-      const gheRepoInfo: GitHubRepoInfo = {
-        ...personalRepoInfo,
-        gitUrl: "git@github.mycompany.com:someuser/new-repo.git",
-        host: "github.mycompany.com",
-      };
-      const { provider, calls } = setup();
+    test("receiveMigration() creates the repo and pushes the mirror", async () => {
+      const { provider, calls, repoCreateCalls } = setup();
 
-      await assert.rejects(
-        () => provider.create({ repo: gheRepoInfo, token: "ghs_app_token" }),
-        /personal account 'someuser'/
+      await provider.receiveMigration({
+        repo: personalRepoInfo,
+        sourceDir: "/tmp/source",
+        token: "ghs_app_token",
+      });
+
+      assert.equal(repoCreateCalls().length, 1);
+      assert.ok(
+        calls.some(
+          (c) => c.args.includes("push") && c.args.includes("--mirror")
+        )
       );
-      const hostnameIndex = calls[0].args.indexOf("--hostname");
-      assert.ok(hostnameIndex >= 0);
-      assert.equal(calls[0].args[hostnameIndex + 1], gheRepoInfo.host);
     });
 
     test("fork() with a PAT on a personal account still forks without --org", async () => {
@@ -1696,17 +1628,157 @@ describe("GitHubLifecycleProvider", () => {
 
       assert.equal(repoCreateCalls().length, 1);
     });
+  });
 
-    test("create() with a PAT on a personal account skips the owner check", async () => {
-      const { provider, calls, repoCreateCalls } = setup();
+  describe("App token refused by GitHub", () => {
+    const personalRepoInfo: GitHubRepoInfo = {
+      type: "github",
+      gitUrl: "git@github.com:someuser/new-repo.git",
+      owner: "someuser",
+      repo: "new-repo",
+      host: "github.com",
+    };
+    const upstreamRepoInfo: GitHubRepoInfo = {
+      type: "github",
+      gitUrl: "git@github.com:opensource/cool-tool.git",
+      owner: "opensource",
+      repo: "cool-tool",
+      host: "github.com",
+    };
+    const MASKED_403 =
+      "Command failed: gh repo create someuser/new-repo --private --add-readme\nHTTP 403: Rate Limit Exceeded (https://api.github.com/user/repos)";
+    const CREATE_PERMISSIONS =
+      /Administration: Read and write.*Repository creation: Read and write/s;
 
-      await provider.create({
-        repo: personalRepoInfo,
-        token: "github_pat_abc",
+    function setup(createError: Error, retries = 3) {
+      const { mock: executor, calls } = createMockExecutor({
+        responses: new Map<string, string | Error>([
+          ["gh users/someuser", '{"type": "User"}'],
+          ["gh repo create", createError],
+          ["gh repo fork", createError],
+        ]),
+        defaultResponse: "",
       });
+      const provider = new GitHubLifecycleProvider({
+        executor,
+        retries,
+        cwd: "/test",
+      });
+      const repoCreateCalls = () =>
+        calls.filter(
+          (c) =>
+            c.args[0] === "repo" &&
+            (c.args[1] === "create" || c.args[1] === "fork")
+        );
+      return { provider, repoCreateCalls };
+    }
 
-      assert.equal(repoCreateCalls().length, 1);
-      assert.ok(!calls.some((c) => c.args.some((a) => a.startsWith("users/"))));
+    test(
+      "create() fails fast with the needed permissions on a masked 403",
+      { timeout: 10_000 },
+      async () => {
+        const { provider, repoCreateCalls } = setup(new Error(MASKED_403));
+
+        await assert.rejects(
+          () =>
+            provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
+          (error: Error) => {
+            assert.equal(error.name, "LifecycleError");
+            assert.match(error.message, /someuser\/new-repo/);
+            assert.match(error.message, CREATE_PERMISSIONS);
+            return true;
+          }
+        );
+        assert.equal(repoCreateCalls().length, 1);
+      }
+    );
+
+    test(
+      "receiveMigration() fails fast with the needed permissions on a 403",
+      { timeout: 10_000 },
+      async () => {
+        const { provider, repoCreateCalls } = setup(
+          new Error(
+            "GraphQL: Resource not accessible by integration (createRepository)"
+          )
+        );
+
+        await assert.rejects(
+          () =>
+            provider.receiveMigration({
+              repo: personalRepoInfo,
+              sourceDir: "/tmp/source",
+              token: "ghs_app_token",
+            }),
+          CREATE_PERMISSIONS
+        );
+        assert.equal(repoCreateCalls().length, 1);
+      }
+    );
+
+    test(
+      "fork() fails fast with the needed permissions on a 403",
+      { timeout: 10_000 },
+      async () => {
+        const { provider, repoCreateCalls } = setup(
+          new Error("HTTP 403: Resource not accessible by integration")
+        );
+
+        await assert.rejects(
+          () =>
+            provider.fork!({
+              upstream: upstreamRepoInfo,
+              target: personalRepoInfo,
+              token: "ghs_app_token",
+            }),
+          /Administration: Read and write.*Contents: Read/s
+        );
+        assert.equal(repoCreateCalls().length, 1);
+      }
+    );
+
+    test("create() keeps a real rate limit error as-is", async () => {
+      const realRateLimit =
+        "HTTP 403: API rate limit exceeded for installation ID 123";
+      const { provider } = setup(new Error(realRateLimit), 0);
+
+      await assert.rejects(
+        () =>
+          provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
+        (error: Error) => {
+          assert.match(error.message, /API rate limit exceeded/);
+          assert.doesNotMatch(error.message, /Repository creation/);
+          return true;
+        }
+      );
+    });
+
+    test("create() still retries transient errors", async () => {
+      const { provider, repoCreateCalls } = setup(
+        new Error("HTTP 502: Bad Gateway"),
+        1
+      );
+
+      await assert.rejects(
+        () =>
+          provider.create({ repo: personalRepoInfo, token: "ghs_app_token" }),
+        /502/
+      );
+      assert.equal(repoCreateCalls().length, 2);
+    });
+
+    test("create() with a PAT keeps the original 403 error", async () => {
+      const { provider } = setup(new Error(MASKED_403), 0);
+
+      await assert.rejects(
+        () =>
+          provider.create({ repo: personalRepoInfo, token: "github_pat_abc" }),
+        (error: Error) => {
+          assert.match(error.message, /Rate Limit Exceeded/);
+          assert.doesNotMatch(error.message, /Repository creation/);
+          return true;
+        }
+      );
     });
   });
 });

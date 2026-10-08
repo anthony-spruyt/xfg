@@ -176,17 +176,28 @@ In dry-run mode (`--dry-run`), lifecycle operations are reported but not execute
 
 ## Authentication
 
-Create, fork, and migrate support depends on the auth type and on who owns the target repo:
+Create, fork, and migrate work with both auth types, for organizations and personal accounts:
 
 | Target owner     | PAT (`GH_TOKEN`) | [GitHub App](../platforms/github-app.md) installation token |
 | ---------------- | ---------------- | ----------------------------------------------------------- |
-| Organization     | Yes              | Yes (needs Administration: Read and write)                  |
-| Personal account | Yes              | No                                                          |
+| Organization     | Yes              | Yes                                                         |
+| Personal account | Yes              | Yes                                                         |
 
-GitHub does not let an installation token create repos for a personal account. This also applies to the Actions `GITHUB_TOKEN`. xfg stops with an error instead of trying. `--dry-run` does not catch this. To work around it, either:
+A GitHub App needs these permissions on top of the [base set](../platforms/github-app.md#1-create-a-github-app):
 
-- Create the repo first (in the GitHub UI or with a PAT). xfg then syncs it as normal with App auth.
-- Run xfg with a PAT in `GH_TOKEN` and no App credentials.
+| Operation        | GitHub App permissions                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| Create           | Administration: Read and write, or Repository creation: Read and write |
+| Migrate (target) | Administration: Read and write, or Repository creation: Read and write |
+| Fork             | Administration: Read and write                                         |
+
+To fork, GitHub also needs the App installed on the target account with access to all its repositories, and on the upstream account with access to the upstream repo.
+
+After you change an App's permissions, the account owner must approve them on each installation before new tokens get them.
+
+GitHub sometimes reports a missing App permission as `HTTP 403: Rate Limit Exceeded`. When an App token gets a 403 on create, fork, or migrate, xfg stops at once and names the permissions above instead of retrying. Real rate limits are still retried. `--dry-run` does not check permissions.
+
+The Actions `GITHUB_TOKEN` can't be given these permissions, so it can't create, fork, or migrate repos. Use a GitHub App or a PAT.
 
 ## Example: Full Lifecycle Config
 
