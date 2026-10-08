@@ -362,7 +362,7 @@ export class SecretsProcessor implements ISecretsProcessor {
               group.environment,
               strategyOptions
             )
-          : []
+          : Promise.resolve([])
       )
     );
     return groups.flatMap((group, i) =>
