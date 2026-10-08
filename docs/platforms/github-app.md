@@ -18,8 +18,8 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 2. Click "New GitHub App"
 3. Configure permissions:
    - **Repository permissions:**
-     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc., see [Repo Lifecycle](../configuration/lifecycle.md#authentication); also required for [environments](../configuration/environments.md))_
-     - Repository creation: Read and write _(optional; lets the App create and migrate repos without Administration)_
+     - Repository creation: Read and write _(required to create, migrate and fork repos; Administration does not let the App create repos, see [Repo Lifecycle](../configuration/lifecycle.md#authentication))_
+     - Administration: Read and write _(required to archive and fork repos and for repo lifecycle settings, see [Repo Lifecycle](../configuration/lifecycle.md#authentication); also required for [environments](../configuration/environments.md))_
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
@@ -109,8 +109,8 @@ When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses G
 
 GitHub can report a missing App permission this way. xfg stops at once and names the permissions it needs:
 
-- Create and migrate: Administration: Read and write, or Repository creation: Read and write
-- Fork: Administration: Read and write, with the App installed as described in [Limitations](#limitations)
+- Create and migrate: Repository creation: Read and write
+- Fork: Repository creation: Read and write, Administration: Read and write, and Contents: Read, with the App installed as described in [Limitations](#limitations)
 
 After you change the App's permissions, approve them on the installation.
 

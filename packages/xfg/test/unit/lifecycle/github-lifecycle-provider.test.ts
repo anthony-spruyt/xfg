@@ -1647,8 +1647,9 @@ describe("GitHubLifecycleProvider", () => {
     };
     const MASKED_403 =
       "Command failed: gh repo create someuser/new-repo --private --add-readme\nHTTP 403: Rate Limit Exceeded (https://api.github.com/user/repos)";
-    const CREATE_PERMISSIONS =
-      /Administration: Read and write.*Repository creation: Read and write/s;
+    const CREATE_PERMISSIONS = /needs Repository creation: Read and write\. /;
+    const FORK_PERMISSIONS =
+      /Repository creation: Read and write.*Administration: Read and write.*Contents: Read/s;
 
     function setup(createError: Error, retries = 3) {
       const { mock: executor, calls } = createMockExecutor({
@@ -1731,7 +1732,7 @@ describe("GitHubLifecycleProvider", () => {
               target: personalRepoInfo,
               token: "ghs_app_token",
             }),
-          /Administration: Read and write.*Contents: Read/s
+          FORK_PERMISSIONS
         );
         assert.equal(repoCreateCalls().length, 1);
       }

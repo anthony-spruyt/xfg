@@ -185,11 +185,11 @@ Create, fork, and migrate work with both auth types, for organizations and perso
 
 A GitHub App needs these permissions on top of the [base set](../platforms/github-app.md#1-create-a-github-app):
 
-| Operation        | GitHub App permissions                                                 |
-| ---------------- | ---------------------------------------------------------------------- |
-| Create           | Administration: Read and write, or Repository creation: Read and write |
-| Migrate (target) | Administration: Read and write, or Repository creation: Read and write |
-| Fork             | Administration: Read and write                                         |
+| Operation        | GitHub App permissions                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| Create           | Repository creation: Read and write                                                         |
+| Migrate (target) | Repository creation: Read and write                                                         |
+| Fork             | Repository creation: Read and write, Administration: Read and write, Contents: Read        |
 
 To fork, GitHub also needs the App installed on the target account with access to all its repositories, and on the upstream account with access to the upstream repo.
 

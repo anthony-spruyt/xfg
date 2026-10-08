@@ -76,10 +76,9 @@ const POST_CREATE_PERMANENT_PATTERNS = [
  */
 const FORK_POLL_INTERVAL_MS = 2_000;
 
-const CREATE_REPO_APP_PERMISSIONS =
-  "Administration: Read and write or Repository creation: Read and write";
+const CREATE_REPO_APP_PERMISSIONS = "Repository creation: Read and write";
 const FORK_REPO_APP_PERMISSIONS =
-  "Administration: Read and write and Contents: Read, and be installed on the target account with access to all repositories and on the upstream account with access to the upstream repository";
+  "Repository creation: Read and write, Administration: Read and write and Contents: Read, and be installed on the target account with access to all repositories and on the upstream account with access to the upstream repository";
 
 const APP_PERMISSION_DENIED_PATTERNS = [
   /\bHTTP\s*403\b/,
