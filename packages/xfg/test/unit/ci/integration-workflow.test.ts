@@ -298,18 +298,21 @@ describe("ci.yaml", () => {
   };
   const LABEL_GUARD =
     "github.event.action != 'labeled' || github.event.label.name == 'run-integration'";
+  const guards: Record<string, string> = {
+    lint: LABEL_GUARD,
+    repo: LABEL_GUARD,
+    summary:
+      "always() && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')",
+  };
 
   test("adding a label starts a run", () => {
     assert.ok(ci.on.pull_request.types?.includes("labeled"));
   });
 
   // Otherwise any other label posts an all-skipped green summary over the real result
-  for (const name of Object.keys(ci.jobs)) {
+  for (const [name, guard] of Object.entries(guards)) {
     test(`${name} skips runs started by a label other than run-integration`, () => {
-      assert.ok(
-        ci.jobs[name].if?.includes(LABEL_GUARD),
-        `${name} has no label guard`
-      );
+      assert.equal(ci.jobs[name].if, guard);
     });
   }
 
