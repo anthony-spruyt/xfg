@@ -1,9 +1,10 @@
 /**
  * Deep merge utilities for JSON configuration objects.
- * Supports per-field array merge strategies via $arrayMerge + $values directives.
+ * Supports per-field array merge strategies via $arrayMerge + $values (+ $matchBy) directives.
  */
 
 import { isPlainObject } from "../shared/type-guards.js";
+import { ValidationError } from "../shared/errors.js";
 
 /**
  * Candidate keys for matching array items by identity rather than index.
@@ -41,27 +42,100 @@ export function findMatchKey(
  * Only these are stripped during merge — standard $-prefixed keys
  * like $schema, $id, $ref, $generated are preserved.
  */
-const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values"]);
+const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values", "$matchBy"]);
 
 export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
 
 type ArrayMergeHandler = (
   base: unknown[],
   overlay: unknown[],
-  ctx: MergeContext
+  ctx: MergeContext,
+  path: string
 ) => unknown[];
+
+function childPath(path: string, key: string): string {
+  return path ? `${path}.${key}` : key;
+}
+
+type ErrorContext = Pick<MergeContext, "location">;
+
+function mergeError(
+  ctx: ErrorContext,
+  path: string,
+  message: string
+): ValidationError {
+  const prefix = ctx.location ? `${ctx.location}: ` : "";
+  return new ValidationError(`${prefix}${path}: ${message}`);
+}
+
+/**
+ * Returns the directive's $matchBy key, or undefined when it has none.
+ * Throws unless $matchBy is a non-empty string paired with $arrayMerge: merge.
+ */
+function readMatchBy(
+  directive: Record<string, unknown>,
+  ctx: ErrorContext,
+  path: string
+): string | undefined {
+  if (!("$matchBy" in directive)) return undefined;
+  const matchBy = directive.$matchBy;
+  if (typeof matchBy !== "string" || matchBy === "") {
+    throw mergeError(ctx, path, "$matchBy must be a non-empty string");
+  }
+  const strategy = directive.$arrayMerge;
+  if (strategy !== "merge") {
+    const got = strategy === undefined ? "none" : `'${String(strategy)}'`;
+    throw mergeError(
+      ctx,
+      path,
+      `$matchBy requires $arrayMerge: merge, got ${got}`
+    );
+  }
+  return matchBy;
+}
+
+function assertKeyedItems(
+  items: unknown[],
+  matchBy: string,
+  label: "base" | "overlay",
+  ctx: ErrorContext,
+  path: string
+): void {
+  const firstIndexByValue = new Map<unknown, number>();
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!isPlainObject(item) || !(matchBy in item)) {
+      throw mergeError(
+        ctx,
+        path,
+        `${label} item ${i} has no $matchBy key '${matchBy}'`
+      );
+    }
+    const value = item[matchBy];
+    const first = firstIndexByValue.get(value);
+    if (first !== undefined) {
+      throw mergeError(
+        ctx,
+        path,
+        `${label} items ${first} and ${i} share $matchBy ${matchBy} '${String(value)}'`
+      );
+    }
+    firstIndexByValue.set(value, i);
+  }
+}
 
 function mergeByKey(
   base: unknown[],
   overlay: unknown[],
   matchKey: string,
-  ctx: MergeContext
+  ctx: MergeContext,
+  path: string
 ): unknown[] {
   const baseByKey = new Map<
     unknown,
     { item: Record<string, unknown>; index: number }
   >();
-  // findMatchKey guarantees every item in both arrays is a plain object with matchKey
+  // Callers guarantee every item in both arrays is a plain object with matchKey
   for (let i = 0; i < base.length; i++) {
     const item = base[i] as Record<string, unknown>;
     const keyValue = item[matchKey];
@@ -78,7 +152,12 @@ function mergeByKey(
     const baseEntry = baseByKey.get(keyValue);
     if (baseEntry) {
       baseByKey.set(keyValue, {
-        item: deepMerge(baseEntry.item, item, ctx),
+        item: mergeObjects(
+          baseEntry.item,
+          item,
+          ctx,
+          `${path}[${baseEntry.index}]`
+        ),
         index: baseEntry.index,
       });
     } else {
@@ -109,28 +188,26 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
     ["prepend", (base, overlay) => [...overlay, ...base]],
     [
       "merge",
-      (base, overlay, ctx) => {
+      (base, overlay, ctx, path) => {
         const matchKey = findMatchKey(base, overlay);
         if (!matchKey) {
           return [...base, ...overlay];
         }
-        return mergeByKey(base, overlay, matchKey, ctx);
+        return mergeByKey(base, overlay, matchKey, ctx, path);
       },
     ],
   ]);
 
 /**
  * Checks if a value is an unresolved $arrayMerge directive object
- * (only contains $arrayMerge + $values keys, with a valid strategy and array values).
+ * (only directive keys, with a valid strategy and array values).
  */
 function isUnresolvedDirective(
   value: unknown
 ): value is Record<string, unknown> & { $values: unknown[] } {
   if (!isPlainObject(value)) return false;
-  const keys = Object.keys(value);
   return (
-    keys.length === 2 &&
-    keys.every((k) => XFG_DIRECTIVES.has(k)) &&
+    Object.keys(value).every((k) => XFG_DIRECTIVES.has(k)) &&
     typeof value.$arrayMerge === "string" &&
     arrayMergeStrategies.has(value.$arrayMerge as ArrayMergeStrategy) &&
     Array.isArray(value.$values)
@@ -139,17 +216,20 @@ function isUnresolvedDirective(
 
 export interface MergeContext {
   defaultArrayStrategy: ArrayMergeStrategy;
+  /** Prefixes merge errors, e.g. the file name being merged. */
+  location?: string;
 }
 
 function mergeArrays(
   base: unknown[],
   overlay: unknown[],
   strategy: ArrayMergeStrategy,
-  ctx: MergeContext
+  ctx: MergeContext,
+  path: string
 ): unknown[] {
   const handler = arrayMergeStrategies.get(strategy);
   if (handler) {
-    return handler(base, overlay, ctx);
+    return handler(base, overlay, ctx, path);
   }
   return overlay;
 }
@@ -166,12 +246,21 @@ export function deepMerge(
   overlay: Record<string, unknown>,
   ctx: MergeContext
 ): Record<string, unknown> {
+  return mergeObjects(base, overlay, ctx, "");
+}
+
+function mergeObjects(
+  base: Record<string, unknown>,
+  overlay: Record<string, unknown>,
+  ctx: MergeContext,
+  path: string
+): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base };
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
-    // Skip directive keys in output
     if (XFG_DIRECTIVES.has(key)) continue;
 
+    const keyPath = childPath(path, key);
     const baseValue = base[key];
 
     // If base is an unresolved directive (from a previous layer with no base array),
@@ -180,10 +269,17 @@ export function deepMerge(
       ? baseValue.$values
       : baseValue;
 
-    // Per-field $arrayMerge + $values directive
-    if (isPlainObject(overlayValue) && "$arrayMerge" in overlayValue) {
+    if (
+      isPlainObject(overlayValue) &&
+      ("$arrayMerge" in overlayValue || "$matchBy" in overlayValue)
+    ) {
       const strategy = overlayValue.$arrayMerge;
       const values = overlayValue.$values;
+      const matchBy = readMatchBy(overlayValue, ctx, keyPath);
+
+      if (matchBy !== undefined && Array.isArray(values)) {
+        assertKeyedItems(values, matchBy, "overlay", ctx, keyPath);
+      }
 
       if (
         (strategy === "replace" ||
@@ -193,25 +289,35 @@ export function deepMerge(
         Array.isArray(values) &&
         Array.isArray(resolvedBase)
       ) {
-        result[key] = mergeArrays(resolvedBase, values, strategy, ctx);
+        if (matchBy === undefined) {
+          result[key] = mergeArrays(
+            resolvedBase,
+            values,
+            strategy,
+            ctx,
+            keyPath
+          );
+        } else {
+          assertKeyedItems(resolvedBase, matchBy, "base", ctx, keyPath);
+          result[key] = mergeByKey(resolvedBase, values, matchBy, ctx, keyPath);
+        }
         continue;
       }
     }
 
-    // Both are arrays — use default strategy
     if (Array.isArray(resolvedBase) && Array.isArray(overlayValue)) {
       result[key] = mergeArrays(
         resolvedBase,
         overlayValue,
         ctx.defaultArrayStrategy,
-        ctx
+        ctx,
+        keyPath
       );
       continue;
     }
 
-    // Both are plain objects — recurse
     if (isPlainObject(resolvedBase) && isPlainObject(overlayValue)) {
-      result[key] = deepMerge(resolvedBase, overlayValue, ctx);
+      result[key] = mergeObjects(resolvedBase, overlayValue, ctx, keyPath);
       continue;
     }
 
@@ -223,36 +329,54 @@ export function deepMerge(
 }
 
 /**
- * Strip xfg merge directive keys ($arrayMerge, $values) from an object.
+ * Strip xfg merge directive keys ($arrayMerge, $values, $matchBy) from an object.
  * Works recursively on nested objects and arrays.
  * Standard $-prefixed keys ($schema, $id, $ref, etc.) are preserved.
  *
- * When an unresolved directive object is found (only contains $arrayMerge + $values),
+ * When an unresolved directive object is found (only directive keys),
  * it is replaced with the $values array. This handles the case where a directive
  * had no base array to merge with.
+ *
+ * @param location - Prefixes errors, e.g. the file name being stripped
  */
 export function stripMergeDirectives(
-  obj: Record<string, unknown>
+  obj: Record<string, unknown>,
+  location?: string
+): Record<string, unknown> {
+  return stripObject(obj, { location }, "");
+}
+
+function stripItems(
+  items: unknown[],
+  errCtx: ErrorContext,
+  path: string
+): unknown[] {
+  return items.map((item, i) =>
+    isPlainObject(item) ? stripObject(item, errCtx, `${path}[${i}]`) : item
+  );
+}
+
+function stripObject(
+  obj: Record<string, unknown>,
+  errCtx: ErrorContext,
+  path: string
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    // Skip xfg directive keys only
     if (XFG_DIRECTIVES.has(key)) continue;
 
-    if (isPlainObject(value)) {
-      if (isUnresolvedDirective(value)) {
-        // Resolve to the $values array, stripping directives from items
-        result[key] = value.$values.map((item) =>
-          isPlainObject(item) ? stripMergeDirectives(item) : item
-        );
-      } else {
-        result[key] = stripMergeDirectives(value);
+    const keyPath = childPath(path, key);
+    if (isUnresolvedDirective(value)) {
+      const matchBy = readMatchBy(value, errCtx, keyPath);
+      if (matchBy !== undefined) {
+        assertKeyedItems(value.$values, matchBy, "overlay", errCtx, keyPath);
       }
+      result[key] = stripItems(value.$values, errCtx, keyPath);
+    } else if (isPlainObject(value)) {
+      result[key] = stripObject(value, errCtx, keyPath);
     } else if (Array.isArray(value)) {
-      result[key] = value.map((item) =>
-        isPlainObject(item) ? stripMergeDirectives(item) : item
-      );
+      result[key] = stripItems(value, errCtx, keyPath);
     } else {
       result[key] = value;
     }
@@ -262,11 +386,12 @@ export function stripMergeDirectives(
 }
 
 export function createMergeContext(
-  defaultStrategy: ArrayMergeStrategy = "replace"
+  defaultStrategy: ArrayMergeStrategy = "replace",
+  location?: string
 ): MergeContext {
-  return {
-    defaultArrayStrategy: defaultStrategy,
-  };
+  return location === undefined
+    ? { defaultArrayStrategy: defaultStrategy }
+    : { defaultArrayStrategy: defaultStrategy, location };
 }
 
 // =============================================================================

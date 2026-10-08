@@ -80,19 +80,19 @@ const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
 // Intentionally duplicated from merge.ts — validator should not depend on merge internals
 const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend", "merge"];
 
+const DIRECTIVE_KEYS = new Set(["$arrayMerge", "$values", "$matchBy"]);
+
 /**
- * Checks if a value is an $arrayMerge directive: { $arrayMerge: strategy, $values: [...] }
+ * Checks if a value is an $arrayMerge directive:
+ * { $arrayMerge: strategy, $values: [...], $matchBy?: key }
  */
 function isArrayMergeDirective(value: unknown): boolean {
   if (!isPlainObject(value)) return false;
-  const keys = Object.keys(value);
   return (
-    keys.length === 2 &&
-    keys.every((k) => k === "$arrayMerge" || k === "$values") &&
-    VALID_MERGE_STRATEGIES.includes(
-      (value as Record<string, unknown>).$arrayMerge as string
-    ) &&
-    Array.isArray((value as Record<string, unknown>).$values)
+    Object.keys(value).every((k) => DIRECTIVE_KEYS.has(k)) &&
+    VALID_MERGE_STRATEGIES.includes(value.$arrayMerge as string) &&
+    Array.isArray(value.$values) &&
+    (value.$matchBy === undefined || typeof value.$matchBy === "string")
   );
 }
 

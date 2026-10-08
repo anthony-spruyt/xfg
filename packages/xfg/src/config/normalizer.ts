@@ -37,11 +37,11 @@ import { expandRepoGroups } from "./extends-resolver.js";
  * Clone content, stripping merge directives from object content.
  * Text content is cloned as-is since it has no merge directives.
  */
-function cloneContent(content: ContentValue): ContentValue {
+function cloneContent(content: ContentValue, fileName: string): ContentValue {
   if (isTextContent(content)) {
     return structuredClone(content);
   }
-  return stripMergeDirectives(structuredClone(content));
+  return stripMergeDirectives(structuredClone(content), fileName);
 }
 
 /**
@@ -51,25 +51,33 @@ function cloneContent(content: ContentValue): ContentValue {
  * or root file with no content and no repo override).
  */
 function resolveFileContent(
+  fileName: string,
   rootContent: ContentValue | undefined,
   repoOverride: RawRepoFileOverride | undefined,
   mergeStrategy: ArrayMergeStrategy
 ): ContentValue | null {
   if (repoOverride?.override) {
     return repoOverride.content !== undefined
-      ? cloneContent(repoOverride.content)
+      ? cloneContent(repoOverride.content, fileName)
       : null;
   }
 
   if (rootContent === undefined) {
-    return repoOverride?.content ? cloneContent(repoOverride.content) : null;
+    return repoOverride?.content
+      ? cloneContent(repoOverride.content, fileName)
+      : null;
   }
 
   if (!repoOverride?.content) {
     return structuredClone(rootContent);
   }
 
-  return mergeContentPair(rootContent, repoOverride.content, mergeStrategy);
+  return mergeContentPair(
+    fileName,
+    rootContent,
+    repoOverride.content,
+    mergeStrategy
+  );
 }
 
 /**
@@ -77,6 +85,7 @@ function resolveFileContent(
  * Handles text+text, object+object, and type mismatch cases.
  */
 function mergeContentPair(
+  fileName: string,
   base: ContentValue,
   overlay: ContentValue,
   strategy: ArrayMergeStrategy
@@ -85,13 +94,13 @@ function mergeContentPair(
     return mergeTextContent(base, overlay, strategy);
   }
   if (!isTextContent(base) && !isTextContent(overlay)) {
-    const ctx = createMergeContext(strategy);
+    const ctx = createMergeContext(strategy, fileName);
     const merged = deepMerge(
       structuredClone(base),
       overlay as Record<string, unknown>,
       ctx
     );
-    return stripMergeDirectives(merged);
+    return stripMergeDirectives(merged, fileName);
   }
   return overlay;
 }
@@ -152,10 +161,15 @@ function normalizeAiOption(
   return Object.keys(rest).length > 0 ? rest : undefined;
 }
 
+function rulesetLocation(name: string): string {
+  return `ruleset '${name}'`;
+}
+
 /**
  * Deep merges two rulesets: per-repo values override root values.
  */
 function mergeRuleset(
+  name: string,
   root: Ruleset | undefined,
   perRepo: Ruleset | undefined
 ): Ruleset {
@@ -165,7 +179,7 @@ function mergeRuleset(
   // Deep merge using the existing merge utility with replace strategy.
   // deepMerge operates on Record<string, unknown> — the cast is safe because
   // merging two Ruleset-shaped objects preserves the Ruleset structure.
-  const ctx = createMergeContext("replace");
+  const ctx = createMergeContext("replace", rulesetLocation(name));
   return deepMerge(
     structuredClone(root) as Record<string, unknown>,
     perRepo as Record<string, unknown>,
@@ -375,11 +389,13 @@ export function mergeSettings(
       }
 
       const merged = mergeRuleset(
+        name,
         rootRuleset as Ruleset | undefined,
         repoRuleset as Ruleset | undefined
       );
       result.rulesets[name] = stripMergeDirectives(
-        merged as Record<string, unknown>
+        merged as Record<string, unknown>,
+        rulesetLocation(name)
       ) as Ruleset;
     }
 
@@ -506,6 +522,7 @@ function applyFileLayer(
         mergedContent = overlay.content ?? existing.content;
       } else {
         mergedContent = mergeContentPair(
+          fileName,
           existing.content,
           overlay.content,
           existing.mergeStrategy ?? "replace"
@@ -578,7 +595,7 @@ function mergeGroupPROptions(
 function mergeNamedEntries<T>(
   base: Record<string, T | false> | undefined,
   overlay: Record<string, T | false | boolean | undefined>,
-  merge: (existing: T | false | undefined, entry: T) => T
+  merge: (existing: T | false | undefined, entry: T, name: string) => T
 ): Record<string, T | false> {
   const inherit = shouldInherit(overlay);
   const result: Record<string, T | false> = inherit ? { ...(base ?? {}) } : {};
@@ -589,7 +606,7 @@ function mergeNamedEntries<T>(
       result[name] = false;
     } else if (typeof entry === "object" && entry !== null) {
       const existing = result[name];
-      result[name] = merge(existing, entry as T);
+      result[name] = merge(existing, entry as T, name);
     }
   }
 
@@ -615,9 +632,9 @@ function mergeRawSettings(
     result.rulesets = mergeNamedEntries(
       result.rulesets,
       overlay.rulesets,
-      (existing, entry) =>
+      (existing, entry, name) =>
         existing && typeof existing === "object"
-          ? mergeRuleset(existing as Ruleset, entry as Ruleset)
+          ? mergeRuleset(name, existing as Ruleset, entry as Ruleset)
           : structuredClone(entry)
     );
   }
@@ -778,6 +795,7 @@ function resolveFileEntry(
   const fileStrategy = fileConfig.mergeStrategy ?? "replace";
 
   let mergedContent = resolveFileContent(
+    fileName,
     fileConfig.content,
     repoOverride,
     fileStrategy
