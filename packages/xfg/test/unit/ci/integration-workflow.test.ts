@@ -142,6 +142,37 @@ describe("environment-gated jobs", () => {
   }
 });
 
+interface CallerJob {
+  uses?: string;
+  secrets?: unknown;
+}
+
+function inheritsIntoRemote(job: CallerJob): boolean {
+  return job.secrets === "inherit" && !job.uses?.startsWith("./");
+}
+
+describe("inherited secrets", () => {
+  test("into a workflow outside this repo count as reads", () => {
+    assert.equal(
+      inheritsIntoRemote({
+        uses: "o/r/.github/workflows/x.yaml@sha",
+        secrets: "inherit",
+      }),
+      true
+    );
+  });
+
+  test("into a local workflow are checked through its own jobs", () => {
+    assert.equal(
+      inheritsIntoRemote({
+        uses: "./.github/workflows/ci-repo.yaml",
+        secrets: "inherit",
+      }),
+      false
+    );
+  });
+});
+
 const EXTERNAL_PLATFORM_SECRETS = ["AZURE_DEVOPS_EXT_PAT", "GITLAB_TOKEN"];
 // Reusable lanes take the environment as an input; standalone workflows run on main only
 const GATED_ENVIRONMENTS = ["${{ inputs.environment }}", "integration-main"];
@@ -153,11 +184,10 @@ describe("ADO and GitLab credentials", () => {
   const readers = workflowFiles.flatMap((file) =>
     jobs(file)
       // Jobs that call a reusable workflow have no steps; the called jobs are checked
-      // instead, unless the caller inherits secrets
+      // instead, unless the caller inherits secrets into a workflow outside this repo
       .filter(
         ([, job]) =>
-          Array.isArray(job.steps) ||
-          (job as { secrets?: unknown }).secrets === "inherit"
+          Array.isArray(job.steps) || inheritsIntoRemote(job as CallerJob)
       )
       .map(([name, job]): [string, Job, string[]] => [
         `${file}: ${name}`,
@@ -235,7 +265,8 @@ function workflow(name: string): Workflow {
 describe("integration workflow secrets", () => {
   const called = workflow("_integration-tests.yaml");
   const declared = Object.keys(called.on.workflow_call?.secrets ?? {});
-  const passed = workflow("ci.yaml").jobs["integration-tests"].secrets ?? {};
+  const passed =
+    workflow("ci-repo.yaml").jobs["integration-tests"].secrets ?? {};
 
   test("every secret the lanes use is declared", () => {
     const used = new Set<string>();
@@ -249,10 +280,55 @@ describe("integration workflow secrets", () => {
 
   // A called workflow only sees secrets its caller passes, environment secrets included
   for (const secret of declared) {
-    test(`ci.yaml passes ${secret} by name`, () => {
+    test(`ci-repo.yaml passes ${secret} by name`, () => {
       assert.equal(passed[secret], `\${{ secrets.${secret} }}`);
     });
   }
+});
+
+describe("ci.yaml", () => {
+  const ci = parse(
+    readFileSync(join(repoRoot, ".github/workflows/ci.yaml"), "utf-8")
+  ) as {
+    on: { pull_request: { types?: string[] } };
+    jobs: Record<
+      string,
+      CallerJob & { needs?: string[]; if?: string; permissions?: unknown }
+    >;
+  };
+  const LABEL_GUARD =
+    "github.event.action != 'labeled' || github.event.label.name == 'run-integration'";
+
+  test("adding a label starts a run", () => {
+    assert.ok(ci.on.pull_request.types?.includes("labeled"));
+  });
+
+  // Otherwise any other label posts an all-skipped green summary over the real result
+  for (const name of Object.keys(ci.jobs)) {
+    test(`${name} skips runs started by a label other than run-integration`, () => {
+      assert.ok(
+        ci.jobs[name].if?.includes(LABEL_GUARD),
+        `${name} has no label guard`
+      );
+    });
+  }
+
+  test("repo runs ci-repo.yaml after lint with inherited secrets", () => {
+    const repo = ci.jobs.repo;
+    assert.equal(repo.uses, "./.github/workflows/ci-repo.yaml");
+    assert.deepEqual(repo.needs, ["lint"]);
+    assert.equal(repo.secrets, "inherit");
+    assert.deepEqual(repo.permissions, { contents: "read" });
+  });
+
+  test("summary judges lint and repo even when they fail", () => {
+    assert.deepEqual(ci.jobs.summary.needs, ["lint", "repo"]);
+    assert.match(ci.jobs.summary.if ?? "", /^always\(\) && /);
+  });
+
+  test("has only the lint, repo and summary jobs", () => {
+    assert.deepEqual(Object.keys(ci.jobs), ["lint", "repo", "summary"]);
+  });
 });
 
 describe("integration lanes", () => {
