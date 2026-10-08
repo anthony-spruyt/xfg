@@ -229,6 +229,93 @@ repos:
     );
   });
 
+  test("sync creates an environment and secrets sync writes its secret", async () => {
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-environments
+settings:
+  environments:
+    xfg-release:
+      deploymentBranchPolicy:
+        custom:
+          - type: branch
+            name: main
+          - type: tag
+            name: "v*"
+      secrets:
+        XFG_ENV_SECRET:
+          env: XFG_TEST_SECRET_VALUE
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    const syncOutput = await exec(
+      `node dist/cli.js sync --config ${configPath}`,
+      { cwd: projectRoot }
+    );
+    assert.ok(
+      syncOutput.includes('+ environment "xfg-release"'),
+      `sync output should name the environment, got: ${syncOutput}`
+    );
+
+    await withTestRetry(
+      async () => {
+        const policy = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments/xfg-release --jq '.deployment_branch_policy'`
+          )
+        ) as { custom_branch_policies: boolean };
+        assert.equal(policy.custom_branch_policies, true);
+        const patterns = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments/xfg-release/deployment-branch-policies --jq '[.branch_policies[] | {name, type}]'`
+          )
+        ) as { name: string; type: string }[];
+        assert.deepEqual(
+          patterns.sort((a, b) => a.name.localeCompare(b.name)),
+          [
+            { name: "main", type: "branch" },
+            { name: "v*", type: "tag" },
+          ]
+        );
+      },
+      { description: "environment and branch policies visible" }
+    );
+
+    const resync = await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    assert.ok(
+      resync.includes("Environments: No changes needed"),
+      `second sync should change nothing, got: ${resync}`
+    );
+
+    const secretsOutput = await runSecretsSync(configPath);
+    assert.ok(
+      secretsOutput.includes(
+        '+ secret "XFG_ENV_SECRET" (environment "xfg-release")'
+      ),
+      `secrets sync output should name the environment secret, got: ${secretsOutput}`
+    );
+    assert.ok(!secretsOutput.includes(SECRET_VALUE), "value must not be logged");
+
+    await withTestRetry(
+      async () => {
+        const secrets = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments/xfg-release/secrets --jq '.secrets'`
+          )
+        ) as Secret[];
+        assert.ok(
+          secrets.find((s) => s.name === "XFG_ENV_SECRET"),
+          "Environment secret XFG_ENV_SECRET should exist"
+        );
+      },
+      { description: "environment secret visible" }
+    );
+  });
+
   test("deletes orphaned secret", async () => {
     // Ensure secret exists before testing deletion (decouples from prior test ordering)
     const setupConfigPath = writeConfig(

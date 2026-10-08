@@ -18,7 +18,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 2. Click "New GitHub App"
 3. Configure permissions:
    - **Repository permissions:**
-     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc. Organization owners only, see [Limitations](#limitations))_
+     - Administration: Read and write _(required for repo lifecycle: create, archive, fork, etc. Organization owners only, see [Limitations](#limitations); also required for [environments](../configuration/environments.md))_
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
@@ -62,7 +62,7 @@ This approach:
 - Caches tokens to minimize API calls
 - Skips repositories without app access (with a warning)
 
-The same inputs work with `command: secrets-sync`. Grant the app **Secrets: Read and write** for that. Unlike `sync`, secrets sync fails (rather than skips) repos without app access.
+The same inputs work with `command: secrets-sync`. Grant the app **Secrets: Read and write** for that (repo and environment secrets). Unlike `sync`, secrets sync fails (rather than skips) repos without app access.
 
 ## How It Works
 

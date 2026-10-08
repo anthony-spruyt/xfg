@@ -3,7 +3,13 @@ import type {
   PropertyDiff,
   ActiveAction,
   SecretsPlanEntry,
+  EnvironmentsPlanEntry,
 } from "../settings/index.js";
+import { formatSecretLabel } from "../settings/secrets/formatter.js";
+import {
+  formatPatternLabel,
+  formatPolicyLine,
+} from "../settings/environments/formatter.js";
 import type { Ruleset, Label } from "../config/index.js";
 import {
   STEP_SUMMARY_MAX_BYTES,
@@ -26,6 +32,7 @@ export interface SettingsReport {
     variables?: { create: number; update: number; delete: number };
     secrets?: { create: number; update: number; delete: number };
     collaborators?: { create: number; update: number; delete: number };
+    environments?: { create: number; update: number };
   };
 }
 
@@ -42,6 +49,7 @@ export interface RepoChanges {
   }[];
   secrets?: SecretsPlanEntry[];
   collaborators?: { name: string; action: "create" | "delete" }[];
+  environments?: EnvironmentsPlanEntry[];
   error?: string;
 }
 
@@ -53,6 +61,7 @@ export function hasRepoSettingsChanges(repo: RepoChanges): boolean {
     (repo.variables ?? []).length > 0 ||
     (repo.secrets ?? []).length > 0 ||
     (repo.collaborators ?? []).length > 0 ||
+    (repo.environments ?? []).length > 0 ||
     !!repo.error
   );
 }
@@ -154,6 +163,11 @@ const SETTINGS_CATEGORIES: {
     plural: "collaborators",
     totals: (t) => t.collaborators,
   },
+  {
+    noun: "environment",
+    plural: "environments",
+    totals: (t) => t.environments,
+  },
 ];
 
 export function formatSettingsCountEntries(
@@ -220,6 +234,23 @@ function formatRulesetConfigPlain(config: Ruleset): string[] {
     1,
     (depth, text) => `+${"  ".repeat(depth)}${text.substring(1)}`
   );
+}
+
+const DIFF_SIGN: Record<ActiveAction, string> = {
+  create: "+",
+  update: "!",
+  delete: "-",
+};
+
+function renderEnvironmentLines(entry: EnvironmentsPlanEntry): string[] {
+  const sign = DIFF_SIGN[entry.action];
+  const lines = [`${sign} environment ${quoted(entry.name)}`];
+  const policy = formatPolicyLine(entry);
+  if (policy) lines.push(`${sign}   ${policy}`);
+  for (const pattern of entry.addedPatterns) {
+    lines.push(`+   ${formatPatternLabel(pattern)}`);
+  }
+  return lines;
 }
 
 export function renderRepoSettingsDiffLines(
@@ -348,15 +379,7 @@ export function renderRepoSettingsDiffLines(
 
   // Names only: secret values are write-only and must never reach output.
   for (const secret of repo.secrets ?? []) {
-    if (secret.action === "create") {
-      diffLines.push(`+ secret ${quoted(secret.name)}`);
-    } else if (secret.action === "update") {
-      diffLines.push(
-        `! secret ${quoted(secret.name)} (update, value write-only)`
-      );
-    } else {
-      diffLines.push(`- secret ${quoted(secret.name)}`);
-    }
+    diffLines.push(`${DIFF_SIGN[secret.action]} ${formatSecretLabel(secret)}`);
   }
 
   if ((repo.collaborators ?? []).length > 0 && diffLines.length > startLength) {
@@ -366,6 +389,14 @@ export function renderRepoSettingsDiffLines(
   for (const collaborator of repo.collaborators ?? []) {
     const sign = collaborator.action === "create" ? "+" : "-";
     diffLines.push(`${sign} collaborator ${quoted(collaborator.name)}`);
+  }
+
+  if ((repo.environments ?? []).length > 0 && diffLines.length > startLength) {
+    diffLines.push("");
+  }
+
+  for (const environment of repo.environments ?? []) {
+    diffLines.push(...renderEnvironmentLines(environment));
   }
 
   if (repo.error) {

@@ -6,6 +6,7 @@ import {
   createDefaultLabelsProcessorFactory,
   createDefaultCodeScanningProcessorFactory,
   createDefaultCollaboratorsProcessorFactory,
+  createDefaultEnvironmentsProcessorFactory,
   createDefaultFactories,
 } from "../../../src/cli/settings-factories.js";
 import type { ProcessExecutor } from "../../../src/shared/command-executor.js";
@@ -144,5 +145,17 @@ describe("createDefaultCollaboratorsProcessorFactory", () => {
   test("createDefaultFactories includes collaborators", () => {
     const factories = createDefaultFactories(stubExecutor);
     assert.equal(typeof factories.collaborators().process, "function");
+  });
+});
+
+describe("createDefaultEnvironmentsProcessorFactory", () => {
+  test("factory produces a processor with a process method", () => {
+    const factory = createDefaultEnvironmentsProcessorFactory(stubExecutor);
+    assert.equal(typeof factory().process, "function");
+  });
+
+  test("createDefaultFactories includes environments", () => {
+    const factories = createDefaultFactories(stubExecutor);
+    assert.equal(typeof factories.environments().process, "function");
   });
 });

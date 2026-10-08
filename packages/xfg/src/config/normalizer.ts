@@ -30,6 +30,8 @@ import type {
   GitHubRepoSettings,
   CollaboratorsConfig,
   RawCollaboratorsConfig,
+  EnvironmentConfig,
+  RawEnvironmentConfig,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
 
@@ -353,6 +355,92 @@ function dropCollaboratorsIfEmpty(
 }
 
 /**
+ * Merges one environment layer over another: a set `deploymentBranchPolicy`
+ * replaces the inherited one whole, and secrets merge like repo secrets.
+ */
+function mergeEnvironmentLayer(
+  base: RawEnvironmentConfig | false | undefined,
+  overlay: RawEnvironmentConfig
+): RawEnvironmentConfig {
+  const inherited = base === false ? undefined : base;
+  const result: RawEnvironmentConfig = {};
+
+  const policy =
+    overlay.deploymentBranchPolicy ?? inherited?.deploymentBranchPolicy;
+  if (policy !== undefined) {
+    result.deploymentBranchPolicy = structuredClone(policy);
+  }
+
+  if (inherited?.secrets || overlay.secrets) {
+    result.secrets = mergeEntryMapLayer(
+      inherited?.secrets,
+      overlay.secrets
+    ) as RawEnvironmentConfig["secrets"];
+  }
+
+  return result;
+}
+
+function finalizeEnvironment(env: RawEnvironmentConfig): EnvironmentConfig {
+  const result: EnvironmentConfig = {};
+  if (env.deploymentBranchPolicy) {
+    result.deploymentBranchPolicy = structuredClone(env.deploymentBranchPolicy);
+  }
+  const secrets = Object.entries(env.secrets ?? {}).filter(
+    ([, value]) => value !== false
+  );
+  if (secrets.length > 0) {
+    result.secrets = Object.fromEntries(secrets) as EnvironmentConfig["secrets"];
+  }
+  return result;
+}
+
+// Matches the entries mergeNamedEntries acts on; anything else is ignored there.
+function isMergeableEntry(entry: unknown): boolean {
+  return entry === false || (typeof entry === "object" && entry !== null);
+}
+
+// GitHub environment names are case-insensitive; base entries take the overlay's spelling so they merge.
+function mergeEnvironmentEntries(
+  base: Record<string, RawEnvironmentConfig | false> | undefined,
+  overlay: Record<string, RawEnvironmentConfig | boolean | undefined>
+): Record<string, RawEnvironmentConfig | false> {
+  const overlayNames = new Map<string, string>();
+  for (const [name, entry] of Object.entries(overlay)) {
+    if (name !== "inherit" && isMergeableEntry(entry)) {
+      overlayNames.set(name.toLowerCase(), name);
+    }
+  }
+
+  const rekeyed: Record<string, RawEnvironmentConfig | false> = {};
+  for (const [name, env] of Object.entries(base ?? {})) {
+    rekeyed[overlayNames.get(name.toLowerCase()) ?? name] = env;
+  }
+
+  return mergeNamedEntries<RawEnvironmentConfig>(
+    rekeyed,
+    overlay,
+    mergeEnvironmentLayer
+  );
+}
+
+function mergeEnvironments(
+  root: RawRootSettings["environments"],
+  perRepo: RawRepoSettings["environments"]
+): Record<string, EnvironmentConfig> | undefined {
+  if (!root && !perRepo) return undefined;
+
+  const merged = mergeEnvironmentEntries(root, perRepo ?? {});
+
+  const result: Record<string, EnvironmentConfig> = {};
+  for (const [name, env] of Object.entries(merged)) {
+    if (env === false) continue;
+    result[name] = finalizeEnvironment(env);
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+/**
  * Merges settings: per-repo settings deep merge with root settings.
  * Returns undefined if no settings are defined.
  */
@@ -481,6 +569,14 @@ export function mergeSettings(
     if (merged) {
       result.collaborators = merged;
     }
+  }
+
+  const mergedEnvironments = mergeEnvironments(
+    root?.environments,
+    perRepo?.environments
+  );
+  if (mergedEnvironments) {
+    result.environments = mergedEnvironments;
   }
 
   return Object.keys(result).length > 0 ? result : undefined;
@@ -687,6 +783,13 @@ function mergeRawSettings(
     result.collaborators = mergeCollaboratorsLayer(
       result.collaborators,
       overlay.collaborators
+    );
+  }
+
+  if (overlay.environments) {
+    result.environments = mergeEnvironmentEntries(
+      result.environments,
+      overlay.environments
     );
   }
 

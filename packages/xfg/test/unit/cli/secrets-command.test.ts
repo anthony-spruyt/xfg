@@ -554,6 +554,37 @@ repos:
     );
   });
 
+  test("logs processor warnings", async () => {
+    writeFileSync(
+      testConfigPath,
+      `id: test-config
+settings:
+  environments:
+    release:
+      secrets:
+        MY_SECRET:
+          env: SECRET_VAR
+repos:
+  - git: https://github.com/test-org/test-repo
+`
+    );
+
+    const mockProcessor = createMockProcessor({
+      warnings: ['environment "release" does not exist - skipped'],
+    });
+
+    await runSecretsSync(
+      { config: testConfigPath, workDir: testDir },
+      { processorFactory: () => mockProcessor }
+    );
+
+    const output = consoleOutput.join("\n");
+    assert.ok(
+      output.includes('environment "release" does not exist - skipped'),
+      output
+    );
+  });
+
   test("failed result logs error and throws aggregated error", async () => {
     writeFileSync(
       testConfigPath,

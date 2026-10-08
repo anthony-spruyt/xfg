@@ -184,7 +184,7 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 
 With `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` set, `xfg secrets sync` mints a GitHub App token per repo owner. A repo whose owner has no installation **fails** the run, so a missed rotation is never silent. Without app credentials it uses `GH_TOKEN`, then `GITHUB_TOKEN`. See [GitHub App](../platforms/github-app.md).
 
-The app needs the **Secrets: Read and write** repository permission.
+The app needs the **Secrets: Read and write** repository permission. It covers environment secrets too.
 
 ## Encryption
 
@@ -236,6 +236,10 @@ Existing secrets always show as `update`. GitHub never returns secret values, so
 When `GITHUB_STEP_SUMMARY` is set, the same list is written to the job summary (`## xfg Plan` for a dry run, `## xfg Apply` otherwise).
 
 Secret values are never shown — only the secret names.
+
+## Environment Secrets
+
+Secrets can also be scoped to a GitHub deployment environment under `settings.environments.<name>.secrets`. They use the same `env` config, are encrypted with the environment's own key, and are written only by `xfg secrets sync`. See [GitHub Environments](environments.md#environment-secrets).
 
 ## Secrets Sync Command
 

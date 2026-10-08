@@ -415,6 +415,180 @@ function validateSettingsCollaborators(
   }
 }
 
+const ENVIRONMENT_KEYS = new Set(["deploymentBranchPolicy", "secrets"]);
+const BRANCH_POLICY_KEYS = new Set(["protectedBranches", "custom"]);
+const BRANCH_PATTERN_KEYS = new Set(["type", "name"]);
+const ENVIRONMENT_NAME_MAX_LENGTH = 255;
+
+function assertKnownKeys(
+  obj: Record<string, unknown>,
+  allowed: ReadonlySet<string>,
+  context: string
+): void {
+  for (const key of Object.keys(obj)) {
+    if (!allowed.has(key)) {
+      throw new ValidationError(`${context}: unknown key '${key}'`);
+    }
+  }
+}
+
+function validateBranchPatterns(custom: unknown, context: string): void {
+  if (!Array.isArray(custom) || custom.length === 0) {
+    throw new ValidationError(`${context}: custom must be a non-empty array`);
+  }
+  const seen = new Set<string>();
+  custom.forEach((pattern: unknown, i) => {
+    const ctx = `${context}: custom[${i}]`;
+    if (!isPlainObject(pattern)) {
+      throw new ValidationError(`${ctx} must be an object`);
+    }
+    assertKnownKeys(pattern, BRANCH_PATTERN_KEYS, ctx);
+    if (pattern.type !== "branch" && pattern.type !== "tag") {
+      throw new ValidationError(`${ctx}.type must be 'branch' or 'tag'`);
+    }
+    if (typeof pattern.name !== "string" || pattern.name.trim() === "") {
+      throw new ValidationError(`${ctx}.name must be a non-empty string`);
+    }
+    const key = `${pattern.type}\u0000${pattern.name}`;
+    if (seen.has(key)) {
+      throw new ValidationError(
+        `${context}: duplicate pattern ${pattern.type} '${pattern.name}'`
+      );
+    }
+    seen.add(key);
+  });
+}
+
+function validateDeploymentBranchPolicy(
+  policy: unknown,
+  context: string,
+  isRoot: boolean
+): void {
+  const ctx = `${context} deploymentBranchPolicy`;
+  if (policy === false) {
+    if (isRoot) {
+      throw new ValidationError(
+        `${context}: deploymentBranchPolicy: false is not valid at root level. Omit it to let any branch deploy.`
+      );
+    }
+    return;
+  }
+  if (!isPlainObject(policy)) {
+    throw new ValidationError(`${ctx} must be an object`);
+  }
+  assertKnownKeys(policy, BRANCH_POLICY_KEYS, `${context}: deploymentBranchPolicy`);
+
+  const hasProtected = policy.protectedBranches !== undefined;
+  const hasCustom = policy.custom !== undefined;
+  if (hasProtected === hasCustom) {
+    throw new ValidationError(
+      `${ctx} needs exactly one of 'protectedBranches: true' or 'custom'`
+    );
+  }
+  if (hasProtected && policy.protectedBranches !== true) {
+    throw new ValidationError(
+      `${ctx}: protectedBranches must be true. Omit deploymentBranchPolicy to let any branch deploy.`
+    );
+  }
+  if (hasCustom) {
+    validateBranchPatterns(policy.custom, ctx);
+  }
+}
+
+function validateEnvironmentSecrets(secrets: unknown, context: string): void {
+  if (!isPlainObject(secrets)) {
+    throw new ValidationError(`${context}: secrets must be an object`);
+  }
+  for (const [name, value] of Object.entries(secrets)) {
+    if (name === "deleteOrphaned" || name === "inherit") {
+      throw new ValidationError(
+        `${context}: '${name}' is not supported in environment secrets`
+      );
+    }
+    if (value === false) continue;
+    if (!isPlainObject(value)) {
+      throw new ValidationError(
+        `${context}: secret '${name}' must be an object with an 'env' field, or false to opt out`
+      );
+    }
+  }
+}
+
+function validateSettingsEnvironments(
+  settings: RawRepoSettings | RawRootSettings,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.environments === undefined) return;
+
+  if (!isPlainObject(settings.environments)) {
+    throw new ValidationError(`${context}: environments must be an object`);
+  }
+
+  const seenNames = new Map<string, string>();
+  for (const [name, env] of Object.entries(settings.environments)) {
+    if (name === "inherit") {
+      validateEnvironmentsInherit(env, context);
+      continue;
+    }
+    validateEnvironmentName(name, context, seenNames);
+    if (env !== false) {
+      validateEnvironmentEntry(env, `${context}: environment '${name}'`, !rootCtx);
+    }
+  }
+}
+
+function validateEnvironmentsInherit(value: unknown, context: string): void {
+  if (typeof value !== "boolean") {
+    throw new ValidationError(
+      `${context}: environments.inherit must be a boolean`
+    );
+  }
+}
+
+function validateEnvironmentName(
+  name: string,
+  context: string,
+  seenNames: Map<string, string>
+): void {
+  if (name.trim() === "") {
+    throw new ValidationError(
+      `${context}: environment name must not be blank`
+    );
+  }
+  if (name.length > ENVIRONMENT_NAME_MAX_LENGTH) {
+    throw new ValidationError(
+      `${context}: environment name '${name.slice(0, 40)}...' exceeds ${ENVIRONMENT_NAME_MAX_LENGTH} characters`
+    );
+  }
+  const firstSpelling = seenNames.get(name.toLowerCase());
+  if (firstSpelling !== undefined) {
+    throw new ValidationError(
+      `${context}: environment '${name}' duplicates '${firstSpelling}'; GitHub environment names ignore case`
+    );
+  }
+  seenNames.set(name.toLowerCase(), name);
+}
+
+function validateEnvironmentEntry(
+  env: unknown,
+  envCtx: string,
+  isRoot: boolean
+): void {
+  if (!isPlainObject(env)) {
+    throw new ValidationError(
+      `${envCtx} must be an object, or false to opt out`
+    );
+  }
+  assertKnownKeys(env, ENVIRONMENT_KEYS, envCtx);
+  if (env.deploymentBranchPolicy !== undefined) {
+    validateDeploymentBranchPolicy(env.deploymentBranchPolicy, envCtx, isRoot);
+  }
+  if (env.secrets !== undefined) {
+    validateEnvironmentSecrets(env.secrets, envCtx);
+  }
+}
+
 export function validateSettings(
   settings: unknown,
   context: string,
@@ -431,6 +605,7 @@ export function validateSettings(
   validateSettingsCodeScanning(settings, context, rootCtx);
   validateSettingsSecrets(settings, context);
   validateSettingsCollaborators(settings, context);
+  validateSettingsEnvironments(settings, context, rootCtx);
 }
 
 export function enrichSettingsContext(
