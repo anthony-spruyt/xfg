@@ -6880,6 +6880,35 @@ repos:
     });
   });
 
+  test("names the file when override content has $matchBy without $arrayMerge", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { ".mergify.yml": { content: { queue_rules: [] } } },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              override: true,
+              content: {
+                queue_rules: {
+                  $matchBy: "name",
+                  $values: [{ name: "default" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got none",
+    });
+  });
+
   test("matches ruleset bypass actors by the chosen key in a group layer", () => {
     const raw: RawConfig = {
       id: "test-config",

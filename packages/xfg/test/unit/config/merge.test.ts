@@ -1029,6 +1029,27 @@ describe("stripMergeDirectives", () => {
     });
   });
 
+  test("rejects an unmerged $matchBy directive without $arrayMerge", () => {
+    const obj = {
+      outer: {
+        queue_rules: { $matchBy: "name", $values: [{ name: "default" }] },
+      },
+    };
+    assert.throws(() => stripMergeDirectives(obj, ".mergify.yml"), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: outer.queue_rules: $matchBy requires $arrayMerge: merge, got none",
+    });
+  });
+
+  test("rejects an invalid $matchBy on an object that is not a directive", () => {
+    const obj = { k: { $matchBy: "", $arrayMerge: "merge", other: 1 } };
+    assert.throws(() => stripMergeDirectives(obj), {
+      name: "ValidationError",
+      message: "k: $matchBy must be a non-empty string",
+    });
+  });
+
   test("rejects duplicate values in an unmerged $matchBy directive", () => {
     const obj = {
       list: [

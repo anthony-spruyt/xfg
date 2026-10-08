@@ -367,8 +367,11 @@ function stripObject(
     if (XFG_DIRECTIVES.has(key)) continue;
 
     const keyPath = childPath(path, key);
+    // Validate before branching: an invalid $matchBy is not a directive and would be stripped silently
+    const matchBy = isPlainObject(value)
+      ? readMatchBy(value, errCtx, keyPath)
+      : undefined;
     if (isUnresolvedDirective(value)) {
-      const matchBy = readMatchBy(value, errCtx, keyPath);
       if (matchBy !== undefined) {
         assertKeyedItems(value.$values, matchBy, "overlay", errCtx, keyPath);
       }
