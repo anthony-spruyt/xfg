@@ -55,12 +55,20 @@ class MockEnvSecrets implements IEnvironmentSecretsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
   environments: GitHubEnvironment[] = [];
   secrets = new Map<string, GitHubSecret[]>();
+  failFor?: { method: string; env: string };
+
+  private maybeFail(method: string, env: string): void {
+    if (this.failFor?.method === method && this.failFor.env === env) {
+      throw new Error("HTTP 500: Internal Server Error");
+    }
+  }
 
   async list(): Promise<GitHubEnvironment[]> {
     return this.environments;
   }
   async listSecrets(_r: RepoInfo, env: string): Promise<GitHubSecret[]> {
     this.calls.push({ method: "listSecrets", args: [env] });
+    this.maybeFail("listSecrets", env);
     return this.secrets.get(env) ?? [];
   }
   async getSecretsPublicKey(
@@ -68,6 +76,7 @@ class MockEnvSecrets implements IEnvironmentSecretsStrategy {
     env: string
   ): Promise<GitHubPublicKey> {
     this.calls.push({ method: "getSecretsPublicKey", args: [env] });
+    this.maybeFail("getSecretsPublicKey", env);
     return { key_id: `${env}-key`, key: `${env}-pub` };
   }
   async upsertSecret(
@@ -322,6 +331,96 @@ describe("SecretsProcessor - environment secrets", () => {
     assert.match(result.message, /Missing environment variables: SRC/);
     assert.ok(!repoSecrets.calls.some((c) => c.method === "upsert"));
     assert.ok(!envSecrets.calls.some((c) => c.method === "upsertSecret"));
+  });
+
+  describe("with several environments", () => {
+    const environments: GitHubEnvironment[] = [
+      { name: "alpha", deployment_branch_policy: null },
+      { name: "beta", deployment_branch_policy: null },
+      { name: "gamma", deployment_branch_policy: null },
+    ];
+    const values = { ALPHA_SRC: "a", BETA_SRC: "bb", GAMMA_SRC: "ccc" };
+    const threeEnvs = config({
+      alpha: { secrets: { A: { env: "ALPHA_SRC" } } },
+      beta: { secrets: { B: { env: "BETA_SRC" } } },
+      gamma: { secrets: { G: { env: "GAMMA_SRC" } } },
+    });
+    const existing = (name: string): GitHubSecret => ({
+      name,
+      created_at: "",
+      updated_at: "",
+    });
+
+    test("diffs and seals each environment's secrets with its own list and key", async () => {
+      const { envSecrets, processor } = setup({ environments, values });
+      envSecrets.secrets.set("alpha", [existing("A")]);
+      envSecrets.secrets.set("gamma", [existing("G"), existing("OLD")]);
+      const result = await processor.process(threeEnvs, repo, {});
+      assert.equal(result.success, true, result.message);
+      assert.deepEqual(result.planOutput?.entries, [
+        { name: "B", action: "create", environment: "beta" },
+        { name: "A", action: "update", environment: "alpha" },
+        { name: "G", action: "update", environment: "gamma" },
+      ]);
+      assert.deepEqual(envSecrets.calls, [
+        { method: "listSecrets", args: ["alpha"] },
+        { method: "listSecrets", args: ["beta"] },
+        { method: "listSecrets", args: ["gamma"] },
+        { method: "getSecretsPublicKey", args: ["alpha"] },
+        { method: "getSecretsPublicKey", args: ["beta"] },
+        { method: "getSecretsPublicKey", args: ["gamma"] },
+        {
+          method: "upsertSecret",
+          args: ["alpha", "A", "alpha-pub:1", "alpha-key"],
+        },
+        {
+          method: "upsertSecret",
+          args: ["beta", "B", "beta-pub:2", "beta-key"],
+        },
+        {
+          method: "upsertSecret",
+          args: ["gamma", "G", "gamma-pub:3", "gamma-key"],
+        },
+      ]);
+    });
+
+    test("stops listing secrets when an environment's list fails", async () => {
+      const { envSecrets, processor } = setup({ environments, values });
+      envSecrets.failFor = { method: "listSecrets", env: "alpha" };
+      const result = await processor.process(threeEnvs, repo, {});
+      assert.equal(result.success, false);
+      assert.match(result.message, /HTTP 500/);
+      assert.deepEqual(envSecrets.calls, [
+        { method: "listSecrets", args: ["alpha"] },
+      ]);
+    });
+
+    test("writes nothing when an environment's public key read fails", async () => {
+      const { repoSecrets, envSecrets, processor } = setup({
+        environments,
+        values: { ...values, REPO_SRC: "xyz" },
+      });
+      envSecrets.failFor = { method: "getSecretsPublicKey", env: "alpha" };
+      const result = await processor.process(
+        config(
+          {
+            alpha: { secrets: { A: { env: "ALPHA_SRC" } } },
+            beta: { secrets: { B: { env: "BETA_SRC" } } },
+          },
+          { REPO: { env: "REPO_SRC" } }
+        ),
+        repo,
+        {}
+      );
+      assert.equal(result.success, false);
+      assert.match(result.message, /HTTP 500/);
+      assert.ok(!repoSecrets.calls.some((c) => c.method === "upsert"));
+      assert.deepEqual(envSecrets.calls, [
+        { method: "listSecrets", args: ["alpha"] },
+        { method: "listSecrets", args: ["beta"] },
+        { method: "getSecretsPublicKey", args: ["alpha"] },
+      ]);
+    });
   });
 
   test("ignores environments without secrets", async () => {

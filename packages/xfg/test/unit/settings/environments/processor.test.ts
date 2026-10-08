@@ -24,6 +24,7 @@ class MockStrategy implements IEnvironmentsStrategy {
   patterns = new Map<string, DeploymentBranchPattern[]>();
   failOn?: string;
   failWith = "HTTP 404: Not Found";
+  failListFor?: string;
 
   async list(): Promise<GitHubEnvironment[]> {
     return this.environments;
@@ -41,6 +42,7 @@ class MockStrategy implements IEnvironmentsStrategy {
     env: string
   ): Promise<DeploymentBranchPattern[]> {
     this.calls.push({ method: "listBranchPolicies", args: [env] });
+    if (this.failListFor === env) throw new Error(this.failWith);
     return this.patterns.get(env) ?? [];
   }
   async createBranchPolicy(
@@ -202,6 +204,71 @@ describe("EnvironmentsProcessor", () => {
         method: "createBranchPolicy",
         args: ["release", { type: "tag", name: "v*" }],
       },
+    ]);
+  });
+
+  test("diffs each environment against its own existing patterns", async () => {
+    const strategy = new MockStrategy();
+    strategy.environments = [
+      { name: "alpha", deployment_branch_policy: custom },
+      { name: "beta", deployment_branch_policy: custom },
+      { name: "gamma", deployment_branch_policy: custom },
+    ];
+    const tag: DeploymentBranchPattern = { type: "tag", name: "v*" };
+    const releases: DeploymentBranchPattern = {
+      type: "branch",
+      name: "release/*",
+    };
+    const hotfixes: DeploymentBranchPattern = {
+      type: "branch",
+      name: "hotfix/*",
+    };
+    const dev: DeploymentBranchPattern = { type: "branch", name: "dev" };
+    strategy.patterns.set("alpha", [main]);
+    strategy.patterns.set("beta", [releases, hotfixes]);
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(
+      config({
+        alpha: { deploymentBranchPolicy: { custom: [main, tag] } },
+        beta: { deploymentBranchPolicy: { custom: [releases] } },
+        gamma: { deploymentBranchPolicy: { custom: [dev] } },
+      }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, true, result.message);
+    assert.deepEqual(strategy.calls, [
+      { method: "listBranchPolicies", args: ["alpha"] },
+      { method: "listBranchPolicies", args: ["beta"] },
+      { method: "listBranchPolicies", args: ["gamma"] },
+      { method: "createBranchPolicy", args: ["alpha", tag] },
+      { method: "createBranchPolicy", args: ["gamma", dev] },
+    ]);
+    assert.deepEqual(result.warnings, [
+      'me/r: environment "beta" has branch "hotfix/*" not in config - left in place',
+    ]);
+  });
+
+  test("stops reading patterns and writes nothing when a read fails", async () => {
+    const strategy = new MockStrategy();
+    strategy.environments = [
+      { name: "alpha", deployment_branch_policy: custom },
+      { name: "beta", deployment_branch_policy: custom },
+    ];
+    strategy.failListFor = "alpha";
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(
+      config({
+        alpha: { deploymentBranchPolicy: { custom: [main] } },
+        beta: { deploymentBranchPolicy: { custom: [main] } },
+      }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, false);
+    assert.match(result.message, /HTTP 404/);
+    assert.deepEqual(strategy.calls, [
+      { method: "listBranchPolicies", args: ["alpha"] },
     ]);
   });
 

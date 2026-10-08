@@ -209,7 +209,10 @@ export class SecretsProcessor implements ISecretsProcessor {
     const extra = gate.warnings.length > 0 ? { warnings: gate.warnings } : {};
 
     const repoValues = this.resolve(secretEntries);
-    const envValues = writableGroups.map((g) => this.resolve(g.entries));
+    const envValues = writableGroups.map((g) => ({
+      environment: g.environment,
+      values: this.resolve(g.entries),
+    }));
     const scopes = new Map<string | undefined, ScopeKey>();
     if (secretEntries.length > 0) {
       scopes.set(undefined, {
@@ -217,22 +220,21 @@ export class SecretsProcessor implements ISecretsProcessor {
         publicKey: await this.strategy.getPublicKey(githubRepo, strategyOptions),
       });
     }
-    const envKeys = await Promise.all(
-      writableGroups.map((g) =>
-        this.environments!.strategy.getSecretsPublicKey(
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(envValues, async ({ environment, values }) => {
+      scopes.set(environment, {
+        values,
+        publicKey: await this.environments!.strategy.getSecretsPublicKey(
           githubRepo,
-          g.environment,
+          environment,
           strategyOptions
-        )
-      )
-    );
-    for (const [i, g] of writableGroups.entries()) {
-      scopes.set(g.environment, { values: envValues[i], publicKey: envKeys[i] });
-    }
+        ),
+      });
+    });
 
     const applied: SecretChange[] = [];
     try {
-      // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+      // Serial: GitHub asks for serial requests to avoid secondary rate limits
       await runSequentially(changes.filter(isActiveAction), async (change) => {
         await this.writeChange(githubRepo, change, scopes, strategyOptions);
         applied.push(change);
@@ -354,23 +356,24 @@ export class SecretsProcessor implements ISecretsProcessor {
     groups: EnvironmentSecrets[],
     strategyOptions: GhApiOptions
   ): Promise<SecretChange[]> {
-    const currentByGroup = await Promise.all(
-      groups.map((group) =>
-        group.exists
-          ? this.environments!.strategy.listSecrets(
-              githubRepo,
-              group.environment,
-              strategyOptions
-            )
-          : Promise.resolve([])
-      )
-    );
-    return groups.flatMap((group, i) =>
-      diffSecrets(
-        currentByGroup[i],
-        group.entries.map(([name]) => name),
-        false
-      ).map((change) => ({ ...change, environment: group.environment }))
-    );
+    const changes: SecretChange[] = [];
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(groups, async (group) => {
+      const current = group.exists
+        ? await this.environments!.strategy.listSecrets(
+            githubRepo,
+            group.environment,
+            strategyOptions
+          )
+        : [];
+      changes.push(
+        ...diffSecrets(
+          current,
+          group.entries.map(([name]) => name),
+          false
+        ).map((change) => ({ ...change, environment: group.environment }))
+      );
+    });
+    return changes;
   }
 }

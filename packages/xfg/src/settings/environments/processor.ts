@@ -99,12 +99,19 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
     names: string[],
     strategyOptions: GhApiOptions
   ): Promise<Map<string, DeploymentBranchPattern[]>> {
-    const lists = await Promise.all(
-      names.map((name) =>
-        this.strategy.listBranchPolicies(githubRepo, name, strategyOptions)
-      )
-    );
-    return new Map(names.map((name, i) => [name.toLowerCase(), lists[i]]));
+    const patterns = new Map<string, DeploymentBranchPattern[]>();
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(names, async (name) => {
+      patterns.set(
+        name.toLowerCase(),
+        await this.strategy.listBranchPolicies(
+          githubRepo,
+          name,
+          strategyOptions
+        )
+      );
+    });
+    return patterns;
   }
 
   private async applySettings(
@@ -141,7 +148,7 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
     const progress = { writes: 0 };
     let appliedCount = 0;
     try {
-      // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+      // Serial: GitHub asks for serial requests to avoid secondary rate limits
       await runSequentially(
         changes.filter((c) => c.action !== "unchanged"),
         async (change) => {
@@ -193,7 +200,7 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
       );
     }
 
-    // Sequential: GitHub asks for serial mutating requests (secondary rate limits)
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
     await runSequentially(missing, async (pattern) => {
       await this.strategy.createBranchPolicy(
         githubRepo,
