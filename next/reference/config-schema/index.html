@@ -4746,7 +4746,7 @@
 <td><code>replace</code> | <code>append</code> | <code>prepend</code> | <code>merge</code></td>
 <td>Yes</td>
 <td>-</td>
-<td>How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by identity key (type, actor_id)</td>
+<td>How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id)</td>
 </tr>
 <tr>
 <td><code>$values</code></td>
@@ -4788,6 +4788,13 @@
 <td>-</td>
 <td>Bypass actor values to merge</td>
 </tr>
+<tr>
+<td><code>$matchBy</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values</td>
+</tr>
 </tbody>
 </table>
 <!-- xfg:generated:end -->
@@ -4820,6 +4827,13 @@
 <td>Yes</td>
 <td>-</td>
 <td>Rule values to merge</td>
+</tr>
+<tr>
+<td><code>$matchBy</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values</td>
 </tr>
 </tbody>
 </table>
