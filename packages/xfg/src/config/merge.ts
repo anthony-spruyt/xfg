@@ -106,7 +106,7 @@ function assertKeyedItems(
   const firstIndexByValue = new Map<unknown, number>();
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    if (!isPlainObject(item) || !(matchBy in item)) {
+    if (!isPlainObject(item) || !Object.hasOwn(item, matchBy)) {
       throw mergeError(
         ctx,
         path,
@@ -114,6 +114,17 @@ function assertKeyedItems(
       );
     }
     const value = item[matchBy];
+    // Map compares objects by reference, so only primitives can match
+    if (
+      value !== null &&
+      !["string", "number", "boolean"].includes(typeof value)
+    ) {
+      throw mergeError(
+        ctx,
+        path,
+        `${label} item ${i} $matchBy ${matchBy} must be a string, number, boolean or null`
+      );
+    }
     const first = firstIndexByValue.get(value);
     if (first !== undefined) {
       throw mergeError(
@@ -279,7 +290,7 @@ function mergeValue(
 ): unknown {
   // A directive left unresolved by an earlier layer with no base array acts as its $values
   const resolvedBase = isUnresolvedDirective(baseValue)
-    ? baseValue.$values
+    ? resolveBaseDirective(baseValue, ctx, path)
     : baseValue;
 
   if (isArrayDirective(overlayValue)) {
@@ -302,6 +313,18 @@ function mergeValue(
   }
 
   return overlayValue;
+}
+
+function resolveBaseDirective(
+  directive: Record<string, unknown> & { $values: unknown[] },
+  ctx: MergeContext,
+  path: string
+): unknown[] {
+  const matchBy = readMatchBy(directive, ctx, path);
+  if (matchBy !== undefined) {
+    assertKeyedItems(directive.$values, matchBy, "base", ctx, path);
+  }
+  return directive.$values;
 }
 
 function isArrayDirective(value: unknown): value is Record<string, unknown> {
@@ -442,12 +465,10 @@ export function mergeTextContent(
   overlay: string | string[],
   strategy: ArrayMergeStrategy = "replace"
 ): string | string[] {
-  // If overlay is a string, it always replaces
   if (typeof overlay === "string") {
     return overlay;
   }
 
-  // If base is also an array, apply merge strategy
   if (Array.isArray(base)) {
     switch (strategy) {
       case "append":
@@ -460,6 +481,5 @@ export function mergeTextContent(
         return overlay;
     }
   }
-  // Base is string, overlay is array - overlay replaces
   return overlay;
 }

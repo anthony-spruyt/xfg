@@ -819,6 +819,111 @@ describe("$matchBy directive", () => {
       );
     });
 
+    test("rejects a key the items only inherit", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { list: [{ a: 1 }] },
+            {
+              list: {
+                $arrayMerge: "merge",
+                $matchBy: "toString",
+                $values: [{ a: 2 }],
+              },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "list: overlay item 0 has no $matchBy key 'toString'",
+        }
+      );
+    });
+
+    test("rejects object and array key values", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: { x: 1 }, v: 1 }] },
+            queueRules([{ name: { x: 1 }, v: 2 }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: overlay item 0 $matchBy name must be a string, number, boolean or null",
+        }
+      );
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: [{ name: ["a"] }] },
+            queueRules([{ name: "a" }]),
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: base item 0 $matchBy name must be a string, number, boolean or null",
+        }
+      );
+    });
+
+    test("matches number, boolean and null key values", () => {
+      const result = deepMerge(
+        { list: [{ id: 1 }, { id: true }, { id: null }] },
+        {
+          list: {
+            $arrayMerge: "merge",
+            $matchBy: "id",
+            $values: [
+              { id: null, v: "n" },
+              { id: 1, v: "1" },
+              { id: true, v: "t" },
+            ],
+          },
+        },
+        createContext()
+      );
+      assert.deepEqual(result.list, [
+        { id: 1, v: "1" },
+        { id: true, v: "t" },
+        { id: null, v: "n" },
+      ]);
+    });
+
+    test("validates the $matchBy of a base directive left unresolved", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            queueRules([{ name: "a" }], "append"),
+            {
+              queue_rules: { $arrayMerge: "append", $values: [{ name: "b" }] },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+        }
+      );
+      assert.throws(
+        () =>
+          deepMerge(
+            queueRules([{ name: "a" }, { name: "a" }]),
+            {
+              queue_rules: { $arrayMerge: "append", $values: [{ name: "b" }] },
+            },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message: "queue_rules: base items 0 and 1 share $matchBy name 'a'",
+        }
+      );
+    });
+
     test("validates the overlay array when there is no base array", () => {
       assert.throws(
         () =>

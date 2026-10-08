@@ -6850,6 +6850,44 @@ repos:
     });
   });
 
+  test("names the file when root content misuses $matchBy under a repo override", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": {
+          content: {
+            queue_rules: {
+              $arrayMerge: "append",
+              $matchBy: "name",
+              $values: [{ name: "a" }],
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            ".mergify.yml": {
+              content: {
+                queue_rules: {
+                  $arrayMerge: "append",
+                  $values: [{ name: "b" }],
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $matchBy requires $arrayMerge: merge, got 'append'",
+    });
+  });
+
   test("names the file when override content misuses $matchBy", () => {
     const raw: RawConfig = {
       id: "test-config",

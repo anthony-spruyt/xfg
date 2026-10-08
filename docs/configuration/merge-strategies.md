@@ -212,6 +212,7 @@ Items with the same `$matchBy` value are deep-merged, so nested directives apply
 
 - `$matchBy` with any strategy other than `$arrayMerge: merge`
 - An item in either array without the `$matchBy` key
+- A `$matchBy` value that is not a string, number, boolean or null
 - Two items in the same array with the same `$matchBy` value
 
 Without `$matchBy`, `merge` auto-detects `type` or `actor_id` as before. `name` is deliberately not auto-detected: many lists have `name` fields (workflow steps, for example), and matching them automatically would silently change existing merges.
