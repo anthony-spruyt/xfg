@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.1.3](https://github.com/anthony-spruyt/xfg/compare/v8.1.2...v8.1.3) (2026-10-09)
+
+
+### Continuous Integration
+
+* **release:** use the release environment for release jobs ([#1167](https://github.com/anthony-spruyt/xfg/issues/1167)) ([778e34e](https://github.com/anthony-spruyt/xfg/commit/778e34e8bf51f7678bd9e57fcd70bbc50b123c00))
+
 ## [8.1.2](https://github.com/anthony-spruyt/xfg/compare/v8.1.1...v8.1.2) (2026-10-09)
 
 
