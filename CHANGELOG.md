@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.1.2](https://github.com/anthony-spruyt/xfg/compare/v8.1.1...v8.1.2) (2026-10-09)
+
+
+### Bug Fixes
+
+* **config:** strip and validate merge directives on content with no overlay ([#1164](https://github.com/anthony-spruyt/xfg/issues/1164)) ([bcc94c3](https://github.com/anthony-spruyt/xfg/commit/bcc94c346b4bc76839bcb9723597189e92eb01ed))
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.19.1 ([#1153](https://github.com/anthony-spruyt/xfg/issues/1153)) ([fe3a7b5](https://github.com/anthony-spruyt/xfg/commit/fe3a7b54f30a21ffa2e582caf697a4079f307460))
+
 ## [8.1.1](https://github.com/anthony-spruyt/xfg/compare/v8.1.0...v8.1.1) (2026-10-09)
 
 
