@@ -2094,6 +2094,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#http-403-rate-limit-exceeded-when-creating-a-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "HTTP 403: Rate Limit Exceeded" when creating a repo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resource-not-accessible-by-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2897,6 +2908,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#http-403-rate-limit-exceeded-when-creating-a-repo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        "HTTP 403: Rate Limit Exceeded" when creating a repo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#resource-not-accessible-by-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2971,7 +2993,8 @@
 <li>Click "New GitHub App"</li>
 <li>Configure permissions:</li>
 <li><strong>Repository permissions:</strong><ul>
-<li>Administration: Read and write <em>(required for repo lifecycle: create, archive, fork, etc. Organization owners only, see <a href="#limitations">Limitations</a>; also required for <a href="../../configuration/environments/">environments</a>)</em></li>
+<li>Repository creation: Read and write <em>(required to create, migrate and fork repos; Administration does not let the App create repos, see <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>)</em></li>
+<li>Administration: Read and write <em>(required to archive and fork repos and for repo lifecycle settings, see <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>; also required for <a href="../../configuration/environments/">environments</a>)</em></li>
 <li>Contents: Read and write</li>
 <li>Pull requests: Read and write</li>
 <li>Workflows: Read and write <em>(required if syncing <code>.github/workflows/</code> files)</em></li>
@@ -3071,9 +3094,16 @@
 <li><strong>File size</strong> - Large files (&gt;50MB) should use PAT flow instead</li>
 <li><strong>GHE compatibility</strong> - Requires GitHub Enterprise Server 3.6+</li>
 <li><strong>Atomic commits</strong> - All file changes in a single commit (executable file mode changes use a follow-up commit)</li>
-<li><strong>Repo creation on personal accounts</strong> - Installation tokens can create, fork, and migrate repos into organizations, but not into personal user accounts. A repo owned by a user must be created by a user, and an installation token has none. xfg fails fast with a clear error. See <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a> for workarounds.</li>
+<li><strong>Forks</strong> - GitHub only lets an App fork a repo when it is installed on the target account with access to all its repositories, and on the upstream account with access to the upstream repo. See <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>.</li>
 </ol>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="http-403-rate-limit-exceeded-when-creating-a-repo">"HTTP 403: Rate Limit Exceeded" when creating a repo<a class="headerlink" href="#http-403-rate-limit-exceeded-when-creating-a-repo" title="Permanent link">&para;</a></h3>
+<p>GitHub can report a missing App permission this way. xfg stops at once and names the permissions it needs:</p>
+<ul>
+<li>Create and migrate: Repository creation: Read and write</li>
+<li>Fork: Repository creation: Read and write, Administration: Read and write, and Contents: Read, with the App installed as described in <a href="#limitations">Limitations</a></li>
+</ul>
+<p>After you change the App's permissions, approve them on the installation.</p>
 <h3 id="resource-not-accessible-by-integration">"Resource not accessible by integration"<a class="headerlink" href="#resource-not-accessible-by-integration" title="Permanent link">&para;</a></h3>
 <p>The app lacks required permissions. Check that:</p>
 <ul>
