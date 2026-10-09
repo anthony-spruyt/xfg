@@ -301,6 +301,7 @@ describe("ci.yaml", () => {
   const guards: Record<string, string> = {
     lint: LABEL_GUARD,
     repo: LABEL_GUARD,
+    image: LABEL_GUARD,
     summary: `always() && (${LABEL_GUARD})`,
   };
 
@@ -328,13 +329,22 @@ describe("ci.yaml", () => {
     assert.deepEqual(repo.permissions, { contents: "read" });
   });
 
-  test("summary judges lint and repo even when they fail", () => {
-    assert.deepEqual(ci.jobs.summary.needs, ["lint", "repo"]);
+  test("image runs after lint and repo", () => {
+    assert.deepEqual(ci.jobs.image.needs, ["lint", "repo"]);
+  });
+
+  test("summary judges lint, repo and image even when they fail", () => {
+    assert.deepEqual(ci.jobs.summary.needs, ["lint", "repo", "image"]);
     assert.match(ci.jobs.summary.if ?? "", /^always\(\) && /);
   });
 
-  test("has only the lint, repo and summary jobs", () => {
-    assert.deepEqual(Object.keys(ci.jobs), ["lint", "repo", "summary"]);
+  test("has only the lint, repo, image and summary jobs", () => {
+    assert.deepEqual(Object.keys(ci.jobs), [
+      "lint",
+      "repo",
+      "image",
+      "summary",
+    ]);
   });
 });
 
