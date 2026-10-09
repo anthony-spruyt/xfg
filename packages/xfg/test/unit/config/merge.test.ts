@@ -924,6 +924,22 @@ describe("$matchBy directive", () => {
       );
     });
 
+    test("rejects a base $matchBy without $arrayMerge under a plain array", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: { $matchBy: "name", $values: [{ name: "a" }] } },
+            { queue_rules: [{ name: "b" }] },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got none",
+        }
+      );
+    });
+
     test("validates the overlay array when there is no base array", () => {
       assert.throws(
         () =>
@@ -1077,14 +1093,6 @@ describe("stripMergeDirectives", () => {
     assert.deepEqual(result, {});
   });
 
-  test("handles objects with only directives", () => {
-    // Top-level directive keys ($arrayMerge, $values) are stripped individually,
-    // leaving {}. Nested directive objects are resolved to their $values array instead.
-    const obj = { $arrayMerge: "append", $values: [1, 2] };
-    const result = stripMergeDirectives(obj);
-    assert.deepEqual(result, {});
-  });
-
   test("resolves unmerged $arrayMerge directive to its $values array", () => {
     const obj = {
       name: "test",
@@ -1192,7 +1200,220 @@ describe("stripMergeDirectives", () => {
     assert.throws(() => stripMergeDirectives(obj), {
       name: "ValidationError",
       message:
-        "list[0].queue_rules: overlay items 0 and 1 share $matchBy name 'a'",
+        "list[0].queue_rules: $values items 0 and 1 share $matchBy name 'a'",
+    });
+  });
+
+  test("names $values items that lack the $matchBy key in an unmerged directive", () => {
+    const obj = {
+      queue_rules: {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "a" }, { other: "b" }],
+      },
+    };
+    assert.throws(() => stripMergeDirectives(obj), {
+      name: "ValidationError",
+      message: "queue_rules: $values item 1 has no $matchBy key 'name'",
+    });
+  });
+});
+
+describe("directives without an array of $values", () => {
+  const error = (path: string, got: string) => ({
+    name: "ValidationError",
+    message: `${path}: $values must be an array, got ${got}`,
+  });
+
+  test("rejects an unmerged directive with no $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          queue_rules: { $arrayMerge: "merge", $matchBy: "name" },
+        }),
+      error("queue_rules", "none")
+    );
+  });
+
+  test("rejects an unmerged directive with non-array $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({ list: { $arrayMerge: "append", $values: "a" } }),
+      error("list", "'a'")
+    );
+  });
+
+  test("rejects an overlay directive with no $values over a base array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: ["a"] },
+          { list: { $arrayMerge: "append" } },
+          createContext()
+        ),
+      error("list", "none")
+    );
+  });
+
+  test("rejects an overlay directive with non-array $values over a base object", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { x: 1 } },
+          { list: { $arrayMerge: "append", $values: { y: 2 } } },
+          createContext()
+        ),
+      error("list", '{"y":2}')
+    );
+  });
+
+  test("rejects a base directive with no $values under a plain array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { $arrayMerge: "append" } },
+          { list: ["b"] },
+          createContext()
+        ),
+      error("list", "none")
+    );
+  });
+});
+
+describe("directives without a valid $arrayMerge", () => {
+  const error = (got: string) => ({
+    name: "ValidationError",
+    message: `list: $arrayMerge must be one of replace, append, prepend, merge, got ${got}`,
+  });
+
+  test("rejects an unmerged directive with an unknown strategy", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          list: { $arrayMerge: "apend", $values: ["a"] },
+        }),
+      error("'apend'")
+    );
+  });
+
+  test("rejects an unmerged directive with no $arrayMerge", () => {
+    assert.throws(
+      () => stripMergeDirectives({ list: { $values: ["a"] } }),
+      error("none")
+    );
+  });
+
+  test("rejects an overlay directive with an unknown strategy over a base array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: ["a"] },
+          { list: { $arrayMerge: "apend", $values: ["b"] } },
+          createContext()
+        ),
+      error("'apend'")
+    );
+  });
+
+  test("rejects an overlay directive with no $arrayMerge over a base object", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { x: 1 } },
+          { list: { $values: ["b"] } },
+          createContext()
+        ),
+      error("none")
+    );
+  });
+
+  test("keeps the other keys of an object that also has directive keys", () => {
+    assert.deepEqual(
+      stripMergeDirectives({ k: { $arrayMerge: "apend", other: 1 } }),
+      { k: { other: 1 } }
+    );
+  });
+});
+
+describe("directive-only objects in array items and at the root", () => {
+  const itemError = (path: string) => ({
+    name: "ValidationError",
+    message: `${path}: a directive must be the value of a key whose base is an array, not an array item`,
+  });
+  const rootError = (location?: string) => ({
+    name: "ValidationError",
+    message: `${location ? `${location}: ` : ""}a directive must be the value of a key whose base is an array, not the content root`,
+  });
+  const valid = { $arrayMerge: "append", $values: ["a"] };
+
+  test("rejects a valid directive-only array item", () => {
+    assert.throws(
+      () => stripMergeDirectives({ list: ["a", { ...valid }] }, ".mergify.yml"),
+      itemError(".mergify.yml: list[1]")
+    );
+  });
+
+  test("rejects an invalid directive-only array item", () => {
+    assert.throws(
+      () => stripMergeDirectives({ list: [{ $arrayMerge: "bogus" }] }),
+      itemError("list[0]")
+    );
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          list: [{ $arrayMerge: "append", $values: "a" }],
+        }),
+      itemError("list[0]")
+    );
+  });
+
+  test("rejects a directive-only array item inside resolved $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          list: { $arrayMerge: "append", $values: [{ ...valid }] },
+        }),
+      itemError("list[0]")
+    );
+  });
+
+  test("rejects a valid directive-only root", () => {
+    assert.throws(
+      () => stripMergeDirectives({ ...valid }, ".mergify.yml"),
+      rootError(".mergify.yml")
+    );
+  });
+
+  test("rejects an invalid directive-only root", () => {
+    assert.throws(
+      () => stripMergeDirectives({ $arrayMerge: "bogus" }),
+      rootError()
+    );
+  });
+
+  test("rejects a directive-only root on either side of a merge", () => {
+    const ctx = createMergeContext("replace", ".mergify.yml");
+    assert.throws(
+      () => deepMerge({ a: 1 }, { ...valid }, ctx),
+      rootError(".mergify.yml")
+    );
+    assert.throws(
+      () => deepMerge({ ...valid }, { a: 1 }, ctx),
+      rootError(".mergify.yml")
+    );
+    assert.throws(
+      () => deepMerge({ a: 1 }, { $arrayMerge: "append" }, createContext()),
+      rootError()
+    );
+  });
+
+  test("keeps the other keys of array items and roots that also have directive keys", () => {
+    assert.deepEqual(
+      stripMergeDirectives({ list: [{ $arrayMerge: "bogus", foo: 1 }] }),
+      { list: [{ foo: 1 }] }
+    );
+    assert.deepEqual(stripMergeDirectives({ $arrayMerge: "bogus", foo: 1 }), {
+      foo: 1,
     });
   });
 });

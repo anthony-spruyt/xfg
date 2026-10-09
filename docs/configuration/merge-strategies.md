@@ -125,6 +125,13 @@ rules:
 !!! note "Directives are stripped"
     `$arrayMerge`, `$values` and `$matchBy` are internal directives and do not appear in the final output.
 
+A directive is an object made only of directive keys. It must be the value of a key, needs one of the four strategies above, and needs a `$values` array. Where the base has no array under that key:
+
+- With no base value, or a scalar or `null` one, the directive resolves to its `$values`. This includes a directive in root content that nothing overlays.
+- Over a base object, the directive is dropped and the base object is kept unchanged.
+
+A directive as an array item or as the whole content is a config error, as is one with an unknown strategy or no `$values` array. The error names the file or ruleset and the path to the directive. An object that mixes directive keys with other keys is not a directive: with no base array to merge into, xfg drops its directive keys and keeps the rest.
+
 ### Merge by Key
 
 The `merge` strategy matches array items by an identity key and deep-merges matched pairs. This is useful when multiple conditional groups need to modify properties of the same item rather than duplicating it.
