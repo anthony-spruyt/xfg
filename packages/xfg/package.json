@@ -11,7 +11,7 @@
     }
   },
   "bin": {
-    "xfg": "./dist/cli.js"
+    "xfg": "dist/cli.js"
   },
   "sideEffects": [
     "./dist/cli.js"
