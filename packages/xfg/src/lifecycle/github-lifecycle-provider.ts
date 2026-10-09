@@ -3,6 +3,7 @@ import {
   withRetry,
   isPermanentError,
   DEFAULT_PERMANENT_ERROR_PATTERNS,
+  type RetryOptions,
 } from "../shared/retry-utils.js";
 import {
   assertGitHubRepo,
@@ -32,15 +33,20 @@ const REPO_NOT_FOUND_PATTERNS = [
   "404",
 ];
 
+function errorText(error: unknown): string {
+  return (
+    toErrorMessage(error) +
+    ((error instanceof Error
+      ? (error as Error & { stderr?: string }).stderr
+      : undefined) ?? "")
+  );
+}
+
 /**
  * Check if an error indicates repo not found (vs network/auth error).
  */
 function isRepoNotFoundError(error: unknown): boolean {
-  const message =
-    toErrorMessage(error) +
-    ((error instanceof Error
-      ? (error as Error & { stderr?: string }).stderr
-      : undefined) ?? "");
+  const message = errorText(error);
   return REPO_NOT_FOUND_PATTERNS.some((pattern) => message.includes(pattern));
 }
 
@@ -70,17 +76,46 @@ const POST_CREATE_PERMANENT_PATTERNS = [
  */
 const FORK_POLL_INTERVAL_MS = 2_000;
 
+const CREATE_REPO_APP_PERMISSIONS = "Repository creation: Read and write";
+const FORK_REPO_APP_PERMISSIONS =
+  "Repository creation: Read and write, Administration: Read and write and Contents: Read, and be installed on the target account with access to all repositories and on the upstream account with access to the upstream repository";
+
+const APP_PERMISSION_DENIED_PATTERNS = [
+  /\bHTTP\s*403\b/,
+  /not\s*accessible\s*by\s*integration/i,
+];
+
+const GITHUB_RATE_LIMIT_PATTERNS = [
+  /API rate limit/i,
+  /secondary rate limit/i,
+  /abuse detection/i,
+  /too many requests/i,
+  /\b429\b/,
+];
+
 function isInstallationToken(token: string | undefined): boolean {
   return token?.startsWith("ghs_") ?? false;
 }
 
-function personalAccountInstallationTokenError(
-  repoInfo: GitHubRepoInfo
+// GitHub reports a missing App permission on POST /user/repos as "403 Rate Limit Exceeded".
+function isAppPermissionDenied(error: unknown): boolean {
+  const text = errorText(error);
+  return (
+    APP_PERMISSION_DENIED_PATTERNS.some((p) => p.test(text)) &&
+    !GITHUB_RATE_LIMIT_PATTERNS.some((p) => p.test(text))
+  );
+}
+
+function appPermissionDeniedError(
+  action: string,
+  requiredPermissions: string,
+  error: unknown
 ): LifecycleError {
   return new LifecycleError(
-    `An installation token (GitHub App or Actions GITHUB_TOKEN) cannot create repositories for personal account '${repoInfo.owner}'. ` +
-      `Create ${repoInfo.owner}/${repoInfo.repo} first, or run lifecycle with a personal access token. ` +
-      `Installation tokens can only create repositories in organizations.`
+    `GitHub refused the App installation token while ${action}: ${toErrorMessage(error)}. ` +
+      `The GitHub App needs ${requiredPermissions}. ` +
+      `After changing App permissions, approve them on the installation.`,
+    { cause: error }
   );
 }
 
@@ -191,23 +226,35 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     assertGitHubRepo(repoInfo, "GitHubLifecycleProvider");
   }
 
-  // GitHub refuses installation tokens on POST /user/repos with a misleading
-  // "403 Rate Limit Exceeded", which withRetry treats as transient.
-  private async assertTokenCanCreateRepo(
-    repoInfo: GitHubRepoInfo,
-    token: string | undefined
-  ): Promise<void> {
-    if (!isInstallationToken(token)) return;
-    let isOrg: boolean;
+  private async execRepoCreatingCommand(
+    args: string[],
+    token: string | undefined,
+    permission: { action: string; required: string },
+    retryOptions: Pick<RetryOptions, "permanentErrorPatterns" | "log"> = {}
+  ): Promise<string> {
+    const appPermissionDenied = (error: unknown): boolean =>
+      isInstallationToken(token) && isAppPermissionDenied(error);
+    const tokenEnv = buildTokenEnv(token);
+
     try {
-      isOrg = await this.isOrganization(repoInfo.owner, repoInfo, token);
-    } catch (error) {
-      this.log?.debug(
-        `Skipping installation token owner check for '${repoInfo.owner}': ${toErrorMessage(error)}`
+      return await withRetry(
+        () => this.executor.exec("gh", args, this.cwd, { env: tokenEnv }),
+        {
+          retries: this.retries,
+          ...retryOptions,
+          abortOn: appPermissionDenied,
+        }
       );
-      return;
+    } catch (error) {
+      if (appPermissionDenied(error)) {
+        throw appPermissionDeniedError(
+          permission.action,
+          permission.required,
+          error
+        );
+      }
+      throw error;
     }
-    if (!isOrg) throw personalAccountInstallationTokenError(repoInfo);
   }
 
   private buildGhApiPrefix(
@@ -257,14 +304,9 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   async create(params: LifecycleCreateParams): Promise<void> {
     const { repo: repoInfo, settings, token } = params;
     this.assertGitHub(repoInfo);
-    await this.assertTokenCanCreateRepo(repoInfo, token);
 
-    const tokenEnv = buildTokenEnv(token);
-    const args: string[] = [
-      "repo",
-      "create",
-      `${repoInfo.owner}/${repoInfo.repo}`,
-    ];
+    const repoSlug = `${repoInfo.owner}/${repoInfo.repo}`;
+    const args: string[] = ["repo", "create", repoSlug];
 
     buildRepoCreateArgs(args, settings);
 
@@ -272,12 +314,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     // This avoids empty repos where HEAD doesn't resolve.
     args.push("--add-readme");
 
-    await withRetry(
-      () => this.executor.exec("gh", args, this.cwd, { env: tokenEnv }),
-      {
-        retries: this.retries,
-      }
-    );
+    await this.execRepoCreatingCommand(args, token, {
+      action: `creating ${repoSlug}`,
+      required: CREATE_REPO_APP_PERMISSIONS,
+    });
 
     if (settings?.defaultBranch) {
       const {
@@ -335,11 +375,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     }
 
     const isOrg = await this.isOrganization(target.owner, target, token);
-    if (!isOrg && isInstallationToken(token)) {
-      throw personalAccountInstallationTokenError(target);
-    }
-
-    const tokenEnv = buildTokenEnv(token);
 
     const forkArgs = ["repo", "fork", `${upstream.owner}/${upstream.repo}`];
 
@@ -349,12 +384,10 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
 
     forkArgs.push("--fork-name", target.repo, "--clone=false");
 
-    await withRetry(
-      () => this.executor.exec("gh", forkArgs, this.cwd, { env: tokenEnv }),
-      {
-        retries: this.retries,
-      }
-    );
+    await this.execRepoCreatingCommand(forkArgs, token, {
+      action: `forking ${upstream.owner}/${upstream.repo} to ${target.owner}/${target.repo}`,
+      required: FORK_REPO_APP_PERMISSIONS,
+    });
 
     // GitHub forks are async - wait for the fork to be ready for git operations
     await this.waitForForkReady(target, {
@@ -449,7 +482,6 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
   ): Promise<void> {
     const { repo: repoInfo, sourceDir, settings, token } = params;
     this.assertGitHub(repoInfo);
-    await this.assertTokenCanCreateRepo(repoInfo, token);
 
     await this.removeOriginRemote(sourceDir);
     await this.cleanNonStandardRefs(sourceDir);
@@ -553,10 +585,14 @@ export class GitHubLifecycleProvider implements IRepoLifecycleProvider {
     buildRepoCreateArgs(createArgs, settings);
 
     try {
-      await withRetry(
-        () => this.executor.exec("gh", createArgs, this.cwd, { env: tokenEnv }),
+      await this.execRepoCreatingCommand(
+        createArgs,
+        token,
         {
-          retries: this.retries,
+          action: `creating ${repoSlug}`,
+          required: CREATE_REPO_APP_PERMISSIONS,
+        },
+        {
           permanentErrorPatterns: POST_CREATE_PERMANENT_PATTERNS,
           log: this.log
             ? { info: (m: string) => this.log!.info(m) }

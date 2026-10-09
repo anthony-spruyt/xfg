@@ -273,8 +273,47 @@ describe("withRetry", () => {
         { retries: 3 }
       );
     }, /Permission denied/);
-    // Key assertion: only 1 attempt, no retries for permanent errors
     assert.equal(attempts, 1);
+  });
+
+  test("stops immediately when abortOn matches an otherwise transient error", async () => {
+    let attempts = 0;
+    let delayed = false;
+    await assert.rejects(
+      () =>
+        withRetry(
+          async () => {
+            attempts++;
+            throw new Error("HTTP 403: Rate Limit Exceeded");
+          },
+          {
+            retries: 3,
+            abortOn: (error) => error.message.includes("403"),
+            _delay: async () => {
+              delayed = true;
+            },
+          }
+        ),
+      /Rate Limit Exceeded/
+    );
+    assert.equal(attempts, 1);
+    assert.equal(delayed, false);
+  });
+
+  test("still retries errors abortOn does not match", async () => {
+    let attempts = 0;
+    await assert.rejects(
+      () =>
+        withRetry(
+          async () => {
+            attempts++;
+            throw new Error("Connection timed out");
+          },
+          { retries: 2, abortOn: () => false }
+        ),
+      /Connection timed out/
+    );
+    assert.equal(attempts, 3);
   });
 
   test("throws last error after exhausting retries", async () => {
@@ -356,7 +395,6 @@ describe("withRetry", () => {
       { retries: 3, log: mockLog }
     );
 
-    // Verify credentials were sanitized in log output
     assert.equal(logs.length, 2); // 2 failed attempts before success
     for (const log of logs) {
       assert.ok(!log.includes("secret123"), "Token should be sanitized");

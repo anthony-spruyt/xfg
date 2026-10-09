@@ -115,7 +115,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-interface RetryOptions {
+export interface RetryOptions {
   /** Maximum number of retries (default: 3) */
   retries?: number;
   /** Callback when a retry attempt fails */
@@ -124,6 +124,8 @@ interface RetryOptions {
   permanentErrorPatterns?: RegExp[];
   /** Custom transient error patterns (defaults to DEFAULT_TRANSIENT_ERROR_PATTERNS) */
   transientErrorPatterns?: RegExp[];
+  /** Errors this returns true for fail at once, even if they match a transient pattern */
+  abortOn?: (error: Error) => boolean;
   /** Logger for retry messages (defaults to no logging) */
   log?: { info(msg: string): void };
   /** Override for delay function (test injection) */
@@ -196,8 +198,9 @@ export async function withRetry<T>(
       } catch (error) {
         if (
           error instanceof Error &&
-          !isTransientError(error, options?.transientErrorPatterns) &&
-          isPermanentError(error, permanentPatterns)
+          (options?.abortOn?.(error) ||
+            (!isTransientError(error, options?.transientErrorPatterns) &&
+              isPermanentError(error, permanentPatterns)))
         ) {
           throw new AbortError(error);
         }
