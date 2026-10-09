@@ -65,7 +65,8 @@ function mergeError(
   message: string
 ): ValidationError {
   const prefix = ctx.location ? `${ctx.location}: ` : "";
-  return new ValidationError(`${prefix}${path}: ${message}`);
+  const pathPrefix = path ? `${path}: ` : "";
+  return new ValidationError(`${prefix}${pathPrefix}${message}`);
 }
 
 function describeValue(value: unknown): string {
@@ -132,6 +133,17 @@ function readDirective(
     );
   }
   return matchBy;
+}
+
+/** Validates directive-only objects only; mixed-key objects keep their directive keys stripped silently. */
+function assertDirectiveOnlyValid(
+  value: unknown,
+  ctx: ErrorContext,
+  path: string
+): void {
+  if (isPlainObject(value) && isDirectiveOnly(value)) {
+    readDirective(value, ctx, path);
+  }
 }
 
 function assertKeyedItems(
@@ -296,6 +308,8 @@ export function deepMerge(
   overlay: Record<string, unknown>,
   ctx: MergeContext
 ): Record<string, unknown> {
+  assertDirectiveOnlyValid(base, ctx, "");
+  assertDirectiveOnlyValid(overlay, ctx, "");
   return mergeObjects(base, overlay, ctx, "");
 }
 
@@ -431,7 +445,9 @@ export function stripMergeDirectives(
   obj: Record<string, unknown>,
   location?: string
 ): Record<string, unknown> {
-  return stripObject(obj, { location }, "");
+  const errCtx = { location };
+  assertDirectiveOnlyValid(obj, errCtx, "");
+  return stripObject(obj, errCtx, "");
 }
 
 function stripItems(
@@ -439,9 +455,12 @@ function stripItems(
   errCtx: ErrorContext,
   path: string
 ): unknown[] {
-  return items.map((item, i) =>
-    isPlainObject(item) ? stripObject(item, errCtx, `${path}[${i}]`) : item
-  );
+  return items.map((item, i) => {
+    if (!isPlainObject(item)) return item;
+    const itemPath = `${path}[${i}]`;
+    assertDirectiveOnlyValid(item, errCtx, itemPath);
+    return stripObject(item, errCtx, itemPath);
+  });
 }
 
 function stripObject(
