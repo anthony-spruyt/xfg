@@ -35,10 +35,10 @@ jobs:
     needs:
       - "lint"
       - "repo"
+    if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
     permissions:
       contents: "read"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@6ac30f4a40fc9e09569d7e39b993c6a6414547a0"
-    if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
   summary:
     needs:
       - "lint"
