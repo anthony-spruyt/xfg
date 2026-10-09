@@ -31,10 +31,19 @@ jobs:
     uses: "./.github/workflows/ci-repo.yaml"
     secrets: "inherit"
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
+  image:
+    needs:
+      - "lint"
+      - "repo"
+    permissions:
+      contents: "read"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@3db5809188b3d53d9e5d06d02f69a440fb370271"
+    if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
   summary:
     needs:
       - "lint"
       - "repo"
+      - "image"
     if: "always() && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')"
     permissions:
       actions: "read"
