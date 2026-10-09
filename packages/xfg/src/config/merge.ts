@@ -68,6 +68,12 @@ function mergeError(
   return new ValidationError(`${prefix}${path}: ${message}`);
 }
 
+function describeValue(value: unknown): string {
+  if (value === undefined) return "none";
+  if (typeof value === "string") return `'${value}'`;
+  return JSON.stringify(value);
+}
+
 /**
  * Returns the directive's $matchBy key, or undefined when it has none.
  * Throws unless $matchBy is a non-empty string paired with $arrayMerge: merge.
@@ -84,13 +90,45 @@ function readMatchBy(
   }
   const strategy = directive.$arrayMerge;
   if (strategy !== "merge") {
-    let got = "none";
-    if (typeof strategy === "string") got = `'${strategy}'`;
-    else if (strategy !== undefined) got = JSON.stringify(strategy);
     throw mergeError(
       ctx,
       path,
-      `$matchBy requires $arrayMerge: merge, got ${got}`
+      `$matchBy requires $arrayMerge: merge, got ${describeValue(strategy)}`
+    );
+  }
+  return matchBy;
+}
+
+function isDirectiveOnly(value: Record<string, unknown>): boolean {
+  const keys = Object.keys(value);
+  return keys.length > 0 && keys.every((k) => XFG_DIRECTIVES.has(k));
+}
+
+/**
+ * Validates a value's directive keys and returns its $matchBy.
+ * An object of only directive keys must be a complete directive, or it would resolve to nothing.
+ */
+function readDirective(
+  value: unknown,
+  ctx: ErrorContext,
+  path: string
+): string | undefined {
+  if (!isPlainObject(value)) return undefined;
+  const matchBy = readMatchBy(value, ctx, path);
+  if (!isDirectiveOnly(value)) return matchBy;
+  if (!isArrayMergeStrategy(value.$arrayMerge)) {
+    const strategies = [...arrayMergeStrategies.keys()].join(", ");
+    throw mergeError(
+      ctx,
+      path,
+      `$arrayMerge must be one of ${strategies}, got ${describeValue(value.$arrayMerge)}`
+    );
+  }
+  if (!Array.isArray(value.$values)) {
+    throw mergeError(
+      ctx,
+      path,
+      `$values must be an array, got ${describeValue(value.$values)}`
     );
   }
   return matchBy;
@@ -99,7 +137,7 @@ function readMatchBy(
 function assertKeyedItems(
   items: unknown[],
   matchBy: string,
-  label: "base" | "overlay",
+  label: "base" | "overlay" | "$values",
   ctx: ErrorContext,
   path: string
 ): void {
@@ -220,7 +258,7 @@ function isUnresolvedDirective(
 ): value is Record<string, unknown> & { $values: unknown[] } {
   if (!isPlainObject(value)) return false;
   return (
-    Object.keys(value).every((k) => XFG_DIRECTIVES.has(k)) &&
+    isDirectiveOnly(value) &&
     isArrayMergeStrategy(value.$arrayMerge) &&
     Array.isArray(value.$values)
   );
@@ -288,13 +326,17 @@ function mergeValue(
   ctx: MergeContext,
   path: string
 ): unknown {
-  // A directive left unresolved by an earlier layer with no base array acts as its $values
-  const resolvedBase = isUnresolvedDirective(baseValue)
-    ? resolveBaseDirective(baseValue, ctx, path)
-    : baseValue;
+  const resolvedBase = resolveBase(baseValue, ctx, path);
+  const overlayMatchBy = readDirective(overlayValue, ctx, path);
 
   if (isArrayDirective(overlayValue)) {
-    const merged = applyArrayDirective(resolvedBase, overlayValue, ctx, path);
+    const merged = applyArrayDirective(
+      resolvedBase,
+      overlayValue,
+      overlayMatchBy,
+      ctx,
+      path
+    );
     if (merged !== undefined) return merged;
   }
 
@@ -315,16 +357,17 @@ function mergeValue(
   return overlayValue;
 }
 
-function resolveBaseDirective(
-  directive: Record<string, unknown> & { $values: unknown[] },
-  ctx: MergeContext,
-  path: string
-): unknown[] {
-  const matchBy = readMatchBy(directive, ctx, path);
+/**
+ * A directive left unresolved by an earlier layer with no base array acts as its $values.
+ * Any other base is returned as-is once its directive keys are valid.
+ */
+function resolveBase(base: unknown, ctx: MergeContext, path: string): unknown {
+  const matchBy = readDirective(base, ctx, path);
+  if (!isUnresolvedDirective(base)) return base;
   if (matchBy !== undefined) {
-    assertKeyedItems(directive.$values, matchBy, "base", ctx, path);
+    assertKeyedItems(base.$values, matchBy, "base", ctx, path);
   }
-  return directive.$values;
+  return base.$values;
 }
 
 function isArrayDirective(value: unknown): value is Record<string, unknown> {
@@ -347,12 +390,12 @@ function isArrayMergeStrategy(value: unknown): value is ArrayMergeStrategy {
 function applyArrayDirective(
   base: unknown,
   directive: Record<string, unknown>,
+  matchBy: string | undefined,
   ctx: MergeContext,
   path: string
 ): unknown[] | undefined {
   const strategy = directive.$arrayMerge;
   const values = directive.$values;
-  const matchBy = readMatchBy(directive, ctx, path);
 
   if (matchBy !== undefined && Array.isArray(values)) {
     assertKeyedItems(values, matchBy, "overlay", ctx, path);
@@ -412,13 +455,11 @@ function stripObject(
     if (XFG_DIRECTIVES.has(key)) continue;
 
     const keyPath = childPath(path, key);
-    // Validate before branching: an invalid $matchBy is not a directive and would be stripped silently
-    const matchBy = isPlainObject(value)
-      ? readMatchBy(value, errCtx, keyPath)
-      : undefined;
+    // Validate before branching: an invalid directive is not resolved and would be stripped silently
+    const matchBy = readDirective(value, errCtx, keyPath);
     if (isUnresolvedDirective(value)) {
       if (matchBy !== undefined) {
-        assertKeyedItems(value.$values, matchBy, "overlay", errCtx, keyPath);
+        assertKeyedItems(value.$values, matchBy, "$values", errCtx, keyPath);
       }
       result[key] = stripItems(value.$values, errCtx, keyPath);
     } else if (isPlainObject(value)) {

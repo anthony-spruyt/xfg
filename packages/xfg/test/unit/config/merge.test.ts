@@ -924,6 +924,22 @@ describe("$matchBy directive", () => {
       );
     });
 
+    test("rejects a base $matchBy without $arrayMerge under a plain array", () => {
+      assert.throws(
+        () =>
+          deepMerge(
+            { queue_rules: { $matchBy: "name", $values: [{ name: "a" }] } },
+            { queue_rules: [{ name: "b" }] },
+            createContext()
+          ),
+        {
+          name: "ValidationError",
+          message:
+            "queue_rules: $matchBy requires $arrayMerge: merge, got none",
+        }
+      );
+    });
+
     test("validates the overlay array when there is no base array", () => {
       assert.throws(
         () =>
@@ -1192,8 +1208,124 @@ describe("stripMergeDirectives", () => {
     assert.throws(() => stripMergeDirectives(obj), {
       name: "ValidationError",
       message:
-        "list[0].queue_rules: overlay items 0 and 1 share $matchBy name 'a'",
+        "list[0].queue_rules: $values items 0 and 1 share $matchBy name 'a'",
     });
+  });
+});
+
+describe("directives without an array of $values", () => {
+  const error = (path: string, got: string) => ({
+    name: "ValidationError",
+    message: `${path}: $values must be an array, got ${got}`,
+  });
+
+  test("rejects an unmerged directive with no $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          queue_rules: { $arrayMerge: "merge", $matchBy: "name" },
+        }),
+      error("queue_rules", "none")
+    );
+  });
+
+  test("rejects an unmerged directive with non-array $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({ list: { $arrayMerge: "append", $values: "a" } }),
+      error("list", "'a'")
+    );
+  });
+
+  test("rejects an overlay directive with no $values over a base array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: ["a"] },
+          { list: { $arrayMerge: "append" } },
+          createContext()
+        ),
+      error("list", "none")
+    );
+  });
+
+  test("rejects an overlay directive with non-array $values over a base object", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { x: 1 } },
+          { list: { $arrayMerge: "append", $values: { y: 2 } } },
+          createContext()
+        ),
+      error("list", '{"y":2}')
+    );
+  });
+
+  test("rejects a base directive with no $values under a plain array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { $arrayMerge: "append" } },
+          { list: ["b"] },
+          createContext()
+        ),
+      error("list", "none")
+    );
+  });
+});
+
+describe("directives without a valid $arrayMerge", () => {
+  const error = (got: string) => ({
+    name: "ValidationError",
+    message: `list: $arrayMerge must be one of replace, append, prepend, merge, got ${got}`,
+  });
+
+  test("rejects an unmerged directive with an unknown strategy", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          list: { $arrayMerge: "apend", $values: ["a"] },
+        }),
+      error("'apend'")
+    );
+  });
+
+  test("rejects an unmerged directive with no $arrayMerge", () => {
+    assert.throws(
+      () => stripMergeDirectives({ list: { $values: ["a"] } }),
+      error("none")
+    );
+  });
+
+  test("rejects an overlay directive with an unknown strategy over a base array", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: ["a"] },
+          { list: { $arrayMerge: "apend", $values: ["b"] } },
+          createContext()
+        ),
+      error("'apend'")
+    );
+  });
+
+  test("rejects an overlay directive with no $arrayMerge over a base object", () => {
+    assert.throws(
+      () =>
+        deepMerge(
+          { list: { x: 1 } },
+          { list: { $values: ["b"] } },
+          createContext()
+        ),
+      error("none")
+    );
+  });
+
+  test("keeps the other keys of an object that also has directive keys", () => {
+    assert.deepEqual(
+      stripMergeDirectives({ k: { $arrayMerge: "apend", other: 1 } }),
+      { k: { other: 1 } }
+    );
   });
 });
 

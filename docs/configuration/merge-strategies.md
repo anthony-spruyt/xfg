@@ -123,7 +123,9 @@ rules:
 ```
 
 !!! note "Directives are stripped"
-    `$arrayMerge`, `$values` and `$matchBy` are internal directives and do not appear in the final output.
+    `$arrayMerge`, `$values` and `$matchBy` are internal directives and do not appear in the final output. A directive with no base array to merge into, including one in root content that nothing overlays, resolves to its `$values`.
+
+A directive needs one of the four strategies above and a `$values` array. Anything else is a config error that names the file or ruleset and the path to the array.
 
 ### Merge by Key
 
