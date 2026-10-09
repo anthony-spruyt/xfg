@@ -21,7 +21,7 @@ jobs:
       actions: "read"
       contents: "read"
       security-events: "write"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@2bb0362170266430d2277de0dde5a204ecbf0eee"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@cb40ddc2ff6cd9f0441cd59406c849c68f6bd464"
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
   repo:
     needs:
@@ -38,7 +38,7 @@ jobs:
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
     permissions:
       contents: "read"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@2bb0362170266430d2277de0dde5a204ecbf0eee"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@cb40ddc2ff6cd9f0441cd59406c849c68f6bd464"
   summary:
     needs:
       - "lint"
@@ -48,4 +48,4 @@ jobs:
     permissions:
       actions: "read"
       contents: "read"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@2bb0362170266430d2277de0dde5a204ecbf0eee"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@cb40ddc2ff6cd9f0441cd59406c849c68f6bd464"
