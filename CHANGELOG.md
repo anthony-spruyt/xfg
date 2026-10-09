@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.1.1](https://github.com/anthony-spruyt/xfg/compare/v8.1.0...v8.1.1) (2026-10-09)
+
+
+### Bug Fixes
+
+* **lifecycle:** let App tokens create repos on personal accounts ([#1151](https://github.com/anthony-spruyt/xfg/issues/1151)) ([3e4df01](https://github.com/anthony-spruyt/xfg/commit/3e4df0167d3b9f0fbff26d47b56133516f377adf))
+
+
+### Continuous Integration
+
+* run xfg's repo jobs from ci-repo.yaml ([#1143](https://github.com/anthony-spruyt/xfg/issues/1143)) ([81019f4](https://github.com/anthony-spruyt/xfg/commit/81019f4828c12523cba3554efcbbcadfbe91229d))
+
 ## [8.1.0](https://github.com/anthony-spruyt/xfg/compare/v8.0.0...v8.1.0) (2026-10-08)
 
 
