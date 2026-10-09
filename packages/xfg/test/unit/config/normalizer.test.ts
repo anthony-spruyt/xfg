@@ -7023,3 +7023,88 @@ repos:
     });
   });
 });
+
+describe("merge directives on content with no overlay", () => {
+  const queueRules = (values: unknown[]) => ({
+    queue_rules: { $arrayMerge: "merge", $matchBy: "name", $values: values },
+  });
+
+  test("resolves directives in root content no layer merges onto", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": { content: queueRules([{ name: "default" }]) },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+
+    assert.deepStrictEqual(result.repos[0].files[0].content, {
+      queue_rules: [{ name: "default" }],
+    });
+  });
+
+  test("resolves directives in a group's override content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": { content: { queue_rules: [{ name: "base" }] } },
+      },
+      groups: {
+        "ci-repo": {
+          files: {
+            ".mergify.yml": {
+              override: true,
+              content: queueRules([{ name: "default" }]),
+            },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["ci-repo"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+
+    assert.deepStrictEqual(result.repos[0].files[0].content, {
+      queue_rules: [{ name: "default" }],
+    });
+  });
+
+  test("resolves directives in object content that replaces text content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "config.json": { content: "plain text" } },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          files: {
+            "config.json": { content: queueRules([{ name: "default" }]) },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+
+    assert.deepStrictEqual(result.repos[0].files[0].content, {
+      queue_rules: [{ name: "default" }],
+    });
+  });
+
+  test("validates directives in root content no layer merges onto", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        ".mergify.yml": { content: queueRules([{ name: "a" }, { name: "a" }]) },
+      },
+      repos: [{ git: "git@github.com:org/repo.git" }],
+    };
+
+    assert.throws(() => normalizeConfig(raw, process.env), {
+      name: "ValidationError",
+      message:
+        ".mergify.yml: queue_rules: $values items 0 and 1 share $matchBy name 'a'",
+    });
+  });
+});

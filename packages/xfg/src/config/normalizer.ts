@@ -71,7 +71,7 @@ function resolveFileContent(
   }
 
   if (!repoOverride?.content) {
-    return structuredClone(rootContent);
+    return cloneContent(rootContent, fileName);
   }
 
   return mergeContentPair(
@@ -104,7 +104,7 @@ function mergeContentPair(
     );
     return stripMergeDirectives(merged, fileName);
   }
-  return overlay;
+  return cloneContent(overlay, fileName);
 }
 
 /**
