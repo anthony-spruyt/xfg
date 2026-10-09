@@ -68,7 +68,7 @@ settings:
             name: "v*"
 ```
 
-Patterns use [fnmatch syntax](https://ruby-doc.org/core/File.html#method-c-fnmatch). `type` is `branch` or `tag`.
+Patterns use [fnmatch syntax](https://docs.ruby-lang.org/en/master/File.html#method-c-fnmatch). `type` is `branch` or `tag`.
 
 xfg adds missing patterns. Patterns already on GitHub that are not in your config are **left in place** and reported as a warning:
 
