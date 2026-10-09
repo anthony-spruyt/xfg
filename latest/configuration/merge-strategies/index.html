@@ -3080,6 +3080,12 @@
 <p class="admonition-title">Directives are stripped</p>
 <p><code>$arrayMerge</code>, <code>$values</code> and <code>$matchBy</code> are internal directives and do not appear in the final output.</p>
 </div>
+<p>A directive is an object made only of directive keys. It must be the value of a key, needs one of the four strategies above, and needs a <code>$values</code> array. Where the base has no array under that key:</p>
+<ul>
+<li>With no base value, or a scalar or <code>null</code> one, the directive resolves to its <code>$values</code>. This includes a directive in root content that nothing overlays.</li>
+<li>Over a base object, the directive is dropped and the base object is kept unchanged.</li>
+</ul>
+<p>A directive as an array item or as the whole content is a config error, as is one with an unknown strategy or no <code>$values</code> array. The error names the file or ruleset and the path to the directive. An object that mixes directive keys with other keys is not a directive: with no base array to merge into, xfg drops its directive keys and keeps the rest.</p>
 <h3 id="merge-by-key">Merge by Key<a class="headerlink" href="#merge-by-key" title="Permanent link">&para;</a></h3>
 <p>The <code>merge</code> strategy matches array items by an identity key and deep-merges matched pairs. This is useful when multiple conditional groups need to modify properties of the same item rather than duplicating it.</p>
 <p><strong>How it works:</strong></p>
