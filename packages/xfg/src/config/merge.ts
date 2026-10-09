@@ -135,14 +135,19 @@ function readDirective(
   return matchBy;
 }
 
-/** Validates directive-only objects only; mixed-key objects keep their directive keys stripped silently. */
-function assertDirectiveOnlyValid(
+/** Rejects directive-only objects; mixed-key objects keep their directive keys stripped silently. */
+function assertNotDirective(
   value: unknown,
   ctx: ErrorContext,
-  path: string
+  path: string,
+  position: "an array item" | "the content root"
 ): void {
   if (isPlainObject(value) && isDirectiveOnly(value)) {
-    readDirective(value, ctx, path);
+    throw mergeError(
+      ctx,
+      path,
+      `a directive must be the value of a key whose base is an array, not ${position}`
+    );
   }
 }
 
@@ -308,8 +313,8 @@ export function deepMerge(
   overlay: Record<string, unknown>,
   ctx: MergeContext
 ): Record<string, unknown> {
-  assertDirectiveOnlyValid(base, ctx, "");
-  assertDirectiveOnlyValid(overlay, ctx, "");
+  assertNotDirective(base, ctx, "", "the content root");
+  assertNotDirective(overlay, ctx, "", "the content root");
   return mergeObjects(base, overlay, ctx, "");
 }
 
@@ -435,9 +440,9 @@ function applyArrayDirective(
  * Works recursively on nested objects and arrays.
  * Standard $-prefixed keys ($schema, $id, $ref, etc.) are preserved.
  *
- * When an unresolved directive object is found (only directive keys),
- * it is replaced with the $values array. This handles the case where a directive
- * had no base array to merge with.
+ * A valid directive-only object that is the value of a key had no base array
+ * to merge with, and is replaced with its $values array. A directive-only object
+ * that is invalid, an array item, or the root is a ValidationError.
  *
  * @param location - Prefixes errors, e.g. the file name being stripped
  */
@@ -446,7 +451,7 @@ export function stripMergeDirectives(
   location?: string
 ): Record<string, unknown> {
   const errCtx = { location };
-  assertDirectiveOnlyValid(obj, errCtx, "");
+  assertNotDirective(obj, errCtx, "", "the content root");
   return stripObject(obj, errCtx, "");
 }
 
@@ -458,7 +463,7 @@ function stripItems(
   return items.map((item, i) => {
     if (!isPlainObject(item)) return item;
     const itemPath = `${path}[${i}]`;
-    assertDirectiveOnlyValid(item, errCtx, itemPath);
+    assertNotDirective(item, errCtx, itemPath, "an array item");
     return stripObject(item, errCtx, itemPath);
   });
 }

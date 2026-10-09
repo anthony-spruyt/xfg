@@ -1093,14 +1093,6 @@ describe("stripMergeDirectives", () => {
     assert.deepEqual(result, {});
   });
 
-  test("handles objects with only directives", () => {
-    // Top-level directive keys ($arrayMerge, $values) are stripped individually,
-    // leaving {}. Nested directive objects are resolved to their $values array instead.
-    const obj = { $arrayMerge: "append", $values: [1, 2] };
-    const result = stripMergeDirectives(obj);
-    assert.deepEqual(result, {});
-  });
-
   test("resolves unmerged $arrayMerge directive to its $values array", () => {
     const obj = {
       name: "test",
@@ -1344,62 +1336,75 @@ describe("directives without a valid $arrayMerge", () => {
 });
 
 describe("directive-only objects in array items and at the root", () => {
-  const strategies = "replace, append, prepend, merge";
+  const itemError = (path: string) => ({
+    name: "ValidationError",
+    message: `${path}: a directive must be the value of a key whose base is an array, not an array item`,
+  });
+  const rootError = (location?: string) => ({
+    name: "ValidationError",
+    message: `${location ? `${location}: ` : ""}a directive must be the value of a key whose base is an array, not the content root`,
+  });
+  const valid = { $arrayMerge: "append", $values: ["a"] };
 
-  test("rejects an invalid directive-only array item", () => {
+  test("rejects a valid directive-only array item", () => {
     assert.throws(
-      () =>
-        stripMergeDirectives(
-          { list: ["a", { $arrayMerge: "bogus" }] },
-          ".mergify.yml"
-        ),
-      {
-        name: "ValidationError",
-        message: `.mergify.yml: list[1]: $arrayMerge must be one of ${strategies}, got 'bogus'`,
-      }
+      () => stripMergeDirectives({ list: ["a", { ...valid }] }, ".mergify.yml"),
+      itemError(".mergify.yml: list[1]")
     );
   });
 
-  test("rejects a directive-only array item without an array of $values", () => {
+  test("rejects an invalid directive-only array item", () => {
+    assert.throws(
+      () => stripMergeDirectives({ list: [{ $arrayMerge: "bogus" }] }),
+      itemError("list[0]")
+    );
     assert.throws(
       () =>
         stripMergeDirectives({
           list: [{ $arrayMerge: "append", $values: "a" }],
         }),
-      { name: "ValidationError", message: "list[0]: $values must be an array, got 'a'" }
+      itemError("list[0]")
+    );
+  });
+
+  test("rejects a directive-only array item inside resolved $values", () => {
+    assert.throws(
+      () =>
+        stripMergeDirectives({
+          list: { $arrayMerge: "append", $values: [{ ...valid }] },
+        }),
+      itemError("list[0]")
+    );
+  });
+
+  test("rejects a valid directive-only root", () => {
+    assert.throws(
+      () => stripMergeDirectives({ ...valid }, ".mergify.yml"),
+      rootError(".mergify.yml")
     );
   });
 
   test("rejects an invalid directive-only root", () => {
     assert.throws(
-      () => stripMergeDirectives({ $arrayMerge: "bogus" }, ".mergify.yml"),
-      {
-        name: "ValidationError",
-        message: `.mergify.yml: $arrayMerge must be one of ${strategies}, got 'bogus'`,
-      }
+      () => stripMergeDirectives({ $arrayMerge: "bogus" }),
+      rootError()
     );
   });
 
-  test("rejects an invalid directive-only root on either side of a merge", () => {
-    const error = {
-      name: "ValidationError",
-      message: `$values must be an array, got none`,
-    };
+  test("rejects a directive-only root on either side of a merge", () => {
+    const ctx = createMergeContext("replace", ".mergify.yml");
+    assert.throws(
+      () => deepMerge({ a: 1 }, { ...valid }, ctx),
+      rootError(".mergify.yml")
+    );
+    assert.throws(
+      () => deepMerge({ ...valid }, { a: 1 }, ctx),
+      rootError(".mergify.yml")
+    );
     assert.throws(
       () => deepMerge({ a: 1 }, { $arrayMerge: "append" }, createContext()),
-      error
+      rootError()
     );
-    assert.throws(
-      () => deepMerge({ $arrayMerge: "append" }, { a: 1 }, createContext()),
-      error
-    );
-  });
-
-  test("accepts valid directive-only array items and roots", () => {
-    const directive = { $arrayMerge: "append", $values: ["a"] };
-    assert.doesNotThrow(() => stripMergeDirectives({ list: [directive] }));
-    assert.doesNotThrow(() => stripMergeDirectives({ ...directive }));
-    assert.doesNotThrow(() => deepMerge({ a: 1 }, directive, createContext()));
   });
 
   test("keeps the other keys of array items and roots that also have directive keys", () => {
