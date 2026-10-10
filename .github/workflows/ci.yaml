@@ -47,8 +47,13 @@ jobs:
       - "lint"
       - "repo"
       - "image"
+      - "sonar"
     if: "always() && (github.event.action != 'labeled' || github.event.label.name == 'run-integration')"
     permissions:
       actions: "read"
       contents: "read"
     uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@cb40ddc2ff6cd9f0441cd59406c849c68f6bd464"
+  sonar:
+    permissions: {}
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_sonar-new-issues.yaml@cb40ddc2ff6cd9f0441cd59406c849c68f6bd464"
+    if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
