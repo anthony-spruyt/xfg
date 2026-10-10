@@ -86,7 +86,7 @@ function isHttpUrl(value: string): boolean {
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
 
 /** Replaces the resolved host in error text with the env var name that supplied it. */
