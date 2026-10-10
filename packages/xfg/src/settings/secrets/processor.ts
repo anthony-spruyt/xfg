@@ -3,7 +3,11 @@ import type {
   IRepoMetadataProvider,
   RepoInfo,
 } from "../../repo/index.js";
-import type { RepoConfig, SecretConfig } from "../../config/index.js";
+import type {
+  EnvironmentConfig,
+  RepoConfig,
+  SecretConfig,
+} from "../../config/index.js";
 import type { ISecretsStrategy, GitHubPublicKey } from "./types.js";
 import type { IEnvironmentSecretsStrategy } from "../environments/types.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
@@ -57,6 +61,13 @@ interface EnvironmentSecrets {
   environment: string;
   exists: boolean;
   entries: [string, SecretConfig][];
+  deleteOrphaned: boolean;
+}
+
+interface ConfiguredEnvironmentSecrets {
+  name: string;
+  entries: [string, SecretConfig][];
+  deleteOrphaned: boolean;
 }
 
 interface ScopeKey {
@@ -80,13 +91,28 @@ function hasRepoSecrets(repoConfig: RepoConfig): boolean {
 
 function environmentSecretsOf(
   repoConfig: RepoConfig
-): [string, [string, SecretConfig][]][] {
-  return Object.entries(repoConfig.settings?.environments ?? {})
-    .map(([name, env]): [string, [string, SecretConfig][]] => [
-      name,
-      Object.entries(env.secrets ?? {}),
-    ])
-    .filter(([, entries]) => entries.length > 0);
+): ConfiguredEnvironmentSecrets[] {
+  const { deleteOrphaned: _d, ...environments } = (repoConfig.settings
+    ?.environments ?? {}) as Record<string, EnvironmentConfig | boolean>;
+  return Object.entries(environments)
+    .flatMap(([name, env]): ConfiguredEnvironmentSecrets[] => {
+      if (typeof env === "boolean") return [];
+      const { deleteOrphaned, ...entries } = (env.secrets ?? {}) as Record<
+        string,
+        SecretConfig | boolean
+      >;
+      return [
+        {
+          name,
+          entries: Object.entries(entries).filter(
+            (entry): entry is [string, SecretConfig] =>
+              typeof entry[1] !== "boolean"
+          ),
+          deleteOrphaned: deleteOrphaned === true,
+        },
+      ];
+    })
+    .filter((env) => env.entries.length > 0 || env.deleteOrphaned);
 }
 
 function missingEnvironmentWarning(repoName: string, env: string): string {
@@ -176,7 +202,8 @@ export class SecretsProcessor implements ISecretsProcessor {
     const envGroups = await this.readEnvironments(
       githubRepo,
       repoConfig,
-      strategyOptions
+      strategyOptions,
+      noDelete ?? false
     );
     const envChanges = await this.diffEnvironmentSecrets(
       githubRepo,
@@ -209,10 +236,12 @@ export class SecretsProcessor implements ISecretsProcessor {
     const extra = gate.warnings.length > 0 ? { warnings: gate.warnings } : {};
 
     const repoValues = this.resolve(secretEntries);
-    const envValues = writableGroups.map((g) => ({
-      environment: g.environment,
-      values: this.resolve(g.entries),
-    }));
+    const envValues = writableGroups
+      .filter((g) => g.entries.length > 0)
+      .map((g) => ({
+        environment: g.environment,
+        values: this.resolve(g.entries),
+      }));
     const scopes = new Map<string | undefined, ScopeKey>();
     if (secretEntries.length > 0) {
       scopes.set(undefined, {
@@ -264,7 +293,16 @@ export class SecretsProcessor implements ISecretsProcessor {
     strategyOptions: GhApiOptions
   ): Promise<void> {
     if (change.action === "delete") {
-      await this.strategy.delete(githubRepo, change.name, strategyOptions);
+      if (change.environment === undefined) {
+        await this.strategy.delete(githubRepo, change.name, strategyOptions);
+      } else {
+        await this.environments!.strategy.deleteSecret(
+          githubRepo,
+          change.environment,
+          change.name,
+          strategyOptions
+        );
+      }
       return;
     }
     const { values, publicKey } = scopes.get(change.environment)!;
@@ -299,7 +337,8 @@ export class SecretsProcessor implements ISecretsProcessor {
     strategyOptions: GhApiOptions,
     repoName: string
   ): Promise<{ error?: string; warnings: string[] }> {
-    const missing = groups.filter((g) => !g.exists);
+    // A missing environment has no secrets to delete, so only writes need it.
+    const missing = groups.filter((g) => !g.exists && g.entries.length > 0);
     if (missing.length === 0) return { warnings: [] };
     const { visibility } = await this.environments!.metadataProvider.getMetadata(
       githubRepo,
@@ -328,7 +367,8 @@ export class SecretsProcessor implements ISecretsProcessor {
   private async readEnvironments(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
-    strategyOptions: GhApiOptions
+    strategyOptions: GhApiOptions,
+    noDelete: boolean
   ): Promise<EnvironmentSecrets[]> {
     const configured = this.environments
       ? environmentSecretsOf(repoConfig)
@@ -341,12 +381,13 @@ export class SecretsProcessor implements ISecretsProcessor {
     const existing = new Map(
       current.map((env) => [env.name.toLowerCase(), env.name])
     );
-    return configured.map(([name, entries]) => {
+    return configured.map(({ name, entries, deleteOrphaned }) => {
       const actual = existing.get(name.toLowerCase());
       return {
         environment: actual ?? name,
         exists: actual !== undefined,
         entries,
+        deleteOrphaned: deleteOrphaned && !noDelete,
       };
     });
   }
@@ -370,7 +411,7 @@ export class SecretsProcessor implements ISecretsProcessor {
         ...diffSecrets(
           current,
           group.entries.map(([name]) => name),
-          false
+          group.deleteOrphaned
         ).map((change) => ({ ...change, environment: group.environment }))
       );
     });

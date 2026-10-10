@@ -285,14 +285,105 @@ describe("settings.environments validation", () => {
       );
     });
 
-    for (const key of ["deleteOrphaned", "inherit"]) {
-      test(`rejects ${key} in environment secrets`, () => {
-        assert.throws(
-          () => validateRawConfig(withSecrets({ [key]: true })),
-          new RegExp(`'${key}' is not supported in environment secrets`)
-        );
-      });
-    }
+    test("rejects inherit in environment secrets", () => {
+      assert.throws(
+        () => validateRawConfig(withSecrets({ inherit: true })),
+        /'inherit' is not supported in environment secrets/
+      );
+    });
+
+    test("accepts deleteOrphaned in environment secrets", () => {
+      assert.doesNotThrow(() =>
+        validateRawConfig(
+          withSecrets({ deleteOrphaned: true, KEY: { env: "KEY_SRC" } })
+        )
+      );
+    });
+
+    test("rejects a non-boolean deleteOrphaned in environment secrets", () => {
+      assert.throws(
+        () => validateRawConfig(withSecrets({ deleteOrphaned: "yes" })),
+        /environment 'release': secrets.deleteOrphaned must be a boolean/
+      );
+    });
+  });
+
+  describe("deleteOrphaned", () => {
+    test("accepts environments.deleteOrphaned at root and in a repo", () => {
+      assert.doesNotThrow(() =>
+        validateRawConfig(
+          base(
+            { environments: asEnvs({ deleteOrphaned: true, release: {} }) },
+            { environments: { deleteOrphaned: false } }
+          )
+        )
+      );
+    });
+
+    test("rejects a non-boolean environments.deleteOrphaned", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            base({ environments: asEnvs({ deleteOrphaned: "yes" }) })
+          ),
+        /environments.deleteOrphaned must be a boolean/
+      );
+    });
+
+    test("accepts deleteOrphaned on a custom policy", () => {
+      assert.doesNotThrow(() =>
+        validateRawConfig(
+          base({
+            environments: {
+              release: {
+                deploymentBranchPolicy: {
+                  custom: [{ type: "branch", name: "main" }],
+                  deleteOrphaned: true,
+                },
+              },
+            },
+          })
+        )
+      );
+    });
+
+    test("rejects a non-boolean policy deleteOrphaned", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            base({
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: {
+                    custom: [{ type: "branch", name: "main" }],
+                    deleteOrphaned: 1,
+                  },
+                },
+              }),
+            })
+          ),
+        /deploymentBranchPolicy: deleteOrphaned must be a boolean/
+      );
+    });
+
+    test("rejects policy deleteOrphaned with protectedBranches", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            base({
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: {
+                    protectedBranches: true,
+                    deleteOrphaned: true,
+                  },
+                },
+              }),
+            })
+          ),
+        /deleteOrphaned only applies to a 'custom' policy/
+      );
+    });
   });
 });
 
@@ -358,6 +449,19 @@ describe("validateSecretsConfig - environment secrets", () => {
       )
     );
   });
+
+  test("accepts deleteOrphaned at both levels", () => {
+    assert.doesNotThrow(() =>
+      validateSecretsConfig(
+        base({
+          environments: asEnvs({
+            deleteOrphaned: true,
+            release: { secrets: { deleteOrphaned: true, KEY: { env: "A" } } },
+          }),
+        })
+      )
+    );
+  });
 });
 
 describe("hasActionableSettings - environments", () => {
@@ -370,6 +474,20 @@ describe("hasActionableSettings - environments", () => {
       hasActionableSettings({
         environments: { inherit: false, release: false },
       } as RawRepoSettings),
+      false
+    );
+  });
+
+  test("environments.deleteOrphaned: true alone is actionable", () => {
+    assert.equal(
+      hasActionableSettings({ environments: { deleteOrphaned: true } }),
+      true
+    );
+  });
+
+  test("environments.deleteOrphaned: false alone is not actionable", () => {
+    assert.equal(
+      hasActionableSettings({ environments: { deleteOrphaned: false } }),
       false
     );
   });

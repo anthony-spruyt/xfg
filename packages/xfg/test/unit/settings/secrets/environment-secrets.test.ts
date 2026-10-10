@@ -21,6 +21,7 @@ import type {
 import type {
   EnvironmentConfig,
   RepoConfig,
+  RepoSettings,
   RepoVisibility,
   SecretConfig,
 } from "../../../../src/config/index.js";
@@ -90,6 +91,9 @@ class MockEnvSecrets implements IEnvironmentSecretsStrategy {
       method: "upsertSecret",
       args: [env, name, encrypted, keyId],
     });
+  }
+  async deleteSecret(_r: RepoInfo, env: string, name: string): Promise<void> {
+    this.calls.push({ method: "deleteSecret", args: [env, name] });
   }
 }
 
@@ -433,5 +437,119 @@ describe("SecretsProcessor - environment secrets", () => {
     assert.equal(result.skipped, true);
     assert.equal(result.noSecretsConfigured, true);
     assert.deepEqual(envSecrets.calls, []);
+  });
+});
+
+describe("SecretsProcessor - environment secrets deleteOrphaned", () => {
+  const existing = (name: string): GitHubSecret => ({
+    name,
+    created_at: "",
+    updated_at: "",
+  });
+  const pruned = (
+    secrets: Record<string, SecretConfig>
+  ): EnvironmentConfig["secrets"] =>
+    ({ ...secrets, deleteOrphaned: true }) as EnvironmentConfig["secrets"];
+
+  function withOld() {
+    const ctx = setup();
+    ctx.envSecrets.secrets.set("release", [existing("KEY"), existing("OLD")]);
+    return ctx;
+  }
+
+  test("keeps environment secrets not in config by default", async () => {
+    const { envSecrets, processor } = withOld();
+    const result = await processor.process(
+      config({ release: { secrets: { KEY: { env: "SRC" } } } }),
+      repo,
+      {}
+    );
+    assert.equal(result.changes?.delete, 0);
+    assert.ok(!envSecrets.calls.some((c) => c.method === "deleteSecret"));
+  });
+
+  test("deletes environment secrets not in config", async () => {
+    const { repoSecrets, envSecrets, processor } = withOld();
+    const result = await processor.process(
+      config({ release: { secrets: pruned({ KEY: { env: "SRC" } }) } }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, true, result.message);
+    assert.equal(result.changes?.delete, 1);
+    assert.deepEqual(
+      envSecrets.calls.filter((c) => c.method === "deleteSecret"),
+      [{ method: "deleteSecret", args: ["release", "OLD"] }]
+    );
+    assert.ok(!repoSecrets.calls.some((c) => c.method === "delete"));
+    assert.ok(
+      result.planOutput?.lines
+        .map(strip)
+        .includes('    - secret "OLD" (environment "release")')
+    );
+  });
+
+  test("dry run plans the deletion without deleting", async () => {
+    const { envSecrets, processor } = withOld();
+    const result = await processor.process(
+      config({ release: { secrets: pruned({ KEY: { env: "SRC" } }) } }),
+      repo,
+      { dryRun: true }
+    );
+    assert.deepEqual(result.planOutput?.entries.at(-1), {
+      name: "OLD",
+      action: "delete",
+      environment: "release",
+    });
+    assert.ok(!envSecrets.calls.some((c) => c.method === "deleteSecret"));
+  });
+
+  test("noDelete keeps environment secrets not in config", async () => {
+    const { envSecrets, processor } = withOld();
+    const result = await processor.process(
+      config({ release: { secrets: pruned({ KEY: { env: "SRC" } }) } }),
+      repo,
+      { noDelete: true }
+    );
+    assert.equal(result.changes?.delete, 0);
+    assert.ok(!envSecrets.calls.some((c) => c.method === "deleteSecret"));
+  });
+
+  test("deleteOrphaned alone deletes every environment secret without reading the key", async () => {
+    const { envSecrets, processor } = withOld();
+    const result = await processor.process(
+      config({ release: { secrets: pruned({}) } }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, true, result.message);
+    assert.deepEqual(envSecrets.calls, [
+      { method: "listSecrets", args: ["release"] },
+      { method: "deleteSecret", args: ["release", "KEY"] },
+      { method: "deleteSecret", args: ["release", "OLD"] },
+    ]);
+  });
+
+  test("deleteOrphaned alone on a missing environment has nothing to do", async () => {
+    const { envSecrets, meta, processor } = setup({ environments: [] });
+    const result = await processor.process(
+      config({ release: { secrets: pruned({}) } }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, true, result.message);
+    assert.equal(result.message, "No changes needed");
+    assert.deepEqual(envSecrets.calls, []);
+    assert.equal(meta.called, 0);
+  });
+
+  test("repo-level secrets.deleteOrphaned leaves environment secrets alone", async () => {
+    const { envSecrets, processor } = withOld();
+    const repoConfig = config({ release: { secrets: { KEY: { env: "SRC" } } } });
+    repoConfig.settings!.secrets = {
+      deleteOrphaned: true,
+    } as RepoSettings["secrets"];
+    await processor.process(repoConfig, repo, {});
+    assert.ok(!envSecrets.calls.some((c) => c.method === "deleteSecret"));
   });
 });

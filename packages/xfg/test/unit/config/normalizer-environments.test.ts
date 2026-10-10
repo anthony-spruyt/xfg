@@ -11,6 +11,10 @@ import type {
 
 const mainOnly = { custom: [{ type: "branch" as const, name: "main" }] };
 
+// The index signature rejects a literal `deleteOrphaned: true` peer key.
+const envs = (value: object) =>
+  value as NonNullable<RawRepoSettings["environments"]>;
+
 describe("mergeSettings - environments", () => {
   test("inherits root environments when repo has none", () => {
     const result = mergeSettings(
@@ -184,6 +188,101 @@ describe("mergeSettings - environments", () => {
   });
 });
 
+describe("mergeSettings - environments deleteOrphaned", () => {
+  test("root deleteOrphaned is inherited alongside the environments", () => {
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true, release: {} }) },
+      { environments: { staging: {} } }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: {},
+      staging: {},
+      deleteOrphaned: true,
+    });
+  });
+
+  test("the repo layer's deleteOrphaned wins", () => {
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true, release: {} }) },
+      { environments: { deleteOrphaned: false } }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: {},
+      deleteOrphaned: false,
+    });
+  });
+
+  test("inherit: false keeps the inherited deleteOrphaned", () => {
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true, release: {} }) },
+      { environments: { inherit: false, staging: {} } }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      staging: {},
+      deleteOrphaned: true,
+    });
+  });
+
+  test("deleteOrphaned: true alone keeps the map", () => {
+    const result = mergeSettings({ environments: envs({ deleteOrphaned: true }) }, {});
+    assert.deepStrictEqual(result?.environments, { deleteOrphaned: true });
+  });
+
+  test("deleteOrphaned: false alone leaves the key out", () => {
+    const result = mergeSettings({ environments: { deleteOrphaned: false } }, {});
+    assert.strictEqual(result?.environments, undefined);
+  });
+
+  test("environment secrets deleteOrphaned merges innermost-wins", () => {
+    const result = mergeSettings(
+      {
+        environments: envs({
+          release: { secrets: { deleteOrphaned: true, A: { env: "A_SRC" } } },
+        }),
+      },
+      { environments: { release: { secrets: { B: { env: "B_SRC" } } } } }
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: {
+        secrets: {
+          A: { env: "A_SRC" },
+          B: { env: "B_SRC" },
+          deleteOrphaned: true,
+        },
+      },
+    });
+  });
+
+  test("environment secrets deleteOrphaned alone is kept", () => {
+    const result = mergeSettings(
+      { environments: envs({ release: { secrets: { deleteOrphaned: true } } }) },
+      {}
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: { secrets: { deleteOrphaned: true } },
+    });
+  });
+
+  test("environment secrets deleteOrphaned: false alone leaves secrets out", () => {
+    const result = mergeSettings(
+      { environments: { release: { secrets: { deleteOrphaned: false } } } },
+      {}
+    );
+    assert.deepStrictEqual(result?.environments, { release: {} });
+  });
+
+  test("policy deleteOrphaned travels with the policy", () => {
+    const policy = { ...mainOnly, deleteOrphaned: true };
+    const result = mergeSettings(
+      { environments: { release: { deploymentBranchPolicy: policy } } },
+      {}
+    );
+    assert.deepStrictEqual(result?.environments, {
+      release: { deploymentBranchPolicy: policy },
+    });
+  });
+});
+
 describe("normalizeConfig - environments via groups", () => {
   test("merges root, group, conditional group and repo layers", () => {
     const raw: RawConfig = {
@@ -298,5 +397,29 @@ describe("normalizeConfig - environments via groups", () => {
 
     const result = normalizeConfig(raw, {});
     assert.strictEqual(result.repos[0].settings?.environments, undefined);
+  });
+
+  test("group deleteOrphaned overrides root and survives a later layer", () => {
+    const raw: RawConfig = {
+      id: "test",
+      settings: { environments: { deleteOrphaned: false, release: {} } },
+      groups: {
+        prune: { settings: { environments: envs({ deleteOrphaned: true }) } },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["prune"],
+          settings: { environments: { staging: {} } },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, {});
+    assert.deepStrictEqual(result.repos[0].settings?.environments, {
+      release: {},
+      staging: {},
+      deleteOrphaned: true,
+    });
   });
 });

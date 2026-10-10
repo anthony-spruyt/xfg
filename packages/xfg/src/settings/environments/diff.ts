@@ -4,6 +4,7 @@ import type {
   EnvironmentConfig,
 } from "../../config/index.js";
 import type {
+  ExistingBranchPattern,
   GitHubDeploymentBranchPolicy,
   GitHubEnvironment,
 } from "./types.js";
@@ -20,9 +21,20 @@ export interface EnvironmentChange {
   desiredKind: BranchPolicyKind;
   putPolicy: boolean;
   missingPatterns: DeploymentBranchPattern[];
-  unmanagedPatterns: DeploymentBranchPattern[];
+  unmanagedPatterns: ExistingBranchPattern[];
+  orphanPatterns: ExistingBranchPattern[];
   /** False when the existing patterns were not read, so missingPatterns may hold some that exist */
   patternsKnown: boolean;
+}
+
+export interface EnvironmentDeletion {
+  action: "delete";
+  name: string;
+}
+
+export interface DiffEnvironmentsOptions {
+  /** Skip pattern deletions even where the policy sets deleteOrphaned */
+  noDelete?: boolean;
 }
 
 export function currentPolicyKind(
@@ -81,49 +93,84 @@ function patternKey(p: DeploymentBranchPattern): string {
   return `${p.type}\u0000${p.name}`;
 }
 
+function diffEnvironment(
+  configName: string,
+  config: EnvironmentConfig,
+  env: GitHubEnvironment | undefined,
+  currentPatterns: ReadonlyMap<string, ExistingBranchPattern[]>,
+  noDelete: boolean
+): EnvironmentChange {
+  const desiredKind = desiredPolicyKind(config.deploymentBranchPolicy);
+  const wanted = config.deploymentBranchPolicy?.custom ?? [];
+
+  if (!env) {
+    return {
+      action: "create",
+      name: configName,
+      desiredKind,
+      putPolicy: true,
+      missingPatterns: [...wanted],
+      unmanagedPatterns: [],
+      orphanPatterns: [],
+      patternsKnown: true,
+    };
+  }
+
+  const currentKind = currentPolicyKind(env.deployment_branch_policy);
+  const putPolicy = currentKind !== desiredKind;
+  const known = currentPatterns.get(env.name.toLowerCase());
+  const have = new Set((known ?? []).map(patternKey));
+  const want = new Set(wanted.map(patternKey));
+  const missingPatterns = wanted.filter((p) => !have.has(patternKey(p)));
+  const extra =
+    desiredKind === "custom"
+      ? (known ?? []).filter((p) => !want.has(patternKey(p)))
+      : [];
+  const deleteExtra =
+    config.deploymentBranchPolicy?.deleteOrphaned === true && !noDelete;
+  const orphanPatterns = deleteExtra ? extra : [];
+
+  return {
+    action:
+      putPolicy || missingPatterns.length > 0 || orphanPatterns.length > 0
+        ? "update"
+        : "unchanged",
+    name: env.name,
+    currentKind,
+    desiredKind,
+    putPolicy,
+    missingPatterns,
+    unmanagedPatterns: deleteExtra ? [] : extra,
+    orphanPatterns,
+    patternsKnown: desiredKind !== "custom" || known !== undefined,
+  };
+}
+
 export function diffEnvironments(
   desired: Record<string, EnvironmentConfig>,
   current: GitHubEnvironment[],
-  currentPatterns: ReadonlyMap<string, DeploymentBranchPattern[]>
+  currentPatterns: ReadonlyMap<string, ExistingBranchPattern[]>,
+  options: DiffEnvironmentsOptions = {}
 ): EnvironmentChange[] {
   const existing = indexByName(current);
+  return Object.entries(desired).map(([configName, config]) =>
+    diffEnvironment(
+      configName,
+      config,
+      existing.get(configName.toLowerCase()),
+      currentPatterns,
+      options.noDelete ?? false
+    )
+  );
+}
 
-  return Object.entries(desired).map(([configName, config]) => {
-    const desiredKind = desiredPolicyKind(config.deploymentBranchPolicy);
-    const wanted = config.deploymentBranchPolicy?.custom ?? [];
-    const env = existing.get(configName.toLowerCase());
-
-    if (!env) {
-      return {
-        action: "create",
-        name: configName,
-        desiredKind,
-        putPolicy: true,
-        missingPatterns: [...wanted],
-        unmanagedPatterns: [],
-        patternsKnown: true,
-      };
-    }
-
-    const currentKind = currentPolicyKind(env.deployment_branch_policy);
-    const putPolicy = currentKind !== desiredKind;
-    const known = currentPatterns.get(env.name.toLowerCase());
-    const have = new Set((known ?? []).map(patternKey));
-    const want = new Set(wanted.map(patternKey));
-    const missingPatterns = wanted.filter((p) => !have.has(patternKey(p)));
-    const unmanagedPatterns = (known ?? []).filter(
-      (p) => !want.has(patternKey(p))
-    );
-
-    return {
-      action: putPolicy || missingPatterns.length > 0 ? "update" : "unchanged",
-      name: env.name,
-      currentKind,
-      desiredKind,
-      putPolicy,
-      missingPatterns,
-      unmanagedPatterns: desiredKind === "custom" ? unmanagedPatterns : [],
-      patternsKnown: desiredKind !== "custom" || known !== undefined,
-    };
-  });
+/** Environments on GitHub with no config entry, matched ignoring case. */
+export function orphanEnvironments(
+  desired: Record<string, EnvironmentConfig>,
+  current: GitHubEnvironment[]
+): EnvironmentDeletion[] {
+  const wanted = new Set(Object.keys(desired).map((n) => n.toLowerCase()));
+  return current
+    .filter((env) => !wanted.has(env.name.toLowerCase()))
+    .map((env) => ({ action: "delete", name: env.name }));
 }

@@ -5,6 +5,7 @@ import {
   currentPolicyKind,
   desiredPolicyKind,
   needsPatternLookup,
+  orphanEnvironments,
   toGitHubPolicy,
 } from "../../../../src/settings/environments/diff.js";
 import type { GitHubEnvironment } from "../../../../src/settings/environments/types.js";
@@ -87,6 +88,7 @@ describe("diffEnvironments", () => {
           { type: "tag", name: "v*" },
         ],
         unmanagedPatterns: [],
+        orphanPatterns: [],
         patternsKnown: true,
       },
     ]);
@@ -142,8 +144,8 @@ describe("diffEnvironments", () => {
         [
           "release",
           [
-            { type: "branch" as const, name: "main" },
-            { type: "branch" as const, name: "old" },
+            { id: 1, type: "branch" as const, name: "main" },
+            { id: 2, type: "branch" as const, name: "old" },
           ],
         ],
       ])
@@ -152,14 +154,16 @@ describe("diffEnvironments", () => {
     assert.equal(change.putPolicy, false);
     assert.equal(change.patternsKnown, true);
     assert.deepEqual(change.missingPatterns, [{ type: "tag", name: "v*" }]);
-    assert.deepEqual(change.unmanagedPatterns, [{ type: "branch", name: "old" }]);
+    assert.deepEqual(change.unmanagedPatterns, [
+      { id: 2, type: "branch", name: "old" },
+    ]);
   });
 
   test("is unchanged when all custom patterns exist", () => {
     const [change] = diffEnvironments(
       { release: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } } },
       [{ name: "release", deployment_branch_policy: custom }],
-      new Map([["release", [{ type: "branch" as const, name: "main" }]]])
+      new Map([["release", [{ id: 1, type: "branch" as const, name: "main" }]]])
     );
     assert.equal(change.action, "unchanged");
   });
@@ -168,9 +172,93 @@ describe("diffEnvironments", () => {
     const [change] = diffEnvironments(
       { release: { deploymentBranchPolicy: { custom: [{ type: "tag", name: "main" }] } } },
       [{ name: "release", deployment_branch_policy: custom }],
-      new Map([["release", [{ type: "branch" as const, name: "main" }]]])
+      new Map([["release", [{ id: 1, type: "branch" as const, name: "main" }]]])
     );
     assert.deepEqual(change.missingPatterns, [{ type: "tag", name: "main" }]);
-    assert.deepEqual(change.unmanagedPatterns, [{ type: "branch", name: "main" }]);
+    assert.deepEqual(change.unmanagedPatterns, [
+      { id: 1, type: "branch", name: "main" },
+    ]);
+  });
+});
+
+describe("diffEnvironments with deleteOrphaned", () => {
+  const current: GitHubEnvironment[] = [
+    { name: "release", deployment_branch_policy: null },
+    { name: "NPM", deployment_branch_policy: null },
+  ];
+  const main = { type: "branch" as const, name: "main" };
+  const stale = { id: 7, type: "tag" as const, name: "v*.*.*" };
+  const customRelease = {
+    release: {
+      deploymentBranchPolicy: {
+        deleteOrphaned: true,
+        custom: [main, { type: "tag" as const, name: "v*" }],
+      },
+    },
+  };
+  const releaseOnGitHub: GitHubEnvironment[] = [
+    { name: "release", deployment_branch_policy: custom },
+  ];
+  const releasePatterns = new Map([
+    ["release", [{ id: 1, ...main }, stale]],
+  ]);
+
+  test("orphanEnvironments lists environments not in config, in GitHub's spelling", () => {
+    assert.deepEqual(orphanEnvironments({ release: {} }, current), [
+      { action: "delete", name: "NPM" },
+    ]);
+  });
+
+  test("orphanEnvironments matches configured names ignoring case", () => {
+    assert.deepEqual(orphanEnvironments({ Release: {}, npm: {} }, current), []);
+  });
+
+  test("orphanEnvironments lists every environment when none are configured", () => {
+    assert.deepEqual(
+      orphanEnvironments({}, current).map((d) => d.name),
+      ["release", "NPM"]
+    );
+  });
+
+  test("marks patterns not in config for deletion instead of warning", () => {
+    const [change] = diffEnvironments(
+      customRelease,
+      releaseOnGitHub,
+      releasePatterns
+    );
+    assert.equal(change.action, "update");
+    assert.deepEqual(change.orphanPatterns, [stale]);
+    assert.deepEqual(change.unmanagedPatterns, []);
+  });
+
+  test("is an update when the only change is a pattern to delete", () => {
+    const [change] = diffEnvironments(
+      { release: { deploymentBranchPolicy: { deleteOrphaned: true, custom: [main] } } },
+      releaseOnGitHub,
+      releasePatterns
+    );
+    assert.equal(change.action, "update");
+  });
+
+  test("noDelete leaves patterns in place with the usual warning", () => {
+    const [change] = diffEnvironments(
+      customRelease,
+      releaseOnGitHub,
+      releasePatterns,
+      { noDelete: true }
+    );
+    assert.equal(change.action, "update");
+    assert.deepEqual(change.orphanPatterns, []);
+    assert.deepEqual(change.unmanagedPatterns, [stale]);
+  });
+
+  test("plans no pattern deletions when existing patterns were not read", () => {
+    const [change] = diffEnvironments(
+      customRelease,
+      [{ name: "release", deployment_branch_policy: null }],
+      new Map()
+    );
+    assert.equal(change.patternsKnown, false);
+    assert.deepEqual(change.orphanPatterns, []);
   });
 });

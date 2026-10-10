@@ -1,7 +1,4 @@
-import type {
-  DeploymentBranchPattern,
-  RepoConfig,
-} from "../../config/index.js";
+import type { EnvironmentConfig, RepoConfig } from "../../config/index.js";
 import type {
   GitHubRepoInfo,
   IRepoMetadataProvider,
@@ -14,15 +11,17 @@ import { toErrorMessage } from "../../shared/type-guards.js";
 import {
   diffEnvironments,
   needsPatternLookup,
+  orphanEnvironments,
   toGitHubPolicy,
   type EnvironmentChange,
+  type EnvironmentDeletion,
 } from "./diff.js";
 import {
   formatEnvironmentsPlan,
   formatPatternLabel,
   type EnvironmentsPlanResult,
 } from "./formatter.js";
-import type { IEnvironmentsStrategy } from "./types.js";
+import type { ExistingBranchPattern, IEnvironmentsStrategy } from "./types.js";
 import {
   withGitHubGuards,
   type BaseProcessorOptions,
@@ -35,14 +34,51 @@ import {
 } from "../base-processor.js";
 
 export type IEnvironmentsProcessor = ISettingsProcessor<
-  BaseProcessorOptions,
+  EnvironmentsProcessorOptions,
   EnvironmentsProcessorResult
 >;
+
+export interface EnvironmentsProcessorOptions extends BaseProcessorOptions {
+  noDelete?: boolean;
+}
 
 export interface EnvironmentsProcessorResult extends BaseProcessorResult {
   changes?: ChangeCounts;
   planOutput?: EnvironmentsPlanResult;
   warnings?: string[];
+}
+
+function environmentsOf(repoConfig: RepoConfig): {
+  entries: Record<string, EnvironmentConfig>;
+  deleteOrphaned: boolean;
+} {
+  const { deleteOrphaned, ...entries } = (repoConfig.settings?.environments ??
+    {}) as Record<string, unknown>;
+  return {
+    entries: entries as Record<string, EnvironmentConfig>,
+    deleteOrphaned: deleteOrphaned === true,
+  };
+}
+
+function isPermissionError(error: unknown): boolean {
+  return (
+    toErrorMessage(error).includes("HTTP 403") && !isPaidPlanError(error)
+  );
+}
+
+async function deleteAsAdmin(
+  what: string,
+  run: () => Promise<void>
+): Promise<void> {
+  try {
+    await run();
+  } catch (error) {
+    if (!isPermissionError(error)) throw error;
+    throw new Error(
+      `${what} needs the Administration: Read and write permission (repo admin): ${toErrorMessage(error)}`,
+      { cause: error }
+    );
+  }
 }
 
 function unmanagedWarnings(
@@ -83,11 +119,13 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
   async process(
     repoConfig: RepoConfig,
     repoInfo: RepoInfo,
-    options: BaseProcessorOptions
+    options: EnvironmentsProcessorOptions
   ): Promise<EnvironmentsProcessorResult> {
     return withGitHubGuards(repoConfig, repoInfo, options, {
-      hasDesiredSettings: (rc) =>
-        Object.keys(rc.settings?.environments ?? {}).length > 0,
+      hasDesiredSettings: (rc) => {
+        const { entries, deleteOrphaned } = environmentsOf(rc);
+        return Object.keys(entries).length > 0 || deleteOrphaned;
+      },
       emptySettingsMessage: "No environments configured",
       applySettings: (githubRepo, rc, opts, token, repoName) =>
         this.applySettings(githubRepo, rc, opts, token, repoName),
@@ -98,8 +136,8 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
     githubRepo: GitHubRepoInfo,
     names: string[],
     strategyOptions: GhApiOptions
-  ): Promise<Map<string, DeploymentBranchPattern[]>> {
-    const patterns = new Map<string, DeploymentBranchPattern[]>();
+  ): Promise<Map<string, ExistingBranchPattern[]>> {
+    const patterns = new Map<string, ExistingBranchPattern[]>();
     // Serial: GitHub asks for serial requests to avoid secondary rate limits
     await runSequentially(names, async (name) => {
       patterns.set(
@@ -117,11 +155,12 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
   private async applySettings(
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
-    options: BaseProcessorOptions,
+    options: EnvironmentsProcessorOptions,
     effectiveToken: string | undefined,
     repoName: string
   ): Promise<EnvironmentsProcessorResult> {
-    const desired = repoConfig.settings?.environments ?? {};
+    const { entries: desired, deleteOrphaned } = environmentsOf(repoConfig);
+    const noDelete = options.noDelete ?? false;
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
     const current = await this.strategy.list(githubRepo, strategyOptions);
@@ -130,8 +169,10 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
       needsPatternLookup(desired, current),
       strategyOptions
     );
-    const changes = diffEnvironments(desired, current, patterns);
-    const changeCounts = countActions(changes);
+    const changes = diffEnvironments(desired, current, patterns, { noDelete });
+    const deletions =
+      deleteOrphaned && !noDelete ? orphanEnvironments(desired, current) : [];
+    const changeCounts = countActions([...changes, ...deletions]);
     const warnings = unmanagedWarnings(repoName, changes);
 
     if (options.dryRun) {
@@ -139,7 +180,7 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
         repoName,
         changeCounts,
         withWarnings(
-          { planOutput: formatEnvironmentsPlan(changes, true) },
+          { planOutput: formatEnvironmentsPlan(changes, true, deletions) },
           warnings
         )
       );
@@ -156,6 +197,11 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
           appliedCount++;
         }
       );
+      await runSequentially(deletions, async (deletion) => {
+        await this.deleteEnvironment(githubRepo, deletion, strategyOptions);
+        progress.writes++;
+        appliedCount++;
+      });
     } catch (error) {
       if (progress.writes > 0 || !isPaidPlanError(error)) throw error;
       return this.skipIfNotPublic(githubRepo, strategyOptions, repoName, error);
@@ -166,9 +212,19 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
       changeCounts,
       appliedCount,
       withWarnings(
-        { planOutput: formatEnvironmentsPlan(changes, false) },
+        { planOutput: formatEnvironmentsPlan(changes, false, deletions) },
         warnings
       )
+    );
+  }
+
+  private async deleteEnvironment(
+    githubRepo: GitHubRepoInfo,
+    deletion: EnvironmentDeletion,
+    strategyOptions: GhApiOptions
+  ): Promise<void> {
+    await deleteAsAdmin(`deleting environment ${quoted(deletion.name)}`, () =>
+      this.strategy.delete(githubRepo, deletion.name, strategyOptions)
     );
   }
 
@@ -207,6 +263,21 @@ export class EnvironmentsProcessor implements IEnvironmentsProcessor {
         change.name,
         pattern,
         strategyOptions
+      );
+      progress.writes++;
+    });
+
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(change.orphanPatterns, async (pattern) => {
+      await deleteAsAdmin(
+        `deleting ${formatPatternLabel(pattern)} from environment ${quoted(change.name)}`,
+        () =>
+          this.strategy.deleteBranchPolicy(
+            githubRepo,
+            change.name,
+            pattern.id,
+            strategyOptions
+          )
       );
       progress.writes++;
     });

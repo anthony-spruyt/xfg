@@ -32,7 +32,7 @@ export interface SettingsReport {
     variables?: { create: number; update: number; delete: number };
     secrets?: { create: number; update: number; delete: number };
     collaborators?: { create: number; update: number; delete: number };
-    environments?: { create: number; update: number };
+    environments?: { create: number; update: number; delete: number };
   };
 }
 
@@ -245,10 +245,14 @@ const DIFF_SIGN: Record<ActiveAction, string> = {
 function renderEnvironmentLines(entry: EnvironmentsPlanEntry): string[] {
   const sign = DIFF_SIGN[entry.action];
   const lines = [`${sign} environment ${quoted(entry.name)}`];
+  if (entry.action === "delete") return lines;
   const policy = formatPolicyLine(entry);
   if (policy) lines.push(`${sign}   ${policy}`);
   for (const pattern of entry.addedPatterns) {
     lines.push(`+   ${formatPatternLabel(pattern)}`);
+  }
+  for (const pattern of entry.removedPatterns) {
+    lines.push(`-   ${formatPatternLabel(pattern)}`);
   }
   return lines;
 }

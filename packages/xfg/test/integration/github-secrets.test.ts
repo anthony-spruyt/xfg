@@ -316,6 +316,112 @@ repos:
     );
   });
 
+  test("deleteOrphaned removes environments, patterns and environment secrets", async () => {
+    const setupPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-environments-prune-setup
+settings:
+  environments:
+    xfg-prune:
+      deploymentBranchPolicy:
+        custom:
+          - type: branch
+            name: main
+          - type: tag
+            name: "v*"
+      secrets:
+        XFG_KEEP:
+          env: XFG_TEST_SECRET_VALUE
+        XFG_DROP:
+          env: XFG_TEST_SECRET_VALUE
+    xfg-orphan: {}
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+    await exec(`node dist/cli.js sync --config ${setupPath}`, {
+      cwd: projectRoot,
+    });
+    await runSecretsSync(setupPath);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-environments-prune
+settings:
+  environments:
+    deleteOrphaned: true
+    xfg-prune:
+      deploymentBranchPolicy:
+        deleteOrphaned: true
+        custom:
+          - type: branch
+            name: main
+      secrets:
+        deleteOrphaned: true
+        XFG_KEEP:
+          env: XFG_TEST_SECRET_VALUE
+repos:
+  - git: https://github.com/${testRepo}.git
+`
+    );
+
+    const summaryPath = join(tmpDir, "environments-prune-summary.md");
+    const plan = await exec(
+      `node dist/cli.js sync --config ${configPath} --dry-run`,
+      {
+        cwd: projectRoot,
+        env: { ...process.env, GITHUB_STEP_SUMMARY: summaryPath },
+      }
+    );
+    assert.ok(plan.includes('- environment "xfg-orphan"'), plan);
+    assert.ok(plan.includes('- tag "v*"'), plan);
+    const summary = readFileSync(summaryPath, "utf-8");
+    assert.ok(summary.includes('- environment "xfg-orphan"'), summary);
+
+    const sync = await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+    });
+    assert.ok(sync.includes('- environment "xfg-orphan"'), sync);
+
+    await withTestRetry(
+      async () => {
+        const names = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments --jq '[.environments[].name]'`
+          )
+        ) as string[];
+        assert.deepEqual(names, ["xfg-prune"]);
+        const patterns = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments/xfg-prune/deployment-branch-policies --jq '[.branch_policies[] | {name, type}]'`
+          )
+        ) as { name: string; type: string }[];
+        assert.deepEqual(patterns, [{ name: "main", type: "branch" }]);
+      },
+      { description: "orphaned environment and pattern deleted" }
+    );
+
+    const secretsOutput = await runSecretsSync(configPath);
+    assert.ok(
+      secretsOutput.includes(
+        '- secret "XFG_DROP" (environment "xfg-prune")'
+      ),
+      secretsOutput
+    );
+
+    await withTestRetry(
+      async () => {
+        const secrets = JSON.parse(
+          await execWithRetry(
+            `gh api repos/${testRepo}/environments/xfg-prune/secrets --jq '[.secrets[].name]'`
+          )
+        ) as string[];
+        assert.deepEqual(secrets, ["XFG_KEEP"]);
+      },
+      { description: "orphaned environment secret deleted" }
+    );
+  });
+
   test("deletes orphaned secret", async () => {
     // Ensure secret exists before testing deletion (decouples from prior test ordering)
     const setupConfigPath = writeConfig(
