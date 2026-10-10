@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.0](https://github.com/anthony-spruyt/xfg/compare/v8.4.0...v8.5.0) (2026-10-10)
+
+
+### Features
+
+* **ai:** read the provider base URL from an env var ([#1215](https://github.com/anthony-spruyt/xfg/issues/1215)) ([b3c9282](https://github.com/anthony-spruyt/xfg/commit/b3c9282c9c357b2fd6d154fd007b0d180b7528da))
+
 ## [8.4.0](https://github.com/anthony-spruyt/xfg/compare/v8.3.2...v8.4.0) (2026-10-10)
 
 
