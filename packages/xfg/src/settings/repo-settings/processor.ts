@@ -21,7 +21,7 @@ import {
   buildApplyResult,
 } from "../base-processor.js";
 
-// GitHub rejects a commit message setting sent without its title, and vice versa
+// GitHub rejects a commit message sent without its title
 const PAIRED_SETTINGS: ReadonlyArray<
   readonly [keyof GitHubRepoSettings, keyof GitHubRepoSettings]
 > = [

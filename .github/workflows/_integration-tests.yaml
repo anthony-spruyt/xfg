@@ -270,7 +270,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # GH_TOKEN needed for createRepo()/deleteRepo() in tests (spruyt-labs org access).
+      # GH_TOKEN needed for createRepo()/deleteRepo() in tests.
       # xfg commands strip GH_TOKEN via xfgEnv — only App credentials are used.
       - name: Run GitHub App integration tests
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
