@@ -34,14 +34,6 @@ jobs:
         with:
           egress-policy: audit
 
-      - name: Generate app token
-        id: app-token
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
-        with:
-          client-id: ${{ secrets.RELEASE_PLEASE_APP_CLIENT_ID }}
-          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
-          permission-contents: write
-
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
@@ -63,19 +55,24 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         # `--alias-type copy` is load-bearing: Pages does not follow symlinks,
         # so a symlinked `latest` alias 404s.
-        env:
-          APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          auth=$(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)
-          echo "::add-mask::$auth"
-          export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
-          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth"
           major="${GITHUB_REF_NAME#v}"
-          mike deploy --push --update-aliases --alias-type copy "${major}.x" latest
-          mike set-default --push latest
+          mike deploy --update-aliases --alias-type copy "${major}.x" latest
+          mike set-default latest
 
       - name: Deploy unreleased main as next
         if: ${{ github.ref_type != 'tag' }}
+        run: mike deploy next
+
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ secrets.RELEASE_PLEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Push gh-pages
         env:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
@@ -83,4 +80,4 @@ jobs:
           echo "::add-mask::$auth"
           export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
           export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth"
-          mike deploy --push next
+          git push origin gh-pages
