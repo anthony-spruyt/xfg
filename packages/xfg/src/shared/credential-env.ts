@@ -52,11 +52,13 @@ export function assertAiKeyEnvAllowed(
   provider: string,
   apiKeyEnv: string | undefined,
   baseUrl: string | undefined,
-  path = "prOptions.ai"
+  path = "prOptions.ai",
+  baseUrlFromEnv = false
 ): void {
   if (apiKeyEnv === undefined || !isCredentialEnvName(apiKeyEnv)) return;
   const ownKey = apiKeyEnv.toUpperCase() === defaultAiKeyEnv(provider);
-  if (ownKey && isDefaultAiBaseUrl(provider, baseUrl)) return;
+  if (ownKey && !baseUrlFromEnv && isDefaultAiBaseUrl(provider, baseUrl))
+    return;
   throw new ValidationError(
     `${path}.apiKeyEnv '${apiKeyEnv}' is a credential xfg uses elsewhere; ` +
       `export the key under a dedicated name for this provider and baseUrl.`

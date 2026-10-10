@@ -75,10 +75,11 @@ The default key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`) is only sent to that pr
 
 `baseUrlEnv` reads the API base URL from an env var, for when the gateway's address must not be written in config. It takes the **name of an env var**, and it is valid on the provider and on its `fallback`. Setting both `baseUrl` and `baseUrlEnv` on the same provider is a validation error.
 
-- The value is trimmed, and must be an `https:` or `http:` URL. Anything else is treated like an unset var.
+- The value is trimmed, and must be an `https:` or `http:` URL without a user name or password. Anything else is treated like an unset var.
 - If the env var is unset, empty or not a valid URL, xfg skips that provider with a warning that names the variable, never its value. The `fallback` provider runs if one is set.
+- In later error and warning text for that provider, the URL's host is shown as the variable name.
 - Like `apiKeyEnv`, it can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
-- The default `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` is never sent to a URL read from the env. Name a dedicated variable in `apiKeyEnv`, or send no key to an `openai` gateway that needs none.
+- The default `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` is sent only when the URL resolves to the provider's own API. For any other gateway, name a dedicated variable in `apiKeyEnv`, or send no key to an `openai` gateway that needs none.
 
 ### Headers
 

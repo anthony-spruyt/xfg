@@ -66,11 +66,10 @@ function validateProvider(
   assertAiKeyEnvAllowed(
     (provider as AiProvider | undefined) ?? "anthropic",
     ai.apiKeyEnv as string | undefined,
+    ai.baseUrl as string | undefined,
+    path,
     // A URL read from the env is unknown here, so it never counts as the provider's own API.
-    ai.baseUrlEnv === undefined
-      ? (ai.baseUrl as string | undefined)
-      : "env:baseUrlEnv",
-    path
+    ai.baseUrlEnv !== undefined
   );
   assertAiHeadersEnvAllowed(ai.headersEnv, path);
 
