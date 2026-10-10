@@ -2,6 +2,7 @@ export {
   type BranchPolicyKind,
   type EnvironmentChange,
   type EnvironmentAction,
+  type EnvironmentDeletion,
 } from "./diff.js";
 export {
   type EnvironmentsPlanEntry,
@@ -12,6 +13,7 @@ export {
 export {
   EnvironmentsProcessor,
   type IEnvironmentsProcessor,
+  type EnvironmentsProcessorOptions,
   type EnvironmentsProcessorResult,
 } from "./processor.js";
 export { GitHubEnvironmentsStrategy } from "./github-environments-strategy.js";

@@ -2133,6 +2133,7 @@ describe("renderRepoSettingsDiffLines environments", () => {
             action: "create",
             desiredKind: "custom",
             addedPatterns: [{ type: "branch", name: "main" }],
+            removedPatterns: [],
           },
           {
             name: "prod",
@@ -2140,6 +2141,7 @@ describe("renderRepoSettingsDiffLines environments", () => {
             currentKind: "all",
             desiredKind: "protected",
             addedPatterns: [],
+            removedPatterns: [],
           },
         ],
       }),
@@ -2151,6 +2153,31 @@ describe("renderRepoSettingsDiffLines environments", () => {
       '+   branch "main"',
       '! environment "prod"',
       "!   deployment branches: all → protected",
+    ]);
+  });
+
+  test("renders deleted environments and deleted patterns with -", () => {
+    const lines: string[] = [];
+    renderRepoSettingsDiffLines(
+      repo({
+        environments: [
+          {
+            name: "release",
+            action: "update",
+            desiredKind: "custom",
+            addedPatterns: [{ type: "tag", name: "v*" }],
+            removedPatterns: [{ type: "tag", name: "v*.*.*" }],
+          },
+          { name: "npm", action: "delete" },
+        ],
+      }),
+      lines
+    );
+    assert.deepEqual(lines, [
+      '! environment "release"',
+      '+   tag "v*"',
+      '-   tag "v*.*.*"',
+      '- environment "npm"',
     ]);
   });
 
@@ -2181,7 +2208,9 @@ describe("renderRepoSettingsDiffLines environments", () => {
               action: "create",
               desiredKind: "all",
               addedPatterns: [],
+              removedPatterns: [],
             },
+            { name: "npm", action: "delete" },
           ],
         }),
       ],
@@ -2189,9 +2218,12 @@ describe("renderRepoSettingsDiffLines environments", () => {
         settings: { create: 0, update: 0 },
         rulesets: { create: 0, update: 0, delete: 0 },
         labels: { create: 0, update: 0, delete: 0 },
-        environments: { create: 1, update: 0 },
+        environments: { create: 1, update: 0, delete: 1 },
       },
     }).join("\n");
-    assert.ok(output.includes("1 environment (1 to create)"), output);
+    assert.ok(
+      output.includes("2 environments (1 to create, 1 to delete)"),
+      output
+    );
   });
 });

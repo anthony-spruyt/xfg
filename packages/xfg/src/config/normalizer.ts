@@ -31,6 +31,7 @@ import type {
   CollaboratorsConfig,
   RawCollaboratorsConfig,
   EnvironmentConfig,
+  EnvironmentsConfig,
   RawEnvironmentConfig,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
@@ -178,7 +179,6 @@ function mergeRuleset(
   if (!root) return structuredClone(perRepo ?? {});
   if (!perRepo) return structuredClone(root);
 
-  // Deep merge using the existing merge utility with replace strategy.
   // deepMerge operates on Record<string, unknown> — the cast is safe because
   // merging two Ruleset-shaped objects preserves the Ruleset structure.
   const ctx = createMergeContext("replace", rulesetLocation(name));
@@ -386,11 +386,11 @@ function finalizeEnvironment(env: RawEnvironmentConfig): EnvironmentConfig {
   if (env.deploymentBranchPolicy) {
     result.deploymentBranchPolicy = structuredClone(env.deploymentBranchPolicy);
   }
-  const secrets = Object.entries(env.secrets ?? {}).filter(
-    ([, value]) => value !== false
+  const secrets = dropEntryMapIfEmpty(
+    mergeEntryMapLayer(undefined, env.secrets)
   );
-  if (secrets.length > 0) {
-    result.secrets = Object.fromEntries(secrets) as EnvironmentConfig["secrets"];
+  if (secrets) {
+    result.secrets = secrets as EnvironmentConfig["secrets"];
   }
   return result;
 }
@@ -401,43 +401,64 @@ function isMergeableEntry(entry: unknown): boolean {
 }
 
 // GitHub environment names are case-insensitive; base entries take the overlay's spelling so they merge.
+type RawEnvironments = NonNullable<RawRepoSettings["environments"]>;
+
+/** `deleteOrphaned` resolves innermost-wins like the entry maps; `inherit: false` never clears it. */
 function mergeEnvironmentEntries(
-  base: Record<string, RawEnvironmentConfig | false> | undefined,
-  overlay: Record<string, RawEnvironmentConfig | boolean | undefined>
-): Record<string, RawEnvironmentConfig | false> {
+  base: RawRootSettings["environments"],
+  overlay: RawEnvironments
+): NonNullable<RawRootSettings["environments"]> {
+  const { deleteOrphaned: baseDeleteOrphaned, ...baseEnvs } = base ?? {};
+  const { deleteOrphaned: overlayDeleteOrphaned, ...overlayEnvs } = overlay;
+
   const overlayNames = new Map<string, string>();
-  for (const [name, entry] of Object.entries(overlay)) {
+  for (const [name, entry] of Object.entries(overlayEnvs)) {
     if (name !== "inherit" && isMergeableEntry(entry)) {
       overlayNames.set(name.toLowerCase(), name);
     }
   }
 
   const rekeyed: Record<string, RawEnvironmentConfig | false> = {};
-  for (const [name, env] of Object.entries(base ?? {})) {
+  for (const [name, env] of Object.entries(baseEnvs)) {
     rekeyed[overlayNames.get(name.toLowerCase()) ?? name] = env;
   }
 
-  return mergeNamedEntries<RawEnvironmentConfig>(
-    rekeyed,
-    overlay,
-    mergeEnvironmentLayer
-  );
+  const result: NonNullable<RawRootSettings["environments"]> =
+    mergeNamedEntries<RawEnvironmentConfig>(
+      rekeyed,
+      overlayEnvs,
+      mergeEnvironmentLayer
+    );
+  const deleteOrphaned = overlayDeleteOrphaned ?? baseDeleteOrphaned;
+  if (deleteOrphaned !== undefined) {
+    result.deleteOrphaned = deleteOrphaned;
+  }
+  return result;
 }
 
 function mergeEnvironments(
   root: RawRootSettings["environments"],
   perRepo: RawRepoSettings["environments"]
-): Record<string, EnvironmentConfig> | undefined {
+): EnvironmentsConfig | undefined {
   if (!root && !perRepo) return undefined;
 
-  const merged = mergeEnvironmentEntries(root, perRepo ?? {});
+  const { deleteOrphaned, ...merged } = mergeEnvironmentEntries(
+    root,
+    perRepo ?? {}
+  );
 
-  const result: Record<string, EnvironmentConfig> = {};
+  const result: EnvironmentsConfig = {};
   for (const [name, env] of Object.entries(merged)) {
     if (env === false) continue;
     result[name] = finalizeEnvironment(env);
   }
-  return Object.keys(result).length > 0 ? result : undefined;
+  if (Object.keys(result).length === 0 && deleteOrphaned !== true) {
+    return undefined;
+  }
+  if (deleteOrphaned !== undefined) {
+    result.deleteOrphaned = deleteOrphaned;
+  }
+  return result;
 }
 
 /**

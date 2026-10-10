@@ -498,9 +498,10 @@ export function hasActionableSettings(
   // An environment holding only secrets still needs `xfg sync` to create it.
   if (
     settings.environments &&
-    Object.entries(settings.environments).some(
-      ([name, env]) => name !== "inherit" && isPlainObject(env)
-    )
+    (settings.environments.deleteOrphaned === true ||
+      Object.entries(settings.environments).some(
+        ([name, env]) => name !== "inherit" && isPlainObject(env)
+      ))
   ) {
     return true;
   }

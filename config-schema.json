@@ -714,8 +714,15 @@
         },
         "environments": {
           "type": "object",
-          "description": "GitHub deployment environments keyed by name. Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.",
+          "description": "GitHub deployment environments keyed by name. Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.",
           "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "properties": {
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete environments on GitHub that are not in this map, with their secrets and protection rules. Default: false"
+            }
+          },
           "additionalProperties": {
             "oneOf": [
               {
@@ -891,12 +898,16 @@
         },
         "environments": {
           "type": "object",
-          "description": "GitHub deployment environments keyed by name, merged over inherited ones. Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.",
+          "description": "GitHub deployment environments keyed by name, merged over inherited ones. Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.",
           "propertyNames": { "minLength": 1, "maxLength": 255 },
           "properties": {
             "inherit": {
               "type": "boolean",
               "description": "Set to false to skip all inherited environments. Default: true"
+            },
+            "deleteOrphaned": {
+              "type": "boolean",
+              "description": "Delete environments on GitHub that are not in the merged map, with their secrets and protection rules. Overrides an inherited environments.deleteOrphaned; inherit: false does not clear it. Default: false"
             }
           },
           "additionalProperties": {
@@ -1894,16 +1905,24 @@
         "custom": {
           "type": "array",
           "minItems": 1,
-          "description": "Only refs matching these patterns can deploy. Patterns on GitHub that are not listed here are left in place with a warning.",
+          "description": "Only refs matching these patterns can deploy. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
           "items": {
             "$ref": "#/definitions/deploymentBranchPattern"
           }
+        },
+        "deleteOrphaned": {
+          "type": "boolean",
+          "default": false,
+          "description": "Delete patterns on GitHub that are not in custom. Only valid with custom. Default: false"
         }
       },
       "oneOf": [
         { "required": ["protectedBranches"] },
         { "required": ["custom"] }
       ],
+      "dependencies": {
+        "deleteOrphaned": ["custom"]
+      },
       "additionalProperties": false
     },
     "rootEnvironmentConfig": {
@@ -1917,6 +1936,13 @@
         "secrets": {
           "type": "object",
           "description": "Environment secrets keyed by name. Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.",
+          "properties": {
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete secrets in this environment that are not in this map. Innermost layer wins. Default: false"
+            }
+          },
           "additionalProperties": {
             "oneOf": [
               {
@@ -1953,6 +1979,13 @@
         "secrets": {
           "type": "object",
           "description": "Environment secrets keyed by name. Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.",
+          "properties": {
+            "deleteOrphaned": {
+              "type": "boolean",
+              "default": false,
+              "description": "Delete secrets in this environment that are not in this map. Innermost layer wins. Default: false"
+            }
+          },
           "additionalProperties": {
             "oneOf": [
               {

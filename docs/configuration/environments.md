@@ -1,6 +1,6 @@
 # GitHub Environments
 
-xfg can create and update **GitHub deployment environments**: the environment itself, which branches and tags can deploy to it, and its secrets.
+xfg can create, update and (opt-in) delete **GitHub deployment environments**: the environment itself, which branches and tags can deploy to it, and its secrets.
 
 !!! note "GitHub only"
     Environments only apply to GitHub repos. Azure DevOps and GitLab repos are skipped. Environments on **private** repos need a paid GitHub plan (Pro, Team or Enterprise); on a free plan, private repos are skipped with a warning.
@@ -44,11 +44,11 @@ xfg secrets sync -c config.yaml
 
 `deploymentBranchPolicy` controls which refs can deploy to the environment. Use one of these:
 
-| Config                             | Who can deploy                                    |
-| ---------------------------------- | ------------------------------------------------- |
-| _(omitted)_                        | Any branch                                        |
-| `protectedBranches: true`          | Only branches with branch protection rules        |
-| `custom: [{ type, name }, ...]`    | Only branches or tags matching the listed patterns |
+| Config                          | Who can deploy                                     |
+| ------------------------------- | -------------------------------------------------- |
+| _(omitted)_                     | Any branch                                         |
+| `protectedBranches: true`       | Only branches with branch protection rules         |
+| `custom: [{ type, name }, ...]` | Only branches or tags matching the listed patterns |
 
 ```yaml
 settings:
@@ -76,6 +76,8 @@ xfg adds missing patterns. Patterns already on GitHub that are not in your confi
 ⚠ your-org/your-repo: environment "production" has branch "hotfix/*" not in config - left in place
 ```
 
+Set `deleteOrphaned: true` on a `custom` policy to delete those patterns instead (see [Deleting Orphans](#deleting-orphans)).
+
 ## Environment Secrets
 
 Environment secrets use the same config as [repo secrets](secrets.md): each entry names the environment variable that holds the value.
@@ -91,7 +93,7 @@ settings:
 
 - Values are encrypted with the environment's own public key and never shown in output.
 - Existing secrets always show as `update`, because GitHub never returns secret values.
-- Environment secrets have no `deleteOrphaned`: secrets not in config are left alone.
+- Secrets not in config are left alone unless the environment's `secrets` map sets `deleteOrphaned: true` (see [Deleting Orphans](#deleting-orphans)). `inherit` is not supported here.
 - If an environment doesn't exist yet, `xfg secrets sync --dry-run` still plans its secrets. A real run fails before writing anything on a public repo; on a private repo it skips that environment's secrets with a warning.
 
 ## Inheritance
@@ -129,7 +131,49 @@ repos:
         release: false                     # no release environment here
 ```
 
-xfg never deletes environments. Removing one from the config leaves it on GitHub.
+By default xfg never deletes anything: removing an environment, pattern or secret from the config leaves it on GitHub. [Deleting Orphans](#deleting-orphans) covers the opt-in.
+
+## Deleting Orphans
+
+`deleteOrphaned` is off by default and can be turned on at three levels:
+
+| Key                                                         | Deletes                                              | Run by             |
+| ----------------------------------------------------------- | ---------------------------------------------------- | ------------------ |
+| `environments.deleteOrphaned`                               | Environments on GitHub not in the merged config      | `xfg sync`         |
+| `environments.<name>.deploymentBranchPolicy.deleteOrphaned` | Branch and tag patterns not in `custom`              | `xfg sync`         |
+| `environments.<name>.secrets.deleteOrphaned`                | Secrets in that environment not in its `secrets` map | `xfg secrets sync` |
+
+```yaml
+settings:
+  environments:
+    deleteOrphaned: true            # delete environments not listed here
+    release:
+      deploymentBranchPolicy:
+        deleteOrphaned: true        # delete patterns not listed in custom
+        custom:
+          - type: tag
+            name: "v*.*.*"
+      secrets:
+        deleteOrphaned: true        # delete release secrets not listed here
+        NPM_TOKEN:
+          env: NPM_TOKEN_VALUE
+```
+
+!!! danger "Deleting an environment deletes its secrets and protection rules"
+    `environments.deleteOrphaned` deletes **every** environment on the repo that is not in your config, including ones created by hand or by other tools, along with their secrets, variables and protection rules. A map that holds only `deleteOrphaned: true` deletes all of them. Run `--dry-run` first.
+
+How each key merges:
+
+- `environments.deleteOrphaned` and `secrets.deleteOrphaned` resolve innermost-wins, like [repo secrets](secrets.md). `inherit: false` drops inherited environments but keeps an inherited `deleteOrphaned`, so together they delete the inherited environments. Set `deleteOrphaned: false` to turn cleanup off for a repo.
+- `deploymentBranchPolicy.deleteOrphaned` belongs to the policy, and a policy set at a lower layer replaces the inherited one whole. Restate `deleteOrphaned: true` when you override the policy. It is only valid with `custom`.
+- A secrets map that holds only `deleteOrphaned: true` deletes every secret in that environment.
+
+Safety:
+
+- `--no-delete` turns off every deletion for the run, whatever the config says.
+- `--dry-run` shows deletions as `-` lines, in the terminal and the job summary, without deleting anything.
+- When an environment switches to `custom`, xfg can't tell which patterns it already has until the next run, so pattern deletions show up then.
+- Deleting environments and patterns needs **Administration: Read and write**. Without it the run fails with a message naming that permission.
 
 ## Dry Run Output
 
@@ -141,19 +185,23 @@ your-org/your-repo - Environments:
         + tag "v*.*.*"
     ~ environment "staging"
         deployment branches: all → protected
-  Plan: 2 environments (1 to create, 1 to update)
+    ~ environment "production"
+        - branch "hotfix/*"
+    - environment "preview"
+  Plan: 4 environments (1 to create, 2 to update, 1 to delete)
 ```
 
 `xfg secrets sync --dry-run` lists environment secrets next to repo secrets:
 
 ```text
+        - secret "OLD_TOKEN" (environment "release")
         + secret "NPM_TOKEN" (environment "release")
         ~ secret "SIGNING_KEY" (environment "release", update, value write-only)
 ```
 
 ## Permissions
 
-- Environments and branch policies: **Administration: Read and write**.
+- Environments and branch policies, including deleting them: **Administration: Read and write**.
 - Environment secrets: **Secrets: Read and write**.
 
 See [GitHub App](../platforms/github-app.md).
@@ -164,8 +212,11 @@ Environments are managed via the [GitHub Deployment Environments API](https://do
 
 - `GET /repos/{owner}/{repo}/environments` — List environments
 - `PUT /repos/{owner}/{repo}/environments/{name}` — Create or update an environment's branch policy
+- `DELETE /repos/{owner}/{repo}/environments/{name}` — Delete an environment (`deleteOrphaned`)
 - `GET /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies` — List branch and tag patterns
 - `POST /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies` — Add a pattern
+- `DELETE /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies/{id}` — Delete a pattern (`deleteOrphaned`)
 - `GET /repos/{owner}/{repo}/environments/{name}/secrets` — List environment secrets (names only)
 - `GET /repos/{owner}/{repo}/environments/{name}/secrets/public-key` — Get the environment's encryption key
 - `PUT /repos/{owner}/{repo}/environments/{name}/secrets/{secret_name}` — Create or update an environment secret
+- `DELETE /repos/{owner}/{repo}/environments/{name}/secrets/{secret_name}` — Delete an environment secret (`deleteOrphaned`)

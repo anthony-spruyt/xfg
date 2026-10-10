@@ -34,6 +34,7 @@ export type {
   DeploymentBranchPattern,
   DeploymentBranchPolicy,
   EnvironmentConfig,
+  EnvironmentsConfig,
   RawEnvironmentConfig,
   RepoSettings,
   // Raw Config

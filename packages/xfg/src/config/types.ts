@@ -420,20 +420,27 @@ export interface DeploymentBranchPattern {
 export interface DeploymentBranchPolicy {
   protectedBranches?: boolean;
   custom?: DeploymentBranchPattern[];
+  /** Delete patterns on GitHub that are not in `custom` */
+  deleteOrphaned?: boolean;
 }
 
 export interface EnvironmentConfig {
   /** Omitted: any branch can deploy */
   deploymentBranchPolicy?: DeploymentBranchPolicy;
   /** Environment secrets keyed by name; only `xfg secrets sync` writes them */
-  secrets?: Record<string, SecretConfig>;
+  secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
 }
 
 export interface RawEnvironmentConfig {
   /** `false` clears an inherited policy so any branch can deploy */
   deploymentBranchPolicy?: DeploymentBranchPolicy | false;
-  secrets?: Record<string, SecretConfig | false>;
+  secrets?: Record<string, SecretConfig | false> & { deleteOrphaned?: boolean };
 }
+
+/** Environments keyed by name, plus the `deleteOrphaned` peer key. */
+export type EnvironmentsConfig = Record<string, EnvironmentConfig> & {
+  deleteOrphaned?: boolean;
+};
 
 export interface CollaboratorsConfig {
   /** GitHub usernames granted write access (personal repos only) */
@@ -462,7 +469,7 @@ export interface RepoSettings {
   /** Direct collaborators on personal (user-owned) repos */
   collaborators?: CollaboratorsConfig;
   /** GitHub deployment environments keyed by name */
-  environments?: Record<string, EnvironmentConfig>;
+  environments?: EnvironmentsConfig;
   deleteOrphaned?: boolean;
 }
 
@@ -539,7 +546,9 @@ export interface RawRootSettings {
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
   collaborators?: CollaboratorsConfig;
-  environments?: Record<string, RawEnvironmentConfig | false>;
+  environments?: Record<string, RawEnvironmentConfig | false> & {
+    deleteOrphaned?: boolean;
+  };
   deleteOrphaned?: boolean;
 }
 
@@ -557,6 +566,7 @@ export interface RawRepoSettings {
   collaborators?: RawCollaboratorsConfig;
   environments?: Record<string, RawEnvironmentConfig | false> & {
     inherit?: boolean;
+    deleteOrphaned?: boolean;
   };
   deleteOrphaned?: boolean;
 }

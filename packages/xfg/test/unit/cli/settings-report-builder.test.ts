@@ -662,6 +662,7 @@ describe("buildSettingsReport environments", () => {
                 action: "create" as const,
                 desiredKind: "custom" as const,
                 addedPatterns: [{ type: "branch" as const, name: "main" }],
+                removedPatterns: [],
               },
               {
                 name: "prod",
@@ -669,15 +670,21 @@ describe("buildSettingsReport environments", () => {
                 currentKind: "all" as const,
                 desiredKind: "protected" as const,
                 addedPatterns: [],
+                removedPatterns: [],
               },
+              { name: "npm", action: "delete" as const },
             ],
           },
         },
       },
     ]);
 
-    assert.equal(report.repos[0].environments?.length, 2);
-    assert.deepEqual(report.totals.environments, { create: 1, update: 1 });
+    assert.equal(report.repos[0].environments?.length, 3);
+    assert.deepEqual(report.totals.environments, {
+      create: 1,
+      update: 1,
+      delete: 1,
+    });
   });
 
   test("keeps the environment of an environment secret", () => {
