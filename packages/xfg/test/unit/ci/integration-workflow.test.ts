@@ -303,6 +303,7 @@ describe("ci.yaml", () => {
     repo: LABEL_GUARD,
     image: LABEL_GUARD,
     summary: `always() && (${LABEL_GUARD})`,
+    sonar: LABEL_GUARD,
   };
 
   test("adding a label starts a run", () => {
@@ -339,17 +340,28 @@ describe("ci.yaml", () => {
     assert.deepEqual(image.permissions, { contents: "read" });
   });
 
-  test("summary judges lint, repo and image even when they fail", () => {
-    assert.deepEqual(ci.jobs.summary.needs, ["lint", "repo", "image"]);
+  test("sonar runs the shared _sonar-new-issues.yaml without permissions", () => {
+    const sonar = ci.jobs.sonar;
+    assert.match(
+      sonar.uses ?? "",
+      /^anthony-spruyt\/repo-operator\/\.github\/workflows\/_sonar-new-issues\.yaml@[0-9a-f]{40}$/
+    );
+    assert.equal(sonar.needs, undefined);
+    assert.deepEqual(sonar.permissions, {});
+  });
+
+  test("summary judges lint, repo, image and sonar even when they fail", () => {
+    assert.deepEqual(ci.jobs.summary.needs, ["lint", "repo", "image", "sonar"]);
     assert.match(ci.jobs.summary.if ?? "", /^always\(\) && /);
   });
 
-  test("has only the lint, repo, image and summary jobs", () => {
+  test("has only the lint, repo, image, summary and sonar jobs", () => {
     assert.deepEqual(Object.keys(ci.jobs), [
       "lint",
       "repo",
       "image",
       "summary",
+      "sonar",
     ]);
   });
 });
