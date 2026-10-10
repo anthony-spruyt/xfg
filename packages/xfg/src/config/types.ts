@@ -5,16 +5,29 @@ export type MergeStrategy = "merge" | "squash" | "rebase";
 
 export type AiProvider = "anthropic" | "openai";
 
-export interface AiConfig {
+export interface AiProviderConfig {
   provider?: AiProvider;
   model?: string;
   baseUrl?: string;
   apiKeyEnv?: string;
+  /** Extra request headers: header name to the env var that holds its value */
+  headersEnv?: Record<string, string>;
   prompt?: string;
   maxDiffChars?: number;
 }
 
-export type ResolvedAiConfig = AiConfig & { provider: AiProvider };
+export interface AiConfig extends AiProviderConfig {
+  /** Tried when the primary provider fails; one level only */
+  fallback?: AiProviderConfig;
+}
+
+export type ResolvedAiProviderConfig = AiProviderConfig & {
+  provider: AiProvider;
+};
+
+export type ResolvedAiConfig = ResolvedAiProviderConfig & {
+  fallback?: ResolvedAiProviderConfig;
+};
 
 export interface PRMergeOptions {
   merge?: MergeMode;

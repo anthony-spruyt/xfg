@@ -11,6 +11,7 @@ export interface OpenAICompatibleClientOptions {
   apiKey?: string;
   model: string;
   baseUrl: string;
+  headers?: Record<string, string>;
   fetch: FetchFn;
 }
 
@@ -18,12 +19,14 @@ export class OpenAICompatibleClient implements IAiClient {
   readonly baseUrl: string;
   private readonly model: string;
   private readonly apiKey?: string;
+  private readonly headers: Record<string, string>;
   private readonly fetch: FetchFn;
 
   constructor(options: OpenAICompatibleClientOptions) {
     this.baseUrl = trimTrailingSlash(options.baseUrl);
     this.model = options.model;
     this.apiKey = options.apiKey;
+    this.headers = options.headers ?? {};
     this.fetch = options.fetch;
   }
 
@@ -44,9 +47,10 @@ export class OpenAICompatibleClient implements IAiClient {
       body.response_format = { type: "json_object" };
     }
 
-    const headers: Record<string, string> = this.apiKey
-      ? { authorization: `Bearer ${this.apiKey}` }
-      : {};
+    const headers: Record<string, string> = {
+      ...this.headers,
+      ...(this.apiKey ? { authorization: `Bearer ${this.apiKey}` } : {}),
+    };
 
     const response = (await postJson(
       this.fetch,

@@ -490,3 +490,226 @@ describe("AiChangeDescriber", () => {
     assert.equal(calls.length, 2);
   });
 });
+
+describe("AiChangeDescriber fallback", () => {
+  const WITH_FALLBACK: AiOptions = {
+    provider: "openai",
+    model: "primary-model",
+    baseUrl: "https://gateway.example.com/v1",
+    apiKeyEnv: "GATEWAY_KEY",
+    prompt: "Use chore only.",
+    maxDiffChars: 5000,
+    fallback: {
+      provider: "openai",
+      model: "fallback-model",
+      baseUrl: "https://fallback.example.com/v1",
+      apiKeyEnv: "FALLBACK_KEY",
+    },
+  };
+
+  function routed(byModel: Record<string, Array<string | Error>>) {
+    const calls: Array<Call & { model: string }> = [];
+    const paths: Array<string | undefined> = [];
+    const factory = (options: AiOptions, path?: string): IAiClient => {
+      paths.push(path);
+      const model = options.model ?? "";
+      const handler = fakeClient([
+        ...(byModel[model] ?? [new Error("no route")]),
+      ]);
+      return {
+        async complete(system, user, schema) {
+          const before = handler.calls.length;
+          try {
+            return await handler.client.complete(system, user, schema);
+          } finally {
+            calls.push({ ...handler.calls[before], model });
+          }
+        },
+      };
+    };
+    return { factory, calls, paths };
+  }
+
+  const run = (
+    describer: AiChangeDescriber,
+    options: AiOptions = WITH_FALLBACK,
+    retries = 0
+  ) => describer.describe({ files: FILES, options, retries });
+
+  test("uses the primary and never builds the fallback when it succeeds", async () => {
+    const { factory, calls, paths } = routed({ "primary-model": [VALID] });
+    const { log, warnings } = fakeLog();
+    const result = await run(new AiChangeDescriber(factory, log));
+    assert.ok(result);
+    assert.deepEqual(
+      calls.map((c) => c.model),
+      ["primary-model"]
+    );
+    assert.deepEqual(paths, ["prOptions.ai"]);
+    assert.equal(warnings.length, 0);
+  });
+
+  test("falls back when the primary returns an error status", async () => {
+    const { factory, calls, paths } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 502: bad gateway")],
+      "fallback-model": [VALID],
+    });
+    const { log, warnings } = fakeLog();
+    const result = await run(new AiChangeDescriber(factory, log));
+    assert.equal(result?.subject, "ci(workflows): pin actions/checkout to v5");
+    assert.deepEqual(
+      calls.map((c) => c.model),
+      ["primary-model", "fallback-model"]
+    );
+    assert.deepEqual(paths, ["prOptions.ai", "prOptions.ai.fallback"]);
+    assert.equal(warnings.length, 1);
+    assert.match(warnings[0], /502/);
+    assert.match(warnings[0], /fallback/i);
+  });
+
+  test("falls back when the primary reply is not a valid commit message", async () => {
+    const { factory, calls } = routed({
+      "primary-model": [JSON.stringify({ subject: "Update files" })],
+      "fallback-model": [VALID],
+    });
+    const { log } = fakeLog();
+    const result = await run(new AiChangeDescriber(factory, log));
+    assert.ok(result);
+    assert.equal(calls.length, 2);
+  });
+
+  test("falls back when the primary client cannot be built (missing key or header)", async () => {
+    const { log, warnings } = fakeLog();
+    const { client } = fakeClient([VALID]);
+    const describer = new AiChangeDescriber((options) => {
+      if (options.model === "primary-model") {
+        throw new Error("CF_ACCESS_CLIENT_ID is not set");
+      }
+      return client;
+    }, log);
+    const result = await run(describer);
+    assert.ok(result);
+    assert.match(warnings[0], /CF_ACCESS_CLIENT_ID is not set/);
+  });
+
+  test("returns null and warns when the fallback fails too", async () => {
+    const { factory } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 502: a")],
+      "fallback-model": [new Error("OpenAI-compatible API 400: b")],
+    });
+    const { log, warnings } = fakeLog();
+    const result = await run(new AiChangeDescriber(factory, log));
+    assert.equal(result, null);
+    assert.equal(warnings.length, 2);
+    assert.match(warnings[0], /502/);
+    assert.match(warnings[1], /AI commit message generation failed/);
+    assert.match(warnings[1], /400/);
+  });
+
+  test("does not retry the primary when a fallback is set, but retries the fallback", async () => {
+    const { factory, calls } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 503: down")],
+      "fallback-model": [new Error("OpenAI-compatible API 503: busy"), VALID],
+    });
+    const { log } = fakeLog();
+    const result = await run(
+      new AiChangeDescriber(factory, log),
+      WITH_FALLBACK,
+      2
+    );
+    assert.ok(result);
+    assert.deepEqual(
+      calls.map((c) => c.model),
+      ["primary-model", "fallback-model", "fallback-model"]
+    );
+  });
+
+  test("still retries the primary when there is no fallback", async () => {
+    const { factory, calls } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 503: down"), VALID],
+    });
+    const { log } = fakeLog();
+    const { fallback: _unused, ...noFallback } = WITH_FALLBACK;
+    const result = await run(
+      new AiChangeDescriber(factory, log),
+      noFallback,
+      1
+    );
+    assert.ok(result);
+    assert.equal(calls.length, 2);
+  });
+
+  test("the fallback inherits prompt and maxDiffChars unless it sets its own", async () => {
+    const { factory, calls } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 502")],
+      "fallback-model": [VALID],
+    });
+    const { log } = fakeLog();
+    await run(new AiChangeDescriber(factory, log));
+    assert.match(calls[0].system, /Use chore only\./);
+    assert.match(calls[1].system, /Use chore only\./);
+
+    const own = routed({
+      "primary-model": [new Error("OpenAI-compatible API 502")],
+      "fallback-model": [VALID],
+    });
+    await run(new AiChangeDescriber(own.factory, log), {
+      ...WITH_FALLBACK,
+      fallback: {
+        ...WITH_FALLBACK.fallback!,
+        provider: "openai",
+        prompt: "Own prompt.",
+      },
+    });
+    assert.match(own.calls[1].system, /Own prompt\./);
+    assert.doesNotMatch(own.calls[1].system, /Use chore only\./);
+  });
+
+  test("the fallback truncates the diff to its own maxDiffChars", async () => {
+    const big: FileChangeDetail[] = [
+      { path: "a.txt", action: "update", diffLines: ["+" + "x".repeat(3000)] },
+    ];
+    const { factory, calls } = routed({
+      "primary-model": [new Error("OpenAI-compatible API 502")],
+      "fallback-model": [VALID],
+    });
+    const { log } = fakeLog();
+    await new AiChangeDescriber(factory, log).describe({
+      files: big,
+      options: {
+        ...WITH_FALLBACK,
+        maxDiffChars: 5000,
+        fallback: {
+          ...WITH_FALLBACK.fallback!,
+          provider: "openai",
+          maxDiffChars: 500,
+        },
+      },
+      retries: 0,
+    });
+    assert.ok(calls[1].user.length < calls[0].user.length);
+    assert.match(calls[1].user, /truncated/);
+  });
+
+  test("a different fallback misses the cache", async () => {
+    const { factory, calls } = routed({
+      "primary-model": [VALID],
+      "fallback-model": [VALID],
+      "other-model": [VALID],
+    });
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(factory, log);
+    await run(describer);
+    await run(describer);
+    assert.equal(calls.length, 1);
+    await run(describer, {
+      ...WITH_FALLBACK,
+      fallback: {
+        ...WITH_FALLBACK.fallback!,
+        provider: "openai",
+        model: "other-model",
+      },
+    });
+    assert.equal(calls.length, 2);
+  });
+});

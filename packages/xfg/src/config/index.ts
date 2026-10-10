@@ -5,6 +5,8 @@ export type {
   AiConfig,
   AiProvider,
   ResolvedAiConfig,
+  AiProviderConfig,
+  ResolvedAiProviderConfig,
   MergeMode,
   MergeStrategy,
   // Rulesets

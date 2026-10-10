@@ -1162,6 +1162,50 @@ describe("RepositoryProcessor", () => {
       );
     });
 
+    test("names prOptions.ai.fallback in errors from the fallback client", async () => {
+      const { mock: mockLogger, warnings } = createMockLogger();
+      const { gitOps } = createMockAuthenticatedGitOps({
+        fileExists: false,
+        wouldChange: true,
+        hasChanges: true,
+        changedFiles: ["config.json"],
+      });
+      const trackingExecutor = createTrackingMockExecutor();
+      const processor = new RepositoryProcessor(() => gitOps, mockLogger, {
+        aiEnv: { ANTHROPIC_API_KEY: "injected-key" },
+        fetch: async () => new Response("down", { status: 500 }),
+      });
+
+      await processor.process(
+        {
+          ...mockRepoConfig,
+          prOptions: {
+            ai: {
+              provider: "anthropic",
+              fallback: { provider: "openai", model: "m" },
+            },
+          },
+        },
+        mockRepoInfo,
+        {
+          branchName: "chore/sync-config",
+          workDir: join(testDir, `ai-fallback-${Date.now()}`),
+          configId: "test-config",
+          dryRun: false,
+          executor: trackingExecutor,
+        }
+      );
+
+      assert.ok(
+        warnings.some((m) =>
+          /OPENAI_API_KEY is not set \(required for prOptions\.ai\.fallback/.test(
+            m
+          )
+        ),
+        `got: ${JSON.stringify(warnings)}`
+      );
+    });
+
     test("should format commit message for more than 3 files with count", async () => {
       const { mock: mockLogger } = createMockLogger();
       const { gitOps } = createMockAuthenticatedGitOps({

@@ -109,11 +109,12 @@ export class RepositoryProcessor implements IRepositoryProcessor {
     const changeDescriber =
       components?.changeDescriber ??
       new AiChangeDescriber(
-        (opts) =>
+        (opts, path) =>
           createAiClient(
             opts,
             components?.aiEnv ?? {},
-            components?.fetch ?? globalThis.fetch
+            components?.fetch ?? globalThis.fetch,
+            path
           ),
         log
       );
