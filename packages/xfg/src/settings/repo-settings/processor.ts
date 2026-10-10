@@ -1,8 +1,12 @@
 import type { RepoConfig, GitHubRepoSettings } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
-import type { IRepoSettingsStrategy } from "./types.js";
+import type { CurrentRepoSettings, IRepoSettingsStrategy } from "./types.js";
 import type { IRepoMetadataProvider, RepoMetadata } from "../../repo/index.js";
-import { diffRepoSettings, hasRepoSettingsChanges } from "./diff.js";
+import {
+  diffRepoSettings,
+  getCurrentValue,
+  hasRepoSettingsChanges,
+} from "./diff.js";
 import {
   formatRepoSettingsPlan,
   type RepoSettingsPlanResult,
@@ -27,14 +31,15 @@ const PAIRED_SETTINGS: ReadonlyArray<
 
 function withPairedSettings(
   changed: Partial<GitHubRepoSettings>,
-  desired: GitHubRepoSettings
+  current: CurrentRepoSettings
 ): Partial<GitHubRepoSettings> {
   const payload: Record<string, unknown> = { ...changed };
   for (const pair of PAIRED_SETTINGS) {
     if (!pair.some((key) => key in changed)) continue;
     for (const key of pair) {
-      if (!(key in payload) && desired[key] !== undefined) {
-        payload[key] = desired[key];
+      const currentValue = getCurrentValue(current, key);
+      if (!(key in payload) && currentValue !== undefined) {
+        payload[key] = currentValue;
       }
     }
   }
@@ -163,6 +168,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       });
     }
 
+    // Send only changed keys: an unchanged allowForking fails on user-owned repos
     const changedSettings: Partial<GitHubRepoSettings> = {};
     for (const change of changes) {
       (changedSettings as Record<string, unknown>)[change.property] =
@@ -171,7 +177,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     await this.applyChanges(
       githubRepo,
-      withPairedSettings(changedSettings, desiredSettings),
+      withPairedSettings(changedSettings, currentSettings),
       strategyOptions
     );
 

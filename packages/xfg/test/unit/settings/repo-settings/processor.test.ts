@@ -504,7 +504,7 @@ describe("RepoSettingsProcessor", () => {
       });
     });
 
-    test("leaves payload unchanged when desired config lacks the partner key", async () => {
+    test("fills the partner key from the live value when desired config lacks it", async () => {
       mockStrategy.getSettingsResult = {
         squash_merge_commit_title: "PR_TITLE",
         squash_merge_commit_message: "PR_BODY",
@@ -522,7 +522,58 @@ describe("RepoSettingsProcessor", () => {
       await processor.process(repoConfig, githubRepo, { dryRun: false });
 
       assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        squashMergeCommitTitle: "PR_TITLE",
         squashMergeCommitMessage: "BLANK",
+      });
+    });
+
+    test("omits the partner key when neither desired config nor live value has it", async () => {
+      mockStrategy.getSettingsResult = {
+        merge_commit_message: "PR_BODY",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { mergeCommitMessage: "BLANK" } },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        mergeCommitMessage: "BLANK",
+      });
+    });
+
+    test("leaves both pair keys out when neither changed", async () => {
+      mockStrategy.getSettingsResult = {
+        squash_merge_commit_title: "PR_TITLE",
+        squash_merge_commit_message: "PR_BODY",
+        delete_branch_on_merge: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            squashMergeCommitTitle: "PR_TITLE",
+            squashMergeCommitMessage: "PR_BODY",
+            deleteBranchOnMerge: true,
+          },
+        },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        deleteBranchOnMerge: true,
       });
     });
   });
