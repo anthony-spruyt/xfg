@@ -8,7 +8,11 @@ import type {
   RepoConfig,
   SecretConfig,
 } from "../../config/index.js";
-import type { ISecretsStrategy, GitHubPublicKey } from "./types.js";
+import type {
+  ISecretsStrategy,
+  GitHubPublicKey,
+  IRepoExistenceChecker,
+} from "./types.js";
 import type { IEnvironmentSecretsStrategy } from "../environments/types.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
 import { runSequentially } from "../../shared/sequential.js";
@@ -125,7 +129,8 @@ export class SecretsProcessor implements ISecretsProcessor {
     private readonly encryptor: ISecretEncryptor,
     private readonly envResolver: IEnvResolver,
     private readonly tokenProvider?: IGitHubTokenProvider,
-    private readonly environments?: EnvironmentSecretsDependencies
+    private readonly environments?: EnvironmentSecretsDependencies,
+    private readonly repoExistence?: IRepoExistenceChecker
   ) {}
 
   private hasDesiredSecrets(repoConfig: RepoConfig): boolean {
@@ -179,6 +184,10 @@ export class SecretsProcessor implements ISecretsProcessor {
     }
 
     const { dryRun, noDelete } = options;
+    const repoMissing =
+      dryRun === true &&
+      this.repoExistence !== undefined &&
+      !(await this.repoExistence.exists({ repo: githubRepo, token }));
     const secrets = (repoConfig.settings?.secrets ?? {}) as Record<
       string,
       unknown
@@ -191,19 +200,24 @@ export class SecretsProcessor implements ISecretsProcessor {
     );
 
     const strategyOptions = { token, host: githubRepo.host };
-    const repoChanges =
-      secretEntries.length > 0 || deleteOrphaned
-        ? diffSecrets(
-            await this.strategy.list(githubRepo, strategyOptions),
-            secretEntries.map(([name]) => name),
-            deleteOrphaned
-          )
+    const managesRepoSecrets = secretEntries.length > 0 || deleteOrphaned;
+    const currentRepoSecrets =
+      managesRepoSecrets && !repoMissing
+        ? await this.strategy.list(githubRepo, strategyOptions)
         : [];
+    const repoChanges = managesRepoSecrets
+      ? diffSecrets(
+          currentRepoSecrets,
+          secretEntries.map(([name]) => name),
+          deleteOrphaned
+        )
+      : [];
     const envGroups = await this.readEnvironments(
       githubRepo,
       repoConfig,
       strategyOptions,
-      noDelete ?? false
+      noDelete ?? false,
+      repoMissing
     );
     const envChanges = await this.diffEnvironmentSecrets(
       githubRepo,
@@ -368,16 +382,16 @@ export class SecretsProcessor implements ISecretsProcessor {
     githubRepo: GitHubRepoInfo,
     repoConfig: RepoConfig,
     strategyOptions: GhApiOptions,
-    noDelete: boolean
+    noDelete: boolean,
+    repoMissing: boolean
   ): Promise<EnvironmentSecrets[]> {
     const configured = this.environments
       ? environmentSecretsOf(repoConfig)
       : [];
     if (configured.length === 0) return [];
-    const current = await this.environments!.strategy.list(
-      githubRepo,
-      strategyOptions
-    );
+    const current = repoMissing
+      ? []
+      : await this.environments!.strategy.list(githubRepo, strategyOptions);
     const existing = new Map(
       current.map((env) => [env.name.toLowerCase(), env.name])
     );

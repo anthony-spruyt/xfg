@@ -31,8 +31,10 @@ const strip = (s: string) =>
 
 class MockRepoSecrets implements ISecretsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
+  notFound = false;
   async list(): Promise<GitHubSecret[]> {
     this.calls.push({ method: "list", args: [] });
+    if (this.notFound) throw new Error("gh: Not Found (HTTP 404)");
     return [];
   }
   async getPublicKey(): Promise<GitHubPublicKey> {
@@ -57,6 +59,7 @@ class MockEnvSecrets implements IEnvironmentSecretsStrategy {
   environments: GitHubEnvironment[] = [];
   secrets = new Map<string, GitHubSecret[]>();
   failFor?: { method: string; env: string };
+  notFound = false;
 
   private maybeFail(method: string, env: string): void {
     if (this.failFor?.method === method && this.failFor.env === env) {
@@ -65,6 +68,7 @@ class MockEnvSecrets implements IEnvironmentSecretsStrategy {
   }
 
   async list(): Promise<GitHubEnvironment[]> {
+    if (this.notFound) throw new Error("gh: Not Found (HTTP 404)");
     return this.environments;
   }
   async listSecrets(_r: RepoInfo, env: string): Promise<GitHubSecret[]> {
@@ -155,10 +159,13 @@ function setup(
     environments?: GitHubEnvironment[];
     visibility?: RepoVisibility;
     values?: Record<string, string>;
+    repoMissing?: boolean;
   } = {}
 ) {
   const repoSecrets = new MockRepoSecrets();
   const envSecrets = new MockEnvSecrets();
+  repoSecrets.notFound = opts.repoMissing ?? false;
+  envSecrets.notFound = opts.repoMissing ?? false;
   envSecrets.environments = opts.environments ?? [
     { name: "release", deployment_branch_policy: null },
   ];
@@ -168,7 +175,8 @@ function setup(
     new MockEncryptor(),
     new MockEnvResolver(opts.values ?? { SRC: "abc", REPO_SRC: "xyz" }),
     undefined,
-    { strategy: envSecrets, metadataProvider: meta }
+    { strategy: envSecrets, metadataProvider: meta },
+    { exists: async () => !(opts.repoMissing ?? false) }
   );
   return { repoSecrets, envSecrets, meta, processor };
 }
@@ -230,6 +238,27 @@ describe("SecretsProcessor - environment secrets", () => {
       { name: "KEY", action: "update", environment: "release" },
     ]);
     assert.ok(!envSecrets.calls.some((c) => c.method === "upsertSecret"));
+  });
+
+  test("dry run plans repo and environment secrets as creates for a repo lifecycle will create", async () => {
+    const { repoSecrets, envSecrets, processor } = setup({
+      repoMissing: true,
+    });
+    const result = await processor.process(
+      config(
+        { release: { secrets: { KEY: { env: "SRC" } } } },
+        { KEY: { env: "REPO_SRC" } }
+      ),
+      repo,
+      { dryRun: true }
+    );
+    assert.equal(result.success, true, result.message);
+    assert.deepEqual(result.planOutput?.entries, [
+      { name: "KEY", action: "create" },
+      { name: "KEY", action: "create", environment: "release" },
+    ]);
+    assert.deepEqual(repoSecrets.calls, []);
+    assert.deepEqual(envSecrets.calls, []);
   });
 
   test("uses GitHub's spelling of the environment name", async () => {

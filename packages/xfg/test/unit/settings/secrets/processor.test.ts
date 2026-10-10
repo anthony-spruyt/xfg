@@ -5,6 +5,7 @@ import type {
   ISecretsStrategy,
   GitHubSecret,
   GitHubPublicKey,
+  IRepoExistenceChecker,
 } from "../../../../src/settings/secrets/types.js";
 import type { ISecretEncryptor } from "../../../../src/settings/secrets/encryption.js";
 import type { IEnvResolver } from "../../../../src/shared/env-resolver.js";
@@ -605,6 +606,89 @@ describe("SecretsProcessor", () => {
       );
       assert.equal(result.noSecretsConfigured, true);
       assert.deepEqual(provider.calls, []);
+    });
+  });
+
+  describe("when the repo does not exist yet", () => {
+    class NotFoundSecretsStrategy extends MockSecretsStrategy {
+      override async list(): Promise<GitHubSecret[]> {
+        this.calls.push({ method: "list", args: [] });
+        throw new Error("gh: Not Found (HTTP 404)");
+      }
+    }
+
+    function existence(exists: boolean): IRepoExistenceChecker & {
+      calls: { repo: RepoInfo; token?: string }[];
+    } {
+      const calls: { repo: RepoInfo; token?: string }[] = [];
+      return {
+        calls,
+        exists: async (params) => {
+          calls.push(params);
+          return exists;
+        },
+      };
+    }
+
+    function processorWith(
+      strategy: ISecretsStrategy,
+      checker: IRepoExistenceChecker
+    ): SecretsProcessor {
+      return new SecretsProcessor(
+        strategy,
+        new MockEncryptor(),
+        new MockEnvResolver({ TOKEN_SOURCE: "v" }),
+        {
+          getToken: async () => ({ token: "app-token", skipped: false }),
+        },
+        undefined,
+        checker
+      );
+    }
+
+    test("dry run plans every secret as a create for a repo lifecycle will create", async () => {
+      const strategy = new NotFoundSecretsStrategy();
+      const checker = existence(false);
+      const result = await processorWith(strategy, checker).process(
+        makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }, true),
+        mockGitHubRepo,
+        { dryRun: true }
+      );
+      assert.equal(result.success, true, result.message);
+      assert.deepEqual(result.changes, {
+        create: 1,
+        update: 0,
+        delete: 0,
+        unchanged: 0,
+      });
+      assert.deepEqual(strategy.calls, []);
+      assert.deepEqual(checker.calls, [
+        { repo: mockGitHubRepo, token: "app-token" },
+      ]);
+    });
+
+    test("dry run still fails when an existing repo's secrets return 404", async () => {
+      const strategy = new NotFoundSecretsStrategy();
+      const result = await processorWith(strategy, existence(true)).process(
+        makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+        mockGitHubRepo,
+        { dryRun: true }
+      );
+      assert.equal(result.success, false);
+      assert.match(result.message, /HTTP 404/);
+    });
+
+    test("apply still fails for a missing repo and does not check existence", async () => {
+      const strategy = new NotFoundSecretsStrategy();
+      const checker = existence(false);
+      const result = await processorWith(strategy, checker).process(
+        makeRepoConfig({ DEPLOY_TOKEN: { env: "TOKEN_SOURCE" } }),
+        mockGitHubRepo,
+        {}
+      );
+      assert.equal(result.success, false);
+      assert.match(result.message, /HTTP 404/);
+      assert.deepEqual(checker.calls, []);
     });
   });
 });
