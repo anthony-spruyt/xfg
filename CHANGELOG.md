@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.3.0](https://github.com/anthony-spruyt/xfg/compare/v8.2.0...v8.3.0) (2026-10-10)
+
+
+### Features
+
+* **ai:** describe every changed area in AI commit messages ([#1186](https://github.com/anthony-spruyt/xfg/issues/1186)) ([0ec5fd8](https://github.com/anthony-spruyt/xfg/commit/0ec5fd8fa9167bdac0530db8bc13ad8fb165f4ea)), closes [#1185](https://github.com/anthony-spruyt/xfg/issues/1185)
+
 ## [8.2.0](https://github.com/anthony-spruyt/xfg/compare/v8.1.3...v8.2.0) (2026-10-10)
 
 
