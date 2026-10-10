@@ -10,6 +10,7 @@
         ".claude/output-styles/eli5.md",
         ".claude/rules/comments.md",
         ".claude/rules/github.md",
+        ".claude/rules/public-repos.md",
         ".claude/rules/research.md",
         ".claude/rules/tdd.md",
         ".claude/settings.json",

@@ -15,6 +15,9 @@ on:
     branches:
       - "main"
 permissions: {}
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.event.action != 'labeled' && github.event.pull_request.number || github.run_id }}"
+  cancel-in-progress: "${{ github.event_name == 'pull_request' && github.event.action != 'labeled' }}"
 jobs:
   lint:
     permissions:
