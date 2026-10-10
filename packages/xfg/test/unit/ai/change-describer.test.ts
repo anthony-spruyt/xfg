@@ -331,6 +331,54 @@ describe("AiChangeDescriber", () => {
     assert.match(calls[0].user, /actions\/checkout@v5/);
   });
 
+  test("system prompt asks the model to cover every changed area", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    await describer.describe({ files: FILES, options: OPTIONS, retries: 0 });
+    const { system } = calls[0];
+    assert.match(system, /subject must cover all changes/);
+    assert.match(
+      system,
+      /Name the changed areas in it when they fit \(e\.g\. "chore: update <area>, <area> and <area>"\); use a broader summary only when they do not/
+    );
+    assert.match(
+      system,
+      /Use a scope only when a single area changed[^\n]*; omit the scope when more than one area changed/
+    );
+    assert.match(system, /When the changes span more than one type, use chore/);
+    assert.doesNotMatch(
+      system,
+      /devcontainer|concurrency|agent rules|superseded/i,
+      "examples must not echo a real sync the model could copy"
+    );
+    assert.match(system, /never a subject that names just one of several/);
+    assert.match(
+      system,
+      /more than one area changed, the body is required: one bullet per area/
+    );
+    assert.match(
+      system,
+      /names the concrete thing that changed \(tool, rule, setting or key, version\)/
+    );
+    assert.match(system, /effect as read directly from the diff/);
+    assert.match(
+      system,
+      /\(e\.g\. "enable no-unused-vars so lint fails on unused variables", not just "update eslint config"\)/,
+      "bullet example must name the rule together with its effect"
+    );
+    assert.doesNotMatch(system, /not "add no-unused-vars rule"/);
+    assert.match(system, /do not guess motives/);
+    assert.doesNotMatch(system, /Do not invent reasons/);
+    assert.match(
+      system,
+      /Names of things \(tools, rules, settings\) are fine; file names and paths are not/
+    );
+    assert.match(system, /"prSummary":[^\n]*covers every changed area/);
+    assert.match(system, /empty string only when a single change/);
+    assert.doesNotMatch(system, /if the subject says it all/);
+  });
+
   test("appends custom prompt to the system prompt", async () => {
     const { client, calls } = fakeClient([VALID]);
     const { log } = fakeLog();

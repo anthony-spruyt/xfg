@@ -12,6 +12,15 @@ Bumps actions/checkout from v4 to v5 in the CI and release workflows.
 
 It applies to every sync commit, including `merge: direct` pushes. In PR mode, xfg also uses the AI subject as the PR title and adds a short AI summary to the PR body.
 
+When a sync changes more than one area, the subject drops the scope and names them all (or sums them up when they don't fit) and the body has one bullet per area. Each bullet names what changed and says what it does in plain words, so `git log --grep` finds it. File names are left out: `git log --stat` already lists them.
+
+```text
+chore: update devcontainer and ci
+
+- update the shared dev container tooling to devcontainer-common v2.3.4
+- cancel superseded CI runs when a PR gets a new push
+```
+
 AI is opt-in. If anything goes wrong (missing key, network error, a reply that is not a valid conventional commit), xfg logs a warning and uses the default message. The sync never fails because of AI.
 
 ## Quick Start
