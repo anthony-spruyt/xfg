@@ -69,7 +69,7 @@ function validateProvider(
     // A URL read from the env is unknown here, so it never counts as the provider's own API.
     ai.baseUrlEnv === undefined
       ? (ai.baseUrl as string | undefined)
-      : `env:${String(ai.baseUrlEnv)}`,
+      : "env:baseUrlEnv",
     path
   );
   assertAiHeadersEnvAllowed(ai.headersEnv, path);
