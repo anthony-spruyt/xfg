@@ -233,6 +233,8 @@ If a write fails partway, the run fails and the list shows only the secrets alre
 
 Existing secrets always show as `update`. GitHub never returns secret values, so xfg cannot tell whether a value changed and rewrites it every run.
 
+A dry run for a repo that does not exist yet shows every configured secret as a create, since `xfg sync` creates the repo before secrets are written. Without `--dry-run`, a missing repo fails: run `xfg sync` first.
+
 When `GITHUB_STEP_SUMMARY` is set, the same list is written to the job summary (`## xfg Plan` for a dry run, `## xfg Apply` otherwise).
 
 Secret values are never shown — only the secret names.

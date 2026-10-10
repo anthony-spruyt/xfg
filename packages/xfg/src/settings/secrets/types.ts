@@ -36,3 +36,8 @@ export interface ISecretsStrategy {
     options?: GhApiOptions
   ): Promise<void>;
 }
+
+/** `xfg sync` creates a missing repo, so a plan reads its current state as empty. */
+export interface IRepoExistenceChecker {
+  exists(params: { repo: RepoInfo; token?: string }): Promise<boolean>;
+}
