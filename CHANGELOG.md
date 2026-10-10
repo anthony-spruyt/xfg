@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.4.0](https://github.com/anthony-spruyt/xfg/compare/v8.3.2...v8.4.0) (2026-10-10)
+
+
+### Features
+
+* **ai:** send extra headers and fall back to a second provider ([#1208](https://github.com/anthony-spruyt/xfg/issues/1208)) ([60ec821](https://github.com/anthony-spruyt/xfg/commit/60ec8216c0d1c4e18d6217749a6f8299e51e81dd))
+
+
+### Documentation
+
+* tidy rule and comment wording ([#1204](https://github.com/anthony-spruyt/xfg/issues/1204)) ([774b97f](https://github.com/anthony-spruyt/xfg/commit/774b97ff9f7f47343d231439cd441bd11dad3ce9))
+
 ## [8.3.2](https://github.com/anthony-spruyt/xfg/compare/v8.3.1...v8.3.2) (2026-10-10)
 
 
