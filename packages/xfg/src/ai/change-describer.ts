@@ -8,6 +8,7 @@ import {
 import type { FileChangeDetail } from "../sync/types.js";
 import type {
   AiClientFactory,
+  AiProviderOptions,
   ChangeDescription,
   DescribeInput,
   IChangeDescriber,
@@ -160,6 +161,31 @@ export function buildUserPrompt(
   return `Changed files:\n\n${sections.join("\n\n")}`;
 }
 
+interface Attempt {
+  options: AiProviderOptions;
+  path: string;
+  system: string;
+  user: string;
+}
+
+function buildAttempt(
+  files: FileChangeDetail[],
+  options: AiProviderOptions,
+  path: string,
+  inherited?: AiProviderOptions
+): Attempt {
+  const prompt = options.prompt ?? inherited?.prompt;
+  return {
+    options,
+    path,
+    system: prompt ? `${SYSTEM_PROMPT}\n\n${prompt}` : SYSTEM_PROMPT,
+    user: buildUserPrompt(
+      files,
+      options.maxDiffChars ?? inherited?.maxDiffChars ?? DEFAULT_MAX_DIFF_CHARS
+    ),
+  };
+}
+
 export class AiChangeDescriber implements IChangeDescriber {
   private readonly cache = new Map<string, Promise<ChangeDescription>>();
 
@@ -169,23 +195,31 @@ export class AiChangeDescriber implements IChangeDescriber {
   ) {}
 
   async describe(input: DescribeInput): Promise<ChangeDescription | null> {
-    const { options } = input;
-    const system = options.prompt
-      ? `${SYSTEM_PROMPT}\n\n${options.prompt}`
-      : SYSTEM_PROMPT;
-    const user = buildUserPrompt(
-      input.files,
-      options.maxDiffChars ?? DEFAULT_MAX_DIFF_CHARS
-    );
+    const { fallback, ...primaryOptions } = input.options;
+    const primary = buildAttempt(input.files, primaryOptions, "prOptions.ai");
+    const fallbackAttempt = fallback
+      ? buildAttempt(
+          input.files,
+          fallback,
+          "prOptions.ai.fallback",
+          primaryOptions
+        )
+      : undefined;
     const key = createHash("sha256")
       .update(
-        JSON.stringify([
-          options.provider,
-          options.model,
-          options.baseUrl,
-          system,
-          user,
-        ])
+        JSON.stringify(
+          [primary, fallbackAttempt].map((a) =>
+            a
+              ? [
+                  a.options.provider,
+                  a.options.model,
+                  a.options.baseUrl,
+                  a.system,
+                  a.user,
+                ]
+              : null
+          )
+        )
       )
       .digest("hex");
 
@@ -193,7 +227,7 @@ export class AiChangeDescriber implements IChangeDescriber {
     if (pending) {
       this.log.debug("Reusing cached AI commit message");
     } else {
-      pending = this.generate(input, system, user);
+      pending = this.generate(primary, fallbackAttempt, input.retries);
       this.cache.set(key, pending);
     }
 
@@ -209,17 +243,30 @@ export class AiChangeDescriber implements IChangeDescriber {
   }
 
   private async generate(
-    input: DescribeInput,
-    system: string,
-    user: string
+    primary: Attempt,
+    fallback: Attempt | undefined,
+    retries: number
   ): Promise<ChangeDescription> {
-    const client = this.clientFactory(input.options);
+    if (!fallback) return this.attempt(primary, retries);
+    try {
+      // The fallback is the retry, so a down primary does not stall the sync.
+      return await this.attempt(primary, 0);
+    } catch (error) {
+      this.log.warn(
+        `AI provider failed, trying prOptions.ai.fallback: ${toErrorMessage(error)}`
+      );
+      return this.attempt(fallback, retries);
+    }
+  }
+
+  private async attempt(
+    attempt: Attempt,
+    retries: number
+  ): Promise<ChangeDescription> {
+    const client = this.clientFactory(attempt.options, attempt.path);
     const raw = await withRetry(
-      () => client.complete(system, user, RESPONSE_SCHEMA),
-      {
-        retries: input.retries,
-        permanentErrorPatterns: AI_PERMANENT_ERROR_PATTERNS,
-      }
+      () => client.complete(attempt.system, attempt.user, RESPONSE_SCHEMA),
+      { retries, permanentErrorPatterns: AI_PERMANENT_ERROR_PATTERNS }
     );
     return parseDescription(raw);
   }

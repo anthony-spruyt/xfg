@@ -167,19 +167,50 @@ See [AI Commit Messages](../configuration/ai-messages.md) for setup and privacy 
 
 AI provider settings for generated commit messages and PR descriptions
 
-| Field          | Type                    | Required | Default     | Description                                                               |
-| -------------- | ----------------------- | -------- | ----------- | ------------------------------------------------------------------------- |
-| `provider`     | `anthropic` \| `openai` | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                 |
-| `model`        | `string`                | No       | -           | Model id.                                                                 |
-| `baseUrl`      | `string`                | No       | -           | API base URL, e.g.                                                        |
-| `apiKeyEnv`    | `string`                | No       | -           | Name of the env var holding the API key.                                  |
-| `prompt`       | `string`                | No       | -           | Extra instructions appended to the built-in system prompt                 |
-| `maxDiffChars` | `integer`               | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files. |
+| Field          | Type                                      | Required | Default     | Description                                                                        |
+| -------------- | ----------------------------------------- | -------- | ----------- | ---------------------------------------------------------------------------------- |
+| `provider`     | `anthropic` \| `openai`                   | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                          |
+| `model`        | `string`                                  | No       | -           | Model id.                                                                          |
+| `baseUrl`      | `string`                                  | No       | -           | API base URL, e.g.                                                                 |
+| `apiKeyEnv`    | `string`                                  | No       | -           | Name of the env var holding the API key.                                           |
+| `headersEnv`   | `object` of `string`                      | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs. |
+| `prompt`       | `string`                                  | No       | -           | Extra instructions appended to the built-in system prompt                          |
+| `maxDiffChars` | `integer`                                 | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.          |
+| `fallback`     | [`aiFallbackOptions`](#aifallbackoptions) | No       | -           | Provider to try when this one fails for any reason.                                |
 
 - `provider` — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic
 - `model` — Default for anthropic: claude-haiku-4-5. Required for openai.
 - `baseUrl` — `http://localhost:11434/v1` for Ollama. With openai, a baseUrl makes the API key optional.
 - `apiKeyEnv` — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY
+- `headersEnv` — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.
+- `maxDiffChars` — Default: 20000
+- `fallback` — If it fails too, the default message is used.
+
+<!-- xfg:generated:end -->
+
+### aiFallbackOptions
+
+Same fields as [aiOptions](#aioptions) except `fallback`. See [Fallback provider](../configuration/ai-messages.md#fallback-provider).
+
+<!-- xfg:generated schema:aiFallbackOptions -->
+
+Fallback AI provider, tried when the primary fails for any reason (missing key or header env var, network error, timeout, non-2xx status, invalid reply). prompt and maxDiffChars default to the primary's. One level only.
+
+| Field          | Type                    | Required | Default     | Description                                                                        |
+| -------------- | ----------------------- | -------- | ----------- | ---------------------------------------------------------------------------------- |
+| `provider`     | `anthropic` \| `openai` | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                          |
+| `model`        | `string`                | No       | -           | Model id.                                                                          |
+| `baseUrl`      | `string`                | No       | -           | API base URL, e.g.                                                                 |
+| `apiKeyEnv`    | `string`                | No       | -           | Name of the env var holding the API key.                                           |
+| `headersEnv`   | `object` of `string`    | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs. |
+| `prompt`       | `string`                | No       | -           | Extra instructions appended to the built-in system prompt                          |
+| `maxDiffChars` | `integer`               | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.          |
+
+- `provider` — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic
+- `model` — Default for anthropic: claude-haiku-4-5. Required for openai.
+- `baseUrl` — `http://localhost:11434/v1` for Ollama. With openai, a baseUrl makes the API key optional.
+- `apiKeyEnv` — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY
+- `headersEnv` — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.
 - `maxDiffChars` — Default: 20000
 
 <!-- xfg:generated:end -->

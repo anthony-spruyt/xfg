@@ -67,3 +67,27 @@ describe("postJson", () => {
     assert.match(error.message, /<html>gateway/);
   });
 });
+
+describe("postJson network failures", () => {
+  test("names the API and the cause code of a failed request", async () => {
+    const failing: FetchFn = async () => {
+      throw new TypeError("fetch failed", {
+        cause: Object.assign(new Error("Connect Timeout Error"), {
+          code: "UND_ERR_CONNECT_TIMEOUT",
+        }),
+      });
+    };
+    const error = await errorFrom(failing);
+    assert.match(error.message, /Test API request failed/);
+    assert.match(error.message, /fetch failed/);
+    assert.match(error.message, /UND_ERR_CONNECT_TIMEOUT/);
+  });
+
+  test("a failure without a cause code keeps the message", async () => {
+    const failing: FetchFn = async () => {
+      throw new Error("boom");
+    };
+    const error = await errorFrom(failing);
+    assert.match(error.message, /Test API request failed: boom/);
+  });
+});

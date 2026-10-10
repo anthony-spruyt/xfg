@@ -14,6 +14,7 @@ export interface AnthropicClientOptions {
   apiKey: string;
   model: string;
   baseUrl?: string;
+  headers?: Record<string, string>;
   fetch: FetchFn;
 }
 
@@ -21,12 +22,14 @@ export class AnthropicClient implements IAiClient {
   readonly model: string;
   private readonly apiKey: string;
   private readonly url: string;
+  private readonly headers: Record<string, string>;
   private readonly fetch: FetchFn;
 
   constructor(options: AnthropicClientOptions) {
     this.model = options.model;
     this.apiKey = options.apiKey;
     this.url = `${trimTrailingSlash(options.baseUrl ?? DEFAULT_BASE_URL)}/v1/messages`;
+    this.headers = options.headers ?? {};
     this.fetch = options.fetch;
   }
 
@@ -49,7 +52,11 @@ export class AnthropicClient implements IAiClient {
       this.fetch,
       "Anthropic API",
       this.url,
-      { "x-api-key": this.apiKey, "anthropic-version": "2023-06-01" },
+      {
+        ...this.headers,
+        "x-api-key": this.apiKey,
+        "anthropic-version": "2023-06-01",
+      },
       body
     )) as AnthropicResponse;
 

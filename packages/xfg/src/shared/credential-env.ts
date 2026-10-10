@@ -1,4 +1,5 @@
 import { ValidationError } from "./errors.js";
+import { isPlainObject } from "./type-guards.js";
 
 /** Credentials xfg itself reads; config must never route them anywhere else. */
 export const CREDENTIAL_ENV_VARS: ReadonlySet<string> = new Set([
@@ -50,13 +51,72 @@ export function isDefaultAiBaseUrl(
 export function assertAiKeyEnvAllowed(
   provider: string,
   apiKeyEnv: string | undefined,
-  baseUrl: string | undefined
+  baseUrl: string | undefined,
+  path = "prOptions.ai"
 ): void {
   if (apiKeyEnv === undefined || !isCredentialEnvName(apiKeyEnv)) return;
   const ownKey = apiKeyEnv.toUpperCase() === defaultAiKeyEnv(provider);
   if (ownKey && isDefaultAiBaseUrl(provider, baseUrl)) return;
   throw new ValidationError(
-    `prOptions.ai.apiKeyEnv '${apiKeyEnv}' is a credential xfg uses elsewhere; ` +
+    `${path}.apiKeyEnv '${apiKeyEnv}' is a credential xfg uses elsewhere; ` +
       `export the key under a dedicated name for this provider and baseUrl.`
   );
+}
+
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const RESERVED_AI_HEADERS: ReadonlySet<string> = new Set([
+  "authorization",
+  "x-api-key",
+  "anthropic-version",
+  "content-type",
+  "content-length",
+  "host",
+]);
+
+/**
+ * `headersEnv` maps header names to env var names. A value is never accepted
+ * inline, and the env var may not be a credential xfg uses elsewhere.
+ */
+export function assertAiHeadersEnvAllowed(
+  headersEnv: unknown,
+  path = "prOptions.ai"
+): void {
+  if (headersEnv === undefined) return;
+  if (!isPlainObject(headersEnv)) {
+    throw new ValidationError(
+      `${path}.headersEnv must be an object of header name to env var name`
+    );
+  }
+  const seen = new Set<string>();
+  for (const [name, envName] of Object.entries(headersEnv)) {
+    if (!HEADER_NAME.test(name)) {
+      throw new ValidationError(
+        `${path}.headersEnv key '${name}' is not a valid HTTP header name`
+      );
+    }
+    const lower = name.toLowerCase();
+    if (RESERVED_AI_HEADERS.has(lower)) {
+      throw new ValidationError(
+        `${path}.headersEnv header '${name}' is reserved; xfg sets it itself`
+      );
+    }
+    if (seen.has(lower)) {
+      throw new ValidationError(
+        `${path}.headersEnv names header '${name}' more than once`
+      );
+    }
+    seen.add(lower);
+    if (typeof envName !== "string" || !ENV_NAME.test(envName)) {
+      throw new ValidationError(
+        `${path}.headersEnv['${name}'] must be an env var name, not a value`
+      );
+    }
+    if (isCredentialEnvName(envName)) {
+      throw new ValidationError(
+        `${path}.headersEnv['${name}'] '${envName}' is a credential xfg uses elsewhere; ` +
+          `export the value under a dedicated name for this header.`
+      );
+    }
+  }
 }
