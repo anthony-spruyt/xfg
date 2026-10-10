@@ -17,6 +17,30 @@ import {
   buildApplyResult,
 } from "../base-processor.js";
 
+// GitHub rejects a commit message setting sent without its title, and vice versa
+const PAIRED_SETTINGS: ReadonlyArray<
+  readonly [keyof GitHubRepoSettings, keyof GitHubRepoSettings]
+> = [
+  ["squashMergeCommitTitle", "squashMergeCommitMessage"],
+  ["mergeCommitTitle", "mergeCommitMessage"],
+];
+
+function withPairedSettings(
+  changed: Partial<GitHubRepoSettings>,
+  desired: GitHubRepoSettings
+): Partial<GitHubRepoSettings> {
+  const payload: Record<string, unknown> = { ...changed };
+  for (const pair of PAIRED_SETTINGS) {
+    if (!pair.some((key) => key in changed)) continue;
+    for (const key of pair) {
+      if (!(key in payload) && desired[key] !== undefined) {
+        payload[key] = desired[key];
+      }
+    }
+  }
+  return payload as Partial<GitHubRepoSettings>;
+}
+
 export type IRepoSettingsProcessor = ISettingsProcessor<
   RepoSettingsProcessorOptions,
   RepoSettingsProcessorResult
@@ -73,13 +97,11 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
 
     const strategyOptions = { token: effectiveToken, host: githubRepo.host };
 
-    // Fetch current settings and metadata in parallel
     const [currentSettings, metadata] = await Promise.all([
       this.strategy.get(githubRepo, strategyOptions),
       this.metadataProvider.getMetadata(githubRepo, strategyOptions),
     ]);
 
-    // Validate security settings compatibility
     const securityErrors = this.validateSecuritySettings(
       desiredSettings,
       metadata
@@ -92,7 +114,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       };
     }
 
-    // Compute diff
     const changes = diffRepoSettings(currentSettings, desiredSettings);
 
     if (!hasRepoSettingsChanges(changes)) {
@@ -104,7 +125,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       };
     }
 
-    // Validate defaultBranch target exists before attempting to apply
     const defaultBranchChange = changes.find(
       (c) => c.property === "defaultBranch"
     );
@@ -127,7 +147,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       }
     }
 
-    // Format plan output
     const planOutput = formatRepoSettingsPlan(changes);
 
     const changeCounts = {
@@ -144,14 +163,17 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       });
     }
 
-    // Apply changes - only send settings that actually changed
     const changedSettings: Partial<GitHubRepoSettings> = {};
     for (const change of changes) {
       (changedSettings as Record<string, unknown>)[change.property] =
         change.newValue;
     }
 
-    await this.applyChanges(githubRepo, changedSettings, strategyOptions);
+    await this.applyChanges(
+      githubRepo,
+      withPairedSettings(changedSettings, desiredSettings),
+      strategyOptions
+    );
 
     const appliedCount = Object.keys(changedSettings).length;
     return buildApplyResult(repoName, changeCounts, appliedCount, {
@@ -165,7 +187,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
     settings: GitHubRepoSettings,
     options: { token?: string; host?: string }
   ): Promise<void> {
-    // Extract settings that need separate API calls
     const {
       vulnerabilityAlerts,
       automatedSecurityFixes,
@@ -173,13 +194,11 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       ...mainSettings
     } = settings;
 
-    // Update main settings via PATCH /repos
     if (Object.keys(mainSettings).length > 0) {
       await this.strategy.update(repoInfo, mainSettings, options);
     }
 
-    // Handle vulnerability alerts (separate endpoint)
-    // Must be done before automated security fixes
+    // Must run before automated security fixes
     if (vulnerabilityAlerts !== undefined) {
       await this.strategy.updateVulnerabilityAlerts(
         repoInfo,
@@ -188,7 +207,6 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       );
     }
 
-    // Handle private vulnerability reporting (separate endpoint)
     if (privateVulnerabilityReporting !== undefined) {
       await this.strategy.updatePrivateVulnerabilityReporting(
         repoInfo,
@@ -197,8 +215,7 @@ export class RepoSettingsProcessor implements IRepoSettingsProcessor {
       );
     }
 
-    // Handle automated security fixes (separate endpoint)
-    // Done last to ensure vulnerability alerts have been fully processed
+    // Last, so vulnerability alerts are fully processed first
     if (automatedSecurityFixes !== undefined) {
       await this.strategy.updateAutomatedSecurityFixes(
         repoInfo,
