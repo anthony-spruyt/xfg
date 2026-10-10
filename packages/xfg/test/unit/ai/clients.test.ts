@@ -435,6 +435,39 @@ describe("createAiClient headersEnv", () => {
     );
   });
 
+  test("rejects header values with line breaks or NUL without echoing them", () => {
+    for (const bad of [
+      "abc\r\nX-Evil: 1",
+      "abc\ndef",
+      "abc\0def",
+      "ab\u2603cd",
+    ]) {
+      assert.throws(
+        () => createAiClient(GATEWAY, { ...ENV, CF_ID: bad }, fetch0),
+        (error: Error) =>
+          /CF_ID/.test(error.message) &&
+          /CF-Access-Client-Id/.test(error.message) &&
+          !error.message.includes("abc") &&
+          !error.message.includes("cd") &&
+          !error.message.includes("Evil"),
+        JSON.stringify(bad)
+      );
+    }
+  });
+
+  test("accepts Latin-1 header values", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(
+      GATEWAY,
+      { ...ENV, CF_ID: "caf\u00e9" },
+      fetch
+    );
+    await client.complete("s", "u");
+    assert.equal(headersOf(calls[0].init)["CF-Access-Client-Id"], "caf\u00e9");
+  });
+
   test("refuses a credential header env var at runtime", () => {
     assert.throws(
       () =>

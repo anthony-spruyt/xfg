@@ -50,6 +50,8 @@ export async function postJson(
       headers: { "content-type": "application/json", ...headers },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      // Custom headers would follow a cross-origin redirect.
+      redirect: "error",
     });
   } catch (error) {
     throw networkError(label, error);

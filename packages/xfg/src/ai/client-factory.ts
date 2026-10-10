@@ -23,6 +23,15 @@ function keyEnvFor(options: AiProviderOptions): string | undefined {
     : undefined;
 }
 
+// undici refuses CR, LF, NUL and non-Latin-1 in header values and echoes the value in its error.
+function isValidHeaderValue(value: string): boolean {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code === 0 || code === 10 || code === 13 || code > 255) return false;
+  }
+  return true;
+}
+
 function resolveHeaders(
   options: AiProviderOptions,
   env: Record<string, string | undefined>,
@@ -34,6 +43,11 @@ function resolveHeaders(
     if (!value) {
       throw new ValidationError(
         `${envName} is not set (required for ${path}.headersEnv '${name}')`
+      );
+    }
+    if (!isValidHeaderValue(value)) {
+      throw new ValidationError(
+        `${envName} holds an invalid header value (used for ${path}.headersEnv '${name}')`
       );
     }
     headers[name] = value;
