@@ -3,6 +3,7 @@
   "configs": {
     "repo-operator": {
       "files": [
+        ".agent-progress/.gitignore",
         ".claude/hookify-plus/warn-code-scanning-ref.md",
         ".claude/hookify-plus/warn-comment-density.md",
         ".claude/hookify-plus/warn-raw-container-run.md",
@@ -10,9 +11,11 @@
         ".claude/output-styles/eli5.md",
         ".claude/rules/comments.md",
         ".claude/rules/github.md",
+        ".claude/rules/progress.md",
         ".claude/rules/public-repos.md",
         ".claude/rules/research.md",
         ".claude/rules/tdd.md",
+        ".claude/session-progress.sh",
         ".claude/settings.json",
         ".claude/statusline.sh",
         ".devcontainer/.gitignore",
