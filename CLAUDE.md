@@ -86,6 +86,7 @@ Paths are relative to `packages/xfg/`.
 
 ## Linting Gotchas
 
+- `./lint.sh` (Docker MegaLinter, run with `APPLY_FIXES=none`) is the local lint. Plain `npx eslint` fails because the root has no `node_modules` for `eslint.config.js`
 - Use `String.fromCharCode(0x1b)` for ANSI escape in regex - `\x1b` and `\u001b` literals fail `no-control-regex`
 - CodeQL alerts are separate from ESLint - `eslint-disable` comments don't suppress CodeQL
 - Use underscore prefix (`_varName`) for intentionally unused destructured variables
