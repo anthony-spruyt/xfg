@@ -29,7 +29,6 @@ class MockMetadataProvider implements IRepoMetadataProvider {
 
 const mockMetadataProvider = new MockMetadataProvider();
 
-// Mock strategy for testing
 class MockStrategy implements IRepoSettingsStrategy {
   getSettingsResult: CurrentRepoSettings = {};
   getSettingsCalls: Array<{
@@ -375,14 +374,10 @@ describe("RepoSettingsProcessor", () => {
   });
 
   test("should only send changed settings to updateSettings, not the entire config", async () => {
-    // Regression test: when some settings match and others differ,
-    // only the differing settings should be sent to the API.
-    // This prevents errors like "allow_forking can only be changed on org-owned repos"
-    // when allowForking is in the config but unchanged.
     mockStrategy.getSettingsResult = {
       has_wiki: true,
-      allow_forking: true, // Already matches desired value
-      delete_branch_on_merge: false, // Different from desired
+      allow_forking: true,
+      delete_branch_on_merge: false,
     };
 
     const processor = new RepoSettingsProcessor(
@@ -394,9 +389,9 @@ describe("RepoSettingsProcessor", () => {
       files: [],
       settings: {
         repo: {
-          hasWiki: true, // Matches - should NOT be sent
-          allowForking: true, // Matches - should NOT be sent
-          deleteBranchOnMerge: true, // Changed - should be sent
+          hasWiki: true,
+          allowForking: true,
+          deleteBranchOnMerge: true,
         },
       },
     };
@@ -406,7 +401,6 @@ describe("RepoSettingsProcessor", () => {
     assert.equal(mockStrategy.updateSettingsCalls.length, 1);
     const sentSettings = mockStrategy.updateSettingsCalls[0].settings;
 
-    // Only deleteBranchOnMerge should be sent (the only changed setting)
     assert.equal(sentSettings.deleteBranchOnMerge, true);
     assert.equal(
       sentSettings.hasWiki,
@@ -418,6 +412,170 @@ describe("RepoSettingsProcessor", () => {
       undefined,
       "allowForking matches current - should not be sent"
     );
+  });
+
+  describe("merge commit setting pairs", () => {
+    test("sends unchanged squashMergeCommitTitle alongside changed squashMergeCommitMessage", async () => {
+      mockStrategy.getSettingsResult = {
+        squash_merge_commit_title: "PR_TITLE",
+        squash_merge_commit_message: "PR_BODY",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            squashMergeCommitTitle: "PR_TITLE",
+            squashMergeCommitMessage: "BLANK",
+          },
+        },
+      };
+
+      const result = await processor.process(repoConfig, githubRepo, {
+        dryRun: false,
+      });
+
+      assert.equal(mockStrategy.updateSettingsCalls.length, 1);
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        squashMergeCommitTitle: "PR_TITLE",
+        squashMergeCommitMessage: "BLANK",
+      });
+      assert.equal(result.changes?.update, 1);
+      assert.deepEqual(
+        result.planOutput!.entries.map((e) => e.property),
+        ["squashMergeCommitMessage"]
+      );
+    });
+
+    test("sends unchanged squashMergeCommitMessage alongside changed squashMergeCommitTitle", async () => {
+      mockStrategy.getSettingsResult = {
+        squash_merge_commit_title: "PR_TITLE",
+        squash_merge_commit_message: "COMMIT_MESSAGES",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            squashMergeCommitTitle: "COMMIT_OR_PR_TITLE",
+            squashMergeCommitMessage: "COMMIT_MESSAGES",
+          },
+        },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        squashMergeCommitTitle: "COMMIT_OR_PR_TITLE",
+        squashMergeCommitMessage: "COMMIT_MESSAGES",
+      });
+    });
+
+    test("sends unchanged mergeCommitTitle alongside changed mergeCommitMessage", async () => {
+      mockStrategy.getSettingsResult = {
+        merge_commit_title: "PR_TITLE",
+        merge_commit_message: "PR_BODY",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: { mergeCommitTitle: "PR_TITLE", mergeCommitMessage: "BLANK" },
+        },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        mergeCommitTitle: "PR_TITLE",
+        mergeCommitMessage: "BLANK",
+      });
+    });
+
+    test("fills the partner key from the live value when desired config lacks it", async () => {
+      mockStrategy.getSettingsResult = {
+        squash_merge_commit_title: "PR_TITLE",
+        squash_merge_commit_message: "PR_BODY",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { squashMergeCommitMessage: "BLANK" } },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        squashMergeCommitTitle: "PR_TITLE",
+        squashMergeCommitMessage: "BLANK",
+      });
+    });
+
+    test("omits the partner key when neither desired config nor live value has it", async () => {
+      mockStrategy.getSettingsResult = {
+        merge_commit_message: "PR_BODY",
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: { repo: { mergeCommitMessage: "BLANK" } },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        mergeCommitMessage: "BLANK",
+      });
+    });
+
+    test("leaves both pair keys out when neither changed", async () => {
+      mockStrategy.getSettingsResult = {
+        squash_merge_commit_title: "PR_TITLE",
+        squash_merge_commit_message: "PR_BODY",
+        delete_branch_on_merge: false,
+      };
+      const processor = new RepoSettingsProcessor(
+        mockStrategy,
+        mockMetadataProvider
+      );
+      const repoConfig: RepoConfig = {
+        git: githubRepo.gitUrl,
+        files: [],
+        settings: {
+          repo: {
+            squashMergeCommitTitle: "PR_TITLE",
+            squashMergeCommitMessage: "PR_BODY",
+            deleteBranchOnMerge: true,
+          },
+        },
+      };
+
+      await processor.process(repoConfig, githubRepo, { dryRun: false });
+
+      assert.deepEqual(mockStrategy.updateSettingsCalls[0].settings, {
+        deleteBranchOnMerge: true,
+      });
+    });
   });
 
   test("should handle errors gracefully", async () => {

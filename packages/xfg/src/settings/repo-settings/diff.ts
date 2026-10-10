@@ -14,9 +14,6 @@ export interface RepoSettingsChange {
   newValue?: unknown;
 }
 
-/**
- * Maps config property names (camelCase) to GitHub API property names (snake_case).
- */
 const PROPERTY_MAPPING: Record<keyof GitHubRepoSettings, string> = {
   description: "description",
   hasIssues: "has_issues",
@@ -46,16 +43,12 @@ const PROPERTY_MAPPING: Record<keyof GitHubRepoSettings, string> = {
   privateVulnerabilityReporting: "private_vulnerability_reporting",
 };
 
-/**
- * Gets the current value for a property from GitHub API response.
- */
-function getCurrentValue(
+export function getCurrentValue(
   current: CurrentRepoSettings,
   property: keyof GitHubRepoSettings
 ): unknown {
   const apiKey = PROPERTY_MAPPING[property];
 
-  // Handle security_and_analysis nested properties
   if (apiKey === "_secret_scanning") {
     return current.security_and_analysis?.secret_scanning?.status === "enabled";
   }
@@ -91,7 +84,6 @@ export function diffRepoSettings(
     const currentValue = getCurrentValue(current, property);
 
     if (currentValue === undefined) {
-      // Property not currently set or unknown
       changes.push({
         property,
         action: "create",
@@ -105,15 +97,11 @@ export function diffRepoSettings(
         newValue: desiredValue,
       });
     }
-    // unchanged properties are not included
   }
 
   return changes;
 }
 
-/**
- * Checks if there are any changes to apply.
- */
 export function hasRepoSettingsChanges(changes: RepoSettingsChange[]): boolean {
   return changes.length > 0;
 }
