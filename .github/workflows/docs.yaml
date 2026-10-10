@@ -15,14 +15,21 @@ on:
       # three-part tag, so a `v*.*.*` trigger checks out before `vN` has moved
       # and builds the previous release's docs.
       - "v[0-9]+"
+  pull_request:
+    branches:
+      - "main"
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs.yaml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -47,13 +54,18 @@ jobs:
       - name: Install docs toolchain
         run: pip install --require-hashes -r docs/requirements.txt
 
+      - name: Build docs
+        if: github.event_name == 'pull_request'
+        run: mkdocs build --strict
+
       - name: Configure git for mike
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "xfg-release[bot]"
           git config user.email "xfg-release[bot]@users.noreply.github.com"
 
       - name: Deploy released major as latest
-        if: ${{ github.ref_type == 'tag' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
         # `--alias-type copy` is load-bearing: Pages does not follow symlinks,
         # so a symlinked `latest` alias 404s.
         run: |
@@ -62,13 +74,15 @@ jobs:
           mike set-default latest
 
       - name: Deploy unreleased main as next
-        if: ${{ github.ref_type != 'tag' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref_type != 'tag' }}
         run: mike deploy next
 
       - name: Bundle gh-pages
+        if: github.event_name != 'pull_request'
         run: git bundle create "${RUNNER_TEMP}/gh-pages.bundle" gh-pages
 
       - name: Upload site
+        if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: gh-pages
@@ -78,6 +92,7 @@ jobs:
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment: release
     permissions:
@@ -90,7 +105,6 @@ jobs:
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          fetch-depth: 0
           persist-credentials: false
 
       - name: Download site
@@ -118,4 +132,4 @@ jobs:
           echo "::add-mask::$auth"
           export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
           export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $auth"
-          git push origin gh-pages
+          git push origin refs/heads/gh-pages:refs/heads/gh-pages
