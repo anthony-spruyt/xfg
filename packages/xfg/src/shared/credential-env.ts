@@ -64,7 +64,7 @@ export function assertAiKeyEnvAllowed(
 }
 
 const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
-const ENV_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const ENV_NAME = /^[A-Za-z_]\w*$/;
 const RESERVED_AI_HEADERS: ReadonlySet<string> = new Set([
   "authorization",
   "x-api-key",
