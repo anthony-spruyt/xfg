@@ -340,27 +340,27 @@ describe("AiChangeDescriber", () => {
     assert.match(system, /subject must cover all changes/);
     assert.match(
       system,
-      /do not share one theme, use a broad summary subject \(e\.g\. "chore: sync shared tooling config"\), never just one of the changes/
+      /Name the changed areas in it when they fit \(e\.g\. "chore: update devcontainer, ci and agent rules"\); use a broader summary only when they do not/
     );
+    assert.match(system, /never a subject that names just one of several/);
     assert.match(
       system,
       /more than one area changed, the body is required: one bullet per area/
     );
     assert.match(
       system,
-      /names the concrete thing that changed \(tool, setting or key, version, rule name\)/
+      /names the concrete thing that changed \(tool, rule, setting or key, version\)/
     );
+    assert.match(system, /effect as read directly from the diff/);
+    assert.match(system, /do not guess motives/);
+    assert.doesNotMatch(system, /Do not invent reasons/);
     assert.match(
       system,
-      /effect in plain words, especially words that do not appear in the diff/
+      /Names of things \(tools, rules, settings\) are fine; file names and paths are not/
     );
-    assert.match(
-      system,
-      /Do not list file names or paths; git already records them/
-    );
+    assert.match(system, /"prSummary":[^\n]*covers every changed area/);
     assert.match(system, /empty string only when a single change/);
     assert.doesNotMatch(system, /if the subject says it all/);
-    assert.doesNotMatch(system, /Cover every changed file/);
   });
 
   test("appends custom prompt to the system prompt", async () => {

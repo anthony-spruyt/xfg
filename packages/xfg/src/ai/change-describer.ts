@@ -36,12 +36,12 @@ const CONVENTIONAL_SUBJECT = new RegExp(
 const SYSTEM_PROMPT = `You write git commit messages and pull request summaries for automated configuration sync changes.
 You receive the list of changed files with unified diffs. Reply with a JSON object with exactly these keys:
 - "subject": a Conventional Commits subject line, at most ${MAX_SUBJECT_LENGTH} characters, format "type(scope): description". type is one of: ${CONVENTIONAL_TYPES.join(", ")}. scope is optional, lowercase, and names the area changed (e.g. workflows, devcontainer, eslint). description is imperative, lowercase, no trailing period, and says what actually changed (e.g. "pin actions/checkout to v5"), never just "sync files".
-- "body": the commit body (plain text, wrap at 72 columns). When more than one area changed, the body is required: one bullet per area ("- "). Each bullet names the concrete thing that changed (tool, setting or key, version, rule name) and states its effect in plain words, especially words that do not appear in the diff (e.g. "cancel superseded CI runs when a PR gets a new push", not "add concurrency block"). Use an empty string only when a single change is fully described by the subject.
-- "prSummary": a short markdown summary for a pull request description (a sentence or a few bullet points). No headings.
-The subject must cover all changes. If they do not share one theme, use a broad summary subject (e.g. "chore: sync shared tooling config"), never just one of the changes.
-Do not list file names or paths; git already records them. Describe areas and effects.
+- "body": the commit body (plain text, wrap at 72 columns). When more than one area changed, the body is required: one bullet per area ("- "). Each bullet names the concrete thing that changed (tool, rule, setting or key, version) and states its effect as read directly from the diff, in plain words a later search would use (e.g. "cancel superseded CI runs when a PR gets a new push", not "add concurrency block"); do not guess motives. Use an empty string only when a single change is fully described by the subject.
+- "prSummary": a short markdown summary for a pull request description (a sentence or a few bullet points) that covers every changed area. No headings.
+The subject must cover all changes. Name the changed areas in it when they fit (e.g. "chore: update devcontainer, ci and agent rules"); use a broader summary only when they do not, and never a subject that names just one of several changes.
+Names of things (tools, rules, settings) are fine; file names and paths are not, since git already records them.
 Pick the type from the effect of the change: ci for CI config, build for build tooling and dev environments, style for formatter/linter config, docs for documentation, chore otherwise.
-Only describe what is in the diffs. Do not invent reasons.`;
+Only describe what is in the diffs.`;
 
 const RESPONSE_SCHEMA: JsonSchema = {
   type: "object",
