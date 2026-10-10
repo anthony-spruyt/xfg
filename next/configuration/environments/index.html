@@ -1423,6 +1423,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#deleting-orphans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleting Orphans
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dry-run-output" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2746,6 +2757,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#deleting-orphans" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deleting Orphans
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dry-run-output" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2799,7 +2821,7 @@
 
 
 <h1 id="github-environments">GitHub Environments<a class="headerlink" href="#github-environments" title="Permanent link">&para;</a></h1>
-<p>xfg can create and update <strong>GitHub deployment environments</strong>: the environment itself, which branches and tags can deploy to it, and its secrets.</p>
+<p>xfg can create, update and (opt-in) delete <strong>GitHub deployment environments</strong>: the environment itself, which branches and tags can deploy to it, and its secrets.</p>
 <div class="admonition note">
 <p class="admonition-title">GitHub only</p>
 <p>Environments only apply to GitHub repos. Azure DevOps and GitLab repos are skipped. Environments on <strong>private</strong> repos need a paid GitHub plan (Pro, Team or Enterprise); on a free plan, private repos are skipped with a warning.</p>
@@ -2877,6 +2899,7 @@
 <p>xfg adds missing patterns. Patterns already on GitHub that are not in your config are <strong>left in place</strong> and reported as a warning:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>⚠ your-org/your-repo: environment "production" has branch "hotfix/*" not in config - left in place
 </span></code></pre></div>
+<p>Set <code>deleteOrphaned: true</code> on a <code>custom</code> policy to delete those patterns instead (see <a href="#deleting-orphans">Deleting Orphans</a>).</p>
 <h2 id="environment-secrets">Environment Secrets<a class="headerlink" href="#environment-secrets" title="Permanent link">&para;</a></h2>
 <p>Environment secrets use the same config as <a href="../secrets/">repo secrets</a>: each entry names the environment variable that holds the value.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">settings</span><span class="p">:</span>
@@ -2889,7 +2912,7 @@
 <ul>
 <li>Values are encrypted with the environment's own public key and never shown in output.</li>
 <li>Existing secrets always show as <code>update</code>, because GitHub never returns secret values.</li>
-<li>Environment secrets have no <code>deleteOrphaned</code>: secrets not in config are left alone.</li>
+<li>Secrets not in config are left alone unless the environment's <code>secrets</code> map sets <code>deleteOrphaned: true</code> (see <a href="#deleting-orphans">Deleting Orphans</a>). <code>inherit</code> is not supported here.</li>
 <li>If an environment doesn't exist yet, <code>xfg secrets sync --dry-run</code> still plans its secrets. A real run fails before writing anything on a public repo; on a private repo it skips that environment's secrets with a warning.</li>
 </ul>
 <h2 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h2>
@@ -2924,24 +2947,87 @@
 </span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">      </span><span class="nt">environments</span><span class="p">:</span>
 </span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">        </span><span class="nt">release</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">                     </span><span class="c1"># no release environment here</span>
 </span></code></pre></div>
-<p>xfg never deletes environments. Removing one from the config leaves it on GitHub.</p>
+<p>By default xfg never deletes anything: removing an environment, pattern or secret from the config leaves it on GitHub. <a href="#deleting-orphans">Deleting Orphans</a> covers the opt-in.</p>
+<h2 id="deleting-orphans">Deleting Orphans<a class="headerlink" href="#deleting-orphans" title="Permanent link">&para;</a></h2>
+<p><code>deleteOrphaned</code> is off by default and can be turned on at three levels:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Deletes</th>
+<th>Run by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>environments.deleteOrphaned</code></td>
+<td>Environments on GitHub not in the merged config</td>
+<td><code>xfg sync</code></td>
+</tr>
+<tr>
+<td><code>environments.&lt;name&gt;.deploymentBranchPolicy.deleteOrphaned</code></td>
+<td>Branch and tag patterns not in <code>custom</code></td>
+<td><code>xfg sync</code></td>
+</tr>
+<tr>
+<td><code>environments.&lt;name&gt;.secrets.deleteOrphaned</code></td>
+<td>Secrets in that environment not in its <code>secrets</code> map</td>
+<td><code>xfg secrets sync</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">environments</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">            </span><span class="c1"># delete environments not listed here</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">release</span><span class="p">:</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">deploymentBranchPolicy</span><span class="p">:</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">        </span><span class="c1"># delete patterns not listed in custom</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="nt">custom</span><span class="p">:</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tag</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"v*.*.*"</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="nt">secrets</span><span class="p">:</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">        </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">        </span><span class="c1"># delete release secrets not listed here</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="nt">NPM_TOKEN</span><span class="p">:</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">          </span><span class="nt">env</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NPM_TOKEN_VALUE</span>
+</span></code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Deleting an environment deletes its secrets and protection rules</p>
+<p><code>environments.deleteOrphaned</code> deletes <strong>every</strong> environment on the repo that is not in your config, including ones created by hand or by other tools, along with their secrets, variables and protection rules. A map that holds only <code>deleteOrphaned: true</code> deletes all of them. Run <code>--dry-run</code> first.</p>
+</div>
+<p>How each key merges:</p>
+<ul>
+<li><code>environments.deleteOrphaned</code> and <code>secrets.deleteOrphaned</code> resolve innermost-wins, like <a href="../secrets/">repo secrets</a>. <code>inherit: false</code> drops inherited environments but keeps an inherited <code>deleteOrphaned</code>, so together they delete the inherited environments. Set <code>deleteOrphaned: false</code> to turn cleanup off for a repo.</li>
+<li><code>deploymentBranchPolicy.deleteOrphaned</code> belongs to the policy, and a policy set at a lower layer replaces the inherited one whole. Restate <code>deleteOrphaned: true</code> when you override the policy. It is only valid with <code>custom</code>.</li>
+<li>A secrets map that holds only <code>deleteOrphaned: true</code> deletes every secret in that environment.</li>
+</ul>
+<p>Safety:</p>
+<ul>
+<li><code>--no-delete</code> turns off every deletion for the run, whatever the config says.</li>
+<li><code>--dry-run</code> shows deletions as <code>-</code> lines, in the terminal and the job summary, without deleting anything.</li>
+<li>When an environment switches to <code>custom</code>, xfg can't tell which patterns it already has until the next run, so pattern deletions show up then.</li>
+<li>Deleting environments and patterns needs <strong>Administration: Read and write</strong>. Without it the run fails with a message naming that permission.</li>
+</ul>
 <h2 id="dry-run-output">Dry Run Output<a class="headerlink" href="#dry-run-output" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>your-org/your-repo - Environments:
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    + environment "release"
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        deployment branches: custom
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>        + branch "main"
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        + tag "v*.*.*"
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    ~ environment "staging"
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        deployment branches: all → protected
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  Plan: 2 environments (1 to create, 1 to update)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>your-org/your-repo - Environments:
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    + environment "release"
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>        deployment branches: custom
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>        + branch "main"
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>        + tag "v*.*.*"
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    ~ environment "staging"
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>        deployment branches: all → protected
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    ~ environment "production"
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        - branch "hotfix/*"
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    - environment "preview"
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>  Plan: 4 environments (1 to create, 2 to update, 1 to delete)
 </span></code></pre></div>
 <p><code>xfg secrets sync --dry-run</code> lists environment secrets next to repo secrets:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>        + secret "NPM_TOKEN" (environment "release")
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>        ~ secret "SIGNING_KEY" (environment "release", update, value write-only)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>        - secret "OLD_TOKEN" (environment "release")
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>        + secret "NPM_TOKEN" (environment "release")
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>        ~ secret "SIGNING_KEY" (environment "release", update, value write-only)
 </span></code></pre></div>
 <h2 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Environments and branch policies: <strong>Administration: Read and write</strong>.</li>
+<li>Environments and branch policies, including deleting them: <strong>Administration: Read and write</strong>.</li>
 <li>Environment secrets: <strong>Secrets: Read and write</strong>.</li>
 </ul>
 <p>See <a href="../../platforms/github-app/">GitHub App</a>.</p>
@@ -2950,11 +3036,14 @@
 <ul>
 <li><code>GET /repos/{owner}/{repo}/environments</code> — List environments</li>
 <li><code>PUT /repos/{owner}/{repo}/environments/{name}</code> — Create or update an environment's branch policy</li>
+<li><code>DELETE /repos/{owner}/{repo}/environments/{name}</code> — Delete an environment (<code>deleteOrphaned</code>)</li>
 <li><code>GET /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies</code> — List branch and tag patterns</li>
 <li><code>POST /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies</code> — Add a pattern</li>
+<li><code>DELETE /repos/{owner}/{repo}/environments/{name}/deployment-branch-policies/{id}</code> — Delete a pattern (<code>deleteOrphaned</code>)</li>
 <li><code>GET /repos/{owner}/{repo}/environments/{name}/secrets</code> — List environment secrets (names only)</li>
 <li><code>GET /repos/{owner}/{repo}/environments/{name}/secrets/public-key</code> — Get the environment's encryption key</li>
 <li><code>PUT /repos/{owner}/{repo}/environments/{name}/secrets/{secret_name}</code> — Create or update an environment secret</li>
+<li><code>DELETE /repos/{owner}/{repo}/environments/{name}/secrets/{secret_name}</code> — Delete an environment secret (<code>deleteOrphaned</code>)</li>
 </ul>
 
 

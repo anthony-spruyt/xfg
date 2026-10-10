@@ -4550,7 +4550,7 @@
 <li><code>variables</code> — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.</li>
 <li><code>secrets</code> — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
 <li><code>collaborators</code> — Org repos are skipped with a warning.</li>
-<li><code>environments</code> — Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.</li>
+<li><code>environments</code> — Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -4644,7 +4644,7 @@
 <li><code>variables</code> — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.</li>
 <li><code>secrets</code> — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
 <li><code>collaborators</code> — Users are added to inherited users. Set inherit: false to drop inherited users.</li>
-<li><code>environments</code> — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.</li>
+<li><code>environments</code> — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.</li>
 <li><code>deleteOrphaned</code> — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -5859,10 +5859,18 @@
 <td>-</td>
 <td>Only refs matching these patterns can deploy.</td>
 </tr>
+<tr>
+<td><code>deleteOrphaned</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td><code>false</code></td>
+<td>Delete patterns on GitHub that are not in custom.</td>
+</tr>
 </tbody>
 </table>
 <ul>
-<li><code>custom</code> — Patterns on GitHub that are not listed here are left in place with a warning.</li>
+<li><code>custom</code> — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.</li>
+<li><code>deleteOrphaned</code> — Only valid with custom. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
 
