@@ -362,6 +362,12 @@ describe("AiChangeDescriber", () => {
       /names the concrete thing that changed \(tool, rule, setting or key, version\)/
     );
     assert.match(system, /effect as read directly from the diff/);
+    assert.match(
+      system,
+      /\(e\.g\. "enable no-unused-vars so lint fails on unused variables", not just "update eslint config"\)/,
+      "bullet example must name the rule together with its effect"
+    );
+    assert.doesNotMatch(system, /not "add no-unused-vars rule"/);
     assert.match(system, /do not guess motives/);
     assert.doesNotMatch(system, /Do not invent reasons/);
     assert.match(
