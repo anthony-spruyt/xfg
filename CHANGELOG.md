@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.3.1](https://github.com/anthony-spruyt/xfg/compare/v8.3.0...v8.3.1) (2026-10-10)
+
+
+### Bug Fixes
+
+* **settings:** send squash title and message together ([#1195](https://github.com/anthony-spruyt/xfg/issues/1195)) ([3eeb301](https://github.com/anthony-spruyt/xfg/commit/3eeb301bcb4a95ae2301247c04e7735d6a4288ad))
+
 ## [8.3.0](https://github.com/anthony-spruyt/xfg/compare/v8.2.0...v8.3.0) (2026-10-10)
 
 
