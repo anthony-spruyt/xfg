@@ -2,6 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { EnvironmentsProcessor } from "../../../../src/settings/environments/processor.js";
 import type {
+  ExistingBranchPattern,
   GitHubDeploymentBranchPolicy,
   GitHubEnvironment,
   IEnvironmentsStrategy,
@@ -9,6 +10,7 @@ import type {
 import type {
   DeploymentBranchPattern,
   EnvironmentConfig,
+  EnvironmentsConfig,
   RepoConfig,
   RepoVisibility,
 } from "../../../../src/config/index.js";
@@ -21,7 +23,7 @@ import type {
 class MockStrategy implements IEnvironmentsStrategy {
   calls: { method: string; args: unknown[] }[] = [];
   environments: GitHubEnvironment[] = [];
-  patterns = new Map<string, DeploymentBranchPattern[]>();
+  patterns = new Map<string, (DeploymentBranchPattern & { id?: number })[]>();
   failOn?: string;
   failWith = "HTTP 404: Not Found";
   failListFor?: string;
@@ -37,13 +39,20 @@ class MockStrategy implements IEnvironmentsStrategy {
     if (this.failOn === "createOrUpdate") throw new Error(this.failWith);
     this.calls.push({ method: "createOrUpdate", args: [name, policy] });
   }
+  async delete(_r: RepoInfo, name: string): Promise<void> {
+    if (this.failOn === "delete") throw new Error(this.failWith);
+    this.calls.push({ method: "delete", args: [name] });
+  }
   async listBranchPolicies(
     _r: RepoInfo,
     env: string
-  ): Promise<DeploymentBranchPattern[]> {
+  ): Promise<ExistingBranchPattern[]> {
     this.calls.push({ method: "listBranchPolicies", args: [env] });
     if (this.failListFor === env) throw new Error(this.failWith);
-    return this.patterns.get(env) ?? [];
+    return (this.patterns.get(env) ?? []).map((p, i) => ({
+      ...p,
+      id: p.id ?? i + 1,
+    }));
   }
   async createBranchPolicy(
     _r: RepoInfo,
@@ -52,6 +61,14 @@ class MockStrategy implements IEnvironmentsStrategy {
   ): Promise<void> {
     if (this.failOn === "createBranchPolicy") throw new Error(this.failWith);
     this.calls.push({ method: "createBranchPolicy", args: [env, pattern] });
+  }
+  async deleteBranchPolicy(
+    _r: RepoInfo,
+    env: string,
+    id: number
+  ): Promise<void> {
+    if (this.failOn === "deleteBranchPolicy") throw new Error(this.failWith);
+    this.calls.push({ method: "deleteBranchPolicy", args: [env, id] });
   }
 }
 
@@ -81,6 +98,10 @@ function config(environments?: Record<string, EnvironmentConfig>): RepoConfig {
     files: [],
     settings: environments ? { environments } : {},
   };
+}
+
+function pruning(environments: Record<string, EnvironmentConfig>): RepoConfig {
+  return config({ ...environments, deleteOrphaned: true } as EnvironmentsConfig);
 }
 
 const custom = { protected_branches: false, custom_branch_policies: true };
@@ -346,5 +367,202 @@ describe("EnvironmentsProcessor", () => {
     );
     assert.equal(result.success, false);
     assert.equal(meta.called, 0);
+  });
+});
+
+describe("EnvironmentsProcessor deleteOrphaned", () => {
+  const tag: DeploymentBranchPattern = { type: "tag", name: "v*" };
+  const pruneRelease = {
+    release: {
+      deploymentBranchPolicy: { deleteOrphaned: true, custom: [main, tag] },
+    },
+  };
+
+  function withNpm(): MockStrategy {
+    const strategy = new MockStrategy();
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: null },
+      { name: "npm", deployment_branch_policy: null },
+    ];
+    return strategy;
+  }
+
+  function withStaleTag(): MockStrategy {
+    const strategy = new MockStrategy();
+    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.patterns.set("release", [
+      { id: 1, ...main },
+      { id: 7, type: "tag", name: "v*.*.*" },
+    ]);
+    return strategy;
+  }
+
+  test("keeps environments not in config by default", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(config({ release: {} }), repo, {});
+    assert.deepEqual(strategy.calls, []);
+    assert.equal(result.message, "No changes needed");
+  });
+
+  test("deletes environments not in config", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(pruning({ release: {} }), repo, {});
+    assert.equal(result.success, true, result.message);
+    assert.deepEqual(strategy.calls, [{ method: "delete", args: ["npm"] }]);
+    assert.equal(result.changes?.delete, 1);
+    assert.match(result.message, /Applied: 1 deleted/);
+    assert.deepEqual(
+      result.planOutput?.lines.map((l) =>
+        l.replace(new RegExp(String.fromCharCode(0x1b) + "\\[[0-9;]*m", "g"), "")
+      ),
+      ['    - environment "npm"', "  Applied: 1 environment (1 deleted)"]
+    );
+  });
+
+  test("dry run plans the deletion without deleting", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(pruning({ release: {} }), repo, {
+      dryRun: true,
+    });
+    assert.deepEqual(strategy.calls, []);
+    assert.equal(result.changes?.delete, 1);
+    assert.deepEqual(result.planOutput?.entries, [
+      { name: "npm", action: "delete" },
+    ]);
+  });
+
+  test("noDelete keeps environments not in config", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(pruning({ release: {} }), repo, {
+      noDelete: true,
+    });
+    assert.deepEqual(strategy.calls, []);
+    assert.equal(result.changes?.delete, 0);
+  });
+
+  test("deleteOrphaned with no environments deletes every environment", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(pruning({}), repo, {});
+    assert.equal(result.skipped, undefined);
+    assert.deepEqual(strategy.calls, [
+      { method: "delete", args: ["release"] },
+      { method: "delete", args: ["npm"] },
+    ]);
+  });
+
+  test("creates and updates before deleting", async () => {
+    const strategy = withNpm();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    await processor.process(
+      pruning({ release: { deploymentBranchPolicy: { protectedBranches: true } } }),
+      repo,
+      {}
+    );
+    assert.deepEqual(
+      strategy.calls.map((c) => c.method),
+      ["createOrUpdate", "delete"]
+    );
+  });
+
+  test("deletes patterns not in config by id, after adding missing ones", async () => {
+    const strategy = withStaleTag();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(config(pruneRelease), repo, {});
+    assert.equal(result.success, true, result.message);
+    assert.deepEqual(strategy.calls, [
+      { method: "listBranchPolicies", args: ["release"] },
+      { method: "createBranchPolicy", args: ["release", tag] },
+      { method: "deleteBranchPolicy", args: ["release", 7] },
+    ]);
+    assert.equal(result.warnings, undefined);
+  });
+
+  test("dry run plans pattern deletions without deleting", async () => {
+    const strategy = withStaleTag();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(config(pruneRelease), repo, {
+      dryRun: true,
+    });
+    assert.ok(!strategy.calls.some((c) => c.method === "deleteBranchPolicy"));
+    assert.deepEqual(result.planOutput?.entries, [
+      {
+        name: "release",
+        action: "update",
+        desiredKind: "custom",
+        addedPatterns: [tag],
+        removedPatterns: [{ type: "tag", name: "v*.*.*" }],
+      },
+    ]);
+  });
+
+  test("noDelete keeps patterns and warns as before", async () => {
+    const strategy = withStaleTag();
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(config(pruneRelease), repo, {
+      noDelete: true,
+    });
+    assert.ok(!strategy.calls.some((c) => c.method === "deleteBranchPolicy"));
+    assert.deepEqual(result.warnings, [
+      'me/r: environment "release" has tag "v*.*.*" not in config - left in place',
+    ]);
+  });
+
+  test("deletes no patterns it could not plan after switching to custom", async () => {
+    const strategy = new MockStrategy();
+    strategy.environments = [{ name: "release", deployment_branch_policy: null }];
+    strategy.patterns.set("release", [{ id: 7, type: "tag", name: "v*.*.*" }]);
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    await processor.process(config(pruneRelease), repo, {});
+    assert.ok(!strategy.calls.some((c) => c.method === "deleteBranchPolicy"));
+  });
+
+  test("fails naming the Administration permission when an environment delete gets 403", async () => {
+    const strategy = withNpm();
+    strategy.failOn = "delete";
+    strategy.failWith = "gh: Resource not accessible by integration (HTTP 403)";
+    const processor = new EnvironmentsProcessor(strategy, metadata("private"));
+    const result = await processor.process(pruning({ release: {} }), repo, {});
+    assert.equal(result.success, false);
+    assert.equal(result.skipped, undefined);
+    assert.match(
+      result.message,
+      /deleting environment "npm" needs the Administration: Read and write permission/
+    );
+    assert.match(result.message, /HTTP 403/);
+  });
+
+  test("fails naming the Administration permission when a pattern delete gets 403", async () => {
+    const strategy = withStaleTag();
+    strategy.failOn = "deleteBranchPolicy";
+    strategy.failWith = "gh: Resource not accessible by integration (HTTP 403)";
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(
+      config({
+        release: {
+          deploymentBranchPolicy: { deleteOrphaned: true, custom: [main] },
+        },
+      }),
+      repo,
+      {}
+    );
+    assert.equal(result.success, false);
+    assert.match(
+      result.message,
+      /deleting tag "v\*\.\*\.\*" from environment "release" needs the Administration: Read and write permission/
+    );
+  });
+
+  test("surfaces other delete errors unchanged", async () => {
+    const strategy = withNpm();
+    strategy.failOn = "delete";
+    const processor = new EnvironmentsProcessor(strategy, metadata());
+    const result = await processor.process(pruning({ release: {} }), repo, {});
+    assert.equal(result.success, false);
+    assert.equal(result.message, "Failed: HTTP 404: Not Found");
   });
 });

@@ -124,7 +124,7 @@ describe("GitHubEnvironmentsStrategy", () => {
     });
   });
 
-  test("listBranchPolicies maps name and type", async () => {
+  test("listBranchPolicies maps id, name and type", async () => {
     const { executor, strategy } = setup(
       JSON.stringify({
         total_count: 2,
@@ -136,8 +136,8 @@ describe("GitHubEnvironmentsStrategy", () => {
     );
     const policies = await strategy.listBranchPolicies(mockRepo, "release");
     assert.deepEqual(policies, [
-      { type: "branch", name: "main" },
-      { type: "tag", name: "v*" },
+      { id: 1, type: "branch", name: "main" },
+      { id: 2, type: "tag", name: "v*" },
     ]);
     assert.equal(
       endpointOf(executor.calls[0].args),
@@ -150,8 +150,42 @@ describe("GitHubEnvironmentsStrategy", () => {
       JSON.stringify({ branch_policies: [{ id: 1, name: "main" }] })
     );
     assert.deepEqual(await strategy.listBranchPolicies(mockRepo, "release"), [
-      { type: "branch", name: "main" },
+      { id: 1, type: "branch", name: "main" },
     ]);
+  });
+
+  test("delete DELETEs the environment under an encoded name", async () => {
+    const { executor, strategy } = setup("");
+    await strategy.delete(mockRepo, "prod/eu", { token: "t" });
+    const call = executor.calls[0];
+    assert.equal(call.args[2], "DELETE");
+    assert.equal(
+      endpointOf(call.args),
+      "/repos/test-org/test-repo/environments/prod%2Feu"
+    );
+    assert.equal(call.options?.env?.GH_TOKEN, "t");
+  });
+
+  test("deleteBranchPolicy DELETEs the pattern by id", async () => {
+    const { executor, strategy } = setup("");
+    await strategy.deleteBranchPolicy(mockRepo, "release", 42);
+    const call = executor.calls[0];
+    assert.equal(call.args[2], "DELETE");
+    assert.equal(
+      endpointOf(call.args),
+      "/repos/test-org/test-repo/environments/release/deployment-branch-policies/42"
+    );
+  });
+
+  test("deleteSecret DELETEs the environment secret", async () => {
+    const { executor, strategy } = setup("");
+    await strategy.deleteSecret(mockRepo, "release", "OLD_KEY");
+    const call = executor.calls[0];
+    assert.equal(call.args[2], "DELETE");
+    assert.equal(
+      endpointOf(call.args),
+      "/repos/test-org/test-repo/environments/release/secrets/OLD_KEY"
+    );
   });
 
   test("createBranchPolicy POSTs name and type", async () => {

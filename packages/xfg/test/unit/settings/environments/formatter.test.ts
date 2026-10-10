@@ -13,6 +13,7 @@ const change = (overrides: Partial<EnvironmentChange>): EnvironmentChange => ({
   putPolicy: false,
   missingPatterns: [],
   unmanagedPatterns: [],
+  orphanPatterns: [],
   patternsKnown: true,
   ...overrides,
 });
@@ -54,6 +55,7 @@ describe("formatEnvironmentsPlan", () => {
           { type: "branch", name: "main" },
           { type: "tag", name: "v*" },
         ],
+        removedPatterns: [],
       },
     ]);
   });
@@ -83,6 +85,7 @@ describe("formatEnvironmentsPlan", () => {
         currentKind: "all",
         desiredKind: "protected",
         addedPatterns: [],
+        removedPatterns: [],
       },
     ]);
   });
@@ -106,6 +109,61 @@ describe("formatEnvironmentsPlan", () => {
       '    ~ environment "release"',
       '        + tag "v*"',
       "  Plan: 2 environments (1 to create, 1 to update)",
+    ]);
+  });
+
+  test("shows a pattern deletion under the updated environment", () => {
+    const result = formatEnvironmentsPlan(
+      [
+        change({
+          action: "update",
+          currentKind: "custom",
+          desiredKind: "custom",
+          missingPatterns: [{ type: "tag", name: "v*" }],
+          orphanPatterns: [{ id: 7, type: "tag", name: "v*.*.*" }],
+        }),
+      ],
+      true
+    );
+    assert.deepEqual(result.lines.map(strip), [
+      '    ~ environment "release"',
+      '        + tag "v*"',
+      '        - tag "v*.*.*"',
+      "  Plan: 1 environment (1 to update)",
+    ]);
+    assert.deepEqual(result.entries, [
+      {
+        name: "release",
+        action: "update",
+        desiredKind: "custom",
+        addedPatterns: [{ type: "tag", name: "v*" }],
+        removedPatterns: [{ type: "tag", name: "v*.*.*" }],
+      },
+    ]);
+  });
+
+  test("lists environment deletions last with a - line", () => {
+    const result = formatEnvironmentsPlan(
+      [change({ name: "preview", action: "create" })],
+      false,
+      [{ action: "delete", name: "npm" }]
+    );
+    assert.deepEqual(result.lines.map(strip), [
+      '    + environment "preview"',
+      "        deployment branches: all",
+      '    - environment "npm"',
+      "  Applied: 2 environments (1 created, 1 deleted)",
+    ]);
+    assert.deepEqual(result.entries.at(-1), { name: "npm", action: "delete" });
+  });
+
+  test("plans a deletion on its own", () => {
+    const result = formatEnvironmentsPlan([], true, [
+      { action: "delete", name: "npm" },
+    ]);
+    assert.deepEqual(result.lines.map(strip), [
+      '    - environment "npm"',
+      "  Plan: 1 environment (1 to delete)",
     ]);
   });
 });

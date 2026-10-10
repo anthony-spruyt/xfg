@@ -416,7 +416,11 @@ function validateSettingsCollaborators(
 }
 
 const ENVIRONMENT_KEYS = new Set(["deploymentBranchPolicy", "secrets"]);
-const BRANCH_POLICY_KEYS = new Set(["protectedBranches", "custom"]);
+const BRANCH_POLICY_KEYS = new Set([
+  "protectedBranches",
+  "custom",
+  "deleteOrphaned",
+]);
 const BRANCH_PATTERN_KEYS = new Set(["type", "name"]);
 const ENVIRONMENT_NAME_MAX_LENGTH = 255;
 
@@ -493,6 +497,18 @@ function validateDeploymentBranchPolicy(
   if (hasCustom) {
     validateBranchPatterns(policy.custom, ctx);
   }
+  if (policy.deleteOrphaned !== undefined) {
+    if (typeof policy.deleteOrphaned !== "boolean") {
+      throw new ValidationError(
+        `${context}: deploymentBranchPolicy: deleteOrphaned must be a boolean`
+      );
+    }
+    if (!hasCustom) {
+      throw new ValidationError(
+        `${context}: deploymentBranchPolicy: deleteOrphaned only applies to a 'custom' policy`
+      );
+    }
+  }
 }
 
 function validateEnvironmentSecrets(secrets: unknown, context: string): void {
@@ -500,10 +516,18 @@ function validateEnvironmentSecrets(secrets: unknown, context: string): void {
     throw new ValidationError(`${context}: secrets must be an object`);
   }
   for (const [name, value] of Object.entries(secrets)) {
-    if (name === "deleteOrphaned" || name === "inherit") {
+    if (name === "inherit") {
       throw new ValidationError(
         `${context}: '${name}' is not supported in environment secrets`
       );
+    }
+    if (name === "deleteOrphaned") {
+      if (typeof value !== "boolean") {
+        throw new ValidationError(
+          `${context}: secrets.deleteOrphaned must be a boolean`
+        );
+      }
+      continue;
     }
     if (value === false) continue;
     if (!isPlainObject(value)) {
@@ -527,8 +551,8 @@ function validateSettingsEnvironments(
 
   const seenNames = new Map<string, string>();
   for (const [name, env] of Object.entries(settings.environments)) {
-    if (name === "inherit") {
-      validateEnvironmentsInherit(env, context);
+    if (name === "inherit" || name === "deleteOrphaned") {
+      validateEnvironmentsFlag(name, env, context);
       continue;
     }
     validateEnvironmentName(name, context, seenNames);
@@ -538,10 +562,14 @@ function validateSettingsEnvironments(
   }
 }
 
-function validateEnvironmentsInherit(value: unknown, context: string): void {
+function validateEnvironmentsFlag(
+  key: string,
+  value: unknown,
+  context: string
+): void {
   if (typeof value !== "boolean") {
     throw new ValidationError(
-      `${context}: environments.inherit must be a boolean`
+      `${context}: environments.${key} must be a boolean`
     );
   }
 }

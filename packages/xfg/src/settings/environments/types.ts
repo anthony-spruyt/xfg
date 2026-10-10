@@ -30,6 +30,11 @@ export interface GitHubBranchPoliciesResponse {
   branch_policies?: GitHubBranchPolicy[];
 }
 
+/** A pattern as it exists on GitHub; the id is what DELETE takes. */
+export interface ExistingBranchPattern extends DeploymentBranchPattern {
+  id: number;
+}
+
 export interface IEnvironmentsStrategy {
   list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubEnvironment[]>;
   createOrUpdate(
@@ -38,15 +43,26 @@ export interface IEnvironmentsStrategy {
     policy: GitHubDeploymentBranchPolicy | null,
     options?: GhApiOptions
   ): Promise<void>;
+  delete(
+    repoInfo: RepoInfo,
+    name: string,
+    options?: GhApiOptions
+  ): Promise<void>;
   listBranchPolicies(
     repoInfo: RepoInfo,
     environment: string,
     options?: GhApiOptions
-  ): Promise<DeploymentBranchPattern[]>;
+  ): Promise<ExistingBranchPattern[]>;
   createBranchPolicy(
     repoInfo: RepoInfo,
     environment: string,
     pattern: DeploymentBranchPattern,
+    options?: GhApiOptions
+  ): Promise<void>;
+  deleteBranchPolicy(
+    repoInfo: RepoInfo,
+    environment: string,
+    id: number,
     options?: GhApiOptions
   ): Promise<void>;
 }
@@ -69,6 +85,12 @@ export interface IEnvironmentSecretsStrategy {
     name: string,
     encryptedValue: string,
     keyId: string,
+    options?: GhApiOptions
+  ): Promise<void>;
+  deleteSecret(
+    repoInfo: RepoInfo,
+    environment: string,
+    name: string,
     options?: GhApiOptions
   ): Promise<void>;
 }

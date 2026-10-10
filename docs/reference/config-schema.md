@@ -293,7 +293,7 @@ Global repository settings including GitHub Rulesets and repository features. in
 - `variables` — Set a variable to false to disable it. Use deleteOrphaned to remove variables not in config.
 - `secrets` — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Org repos are skipped with a warning.
-- `environments` — Set an environment to false to disable it. Environments are created and updated, never deleted. GitHub repos only; private repos need a paid plan.
+- `environments` — Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->
@@ -325,7 +325,7 @@ Repository settings including GitHub Rulesets and repository features
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
-- `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments are created and updated, never deleted.
+- `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.
 - `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
 
 <!-- xfg:generated:end -->
@@ -787,8 +787,10 @@ Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omi
 | ------------------- | ------------------------------------------------------- | -------- | ------- | ----------------------------------------------------- |
 | `protectedBranches` | `true`                                                  | No       | -       | Only branches with branch protection rules can deploy |
 | `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] | No       | -       | Only refs matching these patterns can deploy.         |
+| `deleteOrphaned`    | `boolean`                                               | No       | `false` | Delete patterns on GitHub that are not in custom.     |
 
-- `custom` — Patterns on GitHub that are not listed here are left in place with a warning.
+- `custom` — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
+- `deleteOrphaned` — Only valid with custom. Default: false
 
 <!-- xfg:generated:end -->
 

@@ -68,7 +68,7 @@ export function buildSettingsReport(
     variables: { create: 0, update: 0, delete: 0 },
     secrets: { create: 0, update: 0, delete: 0 },
     collaborators: { create: 0, update: 0, delete: 0 },
-    environments: { create: 0, update: 0 },
+    environments: { create: 0, update: 0, delete: 0 },
   };
 
   for (const result of results) {

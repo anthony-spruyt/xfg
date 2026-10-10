@@ -9,6 +9,7 @@ import type {
   GitHubSecretsListResponse,
 } from "../secrets/types.js";
 import type {
+  ExistingBranchPattern,
   GitHubBranchPoliciesResponse,
   GitHubDeploymentBranchPolicy,
   GitHubEnvironment,
@@ -75,11 +76,19 @@ export class GitHubEnvironmentsStrategy
     });
   }
 
+  async delete(
+    repoInfo: RepoInfo,
+    name: string,
+    options?: GhApiOptions
+  ): Promise<void> {
+    await this.api.call("DELETE", this.base(repoInfo, name), { options });
+  }
+
   async listBranchPolicies(
     repoInfo: RepoInfo,
     environment: string,
     options?: GhApiOptions
-  ): Promise<DeploymentBranchPattern[]> {
+  ): Promise<ExistingBranchPattern[]> {
     const result = await this.api.call(
       "GET",
       `${this.base(repoInfo, environment)}/deployment-branch-policies?per_page=100`,
@@ -90,9 +99,23 @@ export class GitHubEnvironmentsStrategy
       "deployment branch policies response"
     );
     return (response.branch_policies ?? []).map((p) => ({
+      id: p.id,
       type: p.type ?? "branch",
       name: p.name,
     }));
+  }
+
+  async deleteBranchPolicy(
+    repoInfo: RepoInfo,
+    environment: string,
+    id: number,
+    options?: GhApiOptions
+  ): Promise<void> {
+    await this.api.call(
+      "DELETE",
+      `${this.base(repoInfo, environment)}/deployment-branch-policies/${id}`,
+      { options }
+    );
   }
 
   async createBranchPolicy(
@@ -153,6 +176,19 @@ export class GitHubEnvironmentsStrategy
       "PUT",
       `${this.base(repoInfo, environment)}/secrets/${encodeURIComponent(name)}`,
       { payload: { encrypted_value: encryptedValue, key_id: keyId }, options }
+    );
+  }
+
+  async deleteSecret(
+    repoInfo: RepoInfo,
+    environment: string,
+    name: string,
+    options?: GhApiOptions
+  ): Promise<void> {
+    await this.api.call(
+      "DELETE",
+      `${this.base(repoInfo, environment)}/secrets/${encodeURIComponent(name)}`,
+      { options }
     );
   }
 }
