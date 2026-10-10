@@ -1,0 +1,55 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/SchemaStore/schemastore/master/src/schemas/json/github-workflow.json
+# See https://github.com/anthony-spruyt/repo-operator/blob/main/src/templates/.github/workflows/pr-title.yaml for template comments
+
+name: "PR Title"
+on:
+  pull_request:
+    types:
+      - "opened"
+      - "edited"
+      - "synchronize"
+      - "reopened"
+    branches:
+      - "main"
+permissions: {}
+jobs:
+  check:
+    name: "PR Title"
+    runs-on: "ubuntu-latest"
+    if: |-
+      github.event_name == 'pull_request' && !(
+        github.event.pull_request.user.login == 'mergify[bot]' &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        startsWith(github.event.pull_request.head.ref, 'mergify/merge-queue/'))
+    timeout-minutes: 5
+    permissions:
+      pull-requests: "read"
+    steps:
+      - name: "Harden Runner"
+        uses: "step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25"
+        with:
+          egress-policy: "block"
+          disable-sudo-and-containers: true
+          allowed-endpoints: "api.github.com:443 results-receiver.actions.githubusercontent.com:443"
+      - name: "Check Conventional Commits"
+        uses: "amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50"
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: "^(?![A-Z]).+$"
+          subjectPatternError: "The subject \"{subject}\" in the PR title \"{title}\" starts with an uppercase letter. Start it lowercase, for example \"feat(ci): add a check\"."
+          validateSingleCommit: false
+          wip: false
