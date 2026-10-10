@@ -1174,6 +1174,51 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fallback-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallback provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fallback provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-and-retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and retries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1237,6 +1282,17 @@
     <span class="md-ellipsis">
       
         Azure OpenAI, LiteLLM and other gateways
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gateway-with-fallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway with fallback
       
     </span>
   </a>
@@ -2782,6 +2838,51 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Headers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fallback-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fallback provider
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Fallback provider">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#timeouts-and-retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Timeouts and retries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2845,6 +2946,17 @@
     <span class="md-ellipsis">
       
         Azure OpenAI, LiteLLM and other gateways
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gateway-with-fallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway with fallback
       
     </span>
   </a>
@@ -2934,7 +3046,7 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>- update the shared dev container tooling to devcontainer-common v2.3.4
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>- cancel superseded CI runs when a PR gets a new push
 </span></code></pre></div>
-<p>AI is opt-in. If anything goes wrong (missing key, network error, a reply that is not a valid conventional commit), xfg logs a warning and uses the default message. The sync never fails because of AI.</p>
+<p>AI is opt-in. If anything goes wrong (missing key, network error, a reply that is not a valid conventional commit), xfg logs a warning and uses the default message, after trying the <a href="#fallback-provider">fallback provider</a> if one is set. The sync never fails because of AI.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -2950,8 +3062,13 @@
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-haiku-4-5</span><span class="w"> </span><span class="c1"># default for anthropic; required for openai</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://api.anthropic.com</span><span class="w"> </span><span class="c1"># optional</span>
 </span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">MY_KEY</span><span class="w"> </span><span class="c1"># optional; defaults to ANTHROPIC_API_KEY / OPENAI_API_KEY</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">prompt</span><span class="p">:</span><span class="w"> </span><span class="s">"Mention</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Jira</span><span class="nv"> </span><span class="s">ticket</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">diff</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">one."</span><span class="w"> </span><span class="c1"># optional</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">maxDiffChars</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20000</span><span class="w"> </span><span class="c1"># optional</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">headersEnv</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional; header name: env var that holds its value</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="nt">X-Team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TEAM_HEADER_VALUE</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">fallback</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional; tried when the provider above fails</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o-mini</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">prompt</span><span class="p">:</span><span class="w"> </span><span class="s">"Mention</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Jira</span><span class="nv"> </span><span class="s">ticket</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">diff</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">one."</span><span class="w"> </span><span class="c1"># optional</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="nt">maxDiffChars</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20000</span><span class="w"> </span><span class="c1"># optional</span>
 </span></code></pre></div>
 <table>
 <thead>
@@ -2983,6 +3100,16 @@
 <td><code>ANTHROPIC_API_KEY</code> / <code>OPENAI_API_KEY</code></td>
 </tr>
 <tr>
+<td><code>headersEnv</code></td>
+<td>Extra HTTP headers, as header name to env var name. See <a href="#headers">Headers</a></td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>fallback</code></td>
+<td>A second provider, tried when this one fails. See <a href="#fallback-provider">Fallback provider</a></td>
+<td>-</td>
+</tr>
+<tr>
 <td><code>prompt</code></td>
 <td>Extra instructions appended to the built-in prompt</td>
 <td>-</td>
@@ -2996,49 +3123,100 @@
 </table>
 <p>The default key (<code>ANTHROPIC_API_KEY</code> / <code>OPENAI_API_KEY</code>) is only sent to that provider's own API. With any other <code>baseUrl</code>, name a dedicated variable in <code>apiKeyEnv</code>. <code>apiKeyEnv</code> can't name a credential xfg uses elsewhere, such as <code>GH_TOKEN</code> (see <a href="../env-variables/#credential-variables">Environment Variables</a>).</p>
 <p><code>ai</code> lives on <code>prOptions</code>, so it follows the normal root → group → repo override chain. An <code>ai</code> object at a lower level replaces the one above it (it is not deep-merged). Set <code>ai: false</code> on a repo or group to turn it off there. A later <code>ai: true</code> turns it back on with the <code>ai</code> object from above.</p>
-<h2 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h2>
-<h3 id="anthropic">Anthropic<a class="headerlink" href="#anthropic" title="Permanent link">&para;</a></h3>
+<h3 id="headers">Headers<a class="headerlink" href="#headers" title="Permanent link">&para;</a></h3>
+<p><code>headersEnv</code> sends extra HTTP headers with every request to that provider, for gateways that sit behind an access proxy. Each entry maps a header name to the <strong>name of an env var</strong>; the value is read from the environment at run time and never written in config.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-haiku-4-5</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://gateway.example.com/v1</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-model</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GATEWAY_API_KEY</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">headersEnv</span><span class="p">:</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span><span class="nt">CF-Access-Client-Id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CF_ACCESS_CLIENT_ID</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span><span class="nt">CF-Access-Client-Secret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CF_ACCESS_CLIENT_SECRET</span>
+</span></code></pre></div>
+<ul>
+<li>If any named env var is unset or empty, xfg skips that provider with a warning, as it does for a missing API key. It never sends an empty header.</li>
+<li>Like <code>apiKeyEnv</code>, a header can't name a credential xfg uses elsewhere, such as <code>GH_TOKEN</code> (see <a href="../env-variables/#credential-variables">Environment Variables</a>).</li>
+<li>Header names xfg sets itself (<code>Authorization</code>, <code>x-api-key</code>, <code>anthropic-version</code>, <code>Content-Type</code>, <code>Content-Length</code>, <code>Host</code>) are rejected.</li>
+<li>xfg doesn't follow HTTP redirects for any AI provider. A redirect counts as a failure, so the <code>fallback</code> provider runs if one is set.</li>
+</ul>
+<h3 id="fallback-provider">Fallback provider<a class="headerlink" href="#fallback-provider" title="Permanent link">&para;</a></h3>
+<p><code>fallback</code> takes one more provider with the same fields as <code>ai</code> (<code>provider</code>, <code>model</code>, <code>baseUrl</code>, <code>apiKeyEnv</code>, <code>headersEnv</code>, <code>prompt</code>, <code>maxDiffChars</code>), but no nested <code>fallback</code>. xfg tries it when the primary fails for any reason: a missing API key or header env var, a network error, a timeout, a non-2xx status, or a reply that is not a valid conventional commit.</p>
+<ul>
+<li><code>prompt</code> and <code>maxDiffChars</code> default to the primary's, so the fallback follows the same rules. <code>model</code>, <code>baseUrl</code>, <code>apiKeyEnv</code> and <code>headersEnv</code> are not inherited.</li>
+<li>The same key rule applies: the default <code>ANTHROPIC_API_KEY</code> / <code>OPENAI_API_KEY</code> is only sent to that provider's own API, so name a dedicated <code>apiKeyEnv</code> for any other <code>baseUrl</code>.</li>
+<li>If the fallback fails too, xfg warns and uses the default message. The sync never fails because of AI.</li>
+</ul>
+<h4 id="timeouts-and-retries">Timeouts and retries<a class="headerlink" href="#timeouts-and-retries" title="Permanent link">&para;</a></h4>
+<p>Each request times out after 60 seconds, and connecting to a host that does not answer gives up after 10 seconds. With a <code>fallback</code> set, the primary is tried once without <code>--retries</code>, so an unreachable gateway costs one connect timeout, not a full retry cycle. The fallback gets the normal <code>--retries</code>.</p>
+<h2 id="providers">Providers<a class="headerlink" href="#providers" title="Permanent link">&para;</a></h2>
+<h3 id="anthropic">Anthropic<a class="headerlink" href="#anthropic" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-haiku-4-5</span>
 </span></code></pre></div>
 <p>Needs <code>ANTHROPIC_API_KEY</code> (or the variable named in <code>apiKeyEnv</code>).</p>
 <h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">prOptions</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o-mini</span>
-</span></code></pre></div>
-<p>Needs <code>OPENAI_API_KEY</code>.</p>
-<h3 id="ollama-local-no-key">Ollama (local, no key)<a class="headerlink" href="#ollama-local-no-key" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama3.1</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:11434/v1</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o-mini</span>
+</span></code></pre></div>
+<p>Needs <code>OPENAI_API_KEY</code>.</p>
+<h3 id="ollama-local-no-key">Ollama (local, no key)<a class="headerlink" href="#ollama-local-no-key" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama3.1</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://localhost:11434/v1</span>
 </span></code></pre></div>
 <p>No API key is needed when <code>baseUrl</code> is set. Diffs never leave your machine.</p>
 <h3 id="openrouter">OpenRouter<a class="headerlink" href="#openrouter" title="Permanent link">&para;</a></h3>
 <p>OpenRouter speaks both protocols. Keep the provider and change only the URL and key.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">prOptions</span><span class="p">:</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENROUTER_API_KEY</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic/claude-haiku-4.5</span>
-</span></code></pre></div>
-<p>or</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api/v1</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENROUTER_API_KEY</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai/gpt-4o-mini</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic/claude-haiku-4.5</span>
+</span></code></pre></div>
+<p>or</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api/v1</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENROUTER_API_KEY</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai/gpt-4o-mini</span>
 </span></code></pre></div>
 <p>Needs <code>OPENROUTER_API_KEY</code>. Any <a href="https://openrouter.ai/models">OpenRouter model</a> id works.</p>
 <h3 id="azure-openai-litellm-and-other-gateways">Azure OpenAI, LiteLLM and other gateways<a class="headerlink" href="#azure-openai-litellm-and-other-gateways" title="Permanent link">&para;</a></h3>
-<p>Any service that speaks the OpenAI Chat Completions API works with <code>provider: openai</code> and a <code>baseUrl</code>. If it needs a key, point <code>apiKeyEnv</code> at it.</p>
+<p>Any service that speaks the OpenAI Chat Completions API works with <code>provider: openai</code> and a <code>baseUrl</code>. If it needs a key, point <code>apiKeyEnv</code> at it. If the gateway needs extra headers, add them with <a href="#headers"><code>headersEnv</code></a>.</p>
+<h3 id="gateway-with-fallback">Gateway with fallback<a class="headerlink" href="#gateway-with-fallback" title="Permanent link">&para;</a></h3>
+<p>A self-hosted gateway behind an access proxy, with a hosted provider as a backup:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://gateway.example.com/v1</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">provider/small-model</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">GATEWAY_API_KEY</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">headersEnv</span><span class="p">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">      </span><span class="nt">CF-Access-Client-Id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CF_ACCESS_CLIENT_ID</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">      </span><span class="nt">CF-Access-Client-Secret</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CF_ACCESS_CLIENT_SECRET</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="nt">fallback</span><span class="p">:</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">      </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api/v1</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic/claude-haiku-4.5</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">      </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENROUTER_API_KEY</span>
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">GATEWAY_API_KEY</span><span class="o">=</span>...
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CF_ACCESS_CLIENT_ID</span><span class="o">=</span>...
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">CF_ACCESS_CLIENT_SECRET</span><span class="o">=</span>...
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENROUTER_API_KEY</span><span class="o">=</span>...
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>config.yaml
+</span></code></pre></div>
+<p>When the gateway answers, the fallback is never called. When it is down, unreachable, or missing a variable, xfg logs a warning and asks OpenRouter instead.</p>
 <h2 id="disabling-ai">Disabling AI<a class="headerlink" href="#disabling-ai" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Per repo or group: <code>prOptions: { ai: false }</code></li>
@@ -3056,12 +3234,13 @@
 <p class="admonition-title">Diffs are sent to the provider</p>
 <p>With <code>anthropic</code>, or <code>openai</code> without a local <code>baseUrl</code>, xfg sends the file paths and diffs of every synced change to that provider. Diffs are computed <strong>after</strong> <code>${ENV}</code> interpolation, so any secret you interpolate into file content is sent too. Do not enable AI for files that contain interpolated secrets, or use a local model such as Ollama.</p>
 </div>
+<p>With a <a href="#fallback-provider"><code>fallback</code></a>, the same payload goes to the fallback provider when the primary fails.</p>
 <p>xfg sends only the paths, change types (create/update/delete) and diffs, capped at <code>maxDiffChars</code>. It does not send repo names, tokens or anything else.</p>
 <h2 id="cost-and-caching">Cost and Caching<a class="headerlink" href="#cost-and-caching" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as <code>openai/gpt-4o-mini</code> via <a href="#openrouter">OpenRouter</a> cost several times less and write fine commit messages.</li>
 <li>Diffs are capped at <code>maxDiffChars</code> (20,000 characters by default).</li>
-<li>Responses are cached in memory for the run. The cache key is the prompt plus provider settings. When 50 repos get the exact same change, xfg makes one API call, not 50.</li>
+<li>Responses are cached in memory for the run. The cache key is the prompt plus provider settings, including the fallback. When 50 repos get the exact same change, xfg makes one API call, not 50.</li>
 <li>Transient errors (429, 5xx, timeouts) are retried with the same <code>--retries</code> setting as git operations.</li>
 </ul>
 

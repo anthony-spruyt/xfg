@@ -2407,6 +2407,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#aifallbackoptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aiFallbackOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#repofileoverride" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3293,6 +3304,17 @@
     <span class="md-ellipsis">
       
         aiOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aifallbackoptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        aiFallbackOptions
       
     </span>
   </a>
@@ -4199,6 +4221,98 @@
 <td>Name of the env var holding the API key.</td>
 </tr>
 <tr>
+<td><code>headersEnv</code></td>
+<td><code>object</code> of <code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Extra HTTP headers sent with the AI request, as header name to env var name pairs.</td>
+</tr>
+<tr>
+<td><code>prompt</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Extra instructions appended to the built-in system prompt</td>
+</tr>
+<tr>
+<td><code>maxDiffChars</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td><code>20000</code></td>
+<td>Maximum diff characters sent to the provider, shared fairly across files.</td>
+</tr>
+<tr>
+<td><code>fallback</code></td>
+<td><a href="#aifallbackoptions"><code>aiFallbackOptions</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>Provider to try when this one fails for any reason.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>provider</code> — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic</li>
+<li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
+<li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
+<li><code>apiKeyEnv</code> — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY</li>
+<li><code>headersEnv</code> — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.</li>
+<li><code>maxDiffChars</code> — Default: 20000</li>
+<li><code>fallback</code> — If it fails too, the default message is used.</li>
+</ul>
+<!-- xfg:generated:end -->
+
+<h3 id="aifallbackoptions">aiFallbackOptions<a class="headerlink" href="#aifallbackoptions" title="Permanent link">&para;</a></h3>
+<p>Same fields as <a href="#aioptions">aiOptions</a> except <code>fallback</code>. See <a href="../../configuration/ai-messages/#fallback-provider">Fallback provider</a>.</p>
+<!-- xfg:generated schema:aiFallbackOptions -->
+
+<p>Fallback AI provider, tried when the primary fails for any reason (missing key or header env var, network error, timeout, non-2xx status, invalid reply). prompt and maxDiffChars default to the primary's. One level only.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td><code>anthropic</code> | <code>openai</code></td>
+<td>No</td>
+<td><code>anthropic</code></td>
+<td>'anthropic' uses the Claude Messages API.</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Model id.</td>
+</tr>
+<tr>
+<td><code>baseUrl</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>API base URL, e.g.</td>
+</tr>
+<tr>
+<td><code>apiKeyEnv</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Name of the env var holding the API key.</td>
+</tr>
+<tr>
+<td><code>headersEnv</code></td>
+<td><code>object</code> of <code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Extra HTTP headers sent with the AI request, as header name to env var name pairs.</td>
+</tr>
+<tr>
 <td><code>prompt</code></td>
 <td><code>string</code></td>
 <td>No</td>
@@ -4219,6 +4333,7 @@
 <li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
 <li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
 <li><code>apiKeyEnv</code> — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY</li>
+<li><code>headersEnv</code> — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.</li>
 <li><code>maxDiffChars</code> — Default: 20000</li>
 </ul>
 <!-- xfg:generated:end -->
