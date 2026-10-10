@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.3.2](https://github.com/anthony-spruyt/xfg/compare/v8.3.1...v8.3.2) (2026-10-10)
+
+
+### Bug Fixes
+
+* **secrets:** plan secrets for repos that xfg sync will create ([#1196](https://github.com/anthony-spruyt/xfg/issues/1196)) ([52c2888](https://github.com/anthony-spruyt/xfg/commit/52c2888750dfb0eb65d66df4abbd523fa06a6c51))
+
 ## [8.3.1](https://github.com/anthony-spruyt/xfg/compare/v8.3.0...v8.3.1) (2026-10-10)
 
 
