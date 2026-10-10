@@ -10,6 +10,19 @@ ci(workflows): pin actions/checkout to v5
 Bumps actions/checkout from v4 to v5 in the CI and release workflows.
 ```
 
+When a sync changes more than one file, xfg ends the AI commit body with a list of every changed file, so none is left out of `git log`:
+
+```text
+chore: sync shared tooling config
+
+- devcontainer: bump devcontainer-common to v2.3.4
+- workflows: cancel superseded CI runs
+
+Changed files:
+- update .devcontainer/Dockerfile
+- update .github/workflows/ci.yaml
+```
+
 It applies to every sync commit, including `merge: direct` pushes. In PR mode, xfg also uses the AI subject as the PR title and adds a short AI summary to the PR body.
 
 AI is opt-in. If anything goes wrong (missing key, network error, a reply that is not a valid conventional commit), xfg logs a warning and uses the default message. The sync never fails because of AI.

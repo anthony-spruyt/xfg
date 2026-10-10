@@ -331,6 +331,21 @@ describe("AiChangeDescriber", () => {
     assert.match(calls[0].user, /actions\/checkout@v5/);
   });
 
+  test("system prompt asks the model to cover every changed area", async () => {
+    const { client, calls } = fakeClient([VALID]);
+    const { log } = fakeLog();
+    const describer = new AiChangeDescriber(() => client, log);
+    await describer.describe({ files: FILES, options: OPTIONS, retries: 0 });
+    const { system } = calls[0];
+    assert.match(
+      system,
+      /more than one file or area changed, the body is required: one bullet per area changed/
+    );
+    assert.match(system, /do not share one theme, the subject is a broad summary/);
+    assert.match(system, /empty string only when a single change/);
+    assert.doesNotMatch(system, /if the subject says it all/);
+  });
+
   test("appends custom prompt to the system prompt", async () => {
     const { client, calls } = fakeClient([VALID]);
     const { log } = fakeLog();
