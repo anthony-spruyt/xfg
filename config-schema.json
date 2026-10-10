@@ -320,6 +320,11 @@
           "minLength": 1,
           "description": "API base URL, e.g. http://localhost:11434/v1 for Ollama. With openai, a baseUrl makes the API key optional."
         },
+        "baseUrlEnv": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "description": "Name of the env var holding the API base URL, for when the URL must not be written in config. Mutually exclusive with baseUrl. If the env var is unset, empty or not an http(s) URL, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN."
+        },
         "apiKeyEnv": {
           "type": "string",
           "minLength": 1,
@@ -374,6 +379,11 @@
           "type": "string",
           "minLength": 1,
           "description": "API base URL, e.g. http://localhost:11434/v1 for Ollama. With openai, a baseUrl makes the API key optional."
+        },
+        "baseUrlEnv": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "description": "Name of the env var holding the API base URL, for when the URL must not be written in config. Mutually exclusive with baseUrl. If the env var is unset, empty or not an http(s) URL, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN."
         },
         "apiKeyEnv": {
           "type": "string",

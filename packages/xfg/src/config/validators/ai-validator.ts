@@ -1,6 +1,7 @@
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
 import {
+  assertAiBaseUrlEnvAllowed,
   assertAiHeadersEnvAllowed,
   assertAiKeyEnvAllowed,
 } from "../../shared/credential-env.js";
@@ -12,6 +13,7 @@ const PROVIDER_KEYS = [
   "provider",
   "maxDiffChars",
   "headersEnv",
+  "baseUrlEnv",
   ...STRING_FIELDS,
 ];
 const PRIMARY_KEYS = new Set<string>([...PROVIDER_KEYS, "fallback"]);
@@ -60,10 +62,14 @@ function validateProvider(
     }
   }
 
+  assertAiBaseUrlEnvAllowed(ai.baseUrlEnv, ai.baseUrl, path);
   assertAiKeyEnvAllowed(
     (provider as AiProvider | undefined) ?? "anthropic",
     ai.apiKeyEnv as string | undefined,
-    ai.baseUrl as string | undefined,
+    // A URL read from the env is unknown here, so it never counts as the provider's own API.
+    ai.baseUrlEnv === undefined
+      ? (ai.baseUrl as string | undefined)
+      : `env:${String(ai.baseUrlEnv)}`,
     path
   );
   assertAiHeadersEnvAllowed(ai.headersEnv, path);

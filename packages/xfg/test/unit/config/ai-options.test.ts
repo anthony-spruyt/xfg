@@ -2,6 +2,9 @@ import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import { validateRawConfig } from "../../../src/config/validator.js";
 import { normalizeConfig } from "../../../src/config/normalizer.js";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { RawConfig } from "../../../src/config/index.js";
 
 const baseConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
@@ -639,4 +642,157 @@ describe("prOptions.ai.fallback normalization", () => {
       prompt: "p",
     });
   });
+});
+
+describe("prOptions.ai.baseUrlEnv validation", () => {
+  const ai = (extra: Record<string, unknown>) =>
+    baseConfig({
+      prOptions: { ai: { provider: "openai", model: "m", ...extra } },
+    } as unknown as Partial<RawConfig>);
+
+  test("accepts an env var name on the primary", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        ai({
+          baseUrlEnv: "AI_BASE_URL",
+          apiKeyEnv: "GATEWAY_KEY",
+          headersEnv: { "X-A": "ENV_A" },
+        })
+      )
+    );
+  });
+
+  test("accepts an env var name on the fallback", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        ai({
+          baseUrlEnv: "AI_BASE_URL",
+          fallback: { provider: "openai", model: "m2", baseUrlEnv: "FB_URL" },
+        })
+      )
+    );
+  });
+
+  test("rejects baseUrl together with baseUrlEnv", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          ai({
+            baseUrl: "https://gw.example.com/v1",
+            baseUrlEnv: "AI_BASE_URL",
+          })
+        ),
+      /prOptions\.ai: baseUrl and baseUrlEnv are mutually exclusive/
+    );
+  });
+
+  test("rejects baseUrl together with baseUrlEnv on the fallback", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          ai({
+            fallback: {
+              provider: "openai",
+              model: "m2",
+              baseUrl: "https://gw.example.com/v1",
+              baseUrlEnv: "FB_URL",
+            },
+          })
+        ),
+      /prOptions\.ai\.fallback: baseUrl and baseUrlEnv are mutually exclusive/
+    );
+  });
+
+  test("rejects an empty or non-string value", () => {
+    for (const bad of ["", 5, null, ["A"]]) {
+      assert.throws(
+        () => validateRawConfig(ai({ baseUrlEnv: bad })),
+        /prOptions\.ai\.baseUrlEnv must be an env var name/
+      );
+    }
+  });
+
+  test("rejects a URL in place of an env var name without echoing it", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(ai({ baseUrlEnv: "https://gw-9f3a.example.com/v1" })),
+      (error: Error) =>
+        /must be an env var name/.test(error.message) &&
+        !error.message.includes("gw-9f3a")
+    );
+  });
+
+  for (const envName of ["GH_TOKEN", "github_token", "OPENAI_API_KEY"]) {
+    test(`rejects credential env var ${envName}`, () => {
+      assert.throws(
+        () => validateRawConfig(ai({ baseUrlEnv: envName })),
+        /credential xfg uses elsewhere/
+      );
+    });
+  }
+
+  test("rejects the provider's default key with a URL from the env", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          ai({ baseUrlEnv: "AI_BASE_URL", apiKeyEnv: "OPENAI_API_KEY" })
+        ),
+      /credential xfg uses elsewhere/
+    );
+  });
+
+  test("survives normalization on the primary and the fallback", () => {
+    const normalized = normalizeConfig(
+      ai({
+        baseUrlEnv: "AI_BASE_URL",
+        fallback: { model: "m2", baseUrlEnv: "FB_URL" },
+      }),
+      {}
+    );
+    const resolved = normalized.repos[0].prOptions?.ai;
+    assert.equal(resolved?.baseUrlEnv, "AI_BASE_URL");
+    assert.equal(resolved?.fallback?.baseUrlEnv, "FB_URL");
+  });
+});
+
+describe("config-schema.json baseUrlEnv", () => {
+  const schema = JSON.parse(
+    readFileSync(
+      join(
+        fileURLToPath(new URL(".", import.meta.url)),
+        "..",
+        "..",
+        "..",
+        "..",
+        "..",
+        "config-schema.json"
+      ),
+      "utf-8"
+    )
+  ) as {
+    definitions: Record<
+      string,
+      {
+        additionalProperties: boolean;
+        properties: Record<
+          string,
+          { type: string; pattern: string; description: string }
+        >;
+      }
+    >;
+  };
+
+  for (const name of ["aiOptions", "aiFallbackOptions"]) {
+    test(`${name} accepts baseUrlEnv as an env var name`, () => {
+      const def = schema.definitions[name];
+      const prop = def.properties.baseUrlEnv;
+      assert.ok(prop, "baseUrlEnv is declared");
+      assert.equal(prop.type, "string");
+      const pattern = new RegExp(prop.pattern);
+      assert.ok(pattern.test("AI_BASE_URL"));
+      assert.ok(!pattern.test("https://gw.example.com"));
+      assert.ok(!pattern.test(""));
+      assert.match(prop.description, /mutually exclusive|not both|instead of/i);
+    });
+  }
 });

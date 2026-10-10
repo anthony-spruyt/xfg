@@ -1,5 +1,6 @@
 import { ValidationError } from "../shared/errors.js";
 import {
+  assertAiBaseUrlEnvAllowed,
   assertAiHeadersEnvAllowed,
   assertAiKeyEnvAllowed,
   defaultAiKeyEnv,
@@ -47,6 +48,36 @@ function readApiKey(
   return value;
 }
 
+function resolveBaseUrl(
+  options: AiProviderOptions,
+  env: Record<string, string | undefined>,
+  path: string
+): string | undefined {
+  assertAiBaseUrlEnvAllowed(options.baseUrlEnv, options.baseUrl, path);
+  if (options.baseUrlEnv === undefined) return options.baseUrl;
+  const value = readEnv(env, options.baseUrlEnv);
+  if (!value) {
+    throw new ValidationError(
+      `${options.baseUrlEnv} is not set (required for ${path}.baseUrlEnv)`
+    );
+  }
+  if (!isHttpUrl(value)) {
+    throw new ValidationError(
+      `${options.baseUrlEnv} does not hold an http(s) URL (used for ${path}.baseUrlEnv)`
+    );
+  }
+  return value;
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function resolveHeaders(
   options: AiProviderOptions,
   env: Record<string, string | undefined>,
@@ -71,11 +102,15 @@ function resolveHeaders(
 }
 
 export function createAiClient(
-  options: AiProviderOptions,
+  configured: AiProviderOptions,
   env: Record<string, string | undefined>,
   fetch: FetchFn,
   path = "prOptions.ai"
 ): IAiClient {
+  const options = {
+    ...configured,
+    baseUrl: resolveBaseUrl(configured, env, path),
+  };
   assertAiKeyEnvAllowed(
     options.provider,
     options.apiKeyEnv,

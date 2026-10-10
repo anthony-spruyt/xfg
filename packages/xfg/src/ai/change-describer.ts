@@ -214,6 +214,7 @@ export class AiChangeDescriber implements IChangeDescriber {
                   a.options.provider,
                   a.options.model,
                   a.options.baseUrl,
+                  a.options.baseUrlEnv,
                   a.system,
                   a.user,
                 ]

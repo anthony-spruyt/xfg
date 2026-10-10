@@ -120,3 +120,32 @@ export function assertAiHeadersEnvAllowed(
     }
   }
 }
+
+/**
+ * `baseUrlEnv` names the env var that holds the base URL. A URL is never
+ * accepted inline, the two forms are exclusive, and the env var may not be a
+ * credential xfg uses elsewhere.
+ */
+export function assertAiBaseUrlEnvAllowed(
+  baseUrlEnv: unknown,
+  baseUrl: unknown,
+  path = "prOptions.ai"
+): void {
+  if (baseUrlEnv === undefined) return;
+  if (baseUrl !== undefined) {
+    throw new ValidationError(
+      `${path}: baseUrl and baseUrlEnv are mutually exclusive`
+    );
+  }
+  if (typeof baseUrlEnv !== "string" || !ENV_NAME.test(baseUrlEnv)) {
+    throw new ValidationError(
+      `${path}.baseUrlEnv must be an env var name, not a value`
+    );
+  }
+  if (isCredentialEnvName(baseUrlEnv)) {
+    throw new ValidationError(
+      `${path}.baseUrlEnv '${baseUrlEnv}' is a credential xfg uses elsewhere; ` +
+        `export the URL under a dedicated name.`
+    );
+  }
+}

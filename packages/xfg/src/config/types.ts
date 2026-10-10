@@ -9,6 +9,8 @@ export interface AiProviderConfig {
   provider?: AiProvider;
   model?: string;
   baseUrl?: string;
+  /** Name of the env var that holds the base URL; exclusive with `baseUrl` */
+  baseUrlEnv?: string;
   apiKeyEnv?: string;
   /** Extra request headers: header name to the env var that holds its value */
   headersEnv?: Record<string, string>;
