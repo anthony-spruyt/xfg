@@ -329,8 +329,14 @@ describe("ci.yaml", () => {
     assert.deepEqual(repo.permissions, { contents: "read" });
   });
 
-  test("image runs after lint and repo", () => {
-    assert.deepEqual(ci.jobs.image.needs, ["lint", "repo"]);
+  test("image runs the shared _images.yaml after lint and repo", () => {
+    const image = ci.jobs.image;
+    assert.match(
+      image.uses ?? "",
+      /^anthony-spruyt\/repo-operator\/\.github\/workflows\/_images\.yaml@[0-9a-f]{40}$/
+    );
+    assert.deepEqual(image.needs, ["lint", "repo"]);
+    assert.deepEqual(image.permissions, { contents: "read" });
   });
 
   test("summary judges lint, repo and image even when they fail", () => {
