@@ -159,8 +159,24 @@ function normalizeAiOption(
   if (prOptions === undefined) return undefined;
   const { ai, lastAi: _lastAi, ...rest } = prOptions;
   if (ai === true) return { ...rest, ai: { provider: "anthropic" } };
-  if (ai)
-    return { ...rest, ai: { ...ai, provider: ai.provider ?? "anthropic" } };
+  if (ai) {
+    const { fallback, ...primary } = ai;
+    return {
+      ...rest,
+      ai: {
+        ...primary,
+        provider: primary.provider ?? "anthropic",
+        ...(fallback
+          ? {
+              fallback: {
+                ...fallback,
+                provider: fallback.provider ?? "anthropic",
+              },
+            }
+          : {}),
+      },
+    };
+  }
   return Object.keys(rest).length > 0 ? rest : undefined;
 }
 

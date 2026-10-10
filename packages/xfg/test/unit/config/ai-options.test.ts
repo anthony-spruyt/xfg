@@ -362,3 +362,281 @@ describe("prOptions.ai credential guard", () => {
     );
   });
 });
+
+describe("prOptions.ai.headersEnv validation", () => {
+  const ai = (extra: Record<string, unknown>) =>
+    baseConfig({
+      prOptions: {
+        ai: {
+          provider: "openai",
+          model: "m",
+          baseUrl: "https://gateway.example.com/v1",
+          apiKeyEnv: "GATEWAY_KEY",
+          ...extra,
+        },
+      },
+    } as unknown as Partial<RawConfig>);
+
+  test("accepts header name to env var name pairs", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        ai({
+          headersEnv: {
+            "CF-Access-Client-Id": "CF_ACCESS_CLIENT_ID",
+            "CF-Access-Client-Secret": "CF_ACCESS_CLIENT_SECRET",
+          },
+        })
+      )
+    );
+  });
+
+  test("rejects a non-object", () => {
+    for (const bad of ["X=Y", ["A"], 3]) {
+      assert.throws(
+        () => validateRawConfig(ai({ headersEnv: bad })),
+        /prOptions\.ai\.headersEnv must be an object/
+      );
+    }
+  });
+
+  test("rejects an empty or non-string env var name", () => {
+    for (const bad of ["", 5, null]) {
+      assert.throws(
+        () => validateRawConfig(ai({ headersEnv: { "X-A": bad } })),
+        /prOptions\.ai\.headersEnv\['X-A'\] must be an env var name/
+      );
+    }
+  });
+
+  test("rejects a literal value in place of an env var name", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          ai({ headersEnv: { "X-A": "0123-abcd-literal-secret" } })
+        ),
+      (error: Error) =>
+        /must be an env var name/.test(error.message) &&
+        !error.message.includes("literal-secret")
+    );
+  });
+
+  test("rejects an invalid header name", () => {
+    assert.throws(
+      () => validateRawConfig(ai({ headersEnv: { "Bad Name": "ENV_A" } })),
+      /not a valid HTTP header name/
+    );
+  });
+
+  test("rejects names xfg sets itself, case-insensitively", () => {
+    for (const name of [
+      "Authorization",
+      "X-API-KEY",
+      "anthropic-version",
+      "Content-Type",
+      "Content-Length",
+      "Host",
+    ]) {
+      assert.throws(
+        () => validateRawConfig(ai({ headersEnv: { [name]: "ENV_A" } })),
+        /reserved/,
+        name
+      );
+    }
+  });
+
+  test("rejects duplicate header names that differ only by case", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          ai({ headersEnv: { "X-Team": "ENV_A", "x-team": "ENV_B" } })
+        ),
+      /more than once/
+    );
+  });
+
+  for (const envName of [
+    "GH_TOKEN",
+    "github_token",
+    "GITLAB_TOKEN",
+    "AZURE_DEVOPS_EXT_PAT",
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
+  ]) {
+    test(`rejects credential env var ${envName}`, () => {
+      assert.throws(
+        () => validateRawConfig(ai({ headersEnv: { "X-A": envName } })),
+        /credential xfg uses elsewhere/
+      );
+    });
+  }
+});
+
+describe("prOptions.ai.fallback validation", () => {
+  const withFallback = (fallback: unknown, primary?: Record<string, unknown>) =>
+    baseConfig({
+      prOptions: {
+        ai: {
+          provider: "openai",
+          model: "m",
+          baseUrl: "https://gateway.example.com/v1",
+          apiKeyEnv: "GATEWAY_KEY",
+          ...primary,
+          fallback,
+        },
+      },
+    } as unknown as Partial<RawConfig>);
+
+  const OPENROUTER = {
+    provider: "openai",
+    baseUrl: "https://openrouter.ai/api/v1",
+    model: "anthropic/claude-haiku-4.5",
+    apiKeyEnv: "OPENROUTER_API_KEY",
+  };
+
+  test("accepts a full fallback provider", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        withFallback({
+          ...OPENROUTER,
+          headersEnv: { "X-Title": "TITLE_ENV" },
+          prompt: "p",
+          maxDiffChars: 100,
+        })
+      )
+    );
+  });
+
+  test("rejects a non-object fallback", () => {
+    for (const bad of [true, "x", ["a"]]) {
+      assert.throws(
+        () => validateRawConfig(withFallback(bad)),
+        /prOptions\.ai\.fallback must be an object/
+      );
+    }
+  });
+
+  test("rejects a fallback inside a fallback", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          withFallback({ ...OPENROUTER, fallback: { ...OPENROUTER } })
+        ),
+      /prOptions\.ai\.fallback has unknown key 'fallback'/
+    );
+  });
+
+  test("rejects unknown keys in the fallback", () => {
+    assert.throws(
+      () => validateRawConfig(withFallback({ ...OPENROUTER, apiKey: "sk" })),
+      /prOptions\.ai\.fallback has unknown key 'apiKey'/
+    );
+  });
+
+  test("validates fallback fields with the fallback path", () => {
+    assert.throws(
+      () => validateRawConfig(withFallback({ ...OPENROUTER, provider: "x" })),
+      /prOptions\.ai\.fallback\.provider must be one of/
+    );
+    assert.throws(
+      () => validateRawConfig(withFallback({ ...OPENROUTER, model: "" })),
+      /prOptions\.ai\.fallback\.model must be a non-empty string/
+    );
+    assert.throws(
+      () => validateRawConfig(withFallback({ ...OPENROUTER, maxDiffChars: 0 })),
+      /prOptions\.ai\.fallback\.maxDiffChars must be a positive integer/
+    );
+    assert.throws(
+      () =>
+        validateRawConfig(
+          withFallback({ provider: "openai", baseUrl: OPENROUTER.baseUrl })
+        ),
+      /prOptions\.ai\.fallback\.model is required when provider is 'openai'/
+    );
+    assert.throws(
+      () =>
+        validateRawConfig(
+          withFallback({ ...OPENROUTER, headersEnv: { "X-A": "GH_TOKEN" } })
+        ),
+      /prOptions\.ai\.fallback\.headersEnv/
+    );
+  });
+
+  test("applies the key-safety rule to the fallback", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          withFallback({ ...OPENROUTER, apiKeyEnv: "OPENAI_API_KEY" })
+        ),
+      /prOptions\.ai\.fallback\.apiKeyEnv 'OPENAI_API_KEY' is a credential/
+    );
+    assert.throws(
+      () =>
+        validateRawConfig(
+          withFallback({ ...OPENROUTER, apiKeyEnv: "GH_TOKEN" })
+        ),
+      /credential/
+    );
+  });
+
+  test("allows the fallback to use the provider's own key on its own API", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        withFallback({ provider: "anthropic", apiKeyEnv: "ANTHROPIC_API_KEY" })
+      )
+    );
+  });
+});
+
+describe("prOptions.ai.fallback normalization", () => {
+  test("defaults the fallback provider to anthropic", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: {
+          ai: {
+            provider: "openai",
+            model: "m",
+            fallback: { model: "claude-haiku-4-5" },
+          },
+        },
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "openai",
+      model: "m",
+      fallback: { provider: "anthropic", model: "claude-haiku-4-5" },
+    });
+  });
+
+  test("keeps headersEnv and the fallback provider", () => {
+    const ai = {
+      provider: "openai" as const,
+      model: "m",
+      headersEnv: { "X-A": "ENV_A" },
+      fallback: { provider: "openai" as const, model: "f" },
+    };
+    const result = normalizeConfig(baseConfig({ prOptions: { ai } }), {});
+    assert.deepEqual(result.repos[0].prOptions?.ai, ai);
+  });
+
+  test("a repo ai object replaces the root one including its fallback", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: {
+          ai: { provider: "openai", model: "m", fallback: { model: "f" } },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: { ai: { prompt: "p" } },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "anthropic",
+      prompt: "p",
+    });
+  });
+});

@@ -4,6 +4,7 @@ import { AnthropicClient } from "../../../src/ai/anthropic-client.js";
 import { OpenAICompatibleClient } from "../../../src/ai/openai-compatible-client.js";
 import { createAiClient } from "../../../src/ai/client-factory.js";
 import type { FetchFn } from "../../../src/ai/types.js";
+import { ValidationError } from "../../../src/shared/errors.js";
 
 interface Captured {
   url: string;
@@ -317,4 +318,305 @@ describe("createAiClient", () => {
       /model is required/
     );
   });
+});
+
+describe("extra headers", () => {
+  test("AnthropicClient sends extra headers and keeps its own auth", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      content: [{ type: "text", text: "x" }],
+    });
+    const client = new AnthropicClient({
+      apiKey: "k",
+      model: "m",
+      headers: { "CF-Access-Client-Id": "id-1" },
+      fetch,
+    });
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["CF-Access-Client-Id"], "id-1");
+    assert.equal(headers["x-api-key"], "k");
+    assert.equal(headers["content-type"], "application/json");
+  });
+
+  test("OpenAICompatibleClient sends extra headers and bearer auth", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "x" } }],
+    });
+    const client = new OpenAICompatibleClient({
+      apiKey: "k",
+      model: "m",
+      baseUrl: "http://x/v1",
+      headers: {
+        "CF-Access-Client-Id": "id-1",
+        "CF-Access-Client-Secret": "s",
+      },
+      fetch,
+    });
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["CF-Access-Client-Id"], "id-1");
+    assert.equal(headers["CF-Access-Client-Secret"], "s");
+    assert.equal(headers.authorization, "Bearer k");
+  });
+
+  test("OpenAICompatibleClient sends extra headers without a key", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "x" } }],
+    });
+    const client = new OpenAICompatibleClient({
+      model: "m",
+      baseUrl: "http://x/v1",
+      headers: { "X-Team": "a" },
+      fetch,
+    });
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["X-Team"], "a");
+    assert.equal(headers.authorization, undefined);
+  });
+});
+
+describe("createAiClient headersEnv", () => {
+  const GATEWAY = {
+    provider: "openai" as const,
+    model: "m",
+    baseUrl: "https://gateway.example.com/v1",
+    apiKeyEnv: "GATEWAY_KEY",
+    headersEnv: {
+      "CF-Access-Client-Id": "CF_ID",
+      "CF-Access-Client-Secret": "CF_SECRET",
+    },
+  };
+  const ENV = { GATEWAY_KEY: "gk", CF_ID: "id-1", CF_SECRET: "sec-1" };
+
+  test("sends header values read from the named env vars", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(GATEWAY, ENV, fetch);
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["CF-Access-Client-Id"], "id-1");
+    assert.equal(headers["CF-Access-Client-Secret"], "sec-1");
+    assert.equal(headers.authorization, "Bearer gk");
+  });
+
+  test("works for the anthropic provider too", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      content: [{ type: "text", text: "ok" }],
+    });
+    const client = createAiClient(
+      {
+        provider: "anthropic",
+        baseUrl: "https://gateway.example.com",
+        apiKeyEnv: "GATEWAY_KEY",
+        headersEnv: { "CF-Access-Client-Id": "CF_ID" },
+      },
+      ENV,
+      fetch
+    );
+    await client.complete("s", "u");
+    assert.equal(headersOf(calls[0].init)["CF-Access-Client-Id"], "id-1");
+  });
+
+  test("an unset header env var throws a clear error naming only the var", () => {
+    const { CF_SECRET: _omitted, ...env } = ENV;
+    assert.throws(
+      () => createAiClient(GATEWAY, env, fetch0),
+      (error: Error) =>
+        /CF_SECRET is not set/.test(error.message) &&
+        !error.message.includes("id-1")
+    );
+  });
+
+  test("an empty header env var is treated as unset", () => {
+    assert.throws(
+      () => createAiClient(GATEWAY, { ...ENV, CF_ID: "" }, fetch0),
+      /CF_ID is not set/
+    );
+  });
+
+  test("rejects header values with line breaks or NUL without echoing them", () => {
+    for (const bad of [
+      "abc\r\nX-Evil: 1",
+      "abc\ndef",
+      "abc\0def",
+      "ab\u2603cd",
+    ]) {
+      assert.throws(
+        () => createAiClient(GATEWAY, { ...ENV, CF_ID: bad }, fetch0),
+        (error: Error) =>
+          /CF_ID/.test(error.message) &&
+          /CF-Access-Client-Id/.test(error.message) &&
+          !error.message.includes("abc") &&
+          !error.message.includes("cd") &&
+          !error.message.includes("Evil"),
+        JSON.stringify(bad)
+      );
+    }
+  });
+
+  test("rejects surrogate pairs in header values", () => {
+    assert.throws(
+      () => createAiClient(GATEWAY, { ...ENV, CF_ID: "a\u{1F600}b" }, fetch0),
+      /CF_ID holds an invalid header value/
+    );
+  });
+
+  test("trims surrounding whitespace and newlines from header values", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(
+      GATEWAY,
+      { ...ENV, CF_ID: "  id-1\r\n", CF_SECRET: "sec-1\n" },
+      fetch
+    );
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["CF-Access-Client-Id"], "id-1");
+    assert.equal(headers["CF-Access-Client-Secret"], "sec-1");
+  });
+
+  test("a header env var holding only whitespace is treated as unset", () => {
+    assert.throws(
+      () => createAiClient(GATEWAY, { ...ENV, CF_ID: " \n" }, fetch0),
+      /CF_ID is not set/
+    );
+  });
+
+  test("accepts Latin-1 header values", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(
+      GATEWAY,
+      { ...ENV, CF_ID: "caf\u00e9" },
+      fetch
+    );
+    await client.complete("s", "u");
+    assert.equal(headersOf(calls[0].init)["CF-Access-Client-Id"], "caf\u00e9");
+  });
+
+  test("refuses a credential header env var at runtime", () => {
+    assert.throws(
+      () =>
+        createAiClient(
+          { ...GATEWAY, headersEnv: { "X-Token": "GH_TOKEN" } },
+          { ...ENV, GH_TOKEN: "t" },
+          fetch0
+        ),
+      /credential/
+    );
+  });
+
+  test("refuses headers xfg sets itself", () => {
+    for (const name of ["Authorization", "x-api-key", "Content-Type"]) {
+      assert.throws(
+        () =>
+          createAiClient(
+            { ...GATEWAY, headersEnv: { [name]: "CF_ID" } },
+            ENV,
+            fetch0
+          ),
+        /reserved/,
+        name
+      );
+    }
+  });
+
+  test("error paths name the fallback when given a path", () => {
+    assert.throws(
+      () =>
+        createAiClient(
+          { provider: "anthropic", apiKeyEnv: "GH_TOKEN" },
+          { GH_TOKEN: "t" },
+          fetch0,
+          "prOptions.ai.fallback"
+        ),
+      /prOptions\.ai\.fallback\.apiKeyEnv/
+    );
+    assert.throws(
+      () =>
+        createAiClient(
+          { provider: "anthropic" },
+          {},
+          fetch0,
+          "prOptions.ai.fallback"
+        ),
+      /ANTHROPIC_API_KEY is not set \(required for prOptions\.ai\.fallback/
+    );
+  });
+});
+
+const fetch0: FetchFn = async () => new Response("{}");
+
+describe("createAiClient apiKey values", () => {
+  const BAD_KEYS = ["sk-secret\r\nX-Evil: 1", "sk-secret\nmore", "sk-\0secret"];
+  const OPENAI = {
+    provider: "openai" as const,
+    model: "m",
+    baseUrl: "https://gateway.example.com/v1",
+    apiKeyEnv: "GATEWAY_KEY",
+  };
+  const ANTHROPIC = {
+    provider: "anthropic" as const,
+    baseUrl: "https://gateway.example.com",
+    apiKeyEnv: "GATEWAY_KEY",
+  };
+
+  for (const [label, options] of [
+    ["openai", OPENAI],
+    ["anthropic", ANTHROPIC],
+  ] as const) {
+    test(`${label}: rejects an API key with control characters, naming only the env var`, () => {
+      for (const bad of BAD_KEYS) {
+        assert.throws(
+          () => createAiClient(options, { GATEWAY_KEY: bad }, fetch0),
+          (error: Error) =>
+            error instanceof ValidationError &&
+            /GATEWAY_KEY/.test(error.message) &&
+            !error.message.includes("secret") &&
+            !error.message.includes("Evil"),
+          JSON.stringify(bad)
+        );
+      }
+    });
+
+    test(`${label}: trims surrounding whitespace and newlines from the API key`, async () => {
+      const { fetch, calls } = fakeFetch(
+        200,
+        label === "openai"
+          ? { choices: [{ message: { content: "ok" } }] }
+          : { content: [{ type: "text", text: "ok" }] }
+      );
+      const client = createAiClient(
+        options,
+        { GATEWAY_KEY: "  sk-1\n" },
+        fetch
+      );
+      await client.complete("s", "u");
+      const headers = headersOf(calls[0].init);
+      assert.equal(
+        label === "openai" ? headers.authorization : headers["x-api-key"],
+        label === "openai" ? "Bearer sk-1" : "sk-1"
+      );
+    });
+
+    test(`${label}: an API key holding only whitespace is treated as unset`, async () => {
+      if (label === "anthropic") {
+        assert.throws(
+          () => createAiClient(options, { GATEWAY_KEY: " \n" }, fetch0),
+          /GATEWAY_KEY is not set/
+        );
+        return;
+      }
+      const { fetch, calls } = fakeFetch(200, {
+        choices: [{ message: { content: "ok" } }],
+      });
+      const client = createAiClient(options, { GATEWAY_KEY: " \n" }, fetch);
+      await client.complete("s", "u");
+      assert.equal(headersOf(calls[0].init).authorization, undefined);
+    });
+  }
 });

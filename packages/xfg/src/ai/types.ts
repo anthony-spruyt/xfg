@@ -1,7 +1,12 @@
-import type { ResolvedAiConfig } from "../config/index.js";
+import type {
+  ResolvedAiConfig,
+  ResolvedAiProviderConfig,
+} from "../config/index.js";
 import type { FileChangeDetail } from "../sync/types.js";
 
 export type AiOptions = ResolvedAiConfig;
+
+export type AiProviderOptions = ResolvedAiProviderConfig;
 
 export type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 
@@ -11,7 +16,10 @@ export interface IAiClient {
   complete(system: string, user: string, schema?: JsonSchema): Promise<string>;
 }
 
-export type AiClientFactory = (options: AiOptions) => IAiClient;
+export type AiClientFactory = (
+  options: AiProviderOptions,
+  path?: string
+) => IAiClient;
 
 export interface DescribeInput {
   files: FileChangeDetail[];
