@@ -340,7 +340,17 @@ describe("AiChangeDescriber", () => {
     assert.match(system, /subject must cover all changes/);
     assert.match(
       system,
-      /Name the changed areas in it when they fit \(e\.g\. "chore: update devcontainer, ci and agent rules"\); use a broader summary only when they do not/
+      /Name the changed areas in it when they fit \(e\.g\. "chore: update <area>, <area> and <area>"\); use a broader summary only when they do not/
+    );
+    assert.match(
+      system,
+      /Use a scope only when a single area changed[^\n]*; omit the scope when more than one area changed/
+    );
+    assert.match(system, /When the changes span more than one type, use chore/);
+    assert.doesNotMatch(
+      system,
+      /devcontainer|concurrency|agent rules|superseded/i,
+      "examples must not echo a real sync the model could copy"
     );
     assert.match(system, /never a subject that names just one of several/);
     assert.match(
