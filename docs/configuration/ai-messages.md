@@ -44,7 +44,7 @@ prOptions:
   ai:
     provider: anthropic # anthropic | openai
     model: claude-haiku-4-5 # default for anthropic; required for openai
-    baseUrl: https://api.anthropic.com # optional
+    baseUrl: https://api.anthropic.com # optional; or baseUrlEnv, not both
     apiKeyEnv: MY_KEY # optional; defaults to ANTHROPIC_API_KEY / OPENAI_API_KEY
     headersEnv: # optional; header name: env var that holds its value
       X-Team: TEAM_HEADER_VALUE
@@ -55,20 +55,31 @@ prOptions:
     maxDiffChars: 20000 # optional
 ```
 
-| Field          | Description                                                                                                | Default                                |
-| -------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `provider`     | `anthropic` (Claude Messages API) or `openai` (any OpenAI-compatible Chat Completions API)                 | `anthropic`                            |
-| `model`        | Model id                                                                                                   | `claude-haiku-4-5` for `anthropic`     |
-| `baseUrl`      | API base URL. With `openai`, setting it makes the API key optional                                         | Provider default                       |
-| `apiKeyEnv`    | Name of the env var that holds the API key                                                                 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
-| `headersEnv`   | Extra HTTP headers, as header name to env var name. See [Headers](#headers)                                | -                                      |
-| `fallback`     | A second provider, tried when this one fails. See [Fallback provider](#fallback-provider)                  | -                                      |
-| `prompt`       | Extra instructions appended to the built-in prompt                                                         | -                                      |
-| `maxDiffChars` | Maximum diff characters sent. Small diffs are sent whole; large diffs share what is left and get truncated | `20000`                                |
+| Field          | Description                                                                                                                          | Default                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| `provider`     | `anthropic` (Claude Messages API) or `openai` (any OpenAI-compatible Chat Completions API)                                           | `anthropic`                            |
+| `model`        | Model id                                                                                                                             | `claude-haiku-4-5` for `anthropic`     |
+| `baseUrl`      | API base URL. With `openai`, setting it makes the API key optional                                                                   | Provider default                       |
+| `baseUrlEnv`   | Name of the env var that holds the API base URL. Exclusive with `baseUrl`. See [Base URL from an env var](#base-url-from-an-env-var) | -                                      |
+| `apiKeyEnv`    | Name of the env var that holds the API key                                                                                           | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
+| `headersEnv`   | Extra HTTP headers, as header name to env var name. See [Headers](#headers)                                                          | -                                      |
+| `fallback`     | A second provider, tried when this one fails. See [Fallback provider](#fallback-provider)                                            | -                                      |
+| `prompt`       | Extra instructions appended to the built-in prompt                                                                                   | -                                      |
+| `maxDiffChars` | Maximum diff characters sent. Small diffs are sent whole; large diffs share what is left and get truncated                           | `20000`                                |
 
 The default key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`) is only sent to that provider's own API. With any other `baseUrl`, name a dedicated variable in `apiKeyEnv`. `apiKeyEnv` can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
 
 `ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level replaces the one above it (it is not deep-merged). Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above.
+
+### Base URL from an env var
+
+`baseUrlEnv` reads the API base URL from an env var, for when the gateway's address must not be written in config. It takes the **name of an env var**, and it is valid on the provider and on its `fallback`. Setting both `baseUrl` and `baseUrlEnv` on the same provider is a validation error.
+
+- The value is trimmed, and must be an `https:` or `http:` URL without a user name or password. Anything else is treated like an unset var.
+- If the env var is unset, empty or not a valid URL, xfg skips that provider with a warning that names the variable, never its value. The `fallback` provider runs if one is set.
+- In later error and warning text for that provider, the URL's host is shown as the variable name.
+- Like `apiKeyEnv`, it can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
+- The default `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` is sent only when the URL resolves to the provider's own API. For any other gateway, name a dedicated variable in `apiKeyEnv`, or send no key to an `openai` gateway that needs none.
 
 ### Headers
 
@@ -93,9 +104,9 @@ prOptions:
 
 ### Fallback provider
 
-`fallback` takes one more provider with the same fields as `ai` (`provider`, `model`, `baseUrl`, `apiKeyEnv`, `headersEnv`, `prompt`, `maxDiffChars`), but no nested `fallback`. xfg tries it when the primary fails for any reason: a missing API key or header env var, a network error, a timeout, a non-2xx status, or a reply that is not a valid conventional commit.
+`fallback` takes one more provider with the same fields as `ai` (`provider`, `model`, `baseUrl`, `baseUrlEnv`, `apiKeyEnv`, `headersEnv`, `prompt`, `maxDiffChars`), but no nested `fallback`. xfg tries it when the primary fails for any reason: a missing API key, base URL or header env var, a network error, a timeout, a non-2xx status, or a reply that is not a valid conventional commit.
 
-- `prompt` and `maxDiffChars` default to the primary's, so the fallback follows the same rules. `model`, `baseUrl`, `apiKeyEnv` and `headersEnv` are not inherited.
+- `prompt` and `maxDiffChars` default to the primary's, so the fallback follows the same rules. `model`, `baseUrl`, `baseUrlEnv`, `apiKeyEnv` and `headersEnv` are not inherited.
 - The same key rule applies: the default `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` is only sent to that provider's own API, so name a dedicated `apiKeyEnv` for any other `baseUrl`.
 - If the fallback fails too, xfg warns and uses the default message. The sync never fails because of AI.
 
@@ -199,6 +210,33 @@ xfg sync --config config.yaml
 ```
 
 When the gateway answers, the fallback is never called. When it is down, unreachable, or missing a variable, xfg logs a warning and asks OpenRouter instead.
+
+### Gateway URL from the environment
+
+The same setup with the gateway address read from an env var, so it is not written in config:
+
+```yaml
+prOptions:
+  ai:
+    provider: openai
+    baseUrlEnv: AI_GATEWAY_URL
+    model: provider/small-model
+    apiKeyEnv: GATEWAY_API_KEY
+    headersEnv:
+      CF-Access-Client-Id: CF_ACCESS_CLIENT_ID
+      CF-Access-Client-Secret: CF_ACCESS_CLIENT_SECRET
+    fallback:
+      provider: openai
+      baseUrl: https://openrouter.ai/api/v1
+      model: anthropic/claude-haiku-4.5
+      apiKeyEnv: OPENROUTER_API_KEY
+```
+
+```bash
+export AI_GATEWAY_URL=https://gateway.example.com/v1
+```
+
+If `AI_GATEWAY_URL` is unset, empty or not an `http(s)` URL, xfg warns (naming only the variable) and asks OpenRouter instead. In GitHub Actions, set it from a repository variable: `AI_GATEWAY_URL: ${{ vars.AI_GATEWAY_URL }}`.
 
 ## Disabling AI
 

@@ -1,5 +1,6 @@
 import { ValidationError } from "../shared/errors.js";
 import {
+  assertAiBaseUrlEnvAllowed,
   assertAiHeadersEnvAllowed,
   assertAiKeyEnvAllowed,
   defaultAiKeyEnv,
@@ -13,7 +14,12 @@ import {
   DEFAULT_OPENAI_BASE_URL,
   OpenAICompatibleClient,
 } from "./openai-compatible-client.js";
-import type { AiProviderOptions, FetchFn, IAiClient } from "./types.js";
+import type {
+  AiProviderOptions,
+  FetchFn,
+  IAiClient,
+  JsonSchema,
+} from "./types.js";
 
 /** The default key env only applies to the provider's own API. */
 function keyEnvFor(options: AiProviderOptions): string | undefined {
@@ -47,6 +53,76 @@ function readApiKey(
   return value;
 }
 
+function resolveBaseUrl(
+  options: AiProviderOptions,
+  env: Record<string, string | undefined>,
+  path: string
+): string | undefined {
+  assertAiBaseUrlEnvAllowed(options.baseUrlEnv, options.baseUrl, path);
+  if (options.baseUrlEnv === undefined) return options.baseUrl;
+  const value = readEnv(env, options.baseUrlEnv);
+  if (!value) {
+    throw new ValidationError(
+      `${options.baseUrlEnv} is not set (required for ${path}.baseUrlEnv)`
+    );
+  }
+  if (!isHttpUrl(value)) {
+    throw new ValidationError(
+      `${options.baseUrlEnv} does not hold an http(s) URL (used for ${path}.baseUrlEnv)`
+    );
+  }
+  return value;
+}
+
+// Userinfo is refused because undici rejects it and echoes the whole URL in its error.
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol, username, password } = new URL(value);
+    if (username || password) return false;
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
+}
+
+/** Replaces the resolved host in error text with the env var name that supplied it. */
+class HostRedactingClient implements IAiClient {
+  private readonly pattern: RegExp;
+
+  constructor(
+    private readonly inner: IAiClient,
+    baseUrl: string,
+    private readonly envName: string
+  ) {
+    const { host, hostname } = new URL(baseUrl);
+    const hosts = [...new Set([host, hostname])].sort(
+      (a, b) => b.length - a.length
+    );
+    this.pattern = new RegExp(hosts.map(escapeRegExp).join("|"), "gi");
+  }
+
+  async complete(
+    system: string,
+    user: string,
+    schema?: JsonSchema
+  ): Promise<string> {
+    try {
+      return await this.inner.complete(system, user, schema);
+    } catch (error) {
+      if (!(error instanceof Error)) throw error;
+      const redacted = new Error(
+        error.message.replace(this.pattern, () => this.envName)
+      );
+      // Keep fields such as retryAfter that withRetry reads.
+      throw Object.assign(redacted, { ...error });
+    }
+  }
+}
+
 function resolveHeaders(
   options: AiProviderOptions,
   env: Record<string, string | undefined>,
@@ -70,11 +146,11 @@ function resolveHeaders(
   return headers;
 }
 
-export function createAiClient(
+function buildClient(
   options: AiProviderOptions,
   env: Record<string, string | undefined>,
   fetch: FetchFn,
-  path = "prOptions.ai"
+  path: string
 ): IAiClient {
   assertAiKeyEnvAllowed(
     options.provider,
@@ -125,4 +201,21 @@ export function createAiClient(
     headers: resolveHeaders(options, env, path),
     fetch,
   });
+}
+
+export function createAiClient(
+  configured: AiProviderOptions,
+  env: Record<string, string | undefined>,
+  fetch: FetchFn,
+  path = "prOptions.ai"
+): IAiClient {
+  const options = {
+    ...configured,
+    baseUrl: resolveBaseUrl(configured, env, path),
+  };
+  const client = buildClient(options, env, fetch, path);
+  if (options.baseUrlEnv === undefined || options.baseUrl === undefined) {
+    return client;
+  }
+  return new HostRedactingClient(client, options.baseUrl, options.baseUrlEnv);
 }
