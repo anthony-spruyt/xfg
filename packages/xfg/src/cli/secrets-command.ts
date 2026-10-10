@@ -11,6 +11,7 @@ import {
   SodiumEncryptor,
 } from "../settings/secrets/index.js";
 import { GitHubEnvironmentsStrategy } from "../settings/environments/index.js";
+import { GitHubLifecycleProvider } from "../lifecycle/index.js";
 import {
   GitHubRepoMetadataProvider,
   parseGitUrl,
@@ -73,13 +74,20 @@ function createDefaultProcessor(
     cwd,
     retries,
   });
-  return new SecretsProcessor(strategy, encryptor, envResolver, tokenProvider, {
-    strategy: new GitHubEnvironmentsStrategy(executor, { cwd, retries }),
-    metadataProvider: new GitHubRepoMetadataProvider(executor, {
-      cwd,
-      retries,
-    }),
-  });
+  return new SecretsProcessor(
+    strategy,
+    encryptor,
+    envResolver,
+    tokenProvider,
+    {
+      strategy: new GitHubEnvironmentsStrategy(executor, { cwd, retries }),
+      metadataProvider: new GitHubRepoMetadataProvider(executor, {
+        cwd,
+        retries,
+      }),
+    },
+    new GitHubLifecycleProvider({ executor, retries, cwd })
+  );
 }
 
 type ParsedRepo = { repoInfo: RepoInfo } | { error: unknown };

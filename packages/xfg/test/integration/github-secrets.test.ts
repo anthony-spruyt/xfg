@@ -191,6 +191,28 @@ repos:
     assert.equal(found, undefined, "Dry-run secret should not exist");
   });
 
+  test("dry run plans secrets for a repo that does not exist yet", async () => {
+    const missingRepo = `${OWNER}/${generateRepoName("secrets-missing")}`;
+    const configPath = writeConfig(
+      tmpDir,
+      `id: integration-test-github-secrets
+settings:
+  secrets:
+    XFG_DRY_RUN_SECRET:
+      env: XFG_TEST_SECRET_VALUE
+repos:
+  - git: https://github.com/${missingRepo}.git
+`
+    );
+
+    const output = await runSecretsSync(configPath, "--dry-run");
+
+    assert.ok(
+      output.includes('+ secret "XFG_DRY_RUN_SECRET"'),
+      `dry-run output should plan the secret as a create, got: ${output}`
+    );
+  });
+
   test("a group-scoped secret reaches only the repo in that group", async () => {
     const configPath = writeConfig(
       tmpDir,

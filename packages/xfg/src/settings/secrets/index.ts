@@ -18,4 +18,5 @@ export type {
   ISecretsStrategy,
   GitHubSecret,
   GitHubPublicKey,
+  IRepoExistenceChecker,
 } from "./types.js";
