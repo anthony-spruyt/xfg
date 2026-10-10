@@ -4214,6 +4214,13 @@
 <td>API base URL, e.g.</td>
 </tr>
 <tr>
+<td><code>baseUrlEnv</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Name of the env var holding the API base URL, for when the URL must not be written in config.</td>
+</tr>
+<tr>
 <td><code>apiKeyEnv</code></td>
 <td><code>string</code></td>
 <td>No</td>
@@ -4254,6 +4261,7 @@
 <li><code>provider</code> — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic</li>
 <li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
 <li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
+<li><code>baseUrlEnv</code> — Mutually exclusive with baseUrl. If the env var is unset, empty or not an http(s) URL, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN.</li>
 <li><code>apiKeyEnv</code> — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY</li>
 <li><code>headersEnv</code> — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.</li>
 <li><code>maxDiffChars</code> — Default: 20000</li>
@@ -4299,6 +4307,13 @@
 <td>API base URL, e.g.</td>
 </tr>
 <tr>
+<td><code>baseUrlEnv</code></td>
+<td><code>string</code></td>
+<td>No</td>
+<td>-</td>
+<td>Name of the env var holding the API base URL, for when the URL must not be written in config.</td>
+</tr>
+<tr>
 <td><code>apiKeyEnv</code></td>
 <td><code>string</code></td>
 <td>No</td>
@@ -4332,6 +4347,7 @@
 <li><code>provider</code> — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic</li>
 <li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
 <li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
+<li><code>baseUrlEnv</code> — Mutually exclusive with baseUrl. If the env var is unset, empty or not an http(s) URL, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN.</li>
 <li><code>apiKeyEnv</code> — Default: ANTHROPIC_API_KEY or OPENAI_API_KEY</li>
 <li><code>headersEnv</code> — Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.</li>
 <li><code>maxDiffChars</code> — Default: 20000</li>
