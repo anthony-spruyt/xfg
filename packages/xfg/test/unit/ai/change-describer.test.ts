@@ -337,13 +337,30 @@ describe("AiChangeDescriber", () => {
     const describer = new AiChangeDescriber(() => client, log);
     await describer.describe({ files: FILES, options: OPTIONS, retries: 0 });
     const { system } = calls[0];
+    assert.match(system, /subject must cover all changes/);
     assert.match(
       system,
-      /more than one file or area changed, the body is required: one bullet per area changed/
+      /do not share one theme, use a broad summary subject \(e\.g\. "chore: sync shared tooling config"\), never just one of the changes/
     );
-    assert.match(system, /do not share one theme, the subject is a broad summary/);
+    assert.match(
+      system,
+      /more than one area changed, the body is required: one bullet per area/
+    );
+    assert.match(
+      system,
+      /names the concrete thing that changed \(tool, setting or key, version, rule name\)/
+    );
+    assert.match(
+      system,
+      /effect in plain words, especially words that do not appear in the diff/
+    );
+    assert.match(
+      system,
+      /Do not list file names or paths; git already records them/
+    );
     assert.match(system, /empty string only when a single change/);
     assert.doesNotMatch(system, /if the subject says it all/);
+    assert.doesNotMatch(system, /Cover every changed file/);
   });
 
   test("appends custom prompt to the system prompt", async () => {

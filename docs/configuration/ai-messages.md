@@ -10,17 +10,13 @@ ci(workflows): pin actions/checkout to v5
 Bumps actions/checkout from v4 to v5 in the CI and release workflows.
 ```
 
-When a sync changes more than one file, xfg ends the AI commit body with a list of every changed file, so none is left out of `git log`:
+When a sync changes more than one area, the subject sums them all up and the body has one bullet per area. Each bullet names what changed and says what it does in plain words, so `git log --grep` finds it. File names are left out: `git log --stat` already lists them.
 
 ```text
 chore: sync shared tooling config
 
 - devcontainer: bump devcontainer-common to v2.3.4
-- workflows: cancel superseded CI runs
-
-Changed files:
-- update .devcontainer/Dockerfile
-- update .github/workflows/ci.yaml
+- ci: cancel superseded CI runs when a PR gets a new push
 ```
 
 It applies to every sync commit, including `merge: direct` pushes. In PR mode, xfg also uses the AI subject as the PR title and adds a short AI summary to the PR body.

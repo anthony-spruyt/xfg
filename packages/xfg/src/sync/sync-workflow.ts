@@ -3,7 +3,6 @@ import { type RepoInfo, getRepoDisplayName } from "../repo/index.js";
 import { safeCleanup } from "../shared/cleanup-utils.js";
 import type { DebugInfoLog } from "../shared/logger.js";
 import type { ChangeDescription, IChangeDescriber } from "../ai/index.js";
-import type { FileAction } from "../vcs/index.js";
 import type {
   ISyncWorkflow,
   IWorkStrategy,
@@ -19,13 +18,6 @@ import type {
   SessionContext,
   RunContext,
 } from "./types.js";
-
-function formatFileList(files: FileAction[]): string {
-  const changed = files.filter((f) => f.action !== "skip");
-  if (changed.length < 2) return "";
-  const lines = changed.map((f) => `- ${f.action} ${f.fileName}`);
-  return ["Changed files:", ...lines].join("\n");
-}
 
 /**
  * Orchestrates the common sync workflow steps.
@@ -115,10 +107,7 @@ export class SyncWorkflow implements ISyncWorkflow {
           workResult
         );
         if (!description) return { message: workResult.commitMessage };
-        const { subject } = description;
-        const body = [description.body, formatFileList(workResult.changedFiles)]
-          .filter(Boolean)
-          .join("\n\n");
+        const { subject, body } = description;
         return body ? { message: subject, body } : { message: subject };
       };
 

@@ -498,39 +498,7 @@ describe("SyncWorkflow", () => {
       };
     }
 
-    function multiFileWorkResult(): WorkResult {
-      return {
-        fileChanges: new Map([
-          ["ci.yaml", { fileName: "ci.yaml", content: "x", action: "update" }],
-          ["new.md", { fileName: "new.md", content: "y", action: "create" }],
-          ["old.md", { fileName: "old.md", content: null, action: "delete" }],
-        ]),
-        changedFiles: [
-          { fileName: "ci.yaml", action: "update" },
-          { fileName: "same.json", action: "skip" },
-          { fileName: "new.md", action: "create" },
-          { fileName: "old.md", action: "delete" },
-        ],
-        commitMessage: "chore: sync 3 config files",
-        fileChangeDetails: [
-          { path: "ci.yaml", action: "update", diffLines: ["+x"] },
-          { path: "new.md", action: "create", diffLines: ["+y"] },
-          { path: "old.md", action: "delete" },
-        ],
-      };
-    }
-
-    const MULTI_FILE_LIST = [
-      "Changed files:",
-      "- update ci.yaml",
-      "- create new.md",
-      "- delete old.md",
-    ].join("\n");
-
-    function setup(
-      describeResult: ChangeDescription | null,
-      workResult: WorkResult = aiWorkResult()
-    ) {
+    function setup(describeResult: ChangeDescription | null) {
       const components = createMockComponents();
       const commitMessages: CommitMessage[] = [];
       const prInputs: CreateAndMergeInput[] = [];
@@ -558,7 +526,7 @@ describe("SyncWorkflow", () => {
       );
       const strategy: IWorkStrategy = {
         async execute() {
-          return workResult;
+          return aiWorkResult();
         },
       };
       return {
@@ -613,46 +581,6 @@ describe("SyncWorkflow", () => {
       const ctx = setup({ subject: "fix: x", prSummary: "s" });
       await run(ctx, { ai: { provider: "anthropic" } });
       assert.deepEqual(ctx.commitMessages, [{ message: "fix: x" }]);
-    });
-
-    test("multiple files: lists changed files after the AI body", async () => {
-      const ctx = setup(AI_DESCRIPTION, multiFileWorkResult());
-      await run(ctx, { ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, [
-        {
-          message: AI_DESCRIPTION.subject,
-          body: `${AI_DESCRIPTION.body}\n\n${MULTI_FILE_LIST}`,
-        },
-      ]);
-    });
-
-    test("multiple files with no AI body: body is just the file list", async () => {
-      const ctx = setup(
-        { subject: "chore: x", prSummary: "s" },
-        multiFileWorkResult()
-      );
-      await run(ctx, { merge: "direct", ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, [
-        { message: "chore: x", body: MULTI_FILE_LIST },
-      ]);
-    });
-
-    test("one changed file plus skipped files: no file list", async () => {
-      const work = aiWorkResult();
-      work.changedFiles.push({ fileName: "same.json", action: "skip" });
-      const ctx = setup(AI_DESCRIPTION, work);
-      await run(ctx, { ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, [
-        { message: AI_DESCRIPTION.subject, body: AI_DESCRIPTION.body },
-      ]);
-    });
-
-    test("multiple files without AI: default message has no file list", async () => {
-      const ctx = setup(null, multiFileWorkResult());
-      await run(ctx, { ai: { provider: "anthropic" } });
-      assert.deepEqual(ctx.commitMessages, [
-        { message: "chore: sync 3 config files" },
-      ]);
     });
 
     test("direct mode uses the AI message", async () => {
