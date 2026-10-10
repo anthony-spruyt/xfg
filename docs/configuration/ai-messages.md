@@ -55,17 +55,17 @@ prOptions:
     maxDiffChars: 20000 # optional
 ```
 
-| Field          | Description                                                                                                | Default                                |
-| -------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `provider`     | `anthropic` (Claude Messages API) or `openai` (any OpenAI-compatible Chat Completions API)                 | `anthropic`                            |
-| `model`        | Model id                                                                                                   | `claude-haiku-4-5` for `anthropic`     |
-| `baseUrl`      | API base URL. With `openai`, setting it makes the API key optional                                         | Provider default                       |
+| Field          | Description                                                                                                                          | Default                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| `provider`     | `anthropic` (Claude Messages API) or `openai` (any OpenAI-compatible Chat Completions API)                                           | `anthropic`                            |
+| `model`        | Model id                                                                                                                             | `claude-haiku-4-5` for `anthropic`     |
+| `baseUrl`      | API base URL. With `openai`, setting it makes the API key optional                                                                   | Provider default                       |
 | `baseUrlEnv`   | Name of the env var that holds the API base URL. Exclusive with `baseUrl`. See [Base URL from an env var](#base-url-from-an-env-var) | -                                      |
-| `apiKeyEnv`    | Name of the env var that holds the API key                                                                 | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
-| `headersEnv`   | Extra HTTP headers, as header name to env var name. See [Headers](#headers)                                | -                                      |
-| `fallback`     | A second provider, tried when this one fails. See [Fallback provider](#fallback-provider)                  | -                                      |
-| `prompt`       | Extra instructions appended to the built-in prompt                                                         | -                                      |
-| `maxDiffChars` | Maximum diff characters sent. Small diffs are sent whole; large diffs share what is left and get truncated | `20000`                                |
+| `apiKeyEnv`    | Name of the env var that holds the API key                                                                                           | `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` |
+| `headersEnv`   | Extra HTTP headers, as header name to env var name. See [Headers](#headers)                                                          | -                                      |
+| `fallback`     | A second provider, tried when this one fails. See [Fallback provider](#fallback-provider)                                            | -                                      |
+| `prompt`       | Extra instructions appended to the built-in prompt                                                                                   | -                                      |
+| `maxDiffChars` | Maximum diff characters sent. Small diffs are sent whole; large diffs share what is left and get truncated                           | `20000`                                |
 
 The default key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`) is only sent to that provider's own API. With any other `baseUrl`, name a dedicated variable in `apiKeyEnv`. `apiKeyEnv` can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
 
