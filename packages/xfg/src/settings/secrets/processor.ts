@@ -200,16 +200,18 @@ export class SecretsProcessor implements ISecretsProcessor {
     );
 
     const strategyOptions = { token, host: githubRepo.host };
-    const repoChanges =
-      secretEntries.length > 0 || deleteOrphaned
-        ? diffSecrets(
-            repoMissing
-              ? []
-              : await this.strategy.list(githubRepo, strategyOptions),
-            secretEntries.map(([name]) => name),
-            deleteOrphaned
-          )
+    const managesRepoSecrets = secretEntries.length > 0 || deleteOrphaned;
+    const currentRepoSecrets =
+      managesRepoSecrets && !repoMissing
+        ? await this.strategy.list(githubRepo, strategyOptions)
         : [];
+    const repoChanges = managesRepoSecrets
+      ? diffSecrets(
+          currentRepoSecrets,
+          secretEntries.map(([name]) => name),
+          deleteOrphaned
+        )
+      : [];
     const envGroups = await this.readEnvironments(
       githubRepo,
       repoConfig,
