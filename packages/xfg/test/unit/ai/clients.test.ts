@@ -4,6 +4,7 @@ import { AnthropicClient } from "../../../src/ai/anthropic-client.js";
 import { OpenAICompatibleClient } from "../../../src/ai/openai-compatible-client.js";
 import { createAiClient } from "../../../src/ai/client-factory.js";
 import type { FetchFn } from "../../../src/ai/types.js";
+import { ValidationError } from "../../../src/shared/errors.js";
 
 interface Captured {
   url: string;
@@ -455,6 +456,35 @@ describe("createAiClient headersEnv", () => {
     }
   });
 
+  test("rejects surrogate pairs in header values", () => {
+    assert.throws(
+      () => createAiClient(GATEWAY, { ...ENV, CF_ID: "a\u{1F600}b" }, fetch0),
+      /CF_ID holds an invalid header value/
+    );
+  });
+
+  test("trims surrounding whitespace and newlines from header values", async () => {
+    const { fetch, calls } = fakeFetch(200, {
+      choices: [{ message: { content: "ok" } }],
+    });
+    const client = createAiClient(
+      GATEWAY,
+      { ...ENV, CF_ID: "  id-1\r\n", CF_SECRET: "sec-1\n" },
+      fetch
+    );
+    await client.complete("s", "u");
+    const headers = headersOf(calls[0].init);
+    assert.equal(headers["CF-Access-Client-Id"], "id-1");
+    assert.equal(headers["CF-Access-Client-Secret"], "sec-1");
+  });
+
+  test("a header env var holding only whitespace is treated as unset", () => {
+    assert.throws(
+      () => createAiClient(GATEWAY, { ...ENV, CF_ID: " \n" }, fetch0),
+      /CF_ID is not set/
+    );
+  });
+
   test("accepts Latin-1 header values", async () => {
     const { fetch, calls } = fakeFetch(200, {
       choices: [{ message: { content: "ok" } }],
@@ -520,3 +550,73 @@ describe("createAiClient headersEnv", () => {
 });
 
 const fetch0: FetchFn = async () => new Response("{}");
+
+describe("createAiClient apiKey values", () => {
+  const BAD_KEYS = ["sk-secret\r\nX-Evil: 1", "sk-secret\nmore", "sk-\0secret"];
+  const OPENAI = {
+    provider: "openai" as const,
+    model: "m",
+    baseUrl: "https://gateway.example.com/v1",
+    apiKeyEnv: "GATEWAY_KEY",
+  };
+  const ANTHROPIC = {
+    provider: "anthropic" as const,
+    baseUrl: "https://gateway.example.com",
+    apiKeyEnv: "GATEWAY_KEY",
+  };
+
+  for (const [label, options] of [
+    ["openai", OPENAI],
+    ["anthropic", ANTHROPIC],
+  ] as const) {
+    test(`${label}: rejects an API key with control characters, naming only the env var`, () => {
+      for (const bad of BAD_KEYS) {
+        assert.throws(
+          () => createAiClient(options, { GATEWAY_KEY: bad }, fetch0),
+          (error: Error) =>
+            error instanceof ValidationError &&
+            /GATEWAY_KEY/.test(error.message) &&
+            !error.message.includes("secret") &&
+            !error.message.includes("Evil"),
+          JSON.stringify(bad)
+        );
+      }
+    });
+
+    test(`${label}: trims surrounding whitespace and newlines from the API key`, async () => {
+      const { fetch, calls } = fakeFetch(
+        200,
+        label === "openai"
+          ? { choices: [{ message: { content: "ok" } }] }
+          : { content: [{ type: "text", text: "ok" }] }
+      );
+      const client = createAiClient(
+        options,
+        { GATEWAY_KEY: "  sk-1\n" },
+        fetch
+      );
+      await client.complete("s", "u");
+      const headers = headersOf(calls[0].init);
+      assert.equal(
+        label === "openai" ? headers.authorization : headers["x-api-key"],
+        label === "openai" ? "Bearer sk-1" : "sk-1"
+      );
+    });
+
+    test(`${label}: an API key holding only whitespace is treated as unset`, async () => {
+      if (label === "anthropic") {
+        assert.throws(
+          () => createAiClient(options, { GATEWAY_KEY: " \n" }, fetch0),
+          /GATEWAY_KEY is not set/
+        );
+        return;
+      }
+      const { fetch, calls } = fakeFetch(200, {
+        choices: [{ message: { content: "ok" } }],
+      });
+      const client = createAiClient(options, { GATEWAY_KEY: " \n" }, fetch);
+      await client.complete("s", "u");
+      assert.equal(headersOf(calls[0].init).authorization, undefined);
+    });
+  }
+});

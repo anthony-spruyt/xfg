@@ -89,6 +89,7 @@ prOptions:
 - If any named env var is unset or empty, xfg skips that provider with a warning, as it does for a missing API key. It never sends an empty header.
 - Like `apiKeyEnv`, a header can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
 - Header names xfg sets itself (`Authorization`, `x-api-key`, `anthropic-version`, `Content-Type`, `Content-Length`, `Host`) are rejected.
+- xfg doesn't follow HTTP redirects for any AI provider. A redirect counts as a failure, so the `fallback` provider runs if one is set.
 
 ### Fallback provider
 

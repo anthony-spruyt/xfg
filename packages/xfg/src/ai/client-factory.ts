@@ -25,11 +25,26 @@ function keyEnvFor(options: AiProviderOptions): string | undefined {
 
 // undici refuses CR, LF, NUL and non-Latin-1 in header values and echoes the value in its error.
 function isValidHeaderValue(value: string): boolean {
-  for (let i = 0; i < value.length; i++) {
-    const code = value.charCodeAt(i);
-    if (code === 0 || code === 10 || code === 13 || code > 255) return false;
+  return !/[\n\r\u0100-\uffff]/.test(value) && !value.includes("\0");
+}
+
+// undici trims surrounding whitespace before sending, so a trailing newline is harmless.
+function readEnv(
+  env: Record<string, string | undefined>,
+  name: string
+): string | undefined {
+  return env[name]?.trim();
+}
+
+function readApiKey(
+  env: Record<string, string | undefined>,
+  keyEnv: string
+): string | undefined {
+  const value = readEnv(env, keyEnv);
+  if (value && !isValidHeaderValue(value)) {
+    throw new ValidationError(`${keyEnv} holds an invalid API key value`);
   }
-  return true;
+  return value;
 }
 
 function resolveHeaders(
@@ -39,7 +54,7 @@ function resolveHeaders(
 ): Record<string, string> {
   const headers: Record<string, string> = {};
   for (const [name, envName] of Object.entries(options.headersEnv ?? {})) {
-    const value = env[envName];
+    const value = readEnv(env, envName);
     if (!value) {
       throw new ValidationError(
         `${envName} is not set (required for ${path}.headersEnv '${name}')`
@@ -76,7 +91,7 @@ export function createAiClient(
         `${path}.apiKeyEnv is required for provider 'anthropic' with a custom baseUrl`
       );
     }
-    const apiKey = env[keyEnv];
+    const apiKey = readApiKey(env, keyEnv);
     if (!apiKey) {
       throw new ValidationError(
         `${keyEnv} is not set (required for ${path} provider 'anthropic')`
@@ -96,7 +111,7 @@ export function createAiClient(
       `${path}.model is required when provider is 'openai'`
     );
   }
-  const apiKey = keyEnv === undefined ? undefined : env[keyEnv];
+  const apiKey = keyEnv === undefined ? undefined : readApiKey(env, keyEnv);
   // A custom baseUrl (Ollama, local LiteLLM) often needs no key at all.
   if (!apiKey && !options.baseUrl) {
     throw new ValidationError(
