@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.2.0](https://github.com/anthony-spruyt/xfg/compare/v8.1.3...v8.2.0) (2026-10-10)
+
+
+### Features
+
+* **environments:** add deleteOrphaned for environments, policies and secrets ([#1180](https://github.com/anthony-spruyt/xfg/issues/1180)) ([a4b3079](https://github.com/anthony-spruyt/xfg/commit/a4b30798d02bcbdc1a70fd7bb56d4f2b4beae629)), closes [#1175](https://github.com/anthony-spruyt/xfg/issues/1175)
+
 ## [8.1.3](https://github.com/anthony-spruyt/xfg/compare/v8.1.2...v8.1.3) (2026-10-09)
 
 
