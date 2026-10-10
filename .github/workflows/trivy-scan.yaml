@@ -12,8 +12,8 @@ permissions:
   packages: "read"
 jobs:
   scan-fs:
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-fs.yaml@03ce087ec3006c13aa278b3d1b42e8f409cd6c43"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-fs.yaml@d3010e1b70d377fb8675053a21de1179964e2d55"
   scan-image:
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-img.yaml@03ce087ec3006c13aa278b3d1b42e8f409cd6c43"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_trivy-img.yaml@d3010e1b70d377fb8675053a21de1179964e2d55"
     secrets:
       GHCR_READ_TOKEN: "${{ secrets.GHCR_READ_TOKEN }}"
