@@ -140,6 +140,15 @@ export class SyncWorkflow implements ISyncWorkflow {
       }
 
       if (isDirectMode) {
+        if (runCtx.dryRun) {
+          return {
+            success: true,
+            repoName,
+            message: `[DRY RUN] Would push directly to ${session.baseBranch}`,
+            diffStats: workResult.diffStats,
+            fileChanges: workResult.fileChangeDetails,
+          };
+        }
         this.log.info(`Changes pushed directly to ${session.baseBranch}`);
         return {
           success: true,
