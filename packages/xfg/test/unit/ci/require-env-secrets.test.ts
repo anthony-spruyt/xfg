@@ -66,7 +66,7 @@ describe("require-env-secrets.sh", () => {
   });
 
   test("never prints secret values", () => {
-    const result = run(["integration", "GH_PAT_ORG", "OPENROUTER_API_KEY"], {
+    const result = run(["integration", "GH_PAT_ORG", "LITELLM_API_KEY"], {
       GH_PAT_ORG: SENTINEL,
     });
 
