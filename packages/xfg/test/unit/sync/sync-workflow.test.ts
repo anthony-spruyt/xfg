@@ -313,6 +313,55 @@ describe("SyncWorkflow", () => {
     assert.ok(messages.some((m) => m.includes("pushed directly")));
   });
 
+  test("dry run in direct mode reports would-push, not pushed", async () => {
+    const components = createMockComponents();
+    const { mock: mockLogger, messages } = createMockLogger();
+
+    const workflow = new SyncWorkflow(
+      components.authOptionsBuilder,
+      components.repositorySession,
+      components.branchManager,
+      components.commitPushManager,
+      components.prMergeHandler,
+      components.changeDescriber,
+      mockLogger
+    );
+
+    const mockStrategy: IWorkStrategy = {
+      async execute() {
+        return {
+          fileChanges: new Map([
+            [
+              "test.txt",
+              { fileName: "test.txt", content: "test", action: "create" },
+            ],
+          ]),
+          changedFiles: [{ fileName: "test.txt", action: "create" }],
+          commitMessage: "test commit",
+          fileChangeDetails: [{ path: "test.txt", action: "create" }],
+        };
+      },
+    };
+
+    const result = await workflow.execute(
+      { ...mockRepoConfig, prOptions: { merge: "direct" } },
+      mockRepoInfo,
+      {
+        branchName: "test",
+        workDir,
+        configId: "test",
+        executor: createMockExecutor().mock,
+        dryRun: true,
+      },
+      mockStrategy
+    );
+
+    assert.equal(result.success, true);
+    assert.match(result.message, /^\[DRY RUN\] Would push directly to /);
+    assert.ok(!/pushed/i.test(result.message));
+    assert.ok(!messages.some((m) => /pushed/i.test(m)));
+  });
+
   // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
 
   test("cleanup runs after strategy execution even when strategy throws", async () => {
