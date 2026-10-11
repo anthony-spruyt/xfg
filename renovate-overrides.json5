@@ -1,3 +1,11 @@
 {
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json"
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  packageRules: [
+    {
+      description: "Docs requirements (hash-locked, one PR for all packages)",
+      groupName: "docs requirements",
+      matchManagers: ["pip_requirements"],
+      matchFileNames: ["docs/requirements.txt"]
+    }
+  ]
 }
