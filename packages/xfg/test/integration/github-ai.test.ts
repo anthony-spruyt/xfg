@@ -161,6 +161,10 @@ describe("GitHub AI commit messages integration test", { skip }, () => {
       "the primary should have failed and handed over to the fallback"
     );
     assert.ok(
+      output.includes(`${UNSET_URL_ENV} is not set`),
+      "the primary should have failed on the unset base URL variable"
+    );
+    assert.ok(
       !output.includes("AI commit message generation failed"),
       "the fallback should have answered"
     );

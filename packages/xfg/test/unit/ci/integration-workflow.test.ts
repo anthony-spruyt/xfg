@@ -54,9 +54,29 @@ function secretsUsed(steps: Step[]): Set<string> {
   return names;
 }
 
-// Harden Runner must be the first step, ahead of the preflight; its secret use only feeds an allow-list
+// Harden Runner is exempt from the preflight ordering only as step 0; its secret use only feeds an allow-list
 function isHardenRunner(step: Step): boolean {
   return step.uses?.startsWith("step-security/harden-runner@") ?? false;
+}
+
+function exemptStep(steps: Step[]): number {
+  return steps.length > 0 && isHardenRunner(steps[0]) ? 0 : -1;
+}
+
+function firstSecretUse(steps: Step[], preflightIndex: number): number {
+  const exempt = exemptStep(steps);
+  return steps.findIndex(
+    (step, i) =>
+      i !== preflightIndex && i !== exempt && secretsUsed([step]).size > 0
+  );
+}
+
+function secretsAfterPreflight(steps: Step[], preflightIndex: number) {
+  const exempt = exemptStep(steps);
+  return secretsUsed([
+    ...(exempt >= 0 && exempt < preflightIndex ? [steps[exempt]] : []),
+    ...steps.slice(preflightIndex + 1),
+  ]);
 }
 
 function strings(node: unknown): string[] {
@@ -103,6 +123,36 @@ describe("secret reference matching", () => {
   });
 });
 
+describe("harden-runner exemption", () => {
+  const harden: Step = {
+    uses: "step-security/harden-runner@abc",
+    with: { "allowed-endpoints": "${{ secrets.HOST }}" },
+  };
+  const preflight: Step = { run: PREFLIGHT };
+  const user: Step = { env: { A: "${{ secrets.TOKEN }}" } };
+
+  test("applies when harden-runner is step 0", () => {
+    assert.equal(exemptStep([harden, preflight]), 0);
+  });
+
+  test("does not apply when harden-runner is not step 0", () => {
+    assert.equal(exemptStep([user, harden, preflight]), -1);
+    assert.equal(exemptStep([preflight, harden]), -1);
+  });
+
+  test("its secrets count as used", () => {
+    assert.deepEqual(
+      [...secretsAfterPreflight([harden, preflight, user], 1)].sort(),
+      ["HOST", "TOKEN"]
+    );
+  });
+
+  test("a later harden-runner is not exempt and counts as a first use", () => {
+    assert.equal(firstSecretUse([user, harden, preflight], 2), 0);
+    assert.equal(firstSecretUse([preflight, harden], 0), 1);
+  });
+});
+
 const environmentJobs = [
   ...jobs("_integration-tests.yaml"),
   ...jobs("cleanup-test-repos.yaml"),
@@ -120,18 +170,15 @@ describe("environment-gated jobs", () => {
       );
       assert.ok(index >= 0, `${name} has no preflight step`);
 
-      const firstSecretUse = job.steps.findIndex(
-        (step, i) =>
-          i !== index && !isHardenRunner(step) && secretsUsed([step]).size > 0
-      );
+      const firstUse = firstSecretUse(job.steps, index);
       assert.ok(
-        index < firstSecretUse,
+        firstUse === -1 || index < firstUse,
         `${name}: preflight must run before the first step using a secret`
       );
 
       const preflight = job.steps[index];
       const checked = secretsUsed([preflight]);
-      const used = secretsUsed(job.steps.slice(index + 1));
+      const used = secretsAfterPreflight(job.steps, index);
       for (const secret of used) {
         assert.ok(checked.has(secret), `${name}: preflight skips ${secret}`);
         assert.equal(
