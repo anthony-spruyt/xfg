@@ -82,6 +82,28 @@
         ]
       }
     ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.claude/pull-default-branch.sh\" ] || bash \"$CLAUDE_PROJECT_DIR/.claude/pull-default-branch.sh\"",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.claude/pull-default-branch.sh\" ] || bash \"$CLAUDE_PROJECT_DIR/.claude/pull-default-branch.sh\"",
+            "async": true
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|NotebookEdit",
