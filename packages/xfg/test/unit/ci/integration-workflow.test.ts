@@ -13,6 +13,7 @@ const PREFLIGHT = ".github/scripts/require-env-secrets.sh";
 
 interface Step {
   name?: string;
+  uses?: string;
   run?: string;
   env?: Record<string, string>;
   with?: Record<string, string>;
@@ -51,6 +52,31 @@ function secretsUsed(steps: Step[]): Set<string> {
     }
   }
   return names;
+}
+
+// Harden Runner is exempt from the preflight ordering only as step 0; its secret use only feeds an allow-list
+function isHardenRunner(step: Step): boolean {
+  return step.uses?.startsWith("step-security/harden-runner@") ?? false;
+}
+
+function exemptStep(steps: Step[]): number {
+  return steps.length > 0 && isHardenRunner(steps[0]) ? 0 : -1;
+}
+
+function firstSecretUse(steps: Step[], preflightIndex: number): number {
+  const exempt = exemptStep(steps);
+  return steps.findIndex(
+    (step, i) =>
+      i !== preflightIndex && i !== exempt && secretsUsed([step]).size > 0
+  );
+}
+
+function secretsAfterPreflight(steps: Step[], preflightIndex: number) {
+  const exempt = exemptStep(steps);
+  return secretsUsed([
+    ...(exempt >= 0 && exempt < preflightIndex ? [steps[exempt]] : []),
+    ...steps.slice(preflightIndex + 1),
+  ]);
 }
 
 function strings(node: unknown): string[] {
@@ -97,6 +123,36 @@ describe("secret reference matching", () => {
   });
 });
 
+describe("harden-runner exemption", () => {
+  const harden: Step = {
+    uses: "step-security/harden-runner@abc",
+    with: { "allowed-endpoints": "${{ secrets.HOST }}" },
+  };
+  const preflight: Step = { run: PREFLIGHT };
+  const user: Step = { env: { A: "${{ secrets.TOKEN }}" } };
+
+  test("applies when harden-runner is step 0", () => {
+    assert.equal(exemptStep([harden, preflight]), 0);
+  });
+
+  test("does not apply when harden-runner is not step 0", () => {
+    assert.equal(exemptStep([user, harden, preflight]), -1);
+    assert.equal(exemptStep([preflight, harden]), -1);
+  });
+
+  test("its secrets count as used", () => {
+    assert.deepEqual(
+      [...secretsAfterPreflight([harden, preflight, user], 1)].sort(),
+      ["HOST", "TOKEN"]
+    );
+  });
+
+  test("a later harden-runner is not exempt and counts as a first use", () => {
+    assert.equal(firstSecretUse([user, harden, preflight], 2), 0);
+    assert.equal(firstSecretUse([preflight, harden], 0), 1);
+  });
+});
+
 const environmentJobs = [
   ...jobs("_integration-tests.yaml"),
   ...jobs("cleanup-test-repos.yaml"),
@@ -114,17 +170,15 @@ describe("environment-gated jobs", () => {
       );
       assert.ok(index >= 0, `${name} has no preflight step`);
 
-      const firstSecretUse = job.steps.findIndex(
-        (step, i) => i !== index && secretsUsed([step]).size > 0
-      );
+      const firstUse = firstSecretUse(job.steps, index);
       assert.ok(
-        index < firstSecretUse,
+        firstUse === -1 || index < firstUse,
         `${name}: preflight must run before the first step using a secret`
       );
 
       const preflight = job.steps[index];
       const checked = secretsUsed([preflight]);
-      const used = secretsUsed(job.steps.slice(index + 1));
+      const used = secretsAfterPreflight(job.steps, index);
       for (const secret of used) {
         assert.ok(checked.has(secret), `${name}: preflight skips ${secret}`);
         assert.equal(
@@ -368,6 +422,44 @@ describe("ci.yaml", () => {
 
 describe("integration lanes", () => {
   const lanes = jobs("_integration-tests.yaml");
+
+  const aiLane = lanes.find(([, job]) =>
+    job.steps.some((step) => step.run?.includes("github-ai.test.ts"))
+  );
+
+  test("the AI lane blocks egress except for an allow-list", () => {
+    assert.ok(aiLane, "no lane runs github-ai.test.ts");
+    const [name, job] = aiLane;
+    const harden = job.steps.find(isHardenRunner);
+    assert.ok(harden, `${name} has no Harden Runner step`);
+    assert.equal(harden.with?.["egress-policy"], "block");
+    assert.equal(String(harden.with?.["disable-telemetry"]), "true");
+
+    const allowed = String(harden.with?.["allowed-endpoints"]).split(/\s+/);
+    for (const endpoint of [
+      "github.com:443",
+      "api.github.com:443",
+      "codeload.github.com:443",
+      "registry.npmjs.org:443",
+      "results-receiver.actions.githubusercontent.com:443",
+    ]) {
+      assert.ok(
+        allowed.includes(endpoint),
+        `${name} does not allow ${endpoint}`
+      );
+    }
+  });
+
+  test("the AI lane allows the gateway host only through the LITELLM_HOST secret", () => {
+    assert.ok(aiLane, "no lane runs github-ai.test.ts");
+    const harden = aiLane[1].steps.find(isHardenRunner);
+    const allowed = String(harden?.with?.["allowed-endpoints"]);
+    assert.match(
+      allowed,
+      /secrets\.LITELLM_HOST != '' && format\('\{0\}:443', secrets\.LITELLM_HOST\) \|\| ''/
+    );
+    assert.doesNotMatch(allowed, /openrouter/i);
+  });
 
   for (const [name, job] of lanes) {
     test(`${name} has a timeout`, () => {
