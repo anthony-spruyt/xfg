@@ -18,7 +18,13 @@ on:
         required: false
       GH_PAT_ORG:
         required: false
-      OPENROUTER_API_KEY:
+      LITELLM_HOST:
+        required: false
+      LITELLM_API_KEY:
+        required: false
+      CF_ACCESS_CLIENT_ID:
+        required: false
+      CF_ACCESS_CLIENT_SECRET:
         required: false
       TEST_APP_PRIVATE_KEY:
         required: false
@@ -463,7 +469,36 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
-          egress-policy: audit
+          egress-policy: block
+          disable-telemetry: true
+          allowed-endpoints: >-
+            github.com:443
+            api.github.com:443
+            codeload.github.com:443
+            cafe.github.com:443
+            registry.npmjs.org:443
+            results-receiver.actions.githubusercontent.com:443
+            productionresultssa0.blob.core.windows.net:443
+            productionresultssa1.blob.core.windows.net:443
+            productionresultssa2.blob.core.windows.net:443
+            productionresultssa3.blob.core.windows.net:443
+            productionresultssa4.blob.core.windows.net:443
+            productionresultssa5.blob.core.windows.net:443
+            productionresultssa6.blob.core.windows.net:443
+            productionresultssa7.blob.core.windows.net:443
+            productionresultssa8.blob.core.windows.net:443
+            productionresultssa9.blob.core.windows.net:443
+            productionresultssa10.blob.core.windows.net:443
+            productionresultssa11.blob.core.windows.net:443
+            productionresultssa12.blob.core.windows.net:443
+            productionresultssa13.blob.core.windows.net:443
+            productionresultssa14.blob.core.windows.net:443
+            productionresultssa15.blob.core.windows.net:443
+            productionresultssa16.blob.core.windows.net:443
+            productionresultssa17.blob.core.windows.net:443
+            productionresultssa18.blob.core.windows.net:443
+            productionresultssa19.blob.core.windows.net:443
+            ${{ secrets.LITELLM_HOST != '' && format('{0}:443', secrets.LITELLM_HOST) || '' }}
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -471,8 +506,11 @@ jobs:
         env:
           ENVIRONMENT: ${{ inputs.environment }}
           GH_PAT_ORG: ${{ secrets.GH_PAT_ORG }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG OPENROUTER_API_KEY
+          LITELLM_HOST: ${{ secrets.LITELLM_HOST }}
+          LITELLM_API_KEY: ${{ secrets.LITELLM_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: .github/scripts/require-env-secrets.sh "${ENVIRONMENT}" GH_PAT_ORG LITELLM_HOST LITELLM_API_KEY CF_ACCESS_CLIENT_ID CF_ACCESS_CLIENT_SECRET
 
       - name: Rate limit at start (GH_PAT_ORG)
         env:
@@ -512,7 +550,10 @@ jobs:
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LITELLM_BASE_URL: ${{ secrets.LITELLM_HOST != '' && format('https://{0}/v1', secrets.LITELLM_HOST) || '' }}
+          LITELLM_API_KEY: ${{ secrets.LITELLM_API_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         working-directory: packages/xfg
         run: npm run test:integration:ci -- test/integration/github-ai.test.ts
 

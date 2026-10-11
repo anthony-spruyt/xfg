@@ -22,21 +22,63 @@ const OWNER = "spruyt-labs";
 const TARGET_FILE = ".prettierrc.json";
 const PR_BRANCH = "chore/sync-ai-test";
 
-const KEY_ENV = "OPENROUTER_API_KEY";
+const REQUIRED_ENV = [
+  "LITELLM_BASE_URL",
+  "LITELLM_API_KEY",
+  "CF_ACCESS_CLIENT_ID",
+  "CF_ACCESS_CLIENT_SECRET",
+];
+// Never set anywhere: a primary that reads it fails before any request is made.
+const UNSET_URL_ENV = "XFG_TEST_UNSET_AI_BASE_URL";
 
-// CI must never pass by skipping; locally a missing key just skips.
-if (process.env.CI && !process.env[KEY_ENV]) {
-  throw new Error(`${KEY_ENV} must be set in CI for AI integration tests`);
+const missing = REQUIRED_ENV.filter((name) => !process.env[name]);
+
+// CI must never pass by skipping; locally a missing variable just skips.
+if (process.env.CI && missing.length > 0) {
+  throw new Error(
+    `${missing.join(", ")} must be set in CI for AI integration tests`
+  );
 }
-const skip = process.env[KEY_ENV]
-  ? false
-  : `${KEY_ENV} is not set - skipping AI integration tests`;
+const skip =
+  missing.length > 0
+    ? `${missing.join(", ")} not set - skipping AI integration tests`
+    : false;
 
 let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-function prettierConfig(merge: string, printWidth: number): string {
+const GATEWAY_FIELDS = `model: openai/gpt-4o-mini
+apiKeyEnv: LITELLM_API_KEY
+headersEnv:
+  CF-Access-Client-Id: CF_ACCESS_CLIENT_ID
+  CF-Access-Client-Secret: CF_ACCESS_CLIENT_SECRET`;
+
+function indent(text: string, spaces: number): string {
+  const pad = " ".repeat(spaces);
+  return text
+    .split("\n")
+    .map((line) => pad + line)
+    .join("\n");
+}
+
+function gatewayProvider(baseUrlEnv: string, spaces: number): string {
+  return indent(
+    `provider: openai\nbaseUrlEnv: ${baseUrlEnv}\n${GATEWAY_FIELDS}`,
+    spaces
+  );
+}
+
+function prettierConfig(
+  merge: string,
+  printWidth: number,
+  fallback = false
+): string {
+  const ai = fallback
+    ? `${gatewayProvider(UNSET_URL_ENV, 4)}
+    fallback:
+${gatewayProvider("LITELLM_BASE_URL", 6)}`
+    : gatewayProvider("LITELLM_BASE_URL", 4);
   return `id: integration-test-github-ai
 files:
   ${TARGET_FILE}:
@@ -48,10 +90,7 @@ prOptions:
   merge: ${merge}
   branch: ${PR_BRANCH}
   ai:
-    provider: openai
-    baseUrl: https://openrouter.ai/api/v1
-    apiKeyEnv: ${KEY_ENV}
-    model: openai/gpt-4o-mini
+${ai}
 repos:
   - git: https://github.com/${testRepo}.git
 `;
@@ -105,6 +144,34 @@ describe("GitHub AI commit messages integration test", { skip }, () => {
     );
     const subject = message.split("\n")[0];
     console.log(`AI commit message:\n${message}`);
+    assertAiSubject(subject);
+  });
+
+  test("direct mode falls back to the second gateway config when the primary cannot be reached", async () => {
+    assert.equal(process.env[UNSET_URL_ENV], undefined);
+    const configPath = writeConfig(tmpDir, prettierConfig("direct", 90, true));
+
+    const output = await exec(`node dist/cli.js sync --config ${configPath}`, {
+      cwd: projectRoot,
+      env: { [UNSET_URL_ENV]: undefined },
+    });
+    console.log(output);
+    assert.ok(
+      output.includes("AI provider failed, trying prOptions.ai.fallback"),
+      "the primary should have failed and handed over to the fallback"
+    );
+    assert.ok(
+      !output.includes("AI commit message generation failed"),
+      "the fallback should have answered"
+    );
+
+    await waitForFileVisible(testRepo, TARGET_FILE);
+
+    const message = await execWithRetry(
+      `gh api repos/${testRepo}/commits?path=${TARGET_FILE} --jq '.[0].commit.message'`
+    );
+    const subject = message.split("\n")[0];
+    console.log(`AI commit message via fallback:\n${message}`);
     assertAiSubject(subject);
   });
 
