@@ -27,6 +27,8 @@ linter_args=()
 
 if [[ "${1:-}" == "--ci" ]]; then
   docker_args=(
+    -u "$(id -u):$(id -g)"
+    -e HOME=/tmp
     -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR"
     -e SARIF_REPORTER=true
     -e LOG_LEVEL=ERROR
