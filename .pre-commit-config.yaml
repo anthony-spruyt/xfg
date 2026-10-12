@@ -42,7 +42,7 @@ repos:
     rev: "1.0.0"
     hooks:
       - id: "mdformat"
-        exclude: "^\\.claude/|(^|/)CHANGELOG\\.md$"
+        exclude: "(^|/)\\.claude/agents/|^\\.claude/|(^|/)CHANGELOG\\.md$"
         additional_dependencies:
           - "mdformat-gfm"
           - "mdformat-frontmatter"
