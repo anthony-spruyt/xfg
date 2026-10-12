@@ -19,6 +19,7 @@
         ".claude/rules/root-cause.md",
         ".claude/rules/tdd.md",
         ".claude/settings.json",
+        ".claude/skills/repo-operator/SKILL.md",
         ".claude/statusline.sh",
         ".claude/xfg-managed.sh",
         ".devcontainer/.gitignore",

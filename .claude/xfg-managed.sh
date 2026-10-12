@@ -58,9 +58,9 @@ is_managed() {
 explain() {
   local root=$1 rel=$2
   if [[ "$(repo_name "$root")" == "$self_repo" ]]; then
-    printf '%s is synced here by XFG Apply. Edit its source in src/ instead (usually src/templates/%s, or src/*.yaml).\n' "$rel" "$rel"
+    printf '%s is synced here by XFG Apply. Edit its source in src/ instead (usually src/templates/%s, or src/*.yaml). Load the repo-operator skill before changing it.\n' "$rel" "$rel"
   else
-    printf '%s is managed by %s: xfg overwrites it on every sync, so a change made here is lost. Change it in %s instead (usually src/templates/%s, or src/*.yaml).\n' "$rel" "$self_repo" "$self_repo" "$rel"
+    printf '%s is managed by %s: xfg overwrites it on every sync, so a change made here is lost. Change it in %s instead (usually src/templates/%s, or src/*.yaml). Load the repo-operator skill before changing it.\n' "$rel" "$self_repo" "$self_repo" "$rel"
   fi
 }
 
