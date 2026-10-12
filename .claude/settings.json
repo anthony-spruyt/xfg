@@ -133,6 +133,7 @@
     "hookify-plus@aspruyt-plugins": true,
     "security-hooks@aspruyt-plugins": true,
     "best-practices@aspruyt-plugins": true,
+    "agent-kit@aspruyt-plugins": true,
     "superpowers@claude-plugins-official": false,
     "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
