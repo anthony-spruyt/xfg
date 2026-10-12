@@ -77,15 +77,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.claude/session-progress.sh\" ] || bash \"$CLAUDE_PROJECT_DIR/.claude/session-progress.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "startup|resume|clear|compact|fork",
-        "hooks": [
-          {
-            "type": "command",
             "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.claude/restore-shell-tools.sh\" ] || bash \"$CLAUDE_PROJECT_DIR/.claude/restore-shell-tools.sh\""
           }
         ]
