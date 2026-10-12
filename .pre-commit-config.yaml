@@ -51,6 +51,14 @@ repos:
     rev: "v0.49.1"
     hooks:
       - id: "markdownlint"
+  - repo: "local"
+    hooks:
+      - id: "xfg-managed"
+        name: "Block changes to files synced by repo-operator"
+        entry: "bash .claude/xfg-managed.sh staged"
+        language: "system"
+        pass_filenames: false
+        always_run: true
   - repo: "https://github.com/rhysd/actionlint"
     rev: "v1.7.12"
     hooks:

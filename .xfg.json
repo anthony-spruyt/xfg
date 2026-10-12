@@ -22,6 +22,7 @@
         ".claude/session-progress.sh",
         ".claude/settings.json",
         ".claude/statusline.sh",
+        ".claude/xfg-managed.sh",
         ".devcontainer/.gitignore",
         ".devcontainer/devcontainer.json",
         ".devcontainer/Dockerfile",

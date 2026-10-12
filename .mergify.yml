@@ -23,6 +23,13 @@ pull_request_rules:
           - "agent/fixing"
           - "agent/fixable"
           - "agent/needs-review"
+  - name: "dismiss stale approvals on Renovate PRs"
+    conditions:
+      - "author = renovate[bot]"
+    actions:
+      dismiss_reviews:
+        approved: true
+        changes_requested: false
 merge_protections:
   - name: "approval"
     if:

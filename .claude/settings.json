@@ -123,6 +123,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ ! -f \"$CLAUDE_PROJECT_DIR/.claude/xfg-managed.sh\" ] || bash \"$CLAUDE_PROJECT_DIR/.claude/xfg-managed.sh\" hook"
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -134,7 +145,6 @@
     "security-hooks@aspruyt-plugins": true,
     "best-practices@aspruyt-plugins": true,
     "agent-kit@aspruyt-plugins": true,
-    "superpowers@claude-plugins-official": false,
     "context7@claude-plugins-official": false,
     "claude-code-setup@claude-plugins-official": false,
     "claude-md-management@claude-plugins-official": false,
