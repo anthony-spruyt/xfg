@@ -285,6 +285,169 @@ describe("diffLabels", () => {
     });
   });
 
+  describe("rename re-run (idempotency)", () => {
+    test("source missing and target exists is unchanged", () => {
+      const current = [makeGitHubLabel({ name: "new", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].action, "unchanged");
+      assert.equal(changes[0].name, "new");
+    });
+
+    test("target is never deleted as an orphan when the source is gone", () => {
+      const current = [
+        makeGitHubLabel({ name: "new", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "stray", color: "000000" }),
+      ];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => [c.action, c.name]),
+        [
+          ["delete", "stray"],
+          ["unchanged", "new"],
+        ]
+      );
+    });
+
+    test("target matches case-insensitively", () => {
+      const current = [makeGitHubLabel({ name: "New", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => c.action),
+        ["unchanged"]
+      );
+    });
+
+    test("target with a different color is updated without a rename", () => {
+      const current = [makeGitHubLabel({ name: "new", color: "cccccc" })];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].action, "update");
+      assert.equal(changes[0].name, "new");
+      assert.equal(changes[0].newName, undefined);
+      assert.deepEqual(changes[0].propertyChanges, [
+        { property: "color", oldValue: "cccccc", newValue: "d73a4a" },
+      ]);
+    });
+
+    test("target with a different description is updated", () => {
+      const current = [
+        makeGitHubLabel({ name: "new", color: "d73a4a", description: "a" }),
+      ];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", description: "b", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.equal(changes[0].action, "update");
+      assert.deepEqual(changes[0].propertyChanges, [
+        { property: "description", oldValue: "a", newValue: "b" },
+      ]);
+    });
+
+    test("neither exists creates the label under new_name", () => {
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", description: "d", new_name: "new" },
+      };
+
+      const changes = diffLabels([], desired, true, false);
+
+      assert.equal(changes.length, 1);
+      assert.equal(changes[0].action, "create");
+      assert.equal(changes[0].name, "new");
+      assert.deepEqual(changes[0].desired, {
+        color: "d73a4a",
+        description: "d",
+      });
+    });
+
+    test("neither exists then re-run converges to unchanged", () => {
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const first = diffLabels([], desired, true, false);
+      const created = makeGitHubLabel({ name: first[0].name, color: "d73a4a" });
+      const second = diffLabels([created], desired, true, false);
+
+      assert.deepEqual(
+        second.map((c) => c.action),
+        ["unchanged"]
+      );
+    });
+
+    test("both exist still errors when the target is not removed", () => {
+      const current = [
+        makeGitHubLabel({ name: "old", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "new", color: "cccccc" }),
+      ];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      assert.throws(
+        () => diffLabels(current, desired, false, false),
+        /collision|collides/i
+      );
+    });
+
+    test("both exist renames over a target that is deleted as an orphan", () => {
+      const current = [
+        makeGitHubLabel({ name: "old", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "new", color: "cccccc" }),
+      ];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => [c.action, c.name]),
+        [
+          ["delete", "new"],
+          ["update", "old"],
+        ]
+      );
+    });
+
+    test("target that is also a desired key is not duplicated", () => {
+      const current = [makeGitHubLabel({ name: "new", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+        new: { color: "d73a4a" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => [c.action, c.name]),
+        [["unchanged", "new"]]
+      );
+    });
+  });
+
   describe("chain rename", () => {
     test("allows chain rename where target label is itself being renamed away", () => {
       const current = [

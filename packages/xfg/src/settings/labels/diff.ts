@@ -28,6 +28,8 @@ export interface LabelChange {
  * An explicit empty string "" means "set to empty."
  * GitHub API returns null for labels without descriptions — treat null and
  * undefined as equivalent when comparing (neither triggers an update).
+ * A `new_name` entry whose source is missing is treated as an already-applied
+ * rename: the target is compared (or created) in its place and never deleted.
  *
  * @param current - Current labels from GitHub API
  * @param desired - Desired labels from config (name -> label)
@@ -64,10 +66,19 @@ export function diffLabels(
     }
   }
 
+  // A rename whose source is gone was already applied: its target is the managed label
+  const renamedTargets = new Set<string>();
+  for (const [name, label] of Object.entries(desired)) {
+    if (label.new_name && !currentByName.has(name.toLowerCase())) {
+      renamedTargets.add(label.new_name.toLowerCase());
+    }
+  }
+
   // Determine which labels will be deleted (for collision checking)
-  const desiredLower = new Set(
-    Object.keys(desired).map((n) => n.toLowerCase())
-  );
+  const desiredLower = new Set([
+    ...Object.keys(desired).map((n) => n.toLowerCase()),
+    ...renamedTargets,
+  ]);
   const deletedNames = new Set<string>();
   if (deleteOrphaned && !noDelete) {
     for (const nameLower of currentByName.keys()) {
@@ -87,6 +98,7 @@ export function diffLabels(
     if (!label.new_name) continue;
     const targetLower = label.new_name.toLowerCase();
     const nameLower = name.toLowerCase();
+    if (!currentByName.has(nameLower)) continue;
 
     // Check if target collides with an existing label that is NOT:
     // 1. The source label itself
@@ -111,17 +123,31 @@ export function diffLabels(
   // Check each desired label
   for (const [name, desiredLabel] of Object.entries(desired)) {
     const nameLower = name.toLowerCase();
-    const currentLabel = currentByName.get(nameLower);
+    let currentLabel = currentByName.get(nameLower);
+    let labelName = name;
+    let labelConfig = desiredLabel;
+
+    if (!currentLabel && desiredLabel.new_name) {
+      const targetLower = desiredLabel.new_name.toLowerCase();
+      // The target's own entry, if any, already covers this label
+      if (Object.keys(desired).some((n) => n.toLowerCase() === targetLower)) {
+        continue;
+      }
+      const { new_name: targetName, ...config } = desiredLabel;
+      labelName = targetName;
+      labelConfig = config;
+      currentLabel = currentByName.get(targetLower);
+    }
 
     if (!currentLabel) {
       changes.push({
         action: "create",
-        name,
-        desired: desiredLabel,
+        name: labelName,
+        desired: labelConfig,
       });
     } else {
       const propChanges: LabelChange["propertyChanges"] = [];
-      const desiredColor = normalizeColor(desiredLabel.color);
+      const desiredColor = normalizeColor(labelConfig.color);
       const currentColor = currentLabel.color.toLowerCase();
 
       if (desiredColor !== currentColor) {
@@ -133,41 +159,41 @@ export function diffLabels(
       }
 
       // Description: undefined = don't compare, explicit value = compare
-      if (desiredLabel.description !== undefined) {
+      if (labelConfig.description !== undefined) {
         const currentDesc = currentLabel.description ?? "";
-        if (desiredLabel.description !== currentDesc) {
+        if (labelConfig.description !== currentDesc) {
           propChanges.push({
             property: "description",
             oldValue: currentLabel.description ?? undefined,
-            newValue: desiredLabel.description,
+            newValue: labelConfig.description,
           });
         }
       }
 
       // new_name always triggers an update
-      if (desiredLabel.new_name) {
+      if (labelConfig.new_name) {
         propChanges.push({
           property: "new_name",
-          oldValue: name,
-          newValue: desiredLabel.new_name,
+          oldValue: labelName,
+          newValue: labelConfig.new_name,
         });
       }
 
       if (propChanges.length > 0) {
         changes.push({
           action: "update",
-          name,
-          newName: desiredLabel.new_name,
+          name: labelName,
+          newName: labelConfig.new_name,
           current: currentLabel,
-          desired: desiredLabel,
+          desired: labelConfig,
           propertyChanges: propChanges,
         });
       } else {
         changes.push({
           action: "unchanged",
-          name,
+          name: labelName,
           current: currentLabel,
-          desired: desiredLabel,
+          desired: labelConfig,
         });
       }
     }

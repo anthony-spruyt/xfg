@@ -65,7 +65,11 @@ labels:
     new_name: new-label-name
 ```
 
-After renaming, update your config to use the new name for subsequent runs:
+`new_name` is safe to leave in place after the rename. On later runs, when the old label no longer exists and `new-label-name` does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates `new-label-name`.
+
+If both labels exist, xfg stops with a rename collision error, unless `new-label-name` is deleted as an orphan or renamed away in the same run.
+
+You can also replace the entry with the new name once the rename has run:
 
 ```yaml
 labels:
@@ -75,7 +79,7 @@ labels:
 
 ## Deleting Orphaned Labels
 
-When `deleteOrphaned: true` is set, labels that were previously managed by xfg but are no longer in the config will be deleted:
+When `deleteOrphaned: true` is set, every label in the repository that is not in the config is deleted, including labels created manually or by other tools. Labels named by a `new_name` whose source label is already renamed count as in the config:
 
 ```yaml
 settings:
@@ -86,7 +90,7 @@ settings:
 ```
 
 !!! warning
-    `deleteOrphaned` only deletes labels that xfg previously managed (tracked in the manifest). It will not delete labels that were created manually or by other tools.
+    Orphan detection compares the repository's labels with the config, not with a manifest of labels xfg created. List every label you want to keep, or leave `deleteOrphaned` unset. Use `--no-delete` to skip deletions for a run.
 
 ## Inheritance
 
