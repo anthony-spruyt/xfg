@@ -28,13 +28,17 @@ export interface LabelChange {
  * An explicit empty string "" means "set to empty."
  * GitHub API returns null for labels without descriptions — treat null and
  * undefined as equivalent when comparing (neither triggers an update).
+ * A `new_name` entry whose source is missing is treated as an already-applied
+ * rename: the target is compared (or created) in its place and never deleted.
+ * A rename target that is itself a `new_name` entry (a chain) is rejected, as
+ * is a rename onto a label that already exists.
  *
  * @param current - Current labels from GitHub API
  * @param desired - Desired labels from config (name -> label)
  * @param deleteOrphaned - If true, delete current labels not in desired config
  * @param noDelete - If true, skip delete operations
  * @returns Array of changes to apply
- * @throws ValidationError if rename collisions are detected
+ * @throws ValidationError if rename collisions or chains are detected
  */
 export function diffLabels(
   current: GitHubLabel[],
@@ -44,13 +48,11 @@ export function diffLabels(
 ): LabelChange[] {
   const changes: LabelChange[] = [];
 
-  // Build case-insensitive lookup of current labels
   const currentByName = new Map<string, GitHubLabel>();
   for (const label of current) {
     currentByName.set(label.name.toLowerCase(), label);
   }
 
-  // Collect rename targets for collision detection
   const renameTargets = new Map<string, string>(); // lowercase target -> source name
   for (const [name, label] of Object.entries(desired)) {
     if (label.new_name) {
@@ -64,64 +66,74 @@ export function diffLabels(
     }
   }
 
-  // Determine which labels will be deleted (for collision checking)
-  const desiredLower = new Set(
-    Object.keys(desired).map((n) => n.toLowerCase())
-  );
-  const deletedNames = new Set<string>();
-  if (deleteOrphaned && !noDelete) {
-    for (const nameLower of currentByName.keys()) {
-      if (!desiredLower.has(nameLower)) {
-        deletedNames.add(nameLower);
-      }
+  for (const [name, label] of Object.entries(desired)) {
+    if (!label.new_name) continue;
+    const targetLower = label.new_name.toLowerCase();
+    if (targetLower === name.toLowerCase()) continue;
+    const chained = Object.entries(desired).find(
+      ([n, l]) => n.toLowerCase() === targetLower && l.new_name
+    );
+    if (chained) {
+      throw new ValidationError(
+        `Rename chain: '${name}' renames to '${label.new_name}', which is itself renamed to '${chained[1].new_name}'. Chained renames are not supported; run them separately`
+      );
     }
   }
 
-  // Check rename targets for collisions with existing labels.
-  // Note: Chain renames (A->B and B->C) are allowed when the target label is
-  // itself being renamed away. This is safe because the apply ordering
-  // (deletes -> updates -> creates) ensures both renames execute in the same batch.
-  // This deviates from the original design plan which called for flagging chains
-  // as errors, but the permissive behavior is correct and more user-friendly.
+  // A rename whose source is gone was already applied: its target is the managed label
+  const renamedTargets = new Set<string>();
+  for (const [name, label] of Object.entries(desired)) {
+    if (label.new_name && !currentByName.has(name.toLowerCase())) {
+      renamedTargets.add(label.new_name.toLowerCase());
+    }
+  }
+
+  const desiredLower = new Set([
+    ...Object.keys(desired).map((n) => n.toLowerCase()),
+    ...renamedTargets,
+  ]);
+
   for (const [name, label] of Object.entries(desired)) {
     if (!label.new_name) continue;
     const targetLower = label.new_name.toLowerCase();
     const nameLower = name.toLowerCase();
+    if (!currentByName.has(nameLower)) continue;
 
-    // Check if target collides with an existing label that is NOT:
-    // 1. The source label itself
-    // 2. Being deleted in this diff
-    // 3. Being renamed away in this diff
-    if (
-      currentByName.has(targetLower) &&
-      targetLower !== nameLower &&
-      !deletedNames.has(targetLower)
-    ) {
-      const collidingDesired = Object.entries(desired).find(
-        ([n]) => n.toLowerCase() === targetLower
+    // Never resolve a collision by deleting the target: deleting a label strips it from every PR
+    if (currentByName.has(targetLower) && targetLower !== nameLower) {
+      throw new ValidationError(
+        `Rename collision: '${name}' would rename to '${label.new_name}', but that label already exists`
       );
-      if (!collidingDesired || !collidingDesired[1].new_name) {
-        throw new ValidationError(
-          `Rename collision: '${name}' would rename to '${label.new_name}', but that label already exists`
-        );
-      }
     }
   }
 
-  // Check each desired label
   for (const [name, desiredLabel] of Object.entries(desired)) {
     const nameLower = name.toLowerCase();
-    const currentLabel = currentByName.get(nameLower);
+    let currentLabel = currentByName.get(nameLower);
+    let labelName = name;
+    let labelConfig = desiredLabel;
+
+    if (!currentLabel && desiredLabel.new_name) {
+      const targetLower = desiredLabel.new_name.toLowerCase();
+      // The target's own entry, if any, already covers this label
+      if (Object.keys(desired).some((n) => n.toLowerCase() === targetLower)) {
+        continue;
+      }
+      const { new_name: targetName, ...config } = desiredLabel;
+      labelName = targetName;
+      labelConfig = config;
+      currentLabel = currentByName.get(targetLower);
+    }
 
     if (!currentLabel) {
       changes.push({
         action: "create",
-        name,
-        desired: desiredLabel,
+        name: labelName,
+        desired: labelConfig,
       });
     } else {
       const propChanges: LabelChange["propertyChanges"] = [];
-      const desiredColor = normalizeColor(desiredLabel.color);
+      const desiredColor = normalizeColor(labelConfig.color);
       const currentColor = currentLabel.color.toLowerCase();
 
       if (desiredColor !== currentColor) {
@@ -132,48 +144,48 @@ export function diffLabels(
         });
       }
 
-      // Description: undefined = don't compare, explicit value = compare
-      if (desiredLabel.description !== undefined) {
+      if (labelConfig.description !== undefined) {
         const currentDesc = currentLabel.description ?? "";
-        if (desiredLabel.description !== currentDesc) {
+        if (labelConfig.description !== currentDesc) {
           propChanges.push({
             property: "description",
             oldValue: currentLabel.description ?? undefined,
-            newValue: desiredLabel.description,
+            newValue: labelConfig.description,
           });
         }
       }
 
-      // new_name always triggers an update
-      if (desiredLabel.new_name) {
+      if (
+        labelConfig.new_name &&
+        labelConfig.new_name !== currentLabel.name
+      ) {
         propChanges.push({
           property: "new_name",
-          oldValue: name,
-          newValue: desiredLabel.new_name,
+          oldValue: currentLabel.name,
+          newValue: labelConfig.new_name,
         });
       }
 
       if (propChanges.length > 0) {
         changes.push({
           action: "update",
-          name,
-          newName: desiredLabel.new_name,
+          name: currentLabel.name,
+          newName: labelConfig.new_name,
           current: currentLabel,
-          desired: desiredLabel,
+          desired: labelConfig,
           propertyChanges: propChanges,
         });
       } else {
         changes.push({
           action: "unchanged",
-          name,
+          name: labelName,
           current: currentLabel,
-          desired: desiredLabel,
+          desired: labelConfig,
         });
       }
     }
   }
 
-  // Desired-state orphan detection: delete ALL current not in desired
   if (deleteOrphaned && !noDelete) {
     for (const [nameLower, currentLabel] of currentByName) {
       if (!desiredLower.has(nameLower)) {
@@ -186,7 +198,6 @@ export function diffLabels(
     }
   }
 
-  // Sort: delete first, then update, then create, then unchanged
   const actionOrder: Record<LabelAction, number> = {
     delete: 0,
     update: 1,

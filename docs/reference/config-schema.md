@@ -311,17 +311,17 @@ GitHub code scanning default setup configuration
 
 Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.
 
-| Field            | Type                                                                     | Required | Default | Description                                                     |
-| ---------------- | ------------------------------------------------------------------------ | -------- | ------- | --------------------------------------------------------------- |
-| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                             | No       | -       | Map of ruleset names to configurations.                         |
-| `repo`           | [`githubRepoSettings`](#githubreposettings)                              | No       | -       | GitHub repository settings (features, merge options, security). |
-| `labels`         | `object` of `false` \| [`label`](#label)                                 | No       | -       | Map of label names to configurations.                           |
-| `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)                          | No       | -       | GitHub code scanning default setup configuration.               |
-| `variables`      | `object` of `false` \| `string`                                          | No       | -       | Map of GitHub Actions variable names to values.                 |
-| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)                   | No       | -       | Map of GitHub Actions secret names to SecretConfig.             |
-| `collaborators`  | `object`                                                                 | No       | -       | Direct collaborators for personal (user-owned) repos.           |
-| `environments`   | `object` of `false` \| [`rootEnvironmentConfig`](#rootenvironmentconfig) | No       | -       | GitHub deployment environments keyed by name.                   |
-| `deleteOrphaned` | `boolean`                                                                | No       | `false` | Track managed resources for orphan deletion.                    |
+| Field            | Type                                                                     | Required | Default | Description                                                                                                              |
+| ---------------- | ------------------------------------------------------------------------ | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                             | No       | -       | Map of ruleset names to configurations.                                                                                  |
+| `repo`           | [`githubRepoSettings`](#githubreposettings)                              | No       | -       | GitHub repository settings (features, merge options, security).                                                          |
+| `labels`         | `object` of `false` \| [`label`](#label)                                 | No       | -       | Map of label names to configurations.                                                                                    |
+| `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)                          | No       | -       | GitHub code scanning default setup configuration.                                                                        |
+| `variables`      | `object` of `false` \| `string`                                          | No       | -       | Map of GitHub Actions variable names to values.                                                                          |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)                   | No       | -       | Map of GitHub Actions secret names to SecretConfig.                                                                      |
+| `collaborators`  | `object`                                                                 | No       | -       | Direct collaborators for personal (user-owned) repos.                                                                    |
+| `environments`   | `object` of `false` \| [`rootEnvironmentConfig`](#rootenvironmentconfig) | No       | -       | GitHub deployment environments keyed by name.                                                                            |
+| `deleteOrphaned` | `boolean`                                                                | No       | `false` | When true, every ruleset and label in the repo that is not in the config is deleted, including ones created outside xfg. |
 
 - `rulesets` — Set a ruleset to false to disable it.
 - `labels` — Set a label to false to disable it.
@@ -329,7 +329,7 @@ Global repository settings including GitHub Rulesets and repository features. in
 - `secrets` — Set a secret to false to disable it. Use deleteOrphaned to remove secrets not in config. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Org repos are skipped with a warning.
 - `environments` — Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.
-- `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
+- `deleteOrphaned` — Default: false
 
 <!-- xfg:generated:end -->
 
@@ -341,17 +341,17 @@ See [Secrets](../configuration/secrets.md) and [GitHub Variables](../configurati
 
 Repository settings including GitHub Rulesets and repository features
 
-| Field            | Type                                                             | Required | Default | Description                                                               |
-| ---------------- | ---------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------- |
-| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                     | No       | -       | Map of ruleset names to configurations.                                   |
-| `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)           | No       | -       | GitHub repository settings (features, merge options, security).           |
-| `labels`         | `object` of `false` \| [`label`](#label)                         | No       | -       | Map of label names to configurations.                                     |
-| `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings)       | No       | -       | GitHub code scanning default setup configuration.                         |
-| `variables`      | `object` of `false` \| `string`                                  | No       | -       | Map of GitHub Actions variable names to values.                           |
-| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)           | No       | -       | Map of GitHub Actions secret names to SecretConfig.                       |
-| `collaborators`  | `object`                                                         | No       | -       | Direct collaborators for personal (user-owned) repos.                     |
-| `environments`   | `object` of `false` \| [`environmentConfig`](#environmentconfig) | No       | -       | GitHub deployment environments keyed by name, merged over inherited ones. |
-| `deleteOrphaned` | `boolean`                                                        | No       | `false` | Track managed resources for orphan deletion.                              |
+| Field            | Type                                                             | Required | Default | Description                                                                                                              |
+| ---------------- | ---------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `rulesets`       | `object` of `false` \| [`ruleset`](#ruleset)                     | No       | -       | Map of ruleset names to configurations.                                                                                  |
+| `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)           | No       | -       | GitHub repository settings (features, merge options, security).                                                          |
+| `labels`         | `object` of `false` \| [`label`](#label)                         | No       | -       | Map of label names to configurations.                                                                                    |
+| `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings)       | No       | -       | GitHub code scanning default setup configuration.                                                                        |
+| `variables`      | `object` of `false` \| `string`                                  | No       | -       | Map of GitHub Actions variable names to values.                                                                          |
+| `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)           | No       | -       | Map of GitHub Actions secret names to SecretConfig.                                                                      |
+| `collaborators`  | `object`                                                         | No       | -       | Direct collaborators for personal (user-owned) repos.                                                                    |
+| `environments`   | `object` of `false` \| [`environmentConfig`](#environmentconfig) | No       | -       | GitHub deployment environments keyed by name, merged over inherited ones.                                                |
+| `deleteOrphaned` | `boolean`                                                        | No       | `false` | When true, every ruleset and label in the repo that is not in the config is deleted, including ones created outside xfg. |
 
 - `rulesets` — Set a ruleset to false to opt out. Set inherit: false to skip all inherited rulesets.
 - `repo` — Set to false at per-repo level to opt out of inherited settings.
@@ -361,7 +361,7 @@ Repository settings including GitHub Rulesets and repository features
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
 - `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.
-- `deleteOrphaned` — When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false
+- `deleteOrphaned` — Default: false
 
 <!-- xfg:generated:end -->
 
