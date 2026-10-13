@@ -813,7 +813,7 @@
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
-          "description": "Track managed resources for orphan deletion. When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false"
+          "description": "When true, every ruleset and label in the repo that is not in the config is deleted, including ones created outside xfg. Default: false"
         }
       }
     },
@@ -1000,7 +1000,7 @@
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
-          "description": "Track managed resources for orphan deletion. When true, if a ruleset or label is removed from the config, it will be deleted from the repo. Default: false"
+          "description": "When true, every ruleset and label in the repo that is not in the config is deleted, including ones created outside xfg. Default: false"
         }
       }
     },
