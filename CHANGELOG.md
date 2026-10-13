@@ -1,5 +1,18 @@
 # Changelog
 
+## [8.5.1](https://github.com/anthony-spruyt/xfg/compare/v8.5.0...v8.5.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **labels:** make new_name renames idempotent ([#1228](https://github.com/anthony-spruyt/xfg/issues/1228)) ([6bafe45](https://github.com/anthony-spruyt/xfg/commit/6bafe4526fd7f5318dc9cc860c127241158b1b41))
+* **sync:** report direct-mode dry runs as would-push ([#1220](https://github.com/anthony-spruyt/xfg/issues/1220)) ([fa86e65](https://github.com/anthony-spruyt/xfg/commit/fa86e65f41a620de2987a0d782a2f01889e99f70))
+
+
+### Continuous Integration
+
+* **integration:** run the AI integration tests against LiteLLM ([#1219](https://github.com/anthony-spruyt/xfg/issues/1219)) ([0aaccc6](https://github.com/anthony-spruyt/xfg/commit/0aaccc65c358fe27b256d9713d60e901abf2ade8))
+
 ## [8.5.0](https://github.com/anthony-spruyt/xfg/compare/v8.4.0...v8.5.0) (2026-10-10)
 
 
