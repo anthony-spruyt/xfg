@@ -218,7 +218,7 @@ describe("diffLabels", () => {
       );
     });
 
-    test("allows rename when target name is being deleted", () => {
+    test("errors when the rename target exists even if it would be deleted as an orphan", () => {
       const current = [
         makeGitHubLabel({ name: "old", color: "d73a4a" }),
         makeGitHubLabel({ id: 2, name: "new-name", color: "cccccc" }),
@@ -227,14 +227,10 @@ describe("diffLabels", () => {
         old: { color: "d73a4a", new_name: "new-name" },
       };
 
-      // "new-name" is not in desired and deleteOrphaned is true -> will be deleted
-      const changes = diffLabels(current, desired, true, false);
-
-      // Should not throw
-      const deleteChange = changes.find((c) => c.action === "delete");
-      const updateChange = changes.find((c) => c.action === "update");
-      assert.ok(deleteChange);
-      assert.ok(updateChange);
+      assert.throws(
+        () => diffLabels(current, desired, true, false),
+        /collision|collides|already exists/i
+      );
     });
 
     test("errors on duplicate rename targets", () => {
@@ -412,23 +408,23 @@ describe("diffLabels", () => {
       );
     });
 
-    test("both exist renames over a target that is deleted as an orphan", () => {
-      const current = [
-        makeGitHubLabel({ name: "old", color: "d73a4a" }),
-        makeGitHubLabel({ id: 2, name: "new", color: "cccccc" }),
-      ];
+    test("old label recreated after a rename errors instead of deleting the target", () => {
       const desired: Record<string, Label> = {
         old: { color: "d73a4a", new_name: "new" },
       };
-
-      const changes = diffLabels(current, desired, true, false);
-
+      const run1 = [makeGitHubLabel({ name: "new", color: "d73a4a" })];
       assert.deepEqual(
-        changes.map((c) => [c.action, c.name]),
-        [
-          ["delete", "new"],
-          ["update", "old"],
-        ]
+        diffLabels(run1, desired, true, false).map((c) => c.action),
+        ["unchanged"]
+      );
+
+      const run2 = [
+        makeGitHubLabel({ name: "new", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "old", color: "d73a4a" }),
+      ];
+      assert.throws(
+        () => diffLabels(run2, desired, true, false),
+        /collision|collides|already exists/i
       );
     });
 
@@ -449,7 +445,7 @@ describe("diffLabels", () => {
   });
 
   describe("chain rename", () => {
-    test("allows chain rename where target label is itself being renamed away", () => {
+    test("rejects a rename whose target is also renamed", () => {
       const current = [
         makeGitHubLabel({ name: "a", color: "aaaaaa" }),
         makeGitHubLabel({ id: 2, name: "b", color: "bbbbbb" }),
@@ -459,11 +455,82 @@ describe("diffLabels", () => {
         b: { color: "bbbbbb", new_name: "c" },
       };
 
-      // Should not throw — "b" is being renamed to "c", so "a" can take "b"
+      assert.throws(
+        () => diffLabels(current, desired, false, false),
+        /chain/i
+      );
+    });
+
+    test("rejects a rename onto a kept new_name entry on both runs", () => {
+      const desired: Record<string, Label> = {
+        old: { color: "d73a4a", new_name: "new" },
+        x: { color: "d73a4a", new_name: "old" },
+      };
+      const run1 = [
+        makeGitHubLabel({ name: "new", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "x", color: "d73a4a" }),
+      ];
+      const run2 = [
+        makeGitHubLabel({ name: "new", color: "d73a4a" }),
+        makeGitHubLabel({ id: 2, name: "old", color: "d73a4a" }),
+      ];
+
+      assert.throws(() => diffLabels(run1, desired, true, false), /chain/i);
+      assert.throws(() => diffLabels(run2, desired, true, false), /chain/i);
+    });
+  });
+
+  describe("rename name handling", () => {
+    test("skips new_name when the current name already equals it", () => {
+      const current = [makeGitHubLabel({ name: "Bug", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        bug: { color: "d73a4a", new_name: "Bug" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => c.action),
+        ["unchanged"]
+      );
+    });
+
+    test("self rename is unchanged", () => {
+      const current = [makeGitHubLabel({ name: "bug", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        bug: { color: "d73a4a", new_name: "bug" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.deepEqual(
+        changes.map((c) => c.action),
+        ["unchanged"]
+      );
+    });
+
+    test("case-only rename still updates when the casing differs", () => {
+      const current = [makeGitHubLabel({ name: "bug", color: "d73a4a" })];
+      const desired: Record<string, Label> = {
+        bug: { color: "d73a4a", new_name: "Bug" },
+      };
+
+      const changes = diffLabels(current, desired, true, false);
+
+      assert.equal(changes[0].action, "update");
+      assert.equal(changes[0].newName, "Bug");
+    });
+
+    test("update targets the current label name, not the config casing", () => {
+      const current = [makeGitHubLabel({ name: "bug", color: "cccccc" })];
+      const desired: Record<string, Label> = {
+        BUG: { color: "d73a4a" },
+      };
+
       const changes = diffLabels(current, desired, false, false);
 
-      const updates = changes.filter((c) => c.action === "update");
-      assert.equal(updates.length, 2);
+      assert.equal(changes[0].action, "update");
+      assert.equal(changes[0].name, "bug");
     });
   });
 });

@@ -65,9 +65,13 @@ labels:
     new_name: new-label-name
 ```
 
-`new_name` is safe to leave in place after the rename. On later runs, when the old label no longer exists and `new-label-name` does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates `new-label-name`.
+`new_name` can stay in place after the rename. On later runs, when the old label no longer exists and `new-label-name` does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates `new-label-name`.
 
-If both labels exist, xfg stops with a rename collision error, unless `new-label-name` is deleted as an orphan or renamed away in the same run.
+If both labels exist, xfg stops with a rename collision error and changes nothing, even when `deleteOrphaned` would delete `new-label-name`. Delete or rename the existing `new-label-name` yourself first.
+
+xfg rejects a config where a `new_name` target is also the key of another entry with its own `new_name` (`a` to `b` plus `b` to `c`, or `x` to `old` while `old` still has `new_name`). Run such renames in separate syncs, removing each entry's `new_name` once it has been applied.
+
+Leaving `new_name` in place is safe as long as nothing creates `old-label-name` again; if something does, the next sync stops with the collision error instead of deleting `new-label-name`. Replace the entry with the new name to avoid that.
 
 You can also replace the entry with the new name once the rename has run:
 
