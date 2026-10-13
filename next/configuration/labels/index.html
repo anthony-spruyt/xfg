@@ -2892,13 +2892,16 @@
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">d73a4a</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">new_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">new-label-name</span>
 </span></code></pre></div>
-<p>After renaming, update your config to use the new name for subsequent runs:</p>
+<p>Once the rename has run, replace the entry with the new name:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">new-label-name</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">color</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">d73a4a</span>
 </span></code></pre></div>
+<p>Syncs that run before you do are safe. When the old label no longer exists and <code>new-label-name</code> does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates <code>new-label-name</code>.</p>
+<p>If both labels exist, xfg stops with a rename collision error and changes nothing, even when <code>deleteOrphaned</code> would delete <code>new-label-name</code>. Delete or rename the existing <code>new-label-name</code> yourself first.</p>
+<p>xfg rejects a config where a <code>new_name</code> target is also the key of another entry with its own <code>new_name</code> (<code>a</code> to <code>b</code> plus <code>b</code> to <code>c</code>, or <code>x</code> to <code>old</code> while <code>old</code> still has <code>new_name</code>). Run such renames in separate syncs, replacing each entry with its new name once it has been applied.</p>
 <h2 id="deleting-orphaned-labels">Deleting Orphaned Labels<a class="headerlink" href="#deleting-orphaned-labels" title="Permanent link">&para;</a></h2>
-<p>When <code>deleteOrphaned: true</code> is set, labels that were previously managed by xfg but are no longer in the config will be deleted:</p>
+<p>When <code>deleteOrphaned: true</code> is set, every label in the repository that is not in the config is deleted, including labels created manually or by other tools. Labels named by a <code>new_name</code> whose source label is already renamed count as in the config:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">settings</span><span class="p">:</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">deleteOrphaned</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
@@ -2907,7 +2910,7 @@
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p><code>deleteOrphaned</code> only deletes labels that xfg previously managed (tracked in the manifest). It will not delete labels that were created manually or by other tools.</p>
+<p>Orphan detection compares the repository's labels with the config, not with a manifest of labels xfg created. List every label you want to keep, or leave <code>deleteOrphaned</code> unset. Use <code>--no-delete</code> to skip deletions for a run.</p>
 </div>
 <h2 id="inheritance">Inheritance<a class="headerlink" href="#inheritance" title="Permanent link">&para;</a></h2>
 <p>Labels from <a href="../groups/#conditional-groups">conditional groups</a> merge after explicit group labels and before repo overrides. Per-repo <code>inherit: false</code> discards all inherited labels including those from conditional groups.</p>
