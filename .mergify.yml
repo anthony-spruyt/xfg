@@ -23,6 +23,8 @@ pull_request_rules:
           - "agent/fixing"
           - "agent/fixable"
           - "agent/needs-review"
+          - "agent/needs-human-review"
+          - "agent/needs-triage"
   - name: "dismiss stale approvals on Renovate PRs"
     conditions:
       - "author = renovate[bot]"
@@ -70,3 +72,5 @@ merge_protections_settings:
   reporting_method: "check-runs"
   auto_merge_conditions:
     - "-label = blocked"
+    - "-label = agent/needs-human-review"
+    - "-label = agent/needs-review"
