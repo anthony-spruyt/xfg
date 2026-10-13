@@ -209,6 +209,7 @@ files:
     content: "# Placeholder"
     createOnly: true
 settings:
+  deleteOrphaned: true
   labels:
     xfg-test-bug:
       color: d73a4a
@@ -217,6 +218,9 @@ settings:
     xfg-test-feature:
       color: a2eeef
       description: "New feature or request"
+prOptions:
+  merge: direct
+  deleteBranch: true
 repos:
   - git: https://github.com/${OWNER}/${repoName}.git
     files:
@@ -236,6 +240,24 @@ repos:
       },
       { retries: 3, baseDelayMs: 2000, description: "label rename consistency" }
     );
+
+    await withTestRetry(
+      async () => {
+        const rerunOutput = await runSync(renameConfig);
+        assert.ok(
+          rerunOutput.includes("Labels: No changes needed"),
+          `Expected the rename re-run to report no changes, got: ${rerunOutput}`
+        );
+        for (const action of ["to create", "to update", "to delete"]) {
+          assert.ok(
+            !rerunOutput.includes(action),
+            `Expected no "${action}" on rename re-run, got: ${rerunOutput}`
+          );
+        }
+      },
+      { retries: 3, baseDelayMs: 2000, description: "rename re-run no changes" }
+    );
+    assert.ok(findLabel(await getLabels(), "xfg-test-defect"));
   });
 
   test("settings is idempotent when labels already match", async () => {
