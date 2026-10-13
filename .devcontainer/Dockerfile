@@ -1,7 +1,7 @@
 # Coder workspaces set BASE_REGISTRY to Nexus.
 ARG BASE_REGISTRY=docker.io
 # renovate: datasource=docker depName=docker.io/aspruyt/devcontainer-common versioning=semver
-FROM $BASE_REGISTRY/aspruyt/devcontainer-common:2.3.5@sha256:1738bf0ceff4a7fd31e4fbf4abd213bf21894197a9e9169fcb247a8e685db501
+FROM $BASE_REGISTRY/aspruyt/devcontainer-common:2.4.0@sha256:139b4412a1f07cd34894a2506580e507c041899505a5c98627eac9f7650c395b
 
 # Route Ubuntu archive through Nexus apt-ubuntu-proxy when NEXUS_URL is
 # supplied at build time. Coder workspaces inject it via envbuilder_env.
