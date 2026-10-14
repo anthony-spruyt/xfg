@@ -30,6 +30,9 @@ https://json\.schemastore\.org/.*
 # NPM package page (returns 403 to bots)
 https://www.npmjs.com/package/@aspruyt/xfg
 
+# npm downloads badge (times out whenever npm's download stats API is down)
+https://img\.shields\.io/npm/dw/@aspruyt/xfg\.svg
+
 # Socket.dev package page (returns 403 to bots)
 https://socket.dev/npm/package/@aspruyt/xfg
 
