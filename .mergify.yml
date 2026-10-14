@@ -52,7 +52,7 @@ merge_protections:
   - name: "gate-files"
     if:
       - "base = main"
-      - "files~=^(\\.github/|\\.mergify\\.yml$|renovate\\.json$|renovate-overrides\\.json5$)"
+      - "files~=^(\\.github/|\\.mergify\\.yml$|renovate\\.json$|renovate-overrides\\.json5$|(.*/)?metadata\\.yaml$|release-please-config\\.json$)"
     success_conditions:
       - or:
           - "approved-reviews-by = anthony-spruyt"

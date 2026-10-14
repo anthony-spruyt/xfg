@@ -30,6 +30,18 @@ ADDITIONAL_EXCLUDED_DIRECTORIES:
 FILTER_REGEX_EXCLUDE: "(CLAUDE\\.md$|CHANGELOG\\.md$)"
 ACTION_FILTER_REGEX_EXCLUDE: "^\\.claude/"
 BASH_FILTER_REGEX_EXCLUDE: "^\\.claude/"
+BASH_SHELLCHECK_FILE_EXTENSIONS:
+  - ".sh"
+  - ".bash"
+  - ".dash"
+  - ".ksh"
+  - ".bats"
+BASH_SHFMT_FILE_EXTENSIONS:
+  - ".sh"
+  - ".bash"
+  - ".dash"
+  - ".ksh"
+  - ".bats"
 JSON_FILTER_REGEX_EXCLUDE: "^\\.claude/"
 MARKDOWN_FILTER_REGEX_EXCLUDE: "^\\.claude/"
 SPELL_FILTER_REGEX_EXCLUDE: "^\\.claude/"
