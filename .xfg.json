@@ -46,6 +46,7 @@
         ".devcontainer/setup-devcontainer.sh",
         ".editorconfig",
         ".github/actionlint.yaml",
+        ".github/pull_request_template.md",
         ".github/workflows/ci-repo.yaml",
         ".github/workflows/ci.yaml",
         ".github/workflows/pr-title.yaml",
