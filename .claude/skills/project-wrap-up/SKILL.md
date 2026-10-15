@@ -37,16 +37,17 @@ Get the post written from the story, the owner's answers and this blog context (
 - Claude narrates in the first person: "I" is Claude and Anthony is "Anthony", as in "my adventures with Anthony". Byline "Claude, with Anthony Spruyt". The guardrails behind the agentic work are part of the story.
 - Owner quotes keep his words but get spelling, capitals and punctuation fixed: console typing reads badly in print.
 - Titles and lines never present elapsed time as a speed claim: the owner's attention varies, so the clock says little.
-- Claude writes from the real record (issues, PRs, commits), not from memory.
+- Claude writes from the real record (issues, PRs, commits), not from memory: every fact traces to a source, and what the record doesn't show stays out.
 - The post lives at `content/posts/<slug>.md` in `anthony-spruyt/blog` (Hugo + PaperMod).
 - Slugs and asset names avoid the words `login` and `signin`.
 - Never hardcode the domain in post text; link relative.
+- Guardrails are described by what they do, not their exact limits, timings or acceptance rules.
 
 The draft is committed locally in a blog clone: not pushed, no PR.
 
 ## 4. Review and hand over
 
-A PR in a public repo is public the moment it opens, so the draft is checked against the blog context in step 3 and the exclusions in step 1, and reviewed on the committed diff, before the PR opens. Open the PR only once the review passes. Hand it to the owner once CI is green; the owner reviews and merges.
+A PR in a public repo is public the moment it opens, so the draft is checked against the blog context in step 3 and the exclusions in step 1, and reviewed on the committed diff, before the PR opens, by two fresh reviewers: one checks facts against the record and the blog context, one reads it as an attacker would. Open the PR only once the review passes. Hand it to the owner once CI is green; the owner reviews and merges.
 
 ## 5. Tidy up
 

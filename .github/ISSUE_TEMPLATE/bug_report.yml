@@ -1,0 +1,33 @@
+name: "Bug Report"
+description: "Report something that isn't working correctly"
+title: "fix(scope): "
+labels:
+  - "bug"
+body:
+  - type: "markdown"
+    attributes:
+      value: |
+        Leave out secrets, IPs, CIDRs, hostnames and domains.
+        Report vulnerabilities privately through the [advisory form](../security/advisories/new), not here.
+  - type: "textarea"
+    id: "what-happened"
+    attributes:
+      label: "What happened"
+      description: "Steps, expected result, actual result."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "logs"
+    attributes:
+      label: "Logs or evidence"
+      description: "Relevant logs or errors, with secrets, IPs, CIDRs, hostnames and domains removed."
+      render: "shell"
+    validations:
+      required: false
+  - type: "textarea"
+    id: "done-when"
+    attributes:
+      label: "Done when"
+      description: "How we will know it is fixed."
+    validations:
+      required: false

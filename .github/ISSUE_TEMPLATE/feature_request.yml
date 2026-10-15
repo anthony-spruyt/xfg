@@ -1,0 +1,30 @@
+name: "Feature Request"
+description: "Propose a new feature or enhancement"
+title: "feat(scope): "
+labels:
+  - "enhancement"
+body:
+  - type: "markdown"
+    attributes:
+      value: "Leave out secrets, IPs, CIDRs, hostnames and domains."
+  - type: "textarea"
+    id: "why"
+    attributes:
+      label: "Why"
+      description: "The problem or goal."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "what"
+    attributes:
+      label: "What"
+      description: "What should change."
+    validations:
+      required: true
+  - type: "textarea"
+    id: "done-when"
+    attributes:
+      label: "Done when"
+      description: "How we will know it is done."
+    validations:
+      required: false
