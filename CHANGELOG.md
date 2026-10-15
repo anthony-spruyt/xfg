@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.2](https://github.com/anthony-spruyt/xfg/compare/v8.5.1...v8.5.2) (2026-10-15)
+
+
+### Continuous Integration
+
+* block job egress to an allowlist ([#1241](https://github.com/anthony-spruyt/xfg/issues/1241)) ([c87f4d7](https://github.com/anthony-spruyt/xfg/commit/c87f4d7117a6a54495c6c1fffdb254b6f8cf29d6))
+
 ## [8.5.1](https://github.com/anthony-spruyt/xfg/compare/v8.5.0...v8.5.1) (2026-10-13)
 
 
