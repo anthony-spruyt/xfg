@@ -93,8 +93,6 @@ Paths are relative to `packages/xfg/`.
 
 ## Gotchas
 
-- **Always create fresh branch from main** before starting work - old branches may already be merged
-- **After PR merged, checkout main and pull** before any new work - don't reuse old branches
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Check CI on main after PR merge** - verify integration tests pass before releasing
 - **Do not commit plans or specs to `docs/`** - that's GitHub Pages; use `plans/` for plans and `plans/superpowers/` for superpowers specs/plans (the plugin defaults to `docs/superpowers/` which triggers docs deploy)
