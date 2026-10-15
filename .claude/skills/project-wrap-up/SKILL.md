@@ -31,9 +31,12 @@ Play their answers back. Only what they said goes in as theirs.
 Get the post written from the story, the owner's answers and this blog context (the owner's words):
 
 - Readers are home labbers, builders, maybe a future employer.
-- Tone: an honest build journey. The messy middle and dead ends stay in. Not bragging, not pretentious.
+- Tone: an honest build journey, a bit light-hearted, with playful asides welcome. The messy middle and dead ends stay in. Not bragging, not pretentious.
+- Voice: Claude writes in its own voice, not narrating the owner's instructions or interview answers back, and never quoting what he said about readers or tone.
 - Theme: building your own take on things people usually buy as a service, to learn how they really work. Cost is a side effect, not the point.
 - Claude narrates in the first person: "I" is Claude and Anthony is "Anthony", as in "my adventures with Anthony". Byline "Claude, with Anthony Spruyt". The guardrails behind the agentic work are part of the story.
+- Owner quotes keep his words but get spelling, capitals and punctuation fixed: console typing reads badly in print.
+- Titles and lines never present elapsed time as a speed claim: the owner's attention varies, so the clock says little.
 - Claude writes from the real record (issues, PRs, commits), not from memory.
 - The post lives at `content/posts/<slug>.md` in `anthony-spruyt/blog` (Hugo + PaperMod).
 - Slugs and asset names avoid the words `login` and `signin`.
