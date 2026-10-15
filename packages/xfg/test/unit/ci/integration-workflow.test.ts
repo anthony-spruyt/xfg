@@ -512,3 +512,32 @@ describe("integration lanes", () => {
     }
   });
 });
+
+describe("harden-runner", () => {
+  const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
+    .filter((file) => /\.ya?ml$/.test(file))
+    .sort();
+  const hardened = workflowFiles.flatMap((file) =>
+    jobs(file)
+      .filter(([, job]) => Array.isArray(job.steps))
+      .flatMap(([name, job]): [string, Step][] =>
+        job.steps
+          .filter(isHardenRunner)
+          .map((step): [string, Step] => [`${file}: ${name}`, step])
+      )
+  );
+
+  test("guards at least one job", () => {
+    assert.ok(hardened.length > 0);
+  });
+
+  for (const [name, step] of hardened) {
+    test(`${name} blocks egress to an allow-list`, () => {
+      assert.equal(step.with?.["egress-policy"], "block");
+      assert.ok(
+        String(step.with?.["allowed-endpoints"] ?? "").trim().length > 0,
+        `${name} allows no endpoints`
+      );
+    });
+  }
+});
