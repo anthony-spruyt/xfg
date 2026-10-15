@@ -22,7 +22,7 @@ Three open questions, one message at a time:
 
 - What surprised you?
 - What would you do again, and what not?
-- What does this save compared with a paid SaaS?
+- What did building it yourself teach you that buying it wouldn't have?
 
 Play their answers back. Only what they said goes in as theirs.
 
@@ -32,8 +32,9 @@ Get the post written from the story, the owner's answers and this blog context (
 
 - Readers are home labbers, builders, maybe a future employer.
 - Tone: an honest build journey. The messy middle and dead ends stay in. Not bragging, not pretentious.
-- Theme: build it yourself, cheap and self-hosted, instead of paying for SaaS, and learn on the way.
-- Openly co-written. Byline "Anthony Spruyt & Claude". The guardrails behind the agentic work are part of the story.
+- Theme: building your own take on things people usually buy as a service, to learn how they really work. Cost is a side effect, not the point.
+- Claude narrates in the first person: "I" is Claude and Anthony is "Anthony", as in "my adventures with Anthony". Byline "Claude, with Anthony Spruyt". The guardrails behind the agentic work are part of the story.
+- Claude writes from the real record (issues, PRs, commits), not from memory.
 - The post lives at `content/posts/<slug>.md` in `anthony-spruyt/blog` (Hugo + PaperMod).
 - Slugs and asset names avoid the words `login` and `signin`.
 - Never hardcode the domain in post text; link relative.
