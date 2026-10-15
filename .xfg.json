@@ -19,6 +19,7 @@
         ".claude/rules/root-cause.md",
         ".claude/rules/tdd.md",
         ".claude/settings.json",
+        ".claude/skills/project-wrap-up/SKILL.md",
         ".claude/skills/repo-operator/SKILL.md",
         ".claude/statusline.sh",
         ".claude/xfg-managed.sh",
