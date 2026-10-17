@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.3](https://github.com/anthony-spruyt/xfg/compare/v8.5.2...v8.5.3) (2026-10-17)
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.19.2 ([#1244](https://github.com/anthony-spruyt/xfg/issues/1244)) ([6ab8764](https://github.com/anthony-spruyt/xfg/commit/6ab8764de183c73447596d16e82f21599499d20b))
+
 ## [8.5.2](https://github.com/anthony-spruyt/xfg/compare/v8.5.1...v8.5.2) (2026-10-15)
 
 
