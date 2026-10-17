@@ -262,6 +262,56 @@ repos:
     console.log("  Create with settings test passed");
   });
 
+  test("create with per-repo settings: description from the repo entry is applied", async () => {
+    const repoName = generateRepoName();
+    reposToDelete.push(repoName);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-create-repo-settings-test
+files:
+  lifecycle-test.json:
+    content:
+      created: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    settings:
+      repo:
+        description: "Created by xfg per-repo lifecycle test"
+`
+    );
+
+    console.log(
+      `\nCreating repo ${OWNER}/${repoName} with per-repo settings via xfg sync...`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${configPath} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    assert.ok(
+      await repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
+
+    await withTestRetry(
+      async () => {
+        const description = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName} --jq '.description'`
+        );
+        assert.equal(
+          description,
+          "Created by xfg per-repo lifecycle test",
+          "Repo description should come from the repo entry"
+        );
+      },
+      { description: "description applied", retries: 5, baseDelayMs: 3000 }
+    );
+
+    console.log("  Create with per-repo settings test passed");
+  });
+
   test("create with defaultBranch: renames default branch to desired name", async () => {
     const repoName = generateRepoName();
     reposToDelete.push(repoName);

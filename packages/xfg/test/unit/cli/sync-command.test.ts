@@ -31,6 +31,7 @@ import {
   noopLifecycleManager,
   failingLifecycleManager,
   creatingLifecycleManager,
+  createRecordingLifecycleManager,
 } from "../../mocks/index.js";
 
 let testDir: string;
@@ -222,7 +223,6 @@ repos:
       const output = consoleOutput.join("\n");
       assert.ok(output.includes("PR created"));
 
-      // Verify processor was called exactly once
       const processMock = mockProcessor.process as MockFn;
       assert.equal(
         processMock.mock.calls.length,
@@ -230,7 +230,6 @@ repos:
         "processor.process should be called once"
       );
 
-      // Verify processor received the correct repo config and repo info
       const callArgs = processMock.mock.calls[0].arguments;
       assert.ok(callArgs[0], "first argument (repoConfig) should be defined");
       assert.equal(
@@ -336,7 +335,6 @@ repos:
         }
       );
 
-      // Processor should NOT be called — repo doesn't exist in dry-run
       assert.equal(
         (mockProcessor.process as MockFn).mock.calls.length,
         0,
@@ -344,7 +342,6 @@ repos:
       );
 
       const output = consoleOutput.join("\n");
-      // Verify lifecycle report shows the repo would be created
       assert.ok(
         output.includes("CREATE"),
         "output should indicate repo creation via lifecycle report"
@@ -353,11 +350,178 @@ repos:
         output.includes("test/repo"),
         "output should include the repo name in lifecycle report"
       );
-      // Verify dry-run mode banner was displayed
       assert.ok(
         output.includes("DRY RUN"),
         "output should indicate dry-run mode"
       );
+    });
+
+    describe("creation settings", () => {
+      async function syncWithRecorder(yaml: string) {
+        writeFileSync(testConfigPath, yaml);
+        const lifecycleManager = createRecordingLifecycleManager();
+        await runSync(
+          { config: testConfigPath, dryRun: true, workDir: testDir },
+          {
+            processorFactory: () => createMockProcessor(),
+            lifecycleManager,
+          }
+        );
+        return lifecycleManager.calls;
+      }
+
+      test("passes per-repo settings.repo to lifecycle when no root settings", async () => {
+        const calls = await syncWithRecorder(`id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        visibility: public
+        description: Per-repo description
+        hasIssues: false
+        hasWiki: false
+        defaultBranch: trunk
+`);
+
+        assert.deepEqual(calls, [
+          {
+            git: "https://github.com/test/repo",
+            settings: {
+              visibility: "public",
+              description: "Per-repo description",
+              hasIssues: false,
+              hasWiki: false,
+              defaultBranch: "trunk",
+            },
+          },
+        ]);
+      });
+
+      test("passes group settings.repo to lifecycle when no root settings", async () => {
+        const calls = await syncWithRecorder(`id: test-config
+groups:
+  public-repos:
+    settings:
+      repo:
+        visibility: public
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/grouped
+    groups: [public-repos]
+  - git: https://github.com/test/ungrouped
+`);
+
+        assert.deepEqual(calls, [
+          {
+            git: "https://github.com/test/grouped",
+            settings: { visibility: "public" },
+          },
+          { git: "https://github.com/test/ungrouped", settings: undefined },
+        ]);
+      });
+
+      test("merges root, group and per-repo settings.repo with per-repo winning", async () => {
+        const calls = await syncWithRecorder(`id: test-config
+settings:
+  repo:
+    visibility: private
+    description: Root description
+    hasWiki: false
+groups:
+  team:
+    settings:
+      repo:
+        visibility: internal
+        hasIssues: false
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    groups: [team]
+    settings:
+      repo:
+        visibility: public
+`);
+
+        assert.deepEqual(calls, [
+          {
+            git: "https://github.com/test/repo",
+            settings: {
+              visibility: "public",
+              description: "Root description",
+              hasIssues: false,
+              hasWiki: false,
+            },
+          },
+        ]);
+      });
+
+      test("passes root settings.repo to every repo when only root settings exist", async () => {
+        const rootSettings = {
+          visibility: "private",
+          description: "Root description",
+        };
+        const calls = await syncWithRecorder(`id: test-config
+settings:
+  repo:
+    visibility: private
+    description: Root description
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/one
+  - git: https://github.com/test/two
+`);
+
+        assert.deepEqual(calls, [
+          { git: "https://github.com/test/one", settings: rootSettings },
+          { git: "https://github.com/test/two", settings: rootSettings },
+        ]);
+      });
+
+      test("passes no settings to lifecycle when a repo opts out with repo: false", async () => {
+        const calls = await syncWithRecorder(`id: test-config
+settings:
+  repo:
+    visibility: public
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/opted-out
+    settings:
+      repo: false
+  - git: https://github.com/test/default
+`);
+
+        assert.deepEqual(calls, [
+          { git: "https://github.com/test/opted-out", settings: undefined },
+          {
+            git: "https://github.com/test/default",
+            settings: { visibility: "public" },
+          },
+        ]);
+      });
+
+      test("reports per-repo visibility and description in dry-run lifecycle output", async () => {
+        await syncWithRecorder(`id: test-config
+${MINIMAL_FILES}
+repos:
+  - git: https://github.com/test/repo
+    settings:
+      repo:
+        visibility: public
+        description: Per-repo description
+`);
+
+        const output = consoleOutput.join("\n");
+        assert.ok(output.includes("CREATE"), "should report the create");
+        assert.ok(
+          output.includes("visibility: public"),
+          "should report the per-repo visibility"
+        );
+        assert.ok(
+          output.includes('description: "Per-repo description"'),
+          "should report the per-repo description"
+        );
+      });
     });
 
     test("handles processor exception", async () => {
@@ -421,7 +585,6 @@ repos:
 
       const mockProcessor = createMockProcessor();
 
-      // Exits with error code 1 because of the failed repo
       await assert.rejects(
         async () =>
           runSync(
@@ -435,7 +598,6 @@ repos:
       );
 
       const output = consoleOutput.join("\n");
-      // Should log error for invalid URL
       assert.ok(output.includes("invalid-url-format"));
     });
   });
@@ -501,7 +663,6 @@ repos:
   });
 
   describe("settings processing", () => {
-    // Valid config snippets for settings
     const VALID_RULESET = `
         my-ruleset:
           target: branch
@@ -1314,7 +1475,6 @@ ${VALID_RULESET}
         message: "No changes needed",
       });
 
-      // Should NOT throw (no process.exit(1))
       await runSync(
         { config: testConfigPath, dryRun: true, workDir: testDir },
         {
