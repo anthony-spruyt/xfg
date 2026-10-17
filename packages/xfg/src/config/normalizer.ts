@@ -621,7 +621,7 @@ export function mergeSettings(
 
 /**
  * Applies a single file-layer onto an accumulated file map: inherit:false clears,
- * file:false removes entries, otherwise deep-merges content.
+ * file:false removes entries, otherwise deep-merges content and merges vars per key.
  */
 function applyFileLayer(
   accumulated: Record<string, RawFileConfig>,
@@ -670,6 +670,10 @@ function applyFileLayer(
         ...existing,
         ...restFileConfig,
         content: mergedContent,
+        vars:
+          existing.vars || overlay.vars
+            ? { ...existing.vars, ...overlay.vars }
+            : undefined,
       } as RawFileConfig;
     } else {
       accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;

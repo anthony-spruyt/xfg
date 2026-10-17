@@ -3299,6 +3299,105 @@ describe("group configuration", () => {
     assert.equal(script?.executable, true);
   });
 
+  test("group vars merge onto root vars, group wins per key", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "x", template: true, vars: { a: "A", b: "B" } },
+      },
+      groups: {
+        g: {
+          files: { "a.txt": { vars: { b: "G" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { a: "A", b: "G" });
+  });
+
+  test("group vars merge onto root vars when override:true replaces content", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "root", template: true, vars: { a: "A", b: "B" } },
+      },
+      groups: {
+        g: {
+          files: {
+            "a.txt": { content: "group", override: true, vars: { b: "G" } },
+          },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].files[0].content, "group");
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { a: "A", b: "G" });
+  });
+
+  test("group vars on a file without root vars are kept", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: { "a.txt": { content: "x", template: true } },
+      groups: {
+        g: { files: { "a.txt": { vars: { b: "G" } } } },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { b: "G" });
+  });
+
+  test("group without vars keeps root vars", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "x", template: true, vars: { a: "A" } },
+      },
+      groups: {
+        g: { files: { "a.txt": { content: "y" } } },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { a: "A" });
+  });
+
+  test("vars stack across groups and repo vars win last", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "x", template: true, vars: { a: "A", b: "B" } },
+      },
+      groups: {
+        g1: { files: { "a.txt": { vars: { b: "G1", c: "G1" } } } },
+        g2: { files: { "a.txt": { vars: { c: "G2", d: "G2" } } } },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo1.git",
+          groups: ["g1", "g2"],
+          files: { "a.txt": { vars: { d: "R" } } },
+        },
+        { git: "git@github.com:org/repo2.git" },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, {
+      a: "A",
+      b: "G1",
+      c: "G2",
+      d: "R",
+    });
+    assert.deepStrictEqual(result.repos[1].files[0].vars, { a: "A", b: "B" });
+  });
+
   test("repo prOptions override group prOptions", () => {
     const raw: RawConfig = {
       id: "test-config",
@@ -4729,6 +4828,28 @@ describe("group extends", () => {
     assert.deepStrictEqual(shared?.content, { source: "child", kept: true });
   });
 
+  test("child vars merge onto parent vars", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {},
+      groups: {
+        parent: {
+          files: {
+            "a.txt": { content: "x", template: true, vars: { a: "P", b: "P" } },
+          },
+        },
+        child: {
+          extends: "parent",
+          files: { "a.txt": { vars: { b: "C" } } },
+        },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["child"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { a: "P", b: "C" });
+  });
+
   test("multi-parent: extends array merges parents left-to-right", () => {
     const raw: RawConfig = {
       id: "test-config",
@@ -5449,6 +5570,34 @@ describe("conditional group configuration", () => {
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(fileNames.includes("keep.json"));
     assert.ok(!fileNames.includes("remove.json"));
+  });
+
+  test("conditional group vars merge onto group and root vars", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "x", template: true, vars: { a: "A", b: "B" } },
+      },
+      groups: {
+        mygroup: {
+          files: { "a.txt": { vars: { b: "G", c: "G" } } },
+        },
+      },
+      conditionalGroups: [
+        {
+          when: { anyOf: ["mygroup"] },
+          files: { "a.txt": { vars: { c: "CG" } } },
+        },
+      ],
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["mygroup"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, {
+      a: "A",
+      b: "G",
+      c: "CG",
+    });
   });
 
   test("conditional group override:true replaces content instead of merging", () => {
