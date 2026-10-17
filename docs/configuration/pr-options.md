@@ -9,7 +9,7 @@ Configure how PRs are handled after creation.
 | `merge`         | Merge mode: `manual` (leave open), `auto` (merge when checks pass), `force`, `direct`                          | `auto`   |
 | `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                                                      | `squash` |
 | `deleteBranch`  | Delete source branch after merge                                                                               | `true`   |
-| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`)                                        | -        |
+| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, used by `force`). If unset: `Automated config sync via xfg`  | -        |
 | `labels`        | Labels to apply to created PRs (GitHub only, more platforms coming)                                            | -        |
 | `branch`        | Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI `--branch` flag overrides all. | -        |
 | `ai`            | [AI-generated commit messages and PR descriptions](ai-messages.md). `true` or an options object                | -        |
@@ -97,7 +97,7 @@ repos:
       branch: chore/sync-repo-specific
 ```
 
-When `branch` is not set, the branch name is auto-generated from the synced file names (e.g., `chore/sync-prettierrc`). The CLI `--branch` flag overrides all config values.
+When `branch` is not set, the branch is `chore/sync-config`. If the config syncs exactly one file name across all repos, the branch is named after that file instead (`.prettierrc.json` gives `chore/sync-prettierrc`). The CLI `--branch` flag overrides all config values.
 
 ## CLI Override
 

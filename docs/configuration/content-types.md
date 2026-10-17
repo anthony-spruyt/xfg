@@ -25,14 +25,25 @@ Output:
 
 ## JSON5 Files (`.json5`)
 
-Object content outputs as JSON5 (supports comments, trailing commas):
+Object content outputs as plain JSON with 2-space indentation, the same as `.json`. `header` lines are written at the top as `//` comments (see the note under [YAML Comments](#yaml-comments)):
 
 ```yaml
 files:
   config.json5:
+    header: "Do not edit manually"
     content:
       apiUrl: "https://api.example.com"
       timeout: 5000
+```
+
+Output:
+
+```text
+// Do not edit manually
+{
+  "apiUrl": "https://api.example.com",
+  "timeout": 5000
+}
 ```
 
 ## YAML Files (`.yaml`, `.yml`)
@@ -52,9 +63,11 @@ Output:
 
 ```yaml
 database:
-  host: localhost
+  host: "localhost"
   port: 5432
 ```
+
+Strings are double-quoted. Multi-line strings use the `|` block style.
 
 ### YAML Comments
 
@@ -74,10 +87,11 @@ Output:
 ```yaml
 # yaml-language-server: $schema=https://trivy.dev/latest/docs/references/configuration/config-file/
 # Trivy security scanner configuration
+
 exit-code: 1
 ```
 
-Multi-line headers are also supported:
+A blank line separates the comments from the content. Multi-line headers are also supported:
 
 ```yaml
 files:
@@ -90,7 +104,7 @@ files:
 ```
 
 !!! note
-    `header` and `schemaUrl` only apply to YAML output files. They are ignored for JSON files.
+    `header` applies to YAML files (`#` lines) and `.json5` files (`//` lines). `schemaUrl` applies to YAML files only. Both are ignored for `.json` files, and `schemaUrl` is ignored for `.json5` files.
 
 ## Text Files
 

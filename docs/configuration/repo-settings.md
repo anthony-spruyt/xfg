@@ -157,10 +157,9 @@ xfg displays warnings for potentially destructive operations:
 Example output:
 
 ```text
-  your-org/your-repo:
-  Repo Settings:
-    ~ visibility: "private" → "public"
-  Warning: visibility change (private → public) may expose or hide repository
+    your-org/your-repo - Repo Settings:
+        ~ visibility: "private" → "public"
+    ⚠ visibility change (private → public) may expose or hide repository
 ```
 
 ## Dry Run Mode
@@ -174,18 +173,20 @@ xfg sync -c config.yaml --dry-run
 Output shows planned changes in Terraform-style format:
 
 ```text
-Processing repo settings for 2 repositories
+Found 2 repositories to process
 
-  your-org/repo-a:
-  Repo Settings:
-    + allowAutoMerge: true
-    ~ deleteBranchOnMerge: false → true
+    your-org/repo-a - Repo Settings:
+        ~ allowAutoMerge: false → true
+        ~ deleteBranchOnMerge: false → true
 
-  your-org/repo-b:
-  Repo Settings:
-    + vulnerabilityAlerts: true
-    + automatedSecurityFixes: true
+    your-org/repo-b - Repo Settings:
+        ~ vulnerabilityAlerts: false → true
+        ~ automatedSecurityFixes: false → true
+
+Plan: 4 settings (4 to update)
 ```
+
+A closing report repeats the changes per repo and ends with the `Plan:` line. The sample is trimmed to the repo settings lines.
 
 ## Combining with Rulesets
 
@@ -227,6 +228,12 @@ Some settings require separate API calls and may have limitations:
 - **Vulnerability alerts** and **automated security fixes** use separate endpoints
 - **Secret scanning** settings are part of `security_and_analysis` (requires GitHub Advanced Security on some plans)
 - **Visibility changes** may require organization admin permissions
+
+These settings fail the repo settings step for that repo, in a dry run too:
+
+- `privateVulnerabilityReporting: true` needs a public repo. Otherwise the step fails with `privateVulnerabilityReporting is only available for public repositories`. xfg uses `visibility` from the config when it is set, and the repo's current visibility otherwise.
+- `secretScanning: true` and `secretScanningPushProtection: true` on a non-public repo need GitHub Advanced Security on an organization-owned repo. Otherwise the step fails with `<setting> requires GitHub Advanced Security (not available for this repository)`.
+- `defaultBranch` must name a branch that exists. Otherwise the step fails with `Cannot set default branch to '<name>': branch '<name>' does not exist (current: '<current>'). Create or rename the branch first.`
 
 ## See Also
 

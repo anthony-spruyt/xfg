@@ -38,7 +38,7 @@ xfg sync -c config.yaml
 xfg secrets sync -c config.yaml
 ```
 
-`xfg sync` creates and updates environments and branch policies but never touches secrets, so it never needs secret values. Only `xfg secrets sync` writes environment secrets. Run `xfg sync` first: secrets can't be written to an environment that doesn't exist yet.
+`xfg sync` creates and updates environments and branch policies but never touches secrets, so it never needs secret values. Only `xfg secrets sync` writes environment secrets. Run `xfg sync` first: secrets can't be written to an environment that doesn't exist yet. A workflow that `xfg sync` pushes in the same run that creates its environment can start before `xfg secrets sync` writes the secrets; it fails once and passes on re-run.
 
 ## Deployment Branch Policy
 
@@ -194,15 +194,18 @@ your-org/your-repo - Environments:
 `xfg secrets sync --dry-run` lists environment secrets next to repo secrets:
 
 ```text
-        - secret "OLD_TOKEN" (environment "release")
+[1/1] ✓ your-org/your-repo: Secrets: [DRY RUN] 1 created, 1 updated, 1 deleted
         + secret "NPM_TOKEN" (environment "release")
         ~ secret "SIGNING_KEY" (environment "release", update, value write-only)
+        - secret "OLD_TOKEN" (environment "release")
+      Plan: 3 secrets (1 to create, 1 to update, 1 to delete)
 ```
 
 ## Permissions
 
-- Environments and branch policies, including deleting them: **Administration: Read and write**.
-- Environment secrets: **Secrets: Read and write**.
+- Creating, updating and deleting environments and branch policies: **Administration: Read and write**.
+- Listing environments and branch policies: **Actions: Read**. `xfg secrets sync` lists environments too.
+- Environment secrets: **Environments: Read and write**.
 
 See [GitHub App](../platforms/github-app.md).
 

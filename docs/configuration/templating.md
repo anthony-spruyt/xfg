@@ -63,6 +63,8 @@ repos:
   - git: git@github.com:my-org/api.git
 ```
 
+A custom variable replaces the built-in variable of the same name. With `vars: { "repo.name": "Platform API" }`, `${xfg:repo.name}` resolves to `Platform API` in that file.
+
 ### Per-Repo Variable Overrides
 
 Override or add variables for specific repositories:

@@ -73,11 +73,11 @@ labels:
     color: d73a4a
 ```
 
-Syncs that run before you do are safe. When the old label no longer exists and `new-label-name` does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates `new-label-name`.
+Syncs that run before you do are safe. When the old label does not exist and `new-label-name` does, xfg treats the rename as done: the label is unchanged, or updated if its color or description differ from the entry, and it is never deleted as an orphan. If neither label exists, xfg creates `new-label-name`.
 
 If both labels exist, xfg stops with a rename collision error and changes nothing, even when `deleteOrphaned` would delete `new-label-name`. Delete or rename the existing `new-label-name` yourself first.
 
-xfg rejects a config where a `new_name` target is also the key of another entry with its own `new_name` (`a` to `b` plus `b` to `c`, or `x` to `old` while `old` still has `new_name`). Run such renames in separate syncs, replacing each entry with its new name once it has been applied.
+When a `new_name` target is also the key of another entry with its own `new_name` (`a` to `b` plus `b` to `c`, or `x` to `old` while `old` still has `new_name`), the labels step fails for each repo with a `Rename chain` error and changes nothing. Run such renames in separate syncs, replacing each entry with its new name once it has been applied.
 
 ## Deleting Orphaned Labels
 

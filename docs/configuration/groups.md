@@ -275,6 +275,8 @@ groups:
 Groups can define settings (rulesets, labels, repo settings) that merge into the chain:
 
 ```yaml
+id: my-config
+
 settings:
   rulesets:
     base-protection:
@@ -289,8 +291,9 @@ groups:
           target: branch
           enforcement: active
           rules:
-            pull_request:
-              required_approving_review_count: 2
+            - type: pull_request
+              parameters:
+                requiredApprovingReviewCount: 2
 
 repos:
   - git: git@github.com:org/repo.git
@@ -432,4 +435,4 @@ Conditional groups support the same capabilities as regular groups:
 - Conditional groups cannot be listed in a repo's `groups` array
 - Conditional groups cannot reference other conditional groups
 - A repo with no `groups` field or `groups: []` has an empty effective group set — only `noneOf` conditions can match it
-- Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same frozen set of explicit groups.
+- Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same set: the groups in the repo's `groups` list plus their transitive `extends` parents.

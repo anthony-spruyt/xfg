@@ -161,9 +161,13 @@ In dry-run mode (`--dry-run`), lifecycle operations are reported but not execute
 
 ```text
 + CREATE my-org/new-repo
-+ FORK github.com/opensource/tool -> my-org/forked-tool
-+ MIGRATE dev.azure.com/myorg/legacy/old-api -> my-org/migrated-app
++ FORK git@github.com:opensource/cool-tool.git -> my-org/forked-tool
++ MIGRATE https://dev.azure.com/myorg/myproject/_git/legacy-app -> my-org/migrated-app
+
+Plan: 3 repos (1 to create, 1 to fork, 1 to migrate)
 ```
+
+`FORK` and `MIGRATE` lines show the `upstream` or `source` URL exactly as written in the config.
 
 ## Supported Platforms
 

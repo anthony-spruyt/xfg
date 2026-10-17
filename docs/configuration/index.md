@@ -32,13 +32,13 @@ repos: # List of repositories
 | `conditionalGroups` | Condition-based groups. See [Conditional Groups](groups.md#conditional-groups)              | No       |
 | `prOptions`         | Global PR merge options (can be overridden per-repo)                                        | No       |
 | `prTemplate`        | Custom PR body template (inline or `@path/to/file` reference)                               | No       |
-| `deleteOrphaned`    | Global default for orphan deletion. Files/rulesets removed from config are deleted.         | No       |
+| `deleteOrphaned`    | Global default for file orphan deletion. Rulesets and labels use `settings.deleteOrphaned`. | No       |
 | `githubHosts`       | Array of GitHub Enterprise hostnames (e.g., `github.mycompany.com`)                         | No       |
 
 <!-- markdownlint-disable MD046 -->
 
-!!! note "files/settings/groups requirement"
-    At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `xfg sync` command handles both file synchronization and settings management in a single run.
+!!! note "files/settings requirement"
+    A config needs something to sync: `files` at root or in a group or conditional group, or `settings` with at least one entry (such as `rulesets`, `labels` or `repo`) at root, repo, group, or conditional group level. A config with only `groups` that set `prOptions` is rejected. `xfg sync` handles file synchronization and settings management in a single run, so a settings-only config is valid.
 
 <!-- markdownlint-enable MD046 -->
 
@@ -47,10 +47,10 @@ repos: # List of repositories
 | Field            | Description                                                                                                                                         | Required |
 | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | `content`        | Base config: object for JSON/YAML files, string or string[] for text files, or `@path/to/file` to load from external template (omit for empty file) | No       |
-| `mergeStrategy`  | Merge strategy: `replace`, `append`, `prepend` (for arrays and text lines)                                                                          | No       |
+| `mergeStrategy`  | Merge strategy: `replace`, `append`, `prepend`, `merge` (for arrays and text lines)                                                                 | No       |
 | `createOnly`     | If `true`, only create file if it doesn't exist                                                                                                     | No       |
 | `executable`     | Mark file as executable. `.sh` files are auto-executable unless set to `false`. Set to `true` for non-.sh files.                                    | No       |
-| `header`         | Comment line(s) at top of YAML files (string or array)                                                                                              | No       |
+| `header`         | Comment line(s) at top of YAML (`#`) and JSON5 (`//`) files (string or array)                                                                       | No       |
 | `schemaUrl`      | Adds `# yaml-language-server: $schema=<url>` to YAML files                                                                                          | No       |
 | `template`       | If `true`, enable `${xfg:...}` variable substitution. See [Templating](templating.md).                                                              | No       |
 | `vars`           | Custom template variables (object with string values). Accessible as `${xfg:varName}`.                                                              | No       |

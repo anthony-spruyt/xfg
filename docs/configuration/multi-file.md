@@ -44,15 +44,15 @@ Processing order: `base.yaml` → `platform/github.yaml` → `platform/gitlab.ya
 | `groups`            | Merged by name — group names must be unique across files |
 | `conditionalGroups` | Concatenated in alphabetical file order                  |
 | `repos`             | Concatenated in alphabetical file order                  |
-| All other keys      | Must appear in exactly one file                          |
+| All other keys      | Dropped without an error                                 |
 
 ### Single-file keys
 
-These keys can each only appear in **one** file across the directory:
+These keys can each appear in at most **one** file across the directory:
 
 `id`, `files`, `settings`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`
 
-If any of these appears in more than one file, xfg exits with an error naming both files.
+If any of these appears in more than one file, xfg exits with an error naming both files. A key outside the table and this list, such as a misspelled `setings`, is dropped without an error.
 
 ## Example
 
@@ -104,11 +104,11 @@ repos:
 
 Common errors when using directory-based config:
 
-| Error                                                            | Cause                                       |
-| ---------------------------------------------------------------- | ------------------------------------------- |
-| `'id' is defined in both base.yaml and team.yaml`                | A single-file key appears in multiple files |
-| `group 'X' is defined in both base.yaml and team.yaml`           | Duplicate group name across files           |
-| `no 'id' found in any file in directory ./xfg-config/`           | No file defines `id`                        |
-| `no .yaml or .yml files found in directory ./xfg-config/`        | Directory is empty or has no YAML files     |
-| `Config directory nesting exceeds maximum depth of 10 at <path>` | Too many nested subdirectories              |
-| `Failed to read config directory <path>: <error>`                | Subdirectory is unreadable                  |
+| Error                                                                  | Cause                                       |
+| ---------------------------------------------------------------------- | ------------------------------------------- |
+| `'id' is defined in both base.yaml and team.yaml`                      | A single-file key appears in multiple files |
+| `group 'X' is defined in both base.yaml and team.yaml`                 | Duplicate group name across files           |
+| `No 'id' found in any config file — exactly one file must define 'id'` | No file defines `id`                        |
+| `No .yaml or .yml files found in directory: ./xfg-config/`             | Directory is empty or has no YAML files     |
+| `Config directory nesting exceeds maximum depth of 10 at <path>`       | Too many nested subdirectories              |
+| `Failed to read config directory <path>: <error>`                      | Subdirectory is unreadable                  |

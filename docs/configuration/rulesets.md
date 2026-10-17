@@ -34,10 +34,10 @@ repos:
 ```
 
 ```bash
-# Sync files
-xfg sync -c config.yaml
+# Preview changes (dry-run)
+xfg sync -c config.yaml --dry-run
 
-# Apply rulesets
+# Sync files and apply rulesets
 xfg sync -c config.yaml
 ```
 
@@ -383,7 +383,7 @@ repos:
 
 Result for `special-repo`: `bypassActors` has both Renovate and the team; `rules` has both `pull_request` and `required_status_checks`.
 
-Available strategies: `append` (add after), `prepend` (add before), `replace` (same as default). See [Merge Strategies](merge-strategies.md#settings-array-merge) for more details.
+Available strategies: `append` (add after), `prepend` (add before), `replace` (same as default), `merge` (deep-merge items that share an identity key; name the key with [`$matchBy`](merge-strategies.md#match-by-a-chosen-key)). See [Merge Strategies](merge-strategies.md#settings-array-merge) for more details.
 
 ## Bypass Actors
 
@@ -439,19 +439,25 @@ gh api orgs/{org}/installations --jq '.installations[] | {name: .app_slug, id: .
 
 ## Orphan Deletion
 
-When `deleteOrphaned: true` is set, xfg tracks which rulesets it manages and deletes any that are removed from the config:
+When `settings.deleteOrphaned` is `true`, xfg deletes every ruleset on the repository that is not in the config, including rulesets created by hand. The config is the full list of rulesets. The flag applies to [labels](labels.md#deleting-orphaned-labels) in the same way.
 
 ```yaml
 id: my-config
-deleteOrphaned: true
 
 settings:
+  deleteOrphaned: true
   rulesets:
-    main-protection: # This ruleset is tracked
-      # ...
+    main-protection: # Any other ruleset on the repo is deleted
+      target: branch
+      enforcement: active
+
+repos:
+  - git: git@github.com:your-org/your-repo.git
 ```
 
-If you later remove `main-protection` from the config and run `xfg sync`, it will be deleted from the repository.
+The root-level `deleteOrphaned` is a different flag: it applies to files only.
+
+A `--dry-run` shows each deletion as a `- ruleset` line. The rulesets step runs only for repos whose config lists at least one ruleset, so a config with no rulesets deletes nothing.
 
 Use `--no-delete` to skip orphan deletion:
 
@@ -467,20 +473,32 @@ Preview changes without applying them:
 xfg sync -c config.yaml --dry-run
 ```
 
-Output shows planned changes:
+Output shows planned changes (trimmed to the ruleset lines):
 
 ```text
 Loading config from: ./config.yaml
 Running in DRY RUN mode - no changes will be made
 
-Found 2 repositories with rulesets
+Found 2 repositories to process
 
-[1/2] your-org/repo1: Processing rulesets...
-[1/2] ✓ your-org/repo1: [DRY RUN] 1 created, 0 updated, 0 deleted
+    your-org/repo1 - Rulesets:
+      Create:
+        + ruleset "main-protection"
+            + target: "branch"
+            + enforcement: "active"
 
-[2/2] your-org/repo2: Processing rulesets...
-[2/2] ✓ your-org/repo2: [DRY RUN] 0 created, 1 updated, 0 deleted
+    your-org/repo2 - Rulesets:
+      Update:
+        ~ ruleset "main-protection"
+            ~ enforcement: "evaluate" → "active"
+
+      Delete:
+        - ruleset "hand-made"
+
+Plan: 3 rulesets (1 to create, 1 to update, 1 to delete)
 ```
+
+A closing report repeats the changes per repo and ends with the `Plan:` line. Delete lines appear only when `settings.deleteOrphaned` is `true`.
 
 ## Combining with File Sync
 
@@ -499,13 +517,13 @@ xfg sync -c config.yaml            # Apply
 
 ```yaml
 id: org-standards
-deleteOrphaned: true
 
 prOptions:
   merge: auto
   mergeStrategy: squash
 
 settings:
+  deleteOrphaned: true
   rulesets:
     main-protection:
       target: branch

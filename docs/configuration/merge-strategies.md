@@ -252,6 +252,8 @@ dist/
 coverage/
 ```
 
+For lines arrays, `merge` behaves like `append`: lines have no identity key to match on, so overlay lines are added after the base lines.
+
 !!! note
     String content (not lines array) always uses replace strategy - the entire string is replaced.
 

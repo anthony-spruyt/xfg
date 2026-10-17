@@ -76,7 +76,7 @@ repos:
 ## GitHub Advanced Security Requirement
 
 !!! warning "Private and Internal Repositories"
-    Code scanning default setup on **private** and **internal** repositories requires [GitHub Advanced Security (GHAS)](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security). If GHAS is not enabled for a repository, xfg will report an error and skip that repo. **Public repositories** can use code scanning without GHAS.
+    Code scanning default setup on **private** and **internal** repositories requires [GitHub Advanced Security (GHAS)](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security). If GHAS is not enabled for a repository, the code scanning step for that repo fails with `Code scanning default setup requires GitHub Advanced Security (not available for this repository)`. The repo's other settings still apply, and the run exits with a non-zero status. xfg checks this only when `state` is `configured`. **Public repositories** can use code scanning without GHAS.
 
 ## Per-Repo Opt-Out
 

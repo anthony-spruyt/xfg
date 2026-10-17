@@ -65,8 +65,8 @@ Or configure in `.vscode/settings.json`:
 
 <!-- xfg:generated:end -->
 
-!!! note "files/settings/groups requirement"
-    At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
+!!! note "files/settings requirement"
+    `xfg sync` accepts configs with files, settings, or both. A config needs `files` at root or in a group or conditional group, or `settings` with at least one entry at root, repo, group, or conditional group level. `groups` that only set `prOptions` are not enough.
 
 !!! tip "Multi-file directory config"
     When passing a directory to `-c`, xfg recursively scans subdirectories for `.yaml` and `.yml` files. See [Multi-File Configuration](../configuration/multi-file.md) for ordering rules and constraints.
@@ -846,14 +846,14 @@ See [Environments](../configuration/environments.md).
 
 ## Validation
 
-The schema validates:
+The JSON Schema describes property types and enum values for editors. It has no required fields. xfg's own validator runs when a config loads and enforces:
 
-- Required fields (`id`, `repos`, at least one of `files`, `settings`, or `groups`)
+- Required fields (`id`, `repos`)
 - Command-specific requirements (see below)
 - Enum values (`mergeStrategy`, `merge`, etc.)
 - Content types (object for JSON/YAML, string/array for text files)
-- File path security (no path traversal in file references)
+- File path security (no path traversal in file names or `@path` file references)
 
 ### Config Requirements
 
-The `xfg sync` command accepts configs with files, settings, or both. At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present.
+The `xfg sync` command accepts configs with files, settings, or both. A config needs `files` at root or in a group or conditional group, or `settings` with at least one entry at root, repo, group, or conditional group level.
