@@ -23,6 +23,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_
+     - Variables: Read and write _(required for [`settings.variables`](../configuration/variables.md))_
    - **Where can this GitHub App be installed?** Any account
 4. Create the app and note the **Client ID** (starts with `Iv23`)
 5. Generate a **private key** (downloads a .pem file)
@@ -31,7 +32,7 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 
 1. Go to your app's settings > Install App
 2. Install the app in each organization where xfg will sync configs
-3. Select the repositories the app can access (all or specific repos)
+3. Select the repositories the app can access (all or specific repos). Every repository in your xfg config must be one the installation can access.
 
 ### 3. Store Credentials
 
@@ -61,9 +62,11 @@ This approach:
 - Discovers all installations of your GitHub App
 - Generates short-lived tokens (1 hour) per-installation
 - Caches tokens to minimize API calls
-- Skips repositories without app access (with a warning)
+- Skips repositories whose owner has no installation of the app (`No GitHub App installation found for <owner>`)
 
-The same inputs work with `command: secrets-sync`. Grant the app **Secrets: Read and write** for that (repo and environment secrets). Unlike `sync`, secrets sync fails (rather than skips) repos without app access.
+xfg skips a repository only when its owner has no installation. A repository the installation cannot access, for example one left out of a "selected repositories" installation, fails.
+
+The same inputs work with `command: secrets-sync`. Grant the app **Secrets: Read and write** for repo secrets, **Environments: Read and write** for environment secrets, and **Actions: Read** to list a repo's environments. Unlike `sync`, secrets sync fails (rather than skips) repos whose owner has no installation.
 
 ## How It Works
 
@@ -71,7 +74,7 @@ When GitHub App credentials are provided, xfg:
 
 1. **Generates a JWT** using your Client ID and private key
 2. **Discovers installations** by calling GitHub's API to list all installations
-3. **Generates installation tokens** per-installation (tokens are cached for 55 minutes)
+3. **Generates installation tokens** per-installation (tokens are cached for 45 minutes)
 4. **Uses GraphQL API** for commits with the installation token, creating verified commits
 
 This uses GitHub's `createCommitOnBranch` mutation instead of git commands, which:
@@ -91,14 +94,14 @@ This uses GitHub's `createCommitOnBranch` mutation instead of git commands, whic
 
 xfg sends App JWTs, installation tokens and `GH_TOKEN` only to github.com, unless a host is listed in `XFG_ALLOWED_GITHUB_HOSTS` (comma- or space-separated hostnames). Repos on any other GitHub host fail. See [GitHub Enterprise Server](github.md#ghe-authentication).
 
-When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.
+When `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` are set, xfg uses GitHub App authentication with automatic per-installation token generation. A repository whose owner has no installation of the app is skipped. A repository the installation cannot access fails.
 
 > **Note:** You can also get verified commits with PATs by [configuring GPG signing](https://docs.github.com/en/authentication/managing-commit-signature-verification). GitHub App authentication is an alternative that doesn't require GPG key management.
 
 ## Limitations
 
 1. **Commit author** - Commits appear as the GitHub App, not a custom user
-2. **File size** - Large files (>50MB) should use PAT flow instead
+2. **File size** - A commit whose added and modified files total more than 50MB after base64 encoding (about 37MB of raw content) can't go through the GraphQL API; use the PAT flow instead
 3. **GHE compatibility** - Requires GitHub Enterprise Server 3.6+
 4. **Atomic commits** - All file changes in a single commit (executable file mode changes use a follow-up commit)
 5. **Forks** - GitHub only lets an App fork a repo when it is installed on the target account with access to all its repositories, and on the upstream account with access to the upstream repo. See [Repo Lifecycle](../configuration/lifecycle.md#authentication).
@@ -131,4 +134,4 @@ Ensure you're using GitHub App authentication (`github-client-id` and `github-ap
 
 ### Payload too large
 
-Files exceeding 50MB cannot be committed via the GraphQL API. Use `GH_TOKEN` (PAT authentication) for repositories with large files.
+The added and modified files in one commit cannot exceed 50MB combined after base64 encoding (about 37MB of raw content) when committed via the GraphQL API. Use `GH_TOKEN` (PAT authentication) for repositories with large files.

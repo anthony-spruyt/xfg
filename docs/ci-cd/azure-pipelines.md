@@ -15,9 +15,13 @@ pool:
 steps:
   - task: NodeTool@0
     inputs:
-      versionSpec: "20.x"
+      versionSpec: "24.x"
   - script: npm install -g @aspruyt/xfg
     displayName: "Install xfg"
+  - script: |
+      git config --global user.name "Azure Pipelines"
+      git config --global user.email "azure-pipelines@example.com"
+    displayName: "Configure git identity"
   - script: xfg sync --config ./config.yaml
     displayName: "Sync configs"
     env:
@@ -28,6 +32,8 @@ steps:
 
 !!! note "Build Service Permissions"
     Ensure the build service account has permission to create PRs in target repositories.
+
+xfg runs `git commit` and sets no author identity, so the pipeline configures one. xfg passes tokens to `git` only for GitHub repositories: for Azure DevOps, `git` uses the credentials configured on the agent. `AZURE_DEVOPS_EXT_PAT` is read by the `az` CLI.
 
 ### Using System.AccessToken
 
@@ -64,9 +70,13 @@ strategy:
 steps:
   - task: NodeTool@0
     inputs:
-      versionSpec: "20.x"
+      versionSpec: "24.x"
   - script: npm install -g @aspruyt/xfg
     displayName: "Install xfg"
+  - script: |
+      git config --global user.name "Azure Pipelines"
+      git config --global user.email "azure-pipelines@example.com"
+    displayName: "Configure git identity"
   - script: xfg sync --config ./configs/$(configFile)
     displayName: "Sync $(configFile)"
     env:

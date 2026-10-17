@@ -24,7 +24,7 @@ repos:
 
 ```text
 config/
-  sync-config.yaml         # content: "@templates/prettier.json"
+  sync-config.yaml         # content: "@templates/prettierrc.json"
   templates/
     prettierrc.json        # Actual Prettier config
     eslintrc.yaml          # Actual ESLint config

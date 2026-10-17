@@ -62,6 +62,12 @@ xfg uses the `glab` CLI to:
 With `merge: direct`, xfg skips MR creation entirely and pushes directly to the default branch:
 
 ```yaml
+id: my-org-config
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+
 prOptions:
   merge: direct
 
@@ -75,3 +81,7 @@ This is useful for repos without branch protection or when MR review isn't requi
 
 - `direct`: Repo has no branch protection, or you want to skip MR workflow entirely
 - `force`: Repo has branch protection, but you have permissions to merge without pipeline (uses `glab mr merge -y` to merge immediately)
+
+## Supported Features
+
+xfg syncs files to GitLab repositories through merge requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments), `xfg secrets sync` and repo lifecycle apply to GitHub repositories only; they are skipped for GitLab repositories. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).
