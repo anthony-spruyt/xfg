@@ -10,7 +10,7 @@ import { ValidationError } from "../shared/errors.js";
  * Candidate keys for matching array items by identity rather than index.
  * Order matters — first key found across all items wins.
  */
-export const MATCH_KEY_CANDIDATES = ["type", "actor_id"] as const;
+export const MATCH_KEY_CANDIDATES = ["type", "actorId", "actor_id"] as const;
 
 /**
  * Finds a key that uniquely identifies items in both arrays.
