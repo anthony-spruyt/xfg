@@ -2095,6 +2095,57 @@ describe("normalizeConfig", () => {
       assert.equal(actors?.[1]?.actorId, 9999);
     });
 
+    test("$arrayMerge: merge on bypassActors matches root actors by actorId", () => {
+      const raw: RawConfig = {
+        id: "test-config",
+        files: { "config.json": { content: {} } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            settings: {
+              rulesets: {
+                main: {
+                  bypassActors: {
+                    $arrayMerge: "merge",
+                    $values: [
+                      {
+                        actorId: 1,
+                        actorType: "Team",
+                        bypassMode: "pull_request",
+                      },
+                      {
+                        actorId: 3,
+                        actorType: "Integration",
+                        bypassMode: "always",
+                      },
+                    ],
+                  } as never,
+                },
+              },
+            },
+          },
+        ],
+        settings: {
+          rulesets: {
+            main: {
+              target: "branch",
+              bypassActors: [
+                { actorId: 1, actorType: "Team", bypassMode: "always" },
+                { actorId: 2, actorType: "Team", bypassMode: "always" },
+              ],
+            },
+          },
+        },
+      };
+
+      const result = normalizeConfig(raw, process.env);
+      assert.deepEqual(result.repos[0].settings?.rulesets?.main?.bypassActors, [
+        { actorId: 1, actorType: "Team", bypassMode: "pull_request" },
+        { actorId: 2, actorType: "Team", bypassMode: "always" },
+        { actorId: 3, actorType: "Integration", bypassMode: "always" },
+      ]);
+    });
+
     test("$arrayMerge: replace behaves same as default array replacement", () => {
       const raw: RawConfig = {
         id: "test-config",
