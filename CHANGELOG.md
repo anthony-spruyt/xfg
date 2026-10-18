@@ -1,5 +1,25 @@
 # Changelog
 
+## [8.5.3](https://github.com/anthony-spruyt/xfg/compare/v8.5.2...v8.5.3) (2026-10-18)
+
+
+### Bug Fixes
+
+* **config:** match bypass actors on actorId in $arrayMerge merge ([#1252](https://github.com/anthony-spruyt/xfg/issues/1252)) ([f99b423](https://github.com/anthony-spruyt/xfg/commit/f99b423b91dab1744114ed16da86bebe419f2898))
+* **config:** merge group-level file vars onto inherited vars ([#1253](https://github.com/anthony-spruyt/xfg/issues/1253)) ([59a9682](https://github.com/anthony-spruyt/xfg/commit/59a968266b59f6500d5f68b228b061936de0834b))
+* **lifecycle:** use merged settings.repo when creating repos ([#1254](https://github.com/anthony-spruyt/xfg/issues/1254)) ([64ee4ae](https://github.com/anthony-spruyt/xfg/commit/64ee4ae0b002e0c9043b65f540ec238fc953a632))
+* **rulesets:** list only the repo's own rulesets, across all pages ([#1256](https://github.com/anthony-spruyt/xfg/issues/1256)) ([1e451ca](https://github.com/anthony-spruyt/xfg/commit/1e451ca1ff2e9e0828227600a7f22f47c8d5f516))
+
+
+### Dependencies
+
+* **deps:** update dependency @types/node to v24.19.2 ([#1244](https://github.com/anthony-spruyt/xfg/issues/1244)) ([6ab8764](https://github.com/anthony-spruyt/xfg/commit/6ab8764de183c73447596d16e82f21599499d20b))
+
+
+### Documentation
+
+* bring docs, CLAUDE.md and DEVELOPMENT.md in line with current behaviour ([#1257](https://github.com/anthony-spruyt/xfg/issues/1257)) ([b321ef6](https://github.com/anthony-spruyt/xfg/commit/b321ef65c370be595001b192adaedb956d10adc8))
+
 ## [8.5.2](https://github.com/anthony-spruyt/xfg/compare/v8.5.1...v8.5.2) (2026-10-15)
 
 
