@@ -306,10 +306,28 @@ describe("findMatchKey", () => {
     assert.equal(findMatchKey(base, overlay), "actor_id");
   });
 
+  test("returns 'actorId' when all items have actorId field", () => {
+    const base = [{ actorId: 1 }, { actorId: 2 }];
+    const overlay = [{ actorId: 3 }];
+    assert.equal(findMatchKey(base, overlay), "actorId");
+  });
+
   test("prefers 'type' over 'actor_id' when both present", () => {
     const base = [{ type: "a", actor_id: 1 }];
     const overlay = [{ type: "b", actor_id: 2 }];
     assert.equal(findMatchKey(base, overlay), "type");
+  });
+
+  test("prefers 'type' over 'actorId' when both present", () => {
+    const base = [{ type: "a", actorId: 1 }];
+    const overlay = [{ type: "b", actorId: 2 }];
+    assert.equal(findMatchKey(base, overlay), "type");
+  });
+
+  test("prefers 'actorId' over 'actor_id' when both present", () => {
+    const base = [{ actorId: 1, actor_id: 1 }];
+    const overlay = [{ actorId: 2, actor_id: 2 }];
+    assert.equal(findMatchKey(base, overlay), "actorId");
   });
 
   test("returns undefined for primitive arrays", () => {
@@ -327,7 +345,10 @@ describe("findMatchKey", () => {
   });
 
   test("exports MATCH_KEY_CANDIDATES", () => {
-    assert.deepEqual([...MATCH_KEY_CANDIDATES], ["type", "actor_id"]);
+    assert.deepEqual(
+      [...MATCH_KEY_CANDIDATES],
+      ["type", "actorId", "actor_id"]
+    );
   });
 });
 
@@ -429,6 +450,32 @@ describe("$arrayMerge: merge strategy", () => {
       actors: [
         { actor_id: 1, bypass_mode: "pull_request" },
         { actor_id: 2, bypass_mode: "pull_request" },
+      ],
+    });
+  });
+
+  test("matches by actorId key", () => {
+    const base = {
+      actors: [
+        { actorId: 1, actorType: "Team", bypassMode: "always" },
+        { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
+      ],
+    };
+    const overlay = {
+      actors: {
+        $arrayMerge: "merge",
+        $values: [
+          { actorId: 1, actorType: "Team", bypassMode: "pull_request" },
+          { actorId: 3, actorType: "Team", bypassMode: "always" },
+        ],
+      },
+    };
+    const result = deepMerge(base, overlay, createContext());
+    assert.deepEqual(result, {
+      actors: [
+        { actorId: 1, actorType: "Team", bypassMode: "pull_request" },
+        { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
+        { actorId: 3, actorType: "Team", bypassMode: "always" },
       ],
     });
   });
