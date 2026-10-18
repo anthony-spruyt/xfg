@@ -41,6 +41,7 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 - **All tests use `gh repo create` / `gh repo delete`** for ephemeral repos
 - **Never reuse a deleted repo name** - GitHub has eventual consistency; use unique timestamp+random names
 - **Never share a repo** between two test jobs
+- An integration test for a fix must assert something only the fixed code path produces; check that no later step in the same run would make it pass without the fix
 - Inline configs via `writeConfig()` (from `packages/xfg/test/integration/test-helpers.ts`) - no static fixture files for CLI tests
 - Action fixture templates use `OWNER/REPO_PLACEHOLDER` placeholder
 - All GitHub jobs use `GH_PAT_ORG` secret; the ADO and GitLab jobs use `AZURE_DEVOPS_EXT_PAT` and `GITLAB_TOKEN`. All integration secrets are stored only in the `integration` and `integration-main` environments, and every job that reads one runs in one of them with `deployment: false`: lanes in `_integration-tests.yaml` use `environment: ${{ inputs.environment }}`, and the main-only cleanup jobs use `integration-main` directly (enforced by `test/unit/ci/integration-workflow.test.ts`, which also treats `secrets['NAME']` and `secrets: inherit` into a workflow outside this repo as reads; a local called workflow's jobs are checked themselves)
