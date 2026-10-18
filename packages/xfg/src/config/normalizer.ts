@@ -110,15 +110,11 @@ function mergeContentPair(
 
 /**
  * Checks whether an object's `inherit` property is not explicitly set to false.
- * Replaces the repeated `(x )?.inherit !== false` pattern.
  */
 function shouldInherit(obj: { inherit?: boolean } | undefined): boolean {
   return obj?.inherit !== false;
 }
 
-/**
- * Normalizes header to array format.
- */
 function normalizeHeader(
   header: string | string[] | undefined
 ): string[] | undefined {
@@ -537,9 +533,7 @@ export function mergeSettings(
     result.deleteOrphaned = deleteOrphaned;
   }
 
-  if (perRepo?.repo === false) {
-    // Opt-out: don't include any repo settings
-  } else {
+  if (perRepo?.repo !== false) {
     const rootRepo = root?.repo;
     const perRepoRepo = perRepo?.repo;
     if (rootRepo || perRepoRepo) {
@@ -555,20 +549,10 @@ export function mergeSettings(
     result.labels = mergedLabels;
   }
 
-  // Merge code scanning: per-repo fully replaces root (not shallow merge).
-  // Unlike `repo` settings (which shallow-merge via spread), code scanning
-  // uses full replacement because its 3 fields (state, querySuite, languages)
-  // are tightly coupled — partial inheritance (e.g., inheriting languages
-  // from root while changing querySuite) would be confusing.
-  // codeScanning: false means opt out of all root code scanning settings
-  if (perRepo?.codeScanning === false) {
-    // Opt-out: don't include any code scanning settings
-  } else {
+  // Per-repo replaces root whole: state, querySuite and languages are coupled, so partial inheritance would confuse.
+  if (perRepo?.codeScanning !== false) {
     const mergedCodeScanning = perRepo?.codeScanning ?? root?.codeScanning;
     if (mergedCodeScanning) {
-      // At this point mergedCodeScanning is CodeScanningSettings (not false),
-      // because root uses RawRootSettings where false is filtered by the
-      // outer check on perRepo?.codeScanning === false
       if (typeof mergedCodeScanning === "object") {
         result.codeScanning = mergedCodeScanning;
       }
@@ -619,9 +603,16 @@ export function mergeSettings(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+function mergeVars(
+  base: Record<string, string> | undefined,
+  overlay: Record<string, string> | undefined
+): Record<string, string> | undefined {
+  return base || overlay ? { ...base, ...overlay } : undefined;
+}
+
 /**
  * Applies a single file-layer onto an accumulated file map: inherit:false clears,
- * file:false removes entries, otherwise deep-merges content.
+ * file:false removes entries, otherwise deep-merges content and merges vars per key.
  */
 function applyFileLayer(
   accumulated: Record<string, RawFileConfig>,
@@ -670,6 +661,7 @@ function applyFileLayer(
         ...existing,
         ...restFileConfig,
         content: mergedContent,
+        vars: mergeVars(existing.vars, overlay.vars),
       } as RawFileConfig;
     } else {
       accumulated[fileName] = structuredClone(fileConfig) as RawFileConfig;
@@ -681,8 +673,6 @@ function applyFileLayer(
 
 /**
  * Merges group file layers onto root files, producing an effective root file map.
- * Each group layer is processed in order: inherit:false clears accumulated,
- * file:false removes a file, otherwise deep-merge content.
  */
 function mergeGroupFiles(
   rootFiles: Record<string, RawFileConfig>,
@@ -701,9 +691,6 @@ function mergeGroupFiles(
   return accumulated;
 }
 
-/**
- * Merges group PR options layers onto root PR options.
- */
 function mergeGroupPROptions(
   rootPR: PRMergeOptions | undefined,
   groupNames: string[],
@@ -750,7 +737,6 @@ function mergeNamedEntries<T>(
  * Merges two raw settings layers (root/group into accumulated).
  * Unlike mergeSettings(), this operates on raw types and returns raw types,
  * preserving false values and inherit keys for downstream processing.
- * The final accumulated result feeds into the existing mergeSettings(accumulated, repoSettings).
  */
 function mergeRawSettings(
   base: RawRootSettings | undefined,
@@ -837,9 +823,6 @@ function mergeRawSettings(
   return result;
 }
 
-/**
- * Merges group settings layers onto root settings.
- */
 function mergeGroupSettings(
   rootSettings: RawRootSettings | undefined,
   groupNames: string[],
@@ -953,10 +936,7 @@ function resolveFileEntry(
     header: normalizeHeader(repoOverride?.header ?? fileConfig.header),
     schemaUrl: repoOverride?.schemaUrl ?? fileConfig.schemaUrl,
     template: repoOverride?.template ?? fileConfig.template,
-    vars:
-      fileConfig.vars || repoOverride?.vars
-        ? { ...fileConfig.vars, ...repoOverride?.vars }
-        : undefined,
+    vars: mergeVars(fileConfig.vars, repoOverride?.vars),
     deleteOrphaned:
       repoOverride?.deleteOrphaned ??
       fileConfig.deleteOrphaned ??
@@ -1096,10 +1076,7 @@ export function normalizeConfig(
     }
   }
 
-  // Normalize root settings by reusing mergeSettings with no per-repo overlay.
-  // This filters out inherit/false entries from rulesets/labels, normalizes
-  // label colors, and handles deleteOrphaned — the same logic that per-repo
-  // merging already applies.
+  // No per-repo overlay: mergeSettings strips inherit/false entries and normalizes label colors, as it does per repo.
   const normalizedRootSettings = mergeSettings(raw.settings, undefined);
 
   return {

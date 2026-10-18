@@ -88,7 +88,7 @@ repos:
           region: eu-west-1 # Add new var
 ```
 
-Per-repo vars merge with root-level vars, with per-repo taking precedence.
+File `vars` from the root, groups, conditional groups and the repo merge per key, and later layers win.
 
 ## Escaping Variable Syntax
 
