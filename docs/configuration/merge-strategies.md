@@ -16,6 +16,7 @@ Control how arrays and text lines merge when combining base content with per-rep
 Set a default strategy for a file using `mergeStrategy`:
 
 ```yaml
+id: merge-strategies
 files:
   .eslintrc.json:
     mergeStrategy: append # extends arrays will append
@@ -44,6 +45,7 @@ Use file-level when all arrays in a file should merge the same way. Use inline `
 For per-field control, use `$arrayMerge` and `$values` directives on individual array fields:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:
@@ -66,6 +68,7 @@ Result: `["core", "monitoring", "custom-feature"]`
 Each array field gets its own directive, so sibling arrays can use different strategies:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:
@@ -231,6 +234,7 @@ Without `$matchBy`, `merge` auto-detects `type`, `actorId` or `actor_id`. `name`
 For text files with lines array content, merge strategies work the same way:
 
 ```yaml
+id: merge-strategies
 files:
   .gitignore:
     mergeStrategy: append
@@ -254,6 +258,8 @@ dist/
 coverage/
 ```
 
+For lines arrays, `merge` behaves like `append`: lines have no identity key to match on, so overlay lines are added after the base lines.
+
 !!! note
     String content (not lines array) always uses replace strategy - the entire string is replaced.
 
@@ -264,6 +270,7 @@ The `$arrayMerge` directive also works in settings overrides — rulesets, bypas
 ### Appending Bypass Actors
 
 ```yaml
+id: merge-strategies
 # Root — shared across all repos
 settings:
   rulesets:
@@ -326,6 +333,7 @@ Repos with the `github-ci` group get both the `pull_request` rule and the `requi
 ## Example: Different Strategies per File
 
 ```yaml
+id: merge-strategies
 files:
   eslint.config.json:
     mergeStrategy: append # Extends will append

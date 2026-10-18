@@ -93,9 +93,9 @@ Use `direct` mode when:
 
 ## PR Options Reference
 
-| Field           | Description                                                             | Default  |
-| --------------- | ----------------------------------------------------------------------- | -------- |
-| `merge`         | Merge mode: `manual`, `auto`, `force`, `direct`                         | `auto`   |
-| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                               | `squash` |
-| `deleteBranch`  | Delete source branch after merge                                        | `true`   |
-| `bypassReason`  | Reason for bypassing policies (Azure DevOps only, required for `force`) | -        |
+| Field           | Description                                                        | Default                         |
+| --------------- | ------------------------------------------------------------------ | ------------------------------- |
+| `merge`         | Merge mode: `manual`, `auto`, `force`, `direct`                    | `auto`                          |
+| `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                          | `squash`                        |
+| `deleteBranch`  | Delete source branch after merge                                   | `true`                          |
+| `bypassReason`  | Reason recorded when `force` bypasses policies (Azure DevOps only) | `Automated config sync via xfg` |

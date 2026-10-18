@@ -110,6 +110,7 @@ repos:
     `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
 
 ```yaml
+id: secrets
 settings:
   secrets:
     SHARED_KEY:
@@ -119,7 +120,7 @@ repos:
   - git: git@github.com:org/isolated.git
     settings:
       secrets:
-        inherit: false          # SHARED_KEY is no longer desired here
+        inherit: false          # SHARED_KEY is not in this repo's config
         deleteOrphaned: true    # ...so it gets deleted from the repo
         OWN_KEY:
           env: OWN
@@ -184,7 +185,7 @@ In CI/CD, inject secrets as environment variables to the step running xfg:
 
 With `XFG_GITHUB_CLIENT_ID` and `XFG_GITHUB_APP_PRIVATE_KEY` set, `xfg secrets sync` mints a GitHub App token per repo owner. A repo whose owner has no installation **fails** the run, so a missed rotation is never silent. Without app credentials it uses `GH_TOKEN`, then `GITHUB_TOKEN`. See [GitHub App](../platforms/github-app.md).
 
-The app needs the **Secrets: Read and write** repository permission. It covers environment secrets too.
+The app needs the **Secrets: Read and write** repository permission for repo secrets. Environment secrets need **Environments: Read and write**, and finding an environment needs **Actions: Read**.
 
 ## Encryption
 
@@ -242,6 +243,8 @@ Secret values are never shown — only the secret names.
 ## Environment Secrets
 
 Secrets can also be scoped to a GitHub deployment environment under `settings.environments.<name>.secrets`. They use the same `env` config, are encrypted with the environment's own key, and are written only by `xfg secrets sync`. See [GitHub Environments](environments.md#environment-secrets).
+
+A workflow that `xfg sync` pushes in the run that creates its environment can start before these secrets are written. See the [Quick Start](environments.md#quick-start).
 
 ## Secrets Sync Command
 

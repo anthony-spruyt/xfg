@@ -18,8 +18,8 @@ Run xfg automatically when your config file changes.
 
 For CI/CD, you'll typically need:
 
-| Platform     | Token Variable               | Notes                          |
-| ------------ | ---------------------------- | ------------------------------ |
-| GitHub       | `GH_TOKEN` or `GITHUB_TOKEN` | PAT with `repo` scope          |
-| Azure DevOps | `AZURE_DEVOPS_EXT_PAT`       | Or use `$(System.AccessToken)` |
-| GitLab       | `GITLAB_TOKEN`               | PAT with API access            |
+| Platform     | Token Variable         | Notes                                                                                                                           |
+| ------------ | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub       | `GH_TOKEN`             | PAT with `repo` scope (add `workflow` to push `.github/workflows/` files); `xfg secrets sync` also falls back to `GITHUB_TOKEN` |
+| Azure DevOps | `AZURE_DEVOPS_EXT_PAT` | Or use `$(System.AccessToken)`                                                                                                  |
+| GitLab       | `GITLAB_TOKEN`         | PAT with API access                                                                                                             |

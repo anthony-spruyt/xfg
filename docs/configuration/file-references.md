@@ -5,6 +5,7 @@ Instead of inline content, you can reference external template files using the `
 ## Syntax
 
 ```yaml
+id: file-references
 files:
   .prettierrc.json:
     content: "@templates/prettierrc.json"
@@ -41,6 +42,7 @@ config/
 You can still use `header`, `schemaUrl`, `createOnly`, and `mergeStrategy` alongside file references:
 
 ```yaml
+id: file-references
 files:
   .eslintrc.yaml:
     content: "@templates/eslintrc.yaml"
@@ -56,6 +58,7 @@ repos:
 Per-repo content overlays merge onto the resolved file content:
 
 ```yaml
+id: file-references
 files:
   .eslintrc.json:
     content: "@templates/eslintrc.json" # Base config from file
