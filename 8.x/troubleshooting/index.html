@@ -2533,6 +2533,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#github-host-not-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Host Not Allowed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#branch-already-exists" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2559,6 +2570,17 @@
     <span class="md-ellipsis">
       
         Network/Proxy Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debug-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug Output
       
     </span>
   </a>
@@ -2788,6 +2810,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#github-host-not-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GitHub Host Not Allowed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#branch-already-exists" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2814,6 +2847,17 @@
     <span class="md-ellipsis">
       
         Network/Proxy Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debug-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debug Output
       
     </span>
   </a>
@@ -2866,7 +2910,6 @@
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Re-authenticate if needed</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>az<span class="w"> </span>login
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>az<span class="w"> </span>devops<span class="w"> </span>configure<span class="w"> </span>--defaults<span class="w"> </span><span class="nv">organization</span><span class="o">=</span>https://dev.azure.com/YOUR_ORG
 </span></code></pre></div>
 <h3 id="gitlab">GitLab<a class="headerlink" href="#gitlab" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Check authentication status</span>
@@ -2881,38 +2924,48 @@
 <h2 id="permission-denied">Permission Denied<a class="headerlink" href="#permission-denied" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Ensure your token has write access to the target repositories</li>
-<li>For GitHub, the token needs <code>repo</code> scope</li>
+<li>For GitHub, a classic token needs the <code>repo</code> scope, plus <code>workflow</code> to push files under <code>.github/workflows/</code></li>
 <li>For Azure DevOps, ensure the user/service account has "Contribute to pull requests" permission</li>
 <li>For GitLab, ensure the user has at least "Developer" role on the project</li>
 </ul>
+<h2 id="github-host-not-allowed">GitHub Host Not Allowed<a class="headerlink" href="#github-host-not-allowed" title="Permanent link">&para;</a></h2>
+<p>If a repo on a GitHub Enterprise Server host fails with "is not in XFG_ALLOWED_GITHUB_HOSTS", xfg refuses to send GitHub credentials to that host. Only github.com is trusted by default:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Comma- or space-separated hostnames</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">XFG_ALLOWED_GITHUB_HOSTS</span><span class="o">=</span><span class="s2">"github.mycompany.com"</span>
+</span></code></pre></div>
+<p>Entries are plain hostnames, with no scheme, port, path or IP address. Also list the host in <code>githubHosts</code> in the config. See <a href="../platforms/github/#ghe-authentication">GitHub Enterprise Server</a>.</p>
 <h2 id="branch-already-exists">Branch Already Exists<a class="headerlink" href="#branch-already-exists" title="Permanent link">&para;</a></h2>
 <p>The tool uses a fresh-start approach: it closes any existing PR on the branch and deletes the branch before creating a new one. This ensures each sync attempt is isolated and avoids merge conflicts from stale branches.</p>
 <p>If you see issues with stale branches:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Manually delete the remote branch if needed</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>--delete<span class="w"> </span>chore/sync-config
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Manually delete the remote branch if needed</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>--delete<span class="w"> </span>chore/sync-config
 </span></code></pre></div>
 <h2 id="missing-environment-variables">Missing Environment Variables<a class="headerlink" href="#missing-environment-variables" title="Permanent link">&para;</a></h2>
 <p>If you see "Missing required environment variable" errors:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Set the variable before running</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MY_VAR</span><span class="o">=</span>value
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="c1"># Or use default values in config</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="c1"># ${MY_VAR:-default-value}</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Set the variable before running</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">MY_VAR</span><span class="o">=</span>value
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Or use default values in config</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># ${MY_VAR:-default-value}</span>
 </span></code></pre></div>
 <h2 id="networkproxy-issues">Network/Proxy Issues<a class="headerlink" href="#networkproxy-issues" title="Permanent link">&para;</a></h2>
 <p>If cloning fails behind a corporate proxy:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Configure git proxy</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>http.proxy<span class="w"> </span>http://proxy.example.com:8080
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>https.proxy<span class="w"> </span>http://proxy.example.com:8080
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Configure git proxy</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>http.proxy<span class="w"> </span>http://proxy.example.com:8080
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>https.proxy<span class="w"> </span>http://proxy.example.com:8080
+</span></code></pre></div>
+<h2 id="debug-output">Debug Output<a class="headerlink" href="#debug-output" title="Permanent link">&para;</a></h2>
+<p>Set <code>XFG_DEBUG</code> (or <code>DEBUG</code>) to any non-empty value to print <code>[debug]</code> lines for the steps xfg runs:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">XFG_DEBUG</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
 </span></code></pre></div>
 <h2 id="transient-network-errors">Transient Network Errors<a class="headerlink" href="#transient-network-errors" title="Permanent link">&para;</a></h2>
 <p>The tool automatically retries transient errors (timeouts, connection resets, rate limits) with exponential backoff. By default, it retries 3 times before failing.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Increase retries for unreliable networks</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--retries<span class="w"> </span><span class="m">5</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Disable retries</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--retries<span class="w"> </span><span class="m">0</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Increase retries for unreliable networks</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--retries<span class="w"> </span><span class="m">5</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Disable retries</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--retries<span class="w"> </span><span class="m">0</span>
 </span></code></pre></div>
 <p>Permanent errors (authentication failures, permission denied, repository not found) are not retried.</p>
 

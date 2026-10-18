@@ -2667,6 +2667,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ai-provider-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Provider API Keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dev-environment-keys" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2869,6 +2880,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ai-provider-api-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Provider API Keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#dev-environment-keys" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2936,6 +2958,10 @@
 <tr>
 <td>GitLab PAT / project access token</td>
 <td>Every 90 days</td>
+</tr>
+<tr>
+<td>AI provider API key</td>
+<td>Per provider policy</td>
 </tr>
 <tr>
 <td>CONTEXT7_API_KEY / MCP keys</td>
@@ -3023,6 +3049,19 @@
 </li>
 <li>
 <p>Update the token in your CI/CD variables.</p>
+</li>
+</ol>
+<h2 id="ai-provider-api-keys">AI Provider API Keys<a class="headerlink" href="#ai-provider-api-keys" title="Permanent link">&para;</a></h2>
+<p>xfg reads the key for <code>prOptions.ai</code> from <code>ANTHROPIC_API_KEY</code> or <code>OPENAI_API_KEY</code>, or from the variable named by <code>apiKeyEnv</code>. See <a href="../../configuration/ai-messages/">AI Messages</a>.</p>
+<ol>
+<li>
+<p>Generate a new key in the provider's console.</p>
+</li>
+<li>
+<p>Update the key in your CI environment variables.</p>
+</li>
+<li>
+<p>Verify with a test run, then revoke the old key.</p>
 </li>
 </ol>
 <h2 id="dev-environment-keys">Dev Environment Keys<a class="headerlink" href="#dev-environment-keys" title="Permanent link">&para;</a></h2>

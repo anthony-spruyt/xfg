@@ -2836,15 +2836,19 @@
 <td>Concatenated in alphabetical file order</td>
 </tr>
 <tr>
-<td>All other keys</td>
-<td>Must appear in exactly one file</td>
+<td>Single-file keys (below)</td>
+<td>Taken from the one file that sets them</td>
+</tr>
+<tr>
+<td>Any other key</td>
+<td>Dropped without an error, except root <code>secrets</code> (below)</td>
 </tr>
 </tbody>
 </table>
 <h3 id="single-file-keys">Single-file keys<a class="headerlink" href="#single-file-keys" title="Permanent link">&para;</a></h3>
-<p>These keys can each only appear in <strong>one</strong> file across the directory:</p>
+<p>These keys can each appear in at most <strong>one</strong> file across the directory:</p>
 <p><code>id</code>, <code>files</code>, <code>settings</code>, <code>prOptions</code>, <code>prTemplate</code>, <code>githubHosts</code>, <code>deleteOrphaned</code></p>
-<p>If any of these appears in more than one file, xfg exits with an error naming both files.</p>
+<p>If any of these appears in more than one file, xfg exits with an error naming both files. A key outside the table, such as a misspelled <code>setings</code>, is dropped without an error. Root-level <code>secrets</code> is the exception: it fails with an error that points to <code>settings.secrets</code>.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># base.yaml</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-org-config</span>
@@ -2863,6 +2867,8 @@
 </span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">  </span><span class="nt">merge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">auto</span>
 </span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">  </span><span class="nt">mergeStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">squash</span>
 </span></code></pre></div>
+<!-- docs-example: skip -->
+
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># team-alpha.yaml</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">groups</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">alpha-standard</span><span class="p">:</span>
@@ -2905,11 +2911,11 @@
 <td>Duplicate group name across files</td>
 </tr>
 <tr>
-<td><code>no 'id' found in any file in directory ./xfg-config/</code></td>
+<td><code>No 'id' found in any config file — exactly one file must define 'id'</code></td>
 <td>No file defines <code>id</code></td>
 </tr>
 <tr>
-<td><code>no .yaml or .yml files found in directory ./xfg-config/</code></td>
+<td><code>No .yaml or .yml files found in directory: ./xfg-config/</code></td>
 <td>Directory is empty or has no YAML files</td>
 </tr>
 <tr>
