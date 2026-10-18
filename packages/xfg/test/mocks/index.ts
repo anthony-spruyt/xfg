@@ -30,4 +30,5 @@ export {
   noopLifecycleManager,
   failingLifecycleManager,
   creatingLifecycleManager,
+  createRecordingLifecycleManager,
 } from "./lifecycle.mock.js";
