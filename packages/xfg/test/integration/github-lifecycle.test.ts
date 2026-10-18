@@ -190,8 +190,6 @@ repos:
       console.log(
         `\nMigrating from ADO to ${OWNER}/${repoName} via xfg sync...`
       );
-      // Note: exec() here uses controlled test constants (repoName from randomBytes,
-      // configPath from tmpDir), not user input. This is the standard integration test pattern.
       const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         { cwd: projectRoot }
@@ -290,6 +288,18 @@ repos:
     );
     console.log(output);
 
+    const outputLines = output.split("\n");
+    const createIndex = outputLines.findIndex((line) =>
+      line.includes(`CREATE ${OWNER}/${repoName}`)
+    );
+    assert.ok(createIndex >= 0, "Sync output should include the CREATE line");
+    assert.ok(
+      outputLines[createIndex + 1]?.includes(
+        'description: "Created by xfg per-repo lifecycle test"'
+      ),
+      "Lifecycle CREATE block should report the per-repo description"
+    );
+
     assert.ok(
       await repoExists(OWNER, repoName),
       `Repo ${repoName} should exist after sync`
@@ -334,8 +344,6 @@ repos:
     console.log(
       `\nCreating repo ${OWNER}/${repoName} with defaultBranch: develop via xfg sync...`
     );
-    // Note: uses controlled test constants (repoName from randomBytes,
-    // configPath from tmpDir), not user input. Standard integration test pattern.
     const output = await exec(
       `node dist/cli.js sync --config ${configPath} --merge direct`,
       { cwd: projectRoot }
@@ -390,8 +398,6 @@ repos:
       console.log(
         `\nMigrating from ADO to ${OWNER}/${repoName} with defaultBranch: main...`
       );
-      // Note: uses controlled test constants (repoName from randomBytes,
-      // configPath from tmpDir), not user input. Standard integration test pattern.
       const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         { cwd: projectRoot }
