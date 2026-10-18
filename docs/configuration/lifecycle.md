@@ -101,7 +101,7 @@ If the repo already exists, the `source` field is ignored.
 
 ## Creation Settings
 
-When creating a new repo (via create, fork, or migrate), xfg applies settings from `settings.repo` if configured. Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
+When creating a new repo (via create, fork, or migrate), xfg applies the repo's merged `settings.repo` (root, groups, and per-repo settings combined). A per-repo `repo: false` skips them. Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
 
 ```yaml
 settings:
