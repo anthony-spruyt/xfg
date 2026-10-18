@@ -30,6 +30,8 @@ In v4, you could place `$arrayMerge` as a sibling key that applied one strategy 
 
 **Before (v4):**
 
+<!-- docs-example: skip -->
+
 ```yaml
 repos:
   - git: git@github.com:org/repo.git
@@ -42,6 +44,8 @@ repos:
 ```
 
 **After (v5):**
+
+<!-- docs-example: skip -->
 
 ```yaml
 repos:

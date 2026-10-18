@@ -76,6 +76,8 @@ prOptions:
   mergeStrategy: squash
 ```
 
+<!-- docs-example: skip -->
+
 ```yaml
 # team-alpha.yaml
 groups:

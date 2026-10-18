@@ -128,6 +128,7 @@ Use `${xfg:repo.name}` to reference the repo name.
 ## Complete Example
 
 ````yaml
+id: templating
 files:
   # README template with dynamic repo info
   README.md:

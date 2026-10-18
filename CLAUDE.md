@@ -101,6 +101,7 @@ Paths are relative to `packages/xfg/`.
 - **Check CI on main after PR merge** - verify integration tests pass before releasing
 - **Do not commit plans or specs to `docs/`** - that's GitHub Pages; use `plans/` for plans and `plans/superpowers/` for superpowers specs/plans (the plugin defaults to `docs/superpowers/`, which the next docs deploy publishes)
 - **Do not commit plans to main branch** - create a new branch
+- **Docs config examples are tested** - every yaml block under `docs/` with a top-level `repos:` key must load through the config pipeline (`packages/xfg/test/unit/docs/doc-examples.test.ts`); put `<!-- docs-example: skip -->` and a blank line directly above a block that is deliberately not loadable (old syntax, `# ...` skeleton, directory-set fragment)
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
 - Escape `${xfg:var}` as `$${xfg:var}` similarly

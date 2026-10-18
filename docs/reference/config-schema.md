@@ -12,6 +12,8 @@ https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 
 Add a comment at the top of your config file:
 
+<!-- docs-example: skip -->
+
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 id: config-schema

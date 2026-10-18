@@ -16,6 +16,7 @@ Control how arrays and text lines merge when combining base content with per-rep
 Set a default strategy for a file using `mergeStrategy`:
 
 ```yaml
+id: merge-strategies
 files:
   .eslintrc.json:
     mergeStrategy: append # extends arrays will append
@@ -44,6 +45,7 @@ Use file-level when all arrays in a file should merge the same way. Use inline `
 For per-field control, use `$arrayMerge` and `$values` directives on individual array fields:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:
@@ -66,6 +68,7 @@ Result: `["core", "monitoring", "custom-feature"]`
 Each array field gets its own directive, so sibling arrays can use different strategies:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:

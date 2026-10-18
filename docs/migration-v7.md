@@ -8,6 +8,8 @@ v7 moves `secrets:` under `settings:`, so secrets can be scoped per group and pe
 
 **Before (v6):**
 
+<!-- docs-example: skip -->
+
 ```yaml
 id: my-config
 

@@ -28,6 +28,8 @@ repos:
 
 Reference an external file for larger templates:
 
+<!-- docs-example: skip -->
+
 ```yaml
 id: pr-templates
 prTemplate: "@templates/pr-body.md"

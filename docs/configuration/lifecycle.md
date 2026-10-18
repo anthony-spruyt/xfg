@@ -66,6 +66,11 @@ If the repo already exists, the `upstream` field is ignored.
     When using a `git` array with `upstream`, the same upstream is applied to all expanded repos:
 
     ```yaml
+    id: lifecycle
+    files:
+      .prettierrc.json:
+        content: { semi: false }
+
     repos:
       - git:
           - git@github.com:my-org/fork-a.git
@@ -114,6 +119,7 @@ If the repo already exists, the `source` field is ignored.
 When creating a new repo (via create, fork, or migrate), xfg applies settings from `settings.repo` if configured. Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
 
 ```yaml
+id: lifecycle
 settings:
   repo:
     description: "My new repository"
