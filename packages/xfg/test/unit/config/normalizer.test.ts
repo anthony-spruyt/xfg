@@ -116,11 +116,9 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // Both repos should have both files
       assert.equal(result.repos[0].files.length, 2);
       assert.equal(result.repos[1].files.length, 2);
 
-      // Check file names
       const repo1FileNames = result.repos[0].files.map((f) => f.fileName);
       assert.deepEqual(repo1FileNames, ["eslint.json", "prettier.json"]);
     });
@@ -146,7 +144,6 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // Only prettier.json should be included
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "prettier.json");
     });
@@ -172,7 +169,6 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // Only prettier.json should be included
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "prettier.json");
     });
@@ -202,11 +198,9 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // repo1: only prettier.json
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "prettier.json");
 
-      // repo2: only eslint.json
       assert.equal(result.repos[1].files.length, 1);
       assert.equal(result.repos[1].files[0].fileName, "eslint.json");
     });
@@ -231,7 +225,6 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // Only prettier.json, with merged content
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "prettier.json");
       assert.deepEqual(result.repos[0].files[0].content, {
@@ -346,7 +339,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Override with text content - uses repo content only
       assert.equal(result.repos[0].files[0].content, "coverage\n.env");
     });
 
@@ -370,7 +362,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Override with text array content - uses repo content only
       assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
     });
 
@@ -419,7 +410,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // String content always replaces - mergeStrategy is ignored
       assert.equal(result.repos[0].files[0].content, "coverage\n.env");
     });
 
@@ -443,7 +433,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Text array content merged with append
       assert.deepEqual(result.repos[0].files[0].content, [
         "node_modules",
         "dist",
@@ -472,7 +461,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Text array content merged with prepend - repo content before base
       assert.deepEqual(result.repos[0].files[0].content, [
         "coverage",
         ".env",
@@ -500,7 +488,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Text array content with default replace - repo content replaces base
       assert.deepEqual(result.repos[0].files[0].content, ["coverage", ".env"]);
     });
 
@@ -606,11 +593,9 @@ describe("normalizeConfig", () => {
 
       const result = normalizeConfig(raw, process.env);
 
-      // Modify one repo's content
       (result.repos[0].files[0].content as Record<string, unknown>).key =
         "modified";
 
-      // Other repo should be unaffected
       assert.equal(
         (result.repos[1].files[0].content as Record<string, unknown>).key,
         "value"
@@ -771,9 +756,7 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // repo1 inherits root createOnly: true
       assert.equal(result.repos[0].files[0].createOnly, true);
-      // repo2 overrides to false
       assert.equal(result.repos[1].files[0].createOnly, false);
     });
 
@@ -1060,13 +1043,13 @@ describe("normalizeConfig", () => {
       const raw: RawConfig = {
         id: "test-config",
         files: {
-          ".gitignore": { content: "node_modules" }, // text content
+          ".gitignore": { content: "node_modules" },
         },
         repos: [
           {
             git: "git@github.com:org/repo.git",
             files: {
-              ".gitignore": { content: { invalid: "object" } }, // object content - type mismatch
+              ".gitignore": { content: { invalid: "object" } },
             },
           },
         ],
@@ -1526,9 +1509,7 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // repo1 inherits per-file deleteOrphaned: true
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
-      // repo2 overrides to false
       assert.equal(result.repos[1].files[0].deleteOrphaned, false);
     });
 
@@ -1563,14 +1544,13 @@ describe("normalizeConfig", () => {
           {
             git: "git@github.com:org/repo.git",
             files: {
-              "config.json": false, // excluded
+              "config.json": false,
             },
           },
         ],
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Only settings.yaml should be included
       assert.equal(result.repos[0].files.length, 1);
       assert.equal(result.repos[0].files[0].fileName, "settings.yaml");
       assert.equal(result.repos[0].files[0].deleteOrphaned, true);
@@ -1580,20 +1560,20 @@ describe("normalizeConfig", () => {
       const raw: RawConfig = {
         id: "test-config",
         files: {
-          "file1.json": { content: {} }, // inherits global
-          "file2.json": { content: {}, deleteOrphaned: false }, // per-file overrides global
-          "file3.json": { content: {}, deleteOrphaned: true }, // per-file overrides global
+          "file1.json": { content: {} },
+          "file2.json": { content: {}, deleteOrphaned: false },
+          "file3.json": { content: {}, deleteOrphaned: true },
         },
         repos: [
           {
             git: "git@github.com:org/repo.git",
             files: {
-              "file2.json": { deleteOrphaned: true }, // per-repo overrides per-file
-              "file3.json": { deleteOrphaned: false }, // per-repo overrides per-file
+              "file2.json": { deleteOrphaned: true },
+              "file3.json": { deleteOrphaned: false },
             },
           },
         ],
-        deleteOrphaned: true, // global default
+        deleteOrphaned: true,
       };
 
       const result = normalizeConfig(raw, process.env);
@@ -1602,9 +1582,9 @@ describe("normalizeConfig", () => {
       const file2 = files.find((f) => f.fileName === "file2.json");
       const file3 = files.find((f) => f.fileName === "file3.json");
 
-      assert.equal(file1?.deleteOrphaned, true); // from global
-      assert.equal(file2?.deleteOrphaned, true); // per-repo overrides per-file false
-      assert.equal(file3?.deleteOrphaned, false); // per-repo overrides per-file true
+      assert.equal(file1?.deleteOrphaned, true);
+      assert.equal(file2?.deleteOrphaned, true);
+      assert.equal(file3?.deleteOrphaned, false);
     });
   });
 
@@ -1658,7 +1638,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // enforcement should be overridden, target inherited
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
         "disabled"
@@ -1701,7 +1680,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Per-repo rules array should replace root rules array (not merge)
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.length,
         1
@@ -1751,7 +1729,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Per-repo rules replace root rules entirely
       const prRule =
         result.repos[0].settings?.rulesets?.["pr-rules"]?.rules?.[0];
       assert.equal(prRule?.type, "pull_request");
@@ -1788,12 +1765,10 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // repo1 inherits root settings
       assert.equal(
         result.repos[0].settings?.rulesets?.["pr-rules"]?.enforcement,
         "active"
       );
-      // repo2 overrides enforcement
       assert.equal(
         result.repos[1].settings?.rulesets?.["pr-rules"]?.enforcement,
         "disabled"
@@ -1828,7 +1803,6 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Both rulesets should exist
       assert.ok(result.repos[0].settings?.rulesets?.["pr-rules"]);
       assert.ok(result.repos[0].settings?.rulesets?.["release-rules"]);
     });
@@ -1910,20 +1884,17 @@ describe("normalizeConfig", () => {
       };
 
       const result = normalizeConfig(raw, process.env);
-      // Modify repo1's settings
       result.repos[0].settings!.rulesets!["pr-rules"]!.bypassActors!.push({
         actorId: 456,
         actorType: "User",
       });
 
-      // repo2 should be unaffected
       assert.equal(
         result.repos[1].settings?.rulesets?.["pr-rules"]?.bypassActors?.length,
         1
       );
     });
 
-    // $arrayMerge: directive with no base resolves to $values
     // (uses `as never` because TypeScript types don't include directive shape yet)
     test("$arrayMerge directive with no base resolves to $values", () => {
       const raw: RawConfig = {
@@ -2190,11 +2161,9 @@ describe("normalizeConfig", () => {
       const actors =
         result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
       const rules = result.repos[0].settings?.rulesets?.["pr-rules"]?.rules;
-      // bypassActors: append
       assert.equal(actors?.length, 2);
       assert.equal(actors?.[0]?.actorId, 2740);
       assert.equal(actors?.[1]?.actorId, 9999);
-      // rules: prepend
       assert.equal(rules?.length, 2);
       assert.equal(rules?.[0]?.type, "required_signatures");
       assert.equal(rules?.[1]?.type, "pull_request");
@@ -2598,7 +2567,6 @@ describe("mergeSettings with repo", () => {
     assert.equal(result?.repo, undefined);
   });
 
-  // Labels merge tests
   test("mergeSettings merges root and per-repo labels (per-repo overrides root color)", () => {
     const root: RawRepoSettings = {
       labels: {
@@ -2913,7 +2881,6 @@ describe("group configuration", () => {
     const config = result.repos[0].files.find(
       (f) => f.fileName === "config.json"
     );
-    // Deep merge: root → group → repo
     assert.equal((config?.content as Record<string, unknown>).base, true);
     assert.equal((config?.content as Record<string, unknown>).fromGroup, true);
     assert.equal((config?.content as Record<string, unknown>).fromRepo, true);
@@ -2975,7 +2942,6 @@ describe("group configuration", () => {
     const result = normalizeConfig(raw, process.env);
     // With inherit:false on repo and no root definition of repo.json,
     // the repo file won't appear (it needs a root definition to be processed).
-    // This test verifies root and group files are excluded.
     const fileNames = result.repos[0].files.map((f) => f.fileName);
     assert.ok(!fileNames.includes("root.json"));
     assert.ok(!fileNames.includes("group.json"));
@@ -3159,7 +3125,6 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
-    // override:true at repo level replaces all accumulated content (root + group)
     assert.deepStrictEqual(config.content, { fromRepo: true });
   });
 
@@ -3263,7 +3228,6 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // Group's inherit:false discards root rulesets
     assert.ok(!result.repos[0].settings?.rulesets?.["root-protection"]);
     assert.ok(result.repos[0].settings?.rulesets?.["group-only-protection"]);
   });
@@ -3360,6 +3324,22 @@ describe("group configuration", () => {
       },
       groups: {
         g: { files: { "a.txt": { content: "y" } } },
+      },
+      repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.deepStrictEqual(result.repos[0].files[0].vars, { a: "A" });
+  });
+
+  test("group with empty vars keeps root vars", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "a.txt": { content: "x", template: true, vars: { a: "A" } },
+      },
+      groups: {
+        g: { files: { "a.txt": { vars: {} } } },
       },
       repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
     };
@@ -3588,7 +3568,6 @@ describe("group configuration", () => {
     const script = result.repos[0].files.find(
       (f) => f.fileName === "script.sh"
     );
-    // text array + text array with append = concatenation
     assert.ok(Array.isArray(script?.content));
     const lines = script?.content as string[];
     assert.ok(lines.includes("echo root"));
@@ -3624,7 +3603,6 @@ describe("group configuration", () => {
     const script = result.repos[0].files.find(
       (f) => f.fileName === "script.sh"
     );
-    // String overlay always replaces
     assert.equal(script?.content, "#!/bin/bash\necho group");
   });
 
@@ -3655,7 +3633,6 @@ describe("group configuration", () => {
     const config = result.repos[0].files.find(
       (f) => f.fileName === "config.sh"
     );
-    // Type mismatch: overlay wins
     assert.deepStrictEqual(config?.content, { key: "value" });
   });
 
@@ -3684,7 +3661,6 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const config = result.repos[0].files[0];
-    // override:true with no overlay content = use existing content
     assert.deepStrictEqual(config.content, { fromRoot: true });
   });
 
@@ -3826,7 +3802,6 @@ describe("group configuration", () => {
       string,
       unknown
     >;
-    // Group overrides enforcement, keeps target from root
     assert.equal(rule?.target, "branch");
     assert.equal(rule?.enforcement, "evaluate");
   });
@@ -3861,8 +3836,6 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // mergeRawSettings accumulates false; mergeSettings then processes it
-    // keep-rule should remain present
     assert.ok(result.repos[0].settings?.rulesets?.["keep-rule"]);
   });
 
@@ -3894,7 +3867,6 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // repo: false in group opts out of all repo settings
     assert.equal(result.repos[0].settings?.repo, undefined);
   });
 
@@ -3995,12 +3967,9 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
-    // Group overrides bug label color/description
     assert.equal(labels?.bug?.color, "ff0000");
     assert.equal(labels?.bug?.description, "Group bug");
-    // feature from root preserved
     assert.ok(labels?.feature);
-    // enhancement from group added
     assert.equal(labels?.enhancement?.color, "a2eeef");
   });
 
@@ -4035,14 +4004,11 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
-    // bug from root should be discarded
     assert.equal(labels?.bug, undefined);
-    // enhancement from group should be present
     assert.equal(labels?.enhancement?.color, "a2eeef");
   });
 
   test("group settings labels false opts out of specific label via repo", () => {
-    // Group accumulates false, then per-repo level inherits that
     const raw: RawConfig = {
       id: "test-config",
       files: {
@@ -4068,14 +4034,11 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
-    // bug opted out via per-repo false
     assert.equal(labels?.bug, undefined);
-    // feature preserved
     assert.ok(labels?.feature);
   });
 
   test("group settings labels accumulates false marker", () => {
-    // mergeRawSettings stores false; we verify feature label still present
     const raw: RawConfig = {
       id: "test-config",
       files: {
@@ -4112,11 +4075,8 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const labels = result.repos[0].settings?.labels;
-    // bug opted out
     assert.equal(labels?.bug, undefined);
-    // feature from root preserved
     assert.ok(labels?.feature);
-    // enhancement from group preserved
     assert.ok(labels?.enhancement);
   });
 
@@ -4312,7 +4272,6 @@ describe("group configuration", () => {
     const result = normalizeConfig(raw, process.env);
     const actors =
       result.repos[0].settings?.rulesets?.["pr-rules"]?.bypassActors;
-    // group-a's directive resolves to [1111], group-b appends [2222]
     assert.equal(actors?.length, 2);
     assert.equal(actors?.[0]?.actorId, 1111);
     assert.equal(actors?.[1]?.actorId, 2222);
@@ -4385,7 +4344,6 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // inherit key should be stripped, group-rule present
     assert.ok(result.repos[0].settings?.rulesets?.["group-rule"]);
     assert.equal(result.repos[0].settings?.deleteOrphaned, true);
   });
@@ -4512,12 +4470,10 @@ describe("group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const bug = result.repos[0].settings?.labels?.bug;
-    // Group overrides color but description from root is preserved via mergeSettings
     assert.equal(bug?.color, "ff0000");
   });
 
   test("mergeRawSettings returns undefined when both base and overlay are undefined", () => {
-    // This is exercised when both root settings and group settings are undefined
     const raw: RawConfig = {
       id: "test-config",
       files: {
@@ -4539,7 +4495,6 @@ describe("group configuration", () => {
   });
 
   test("mergeRawSettings returns structuredClone of base when overlay has no settings", () => {
-    // Tests the path where overlay is undefined but base exists
     const raw: RawConfig = {
       id: "test-config",
       files: {
@@ -4558,7 +4513,7 @@ describe("group configuration", () => {
             },
           },
         },
-        groupB: {}, // no settings -> overlay is undefined
+        groupB: {},
       },
       repos: [
         {
@@ -4603,8 +4558,6 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // Rulesets should be empty (inherit:false discarded root, no group rulesets added)
-    // But repo settings should still be there
     assert.equal(result.repos[0].settings?.rulesets, undefined);
     const repo = result.repos[0].settings?.repo as Record<string, unknown>;
     assert.equal(repo?.hasIssues, true);
@@ -4642,9 +4595,7 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // Labels should be empty since inherit:false discarded root labels
     assert.equal(result.repos[0].settings?.labels, undefined);
-    // But rulesets should still be there
     assert.ok(result.repos[0].settings?.rulesets?.["rule"]);
   });
 
@@ -4672,9 +4623,7 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // groupB overrides merge from root/groupA
     assert.equal(result.repos[0].prOptions?.merge, "force");
-    // groupA labels preserved
     assert.deepStrictEqual(result.repos[0].prOptions?.labels, ["from-A"]);
   });
 
@@ -4773,7 +4722,6 @@ describe("group configuration", () => {
     const newFile = result.repos[0].files.find(
       (f) => f.fileName === "new.json"
     );
-    // groupB merges onto groupA's accumulated value
     const content = newFile?.content as Record<string, unknown>;
     assert.equal(content.fromGroupA, true);
     assert.equal(content.fromGroupB, true);
@@ -4930,7 +4878,6 @@ describe("group extends", () => {
     assert.ok(fileNames.includes("base.json"), "base appears");
     assert.ok(fileNames.includes("left.json"), "left appears");
     assert.ok(fileNames.includes("right.json"), "right appears");
-    // base.json should only appear once
     assert.equal(
       result.repos[0].files.filter((f) => f.fileName === "base.json").length,
       1,
@@ -5307,11 +5254,9 @@ describe("conditional group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    // repo with both renovate + terraform -> matches
     const bothRepo = result.repos.find((r) => r.git.includes("both"));
     assert.ok(bothRepo?.files.find((f) => f.fileName === "combo.json"));
 
-    // repo with renovate only -> no match (anyOf not satisfied)
     const renovateOnly = result.repos.find((r) =>
       r.git.includes("renovate-only")
     );
@@ -5320,7 +5265,6 @@ describe("conditional group configuration", () => {
       undefined
     );
 
-    // repo with go only -> no match (allOf not satisfied)
     const goOnly = result.repos.find((r) => r.git.includes("go-only"));
     assert.equal(
       goOnly?.files.find((f) => f.fileName === "combo.json"),
@@ -5363,9 +5307,7 @@ describe("conditional group configuration", () => {
       (f) => f.fileName === "shared.json"
     );
     const content = shared?.content as Record<string, unknown>;
-    // Second conditional group wins for shared key
     assert.equal(content.source, "second");
-    // Both contribute unique keys
     assert.equal(content.first, true);
     assert.equal(content.second, true);
   });
@@ -5404,7 +5346,6 @@ describe("conditional group configuration", () => {
       (f) => f.fileName === "config.json"
     );
     const content = config?.content as Record<string, unknown>;
-    // All three layers contribute
     assert.equal(content.fromRoot, true);
     assert.equal(content.fromGroup, true);
     assert.equal(content.fromConditional, true);
@@ -5443,11 +5384,8 @@ describe("conditional group configuration", () => {
       (f) => f.fileName === "config.json"
     );
     const content = config?.content as Record<string, unknown>;
-    // Repo override wins for key
     assert.equal(content.key, "repo");
-    // Conditional group contributes extra
     assert.equal(content.extra, true);
-    // Root contributes base
     assert.equal(content.base, true);
   });
 
@@ -5533,10 +5471,8 @@ describe("conditional group configuration", () => {
 
     const result = normalizeConfig(raw, process.env);
     const fileNames = result.repos[0].files.map((f) => f.fileName);
-    // Root and group files should be discarded
     assert.ok(!fileNames.includes("root.json"));
     assert.ok(!fileNames.includes("group.json"));
-    // Only conditional file remains
     assert.ok(fileNames.includes("conditional.json"));
   });
 
