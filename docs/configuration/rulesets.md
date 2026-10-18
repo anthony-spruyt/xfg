@@ -443,7 +443,7 @@ gh api orgs/{org}/installations --jq '.installations[] | {name: .app_slug, id: .
 
 ## Orphan Deletion
 
-When `settings.deleteOrphaned` is `true`, xfg deletes every ruleset on the repository that is not in the config, including rulesets created by hand. The config is the full list of rulesets. The flag applies to [labels](labels.md#deleting-orphaned-labels) in the same way.
+When `settings.deleteOrphaned` is `true`, xfg deletes every ruleset on the repository that is not in the config, including rulesets created by hand. Rulesets set at the organization or enterprise level that apply to the repository are not listed or deleted. The config is the full list of rulesets. The flag applies to [labels](labels.md#deleting-orphaned-labels) in the same way.
 
 ```yaml
 id: my-config
