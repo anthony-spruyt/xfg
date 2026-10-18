@@ -17,14 +17,14 @@ const OWNER = "spruyt-labs";
 let repoName: string;
 let testRepo: string;
 
-before(() => {
+before(async () => {
   repoName = generateRepoName("<purpose>");
   testRepo = `${OWNER}/${repoName}`;
-  createRepo(OWNER, repoName);
+  await createRepo(OWNER, repoName);
 });
 
-after(() => {
-  deleteRepo(OWNER, repoName);
+after(async () => {
+  await deleteRepo(OWNER, repoName);
 });
 ```
 
@@ -55,11 +55,11 @@ Lifecycle tests (create/fork/migrate) create and delete repos as part of their t
 
 ## CI Workflow
 
-- `ci.yaml` (synced from repo-operator) runs `lint`, then `repo`, which calls `ci-repo.yaml` (`check-changes`, `build`, `integration-tests`), then `summary`. The jobs show as `repo / <job>`, and `summary / Check Results` is the one required check
+- `ci.yaml` (synced from repo-operator) runs `lint`, then `repo`, which calls `ci-repo.yaml` (`check-changes`, `build`, `integration-tests`), plus `image` and `sonar`, then `summary`. The `ci-repo.yaml` jobs show as `repo / <job>`, and `summary / Check Results` is the one required check
 - Adding a label other than `run-integration` starts a run where every `ci.yaml` job skips, `summary` included, so it posts no `summary / Check Results` over the real result (enforced by `test/unit/ci/integration-workflow.test.ts`)
 - Integration tests always run on `push` to `main` (when source changes detected), using the `integration-main` environment (main branch only, no approval)
 - On PRs, integration tests only run when:
   - The `run-integration` label is added to the PR, OR
-  - Integration test files (`packages/xfg/test/integration/`) are changed
+  - Integration test files (`packages/xfg/test/integration/`) are in the PR diff
 - PR runs use the `integration` environment: the owner approves once per run, then all lanes start together. Merge-queue and fork PRs skip integration
 - GitHub tests run in 6 parallel lanes plus the action lane, sized to stay under API secondary rate limits

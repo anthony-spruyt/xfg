@@ -13,6 +13,7 @@ Use `${VAR}` syntax in string values to inject environment variables at runtime.
 ## Example
 
 ```yaml
+id: env-variables
 files:
   app.config.json:
     content:
@@ -78,6 +79,7 @@ This follows the same escape convention used by Docker Compose.
 ## Full Example
 
 ```yaml
+id: env-variables
 files:
   app.config.json:
     content:

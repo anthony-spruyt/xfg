@@ -190,8 +190,6 @@ repos:
       console.log(
         `\nMigrating from ADO to ${OWNER}/${repoName} via xfg sync...`
       );
-      // Note: exec() here uses controlled test constants (repoName from randomBytes,
-      // configPath from tmpDir), not user input. This is the standard integration test pattern.
       const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         { cwd: projectRoot }
@@ -262,6 +260,68 @@ repos:
     console.log("  Create with settings test passed");
   });
 
+  test("create with per-repo settings: description from the repo entry is applied", async () => {
+    const repoName = generateRepoName();
+    reposToDelete.push(repoName);
+
+    const configPath = writeConfig(
+      tmpDir,
+      `id: lifecycle-create-repo-settings-test
+files:
+  lifecycle-test.json:
+    content:
+      created: true
+repos:
+  - git: https://github.com/${OWNER}/${repoName}.git
+    settings:
+      repo:
+        description: "Created by xfg per-repo lifecycle test"
+`
+    );
+
+    console.log(
+      `\nCreating repo ${OWNER}/${repoName} with per-repo settings via xfg sync...`
+    );
+    const output = await exec(
+      `node dist/cli.js sync --config ${configPath} --merge direct`,
+      { cwd: projectRoot }
+    );
+    console.log(output);
+
+    const outputLines = output.split("\n");
+    const createIndex = outputLines.findIndex((line) =>
+      line.includes(`CREATE ${OWNER}/${repoName}`)
+    );
+    assert.ok(createIndex >= 0, "Sync output should include the CREATE line");
+    assert.ok(
+      outputLines[createIndex + 1]?.includes(
+        'description: "Created by xfg per-repo lifecycle test"'
+      ),
+      "Lifecycle CREATE block should report the per-repo description"
+    );
+
+    assert.ok(
+      await repoExists(OWNER, repoName),
+      `Repo ${repoName} should exist after sync`
+    );
+
+    await withTestRetry(
+      async () => {
+        const description = await execWithRetry(
+          `gh api repos/${OWNER}/${repoName} --jq '.description'`
+        );
+        assert.equal(
+          description,
+          "Created by xfg per-repo lifecycle test",
+          "Repo description should come from the repo entry"
+        );
+      },
+      { description: "description applied", retries: 5, baseDelayMs: 3000 }
+    );
+
+    console.log("  Create with per-repo settings test passed");
+  });
+
   test("create with defaultBranch: renames default branch to desired name", async () => {
     const repoName = generateRepoName();
     reposToDelete.push(repoName);
@@ -284,8 +344,6 @@ repos:
     console.log(
       `\nCreating repo ${OWNER}/${repoName} with defaultBranch: develop via xfg sync...`
     );
-    // Note: uses controlled test constants (repoName from randomBytes,
-    // configPath from tmpDir), not user input. Standard integration test pattern.
     const output = await exec(
       `node dist/cli.js sync --config ${configPath} --merge direct`,
       { cwd: projectRoot }
@@ -340,8 +398,6 @@ repos:
       console.log(
         `\nMigrating from ADO to ${OWNER}/${repoName} with defaultBranch: main...`
       );
-      // Note: uses controlled test constants (repoName from randomBytes,
-      // configPath from tmpDir), not user input. Standard integration test pattern.
       const output = await exec(
         `node dist/cli.js sync --config ${configPath} --merge direct`,
         { cwd: projectRoot }

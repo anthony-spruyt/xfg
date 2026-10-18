@@ -7,7 +7,7 @@ This repository uses a VS Code devcontainer for a consistent development experie
 - [VS Code](https://code.visualstudio.com/) with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine
 - SSH agent running with keys loaded (see [SSH Agent Setup](#ssh-agent-setup))
-- GitHub token in `~/.secrets/.env` (for GitHub CLI operations)
+- GitHub token in `~/.secrets/.env.common` (for GitHub CLI operations)
 
 ### Installing Prerequisites
 
@@ -92,8 +92,9 @@ The devcontainer expects these directories on your host machine:
 
 ```text
 ~/.secrets/
-├── .env                    # Environment variables (loaded via --env-file)
-└── ...                     # Other secrets as needed
+├── .env.common             # Shared environment variables (loaded via --env-file)
+├── .env.xfg                # xfg-specific environment variables (loaded via --env-file)
+└── .gitignore              # Mounted read-only into the container
 
 ~/.claude/                  # Claude Code settings and memory
 
@@ -111,18 +112,18 @@ Create the required structure:
 ```bash
 mkdir -p ~/.claude ~/.secrets ~/.ssh
 chmod 700 ~/.secrets
-touch ~/.secrets/.env ~/.ssh/known_hosts ~/.ssh/allowed_signers
-chmod 600 ~/.secrets/.env
+touch ~/.secrets/.env.common ~/.secrets/.env.xfg ~/.secrets/.gitignore ~/.ssh/known_hosts ~/.ssh/allowed_signers
+chmod 600 ~/.secrets/.env.common ~/.secrets/.env.xfg
 ```
 
-Set your git identity (this also creates `~/.gitconfig`, which the devcontainer mounts):
+Set your git identity (this also creates `~/.gitconfig`, which VS Code copies into the container on startup):
 
 ```bash
 git config --global user.name "Your Name"
 git config --global user.email "you@example.com"
 ```
 
-The `.env` file sets environment variables:
+`runArgs` loads both env files, so a variable in either one is set in the container. `.env.common` holds the shared variables:
 
 ```text
 GH_TOKEN=<github-token>
@@ -226,13 +227,13 @@ Then add the same public key as a **signing key** at [GitHub Settings > SSH and 
 
 ### Devcontainer fails to start with SSH agent mount error
 
-The SSH agent socket mount can fail after a reboot, sleep/wake cycle, or agent restart. The symptoms differ by platform but the root cause is the same: Docker tries to mount a socket path that no longer exists.
+The SSH agent socket mount can fail after a reboot, sleep/wake cycle, or agent restart. The symptoms differ by platform but the root cause is the same: Docker tries to mount a socket path that does not exist.
 
 #### macOS (SSH agent socket)
 
 **Error**: `bind source path does not exist: /socket_mnt/private/tmp/com.apple.launchd.…/Listeners`
 
-**Cause**: macOS launchd creates a new SSH agent socket path on each reboot (under `/private/tmp/com.apple.launchd.<random>/Listeners`). The `~/.ssh/agent.sock` symlink still points to the old path. Docker Desktop resolves the symlink through its Linux VM (the `/socket_mnt/` prefix), and the old target no longer exists.
+**Cause**: macOS launchd creates a new SSH agent socket path on each reboot (under `/private/tmp/com.apple.launchd.<random>/Listeners`). The `~/.ssh/agent.sock` symlink still points to the old path. Docker Desktop resolves the symlink through its Linux VM (the `/socket_mnt/` prefix), and the old target does not exist.
 
 **Solution** (run in a host terminal, not inside the container):
 
@@ -264,7 +265,7 @@ The `initialize.sh` script runs this symlink refresh automatically, but if the s
 
 **Error**: `error mounting "..." to rootfs at "/ssh-agent": not a directory`
 
-**Cause**: The SSH agent socket path changed after reboot, but the `~/.ssh/agent.sock` symlink still points to the old path.
+**Cause**: The SSH agent socket path differs after reboot, but the `~/.ssh/agent.sock` symlink still points to the old path.
 
 **Solution**:
 
@@ -286,11 +287,11 @@ If the symlink is missing or broken after reboot, ensure `keychain` is installed
 
 3. When prompted, click "Reopen in Container" (or run `Dev Containers: Reopen in Container` from the command palette)
 
-Setup is verified automatically when the container is created. The `post-create.sh` script installs dependencies, builds the project, and runs verification tests for Docker-in-Docker, pre-commit hooks, safe-chain, GitHub CLI, SSH agent forwarding, and Claude Code CLI.
+Setup is verified automatically when the container is created. The image's `devcontainer-post-create` command sets up git, safe-chain, pre-commit hooks, Claude Code CLI and Podman, runs `.devcontainer/setup-devcontainer.sh` (installs `glab`, the Azure DevOps CLI extension, Git Credential Manager and `cclsp`, then installs project dependencies and builds the project), and runs verification tests.
 
 ## Included Tools
 
-- **Docker-in-Docker** -- Build and test container images
+- **Podman** -- Rootful, with a `docker` wrapper; build and test container images
 - **Node.js** -- TypeScript/JavaScript runtime
 - **Python** -- Required for pre-commit hooks
 - **Pre-commit hooks** -- Automatic linting on commit (gitleaks, prettier, yamllint, trailing-whitespace, etc.)
@@ -305,7 +306,7 @@ Setup is verified automatically when the container is created. The `post-create.
 
 After the devcontainer is running, authenticate with the platforms you need to work with. These steps are only required if you are targeting that platform.
 
-**GitHub:** Already authenticated via `GH_TOKEN` in `~/.secrets/.env`. No additional steps needed.
+**GitHub:** Already authenticated via `GH_TOKEN` in `~/.secrets/.env.common`. No additional steps needed.
 
 **Azure DevOps:**
 
@@ -389,7 +390,7 @@ Rotate credentials regularly to limit the blast radius of a compromise.
 
 1. Generate a new classic token at [GitHub Settings > Personal access tokens (classic)](https://github.com/settings/tokens) with `repo` and `workflow` scopes.
 
-2. Update `~/.secrets/.env`:
+2. Update `~/.secrets/.env.common`:
 
    ```text
    GH_TOKEN=<new-token>
@@ -427,7 +428,7 @@ For CONTEXT7_API_KEY and other MCP server API keys:
 
 1. Regenerate the key from the provider's dashboard (e.g., [context7.com](https://context7.com) for CONTEXT7_API_KEY).
 
-2. Update `~/.secrets/.env`:
+2. Update `~/.secrets/.env.common`:
 
    ```text
    CONTEXT7_API_KEY=<new-key>
@@ -439,16 +440,16 @@ For CONTEXT7_API_KEY and other MCP server API keys:
 
 Versions are owned by [release-please](https://github.com/googleapis/release-please). Nobody picks a bump by hand.
 
-This section is the only description of the release process. `docs/` links here rather than restating it.
+This section is the full description of the release process. `CLAUDE.md` gives a short summary and links here.
 
 ### How a release happens
 
 1. You merge conventional-commit PRs to `main`.
 2. The `Release Please` workflow opens (or updates) a release PR labelled `autorelease: pending`. It shows the exact next version and the changelog entry.
-3. **You merge that release PR when you want a release.** That merge is the trigger.
+3. **Merging that release PR cuts the release.** Approve it when you want a release.
 4. Merging cuts the `vX.Y.Z` tag, moves the floating `vN` tag, publishes `@aspruyt/xfg` to npm with provenance, and publishes the GitHub Release.
 
-The release PR is opened by `repo-operator-release-bot[bot]`, the same app as every other release-please repo. Like any PR, it merges once a collaborator approves it; Mergify never approves it. The rules live in the synced `.mergify.yml`; change them in `repo-operator`, not here.
+The release PR is opened by `repo-operator-release-bot[bot]`, the same app as every other release-please repo. Like any PR, it merges through Mergify once a collaborator approves it; Mergify never approves it. The rules live in the synced `.mergify.yml`; change them in `repo-operator`, not here.
 
 ### What bump you get
 
@@ -468,11 +469,11 @@ Release-As: 7.0.0
 
 ### The floating `vN` tag
 
-Consumers pin `anthony-spruyt/xfg@v6`, and `.github/workflows/docs.yaml` triggers on `vN` tag pushes to publish that major's docs as `latest`. The publish job moves that tag on every release. If you remove that step, action consumers freeze and versioned docs silently stop updating.
+Consumers pin `anthony-spruyt/xfg@vN`, and `.github/workflows/docs.yaml` triggers on `vN` tag pushes to publish that major's docs as `latest`. The publish job moves that tag on every release. If you remove that step, action consumers freeze and versioned docs silently stop updating.
 
 Only the current major and `next` (main) are rebuilt. Older majors keep the docs build they were released with.
 
-The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers — that is how the docs stopped saying `@v5` while the repo was on v6. `packages/xfg/test/unit/docs/action-pins.test.ts` fails if a pin drifts from `.release-please-manifest.json`, loses its marker, or lives in a file missing from `extra-files`.
+The `@vN` pins in `README.md` and `docs/` carry `x-release-please-major` markers, so release-please rewrites them on a major bump. Do not strip the markers: without one, a pin stays on the old major after a bump. `packages/xfg/test/unit/docs/action-pins.test.ts` fails if a pin drifts from `.release-please-manifest.json`, loses its marker, or lives in a file missing from `extra-files`.
 
 ### Re-running a publish
 
@@ -506,8 +507,10 @@ The npm package lives in `packages/xfg/`, so npm commands run from there. Only `
 cd packages/xfg
 npm run build    # Compile TypeScript
 npm test         # Run unit tests
-npm run dev      # Run CLI via ts-node
+npm run dev      # Run CLI via tsx
 
 cd -
 ./lint.sh        # Run linting (MegaLinter)
 ```
+
+`npm test` loads every yaml block in `README.md` and `docs/` with a top-level `repos:` key through the config pipeline (`packages/xfg/test/unit/docs/doc-examples.test.ts`); put `<!-- docs-example: skip -->` and a blank line directly above a block that is deliberately not loadable (old syntax, a `# ...` skeleton, one file of a directory set).

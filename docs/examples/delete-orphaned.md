@@ -83,10 +83,14 @@ xfg creates a `.xfg.json` file in each target repository to track managed files.
 
 ```json
 {
-  "version": 2,
+  "version": 4,
   "configs": {
-    "my-org-standards": [".prettierrc.json", ".eslintrc.json"],
-    "team-a-config": ["team-a-specific.json"]
+    "my-org-standards": {
+      "files": [".eslintrc.json", ".prettierrc.json"]
+    },
+    "team-a-config": {
+      "files": ["team-a-specific.json"]
+    }
   }
 }
 ```
@@ -115,7 +119,7 @@ Output shows `[DELETED]` badges for files that would be removed.
 ## Safety Features
 
 - **Opt-in by default**: Files are not tracked unless you explicitly set `deleteOrphaned: true`
-- **Manifest-based**: Only files previously synced with `deleteOrphaned: true` can be deleted
+- **Manifest-based**: Only files tracked in the manifest (those synced with `deleteOrphaned: true`) can be deleted
 - **Namespaced**: Each config ID has its own namespace - configs can't delete each other's files
 - **Runtime override**: Use `--no-delete` to skip deletions at any time
 - **Clear visibility**: Deleted files are shown prominently in dry-run output and PR descriptions

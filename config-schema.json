@@ -102,7 +102,7 @@
             "merge"
           ],
           "default": "replace",
-          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace"
+          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actorId, actor_id). Default: replace"
         },
         "createOnly": {
           "type": "boolean",
@@ -123,7 +123,7 @@
               "description": "Multiple comment lines"
             }
           ],
-          "description": "YAML only. Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files."
+          "description": "Comment line(s) added at the top of YAML files ('# ' prefix) and .json5 files ('// ' prefix). Ignored for .json and text files."
         },
         "schemaUrl": {
           "type": "string",
@@ -143,7 +143,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars."
+          "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Root, group, conditional-group and per-repo vars merge per key, and later layers win."
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -268,7 +268,7 @@
         },
         "bypassReason": {
           "type": "string",
-          "description": "Reason for bypassing policies (Azure DevOps only, required when merge=force)"
+          "description": "Reason for bypassing policies (Azure DevOps only, used when merge=force). Default: Automated config sync via xfg"
         },
         "labels": {
           "type": "array",
@@ -460,7 +460,7 @@
               "description": "Multiple comment lines"
             }
           ],
-          "description": "YAML only. Override the root-level header for this specific repo. Ignored for JSON and text files."
+          "description": "Override the root-level header for this specific repo. Applies to YAML and .json5 files, ignored for .json and text files."
         },
         "schemaUrl": {
           "type": "string",
@@ -479,7 +479,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Per-repo custom template variables. These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true."
+          "description": "Per-repo custom template variables. These merge per key with the root, group and conditional-group vars for this file and win over them. Accessible as ${xfg:varName} when template: true."
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -1145,7 +1145,7 @@
         "$arrayMerge": {
           "type": "string",
           "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id)"
+          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)"
         },
         "$values": {
           "type": "array",

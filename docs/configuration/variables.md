@@ -59,6 +59,7 @@ Variable name matching is **case-insensitive** (GitHub treats variable names as 
 Variables support the same inheritance pattern as labels and rulesets. Root-level variables are inherited by all repos:
 
 ```yaml
+id: variables
 settings:
   variables:
     NODE_VERSION: "20"
@@ -91,9 +92,11 @@ repos:
 - `inherit: false` — discard all inherited variables (root + groups)
 - `VAR_NAME: false` — exclude a single inherited variable for this repo
 
+`inherit: false` does not clear an inherited `settings.variables.deleteOrphaned`. With `settings.variables.deleteOrphaned: true` at root, a repo that sets `inherit: false` has the inherited variables deleted from it, because they are not in its config. A variable set to `false` is deleted the same way. Set `settings.variables.deleteOrphaned: false` on the repo to keep them.
+
 ## Deleting Orphaned Variables
 
-When `deleteOrphaned: true` is set on the `variables` block, variables that were previously managed by xfg but are no longer in the config will be deleted:
+When `settings.variables.deleteOrphaned: true` is set, xfg deletes every repository variable that is not in the config, including variables created by hand. The config is the full list of variables:
 
 ```yaml
 settings:
@@ -104,20 +107,29 @@ settings:
 ```
 
 !!! warning
-    `deleteOrphaned` for variables is independent from the settings-level `deleteOrphaned`. Set it directly on the `variables` block to enable orphan deletion for variables.
+    `settings.variables.deleteOrphaned` is independent from the settings-level `settings.deleteOrphaned`. Set it directly on the `variables` block to enable orphan deletion for variables.
 
 ## Dry Run Output
 
 When running with `--dry-run`, xfg shows a plan of changes without applying them:
 
 ```text
-[1/2] your-org/frontend: Variables (dry-run)
-  + NODE_VERSION = "20"
-  + REGION = "us-east-1"
-  ~ DEPLOY_ENV: "dev" → "production"
-  - OLD_VAR
+    your-org/frontend - Variables:
+      Create:
+        + variable "NODE_VERSION"
+            value: "20"
 
-[1/2] ✓ your-org/frontend: 2 created, 1 updated, 1 deleted (dry-run)
+        + variable "REGION"
+            value: "us-east-1"
+
+      Update:
+        ~ variable "DEPLOY_ENV"
+            value: "dev" → "production"
+
+      Delete:
+        - variable "OLD_VAR"
+
+      Plan: 4 variables (2 to create, 1 to update, 1 to delete)
 ```
 
 ## How It Works

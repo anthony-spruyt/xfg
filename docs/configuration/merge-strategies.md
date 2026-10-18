@@ -4,18 +4,19 @@ Control how arrays and text lines merge when combining base content with per-rep
 
 ## Strategies
 
-| Strategy  | Behavior                                                                                       |
-| --------- | ---------------------------------------------------------------------------------------------- |
-| `replace` | Overlay completely replaces base                                                               |
-| `append`  | Overlay items added after base items                                                           |
-| `prepend` | Overlay items added before base items                                                          |
-| `merge`   | Deep-merges array items matched by identity key (`type`, `actor_id`); unmatched items appended |
+| Strategy  | Behavior                                                                                                  |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `replace` | Overlay completely replaces base                                                                          |
+| `append`  | Overlay items added after base items                                                                      |
+| `prepend` | Overlay items added before base items                                                                     |
+| `merge`   | Deep-merges array items matched by identity key (`type`, `actorId`, `actor_id`); unmatched items appended |
 
 ## File-Level Strategy
 
 Set a default strategy for a file using `mergeStrategy`:
 
 ```yaml
+id: merge-strategies
 files:
   .eslintrc.json:
     mergeStrategy: append # extends arrays will append
@@ -44,6 +45,7 @@ Use file-level when all arrays in a file should merge the same way. Use inline `
 For per-field control, use `$arrayMerge` and `$values` directives on individual array fields:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:
@@ -66,6 +68,7 @@ Result: `["core", "monitoring", "custom-feature"]`
 Each array field gets its own directive, so sibling arrays can use different strategies:
 
 ```yaml
+id: merge-strategies
 files:
   config.json:
     content:
@@ -138,13 +141,15 @@ The `merge` strategy matches array items by an identity key and deep-merges matc
 
 **How it works:**
 
-1. xfg uses the [`$matchBy`](#match-by-a-chosen-key) key if the directive sets one; otherwise it auto-detects the identity key by checking candidates in order: `type`, `actor_id`
+1. xfg uses the [`$matchBy`](#match-by-a-chosen-key) key if the directive sets one; otherwise it auto-detects the identity key by checking candidates in order: `type`, `actorId`, `actor_id`
 2. The first candidate key present in every item of both arrays wins
 3. For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended
 4. Unmatched base items are preserved in their original position
 5. Nested `$arrayMerge` directives inside matched items are honored (deep-merge recurses)
 
-**When no match key is found** (e.g. primitive arrays or objects without `type`/`actor_id`), the strategy falls back to `append` behavior.
+Matching uses a single key, so two bypass actors with the same `actorId` but different `actorType` are treated as one. Use `append` to keep both.
+
+**When no match key is found** (e.g. primitive arrays or objects without `type`/`actorId`/`actor_id`), the strategy falls back to `append` behavior.
 
 ```yaml
 # Example: merging required_status_checks across conditional groups
@@ -181,7 +186,7 @@ Result for repos with `has-mergify`: the `required_status_checks` rule has both 
 
 ### Match by a Chosen Key
 
-For lists keyed by anything other than `type` or `actor_id`, name the key with `$matchBy`. Mergify's `queue_rules`, for example, are keyed by `name`:
+For lists keyed by anything other than `type`, `actorId` or `actor_id`, name the key with `$matchBy`. Mergify's `queue_rules`, for example, are keyed by `name`:
 
 ```yaml
 files:
@@ -222,13 +227,14 @@ Items with the same `$matchBy` value are deep-merged, so nested directives apply
 - A `$matchBy` value that is not a string, number, boolean or null
 - Two items in the same array with the same `$matchBy` value
 
-Without `$matchBy`, `merge` auto-detects `type` or `actor_id` as before. `name` is deliberately not auto-detected: many lists have `name` fields (workflow steps, for example), and matching them automatically would silently change existing merges.
+Without `$matchBy`, `merge` auto-detects `type`, `actorId` or `actor_id`. `name` is deliberately not auto-detected: many lists have `name` fields (workflow steps, for example), and matching them automatically would silently change existing merges.
 
 ## Text File Merge Strategies
 
 For text files with lines array content, merge strategies work the same way:
 
 ```yaml
+id: merge-strategies
 files:
   .gitignore:
     mergeStrategy: append
@@ -252,6 +258,8 @@ dist/
 coverage/
 ```
 
+For lines arrays, `merge` behaves like `append`: lines have no identity key to match on, so overlay lines are added after the base lines.
+
 !!! note
     String content (not lines array) always uses replace strategy - the entire string is replaced.
 
@@ -262,6 +270,7 @@ The `$arrayMerge` directive also works in settings overrides — rulesets, bypas
 ### Appending Bypass Actors
 
 ```yaml
+id: merge-strategies
 # Root — shared across all repos
 settings:
   rulesets:
@@ -324,6 +333,7 @@ Repos with the `github-ci` group get both the `pull_request` rule and the `requi
 ## Example: Different Strategies per File
 
 ```yaml
+id: merge-strategies
 files:
   eslint.config.json:
     mergeStrategy: append # Extends will append

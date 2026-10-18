@@ -12,8 +12,11 @@ https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
 
 Add a comment at the top of your config file:
 
+<!-- docs-example: skip -->
+
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+id: config-schema
 files:
   # ...
 repos:
@@ -65,8 +68,8 @@ Or configure in `.vscode/settings.json`:
 
 <!-- xfg:generated:end -->
 
-!!! note "files/settings/groups requirement"
-    At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present. The `sync` command requires files defined in root `files`, in a group, or in a conditional group. The `settings` command requires `settings` at root, repo, group, or conditional group level.
+!!! note "files/settings requirement"
+    `xfg sync` accepts configs with files, settings, or both. A config needs `files` at root or in a group or conditional group, or `settings` with at least one entry at root, repo, group, or conditional group level.
 
 !!! tip "Multi-file directory config"
     When passing a directory to `-c`, xfg recursively scans subdirectories for `.yaml` and `.yml` files. See [Multi-File Configuration](../configuration/multi-file.md) for ordering rules and constraints.
@@ -81,26 +84,26 @@ Every definition below is generated from `config-schema.json`. Prose guides live
 
 Configuration for a single file to sync
 
-| Field            | Type                                          | Required | Default   | Description                                                                    |
-| ---------------- | --------------------------------------------- | -------- | --------- | ------------------------------------------------------------------------------ |
-| `content`        | `object` \| `string` \| `string[]`            | No       | -         | File content.                                                                  |
-| `mergeStrategy`  | `replace` \| `append` \| `prepend` \| `merge` | No       | `replace` | Array merge strategy for this file.                                            |
-| `createOnly`     | `boolean`                                     | No       | `false`   | If true, only create this file if it doesn't already exist in the target repo. |
-| `header`         | `string` \| `string[]`                        | No       | -         | YAML only.                                                                     |
-| `schemaUrl`      | `string`                                      | No       | -         | YAML only.                                                                     |
-| `executable`     | `boolean`                                     | No       | -         | Mark the file as executable via git update-index --add --chmod=+x.             |
-| `template`       | `boolean`                                     | No       | `false`   | Enable xfg templating for this file.                                           |
-| `vars`           | `object` of `string`                          | No       | -         | Custom template variables for this file.                                       |
-| `deleteOrphaned` | `boolean`                                     | No       | `false`   | Track this file for orphan deletion.                                           |
+| Field            | Type                                          | Required | Default   | Description                                                                                   |
+| ---------------- | --------------------------------------------- | -------- | --------- | --------------------------------------------------------------------------------------------- |
+| `content`        | `object` \| `string` \| `string[]`            | No       | -         | File content.                                                                                 |
+| `mergeStrategy`  | `replace` \| `append` \| `prepend` \| `merge` | No       | `replace` | Array merge strategy for this file.                                                           |
+| `createOnly`     | `boolean`                                     | No       | `false`   | If true, only create this file if it doesn't already exist in the target repo.                |
+| `header`         | `string` \| `string[]`                        | No       | -         | Comment line(s) added at the top of YAML files ('# ' prefix) and .json5 files ('// ' prefix). |
+| `schemaUrl`      | `string`                                      | No       | -         | YAML only.                                                                                    |
+| `executable`     | `boolean`                                     | No       | -         | Mark the file as executable via git update-index --add --chmod=+x.                            |
+| `template`       | `boolean`                                     | No       | `false`   | Enable xfg templating for this file.                                                          |
+| `vars`           | `object` of `string`                          | No       | -         | Custom template variables for this file.                                                      |
+| `deleteOrphaned` | `boolean`                                     | No       | `false`   | Track this file for orphan deletion.                                                          |
 
 - `content` — Object for JSON/YAML files, string or string[] for text files. Use @path/to/file to reference external template files (paths relative to config file). Supports ${VAR} env interpolation; use $${VAR} to output literal ${VAR}. Omit for empty file.
-- `mergeStrategy` — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace
+- `mergeStrategy` — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actorId, actor_id). Default: replace
 - `createOnly` — Useful for files like .trivyignore or .prettierignore where you want to provide defaults but let repos customize. Default: false
-- `header` — Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files.
+- `header` — Ignored for .json and text files.
 - `schemaUrl` — URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=\<url>' at the top of YAML files. For JSON files, use $schema property in content instead.
 - `executable` — Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true.
 - `template` — When true, ${xfg:variable} placeholders are replaced with repo-specific values. Available variables: repo.name, repo.owner, repo.fullName, repo.url, repo.platform, repo.host, file.name, date, and any custom vars. Use $${xfg:...} to output literal ${xfg:...}. Default: false
-- `vars` — Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars.
+- `vars` — Accessible as ${xfg:varName} when template: true. Root, group, conditional-group and per-repo vars merge per key, and later layers win.
 - `deleteOrphaned` — When true, if this file is removed from the config, it will be deleted from target repos. Tracked via .xfg.json manifest. Overrides global deleteOrphaned setting. Default: false
 
 <!-- xfg:generated:end -->
@@ -145,7 +148,7 @@ PR merge behavior options
 | `merge`         | `manual` \| `auto` \| `force` \| `direct` | No       | `auto`   | Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. |
 | `mergeStrategy` | `merge` \| `squash` \| `rebase`           | No       | `squash` | How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base.                                                                                             |
 | `deleteBranch`  | `boolean`                                 | No       | `true`   | Delete the source branch after merge completes.                                                                                                                                                                     |
-| `bypassReason`  | `string`                                  | No       | -        | Reason for bypassing policies (Azure DevOps only, required when merge=force)                                                                                                                                        |
+| `bypassReason`  | `string`                                  | No       | -        | Reason for bypassing policies (Azure DevOps only, used when merge=force).                                                                                                                                           |
 | `labels`        | `string[]`                                | No       | -        | Labels to apply to created PRs/MRs.                                                                                                                                                                                 |
 | `branch`        | `string`                                  | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
 | `ai`            | `boolean` \| [`aiOptions`](#aioptions)    | No       | -        | AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).                                                                                  |
@@ -153,6 +156,7 @@ PR merge behavior options
 - `merge` — Default: auto
 - `mergeStrategy` — Default: squash
 - `deleteBranch` — Default: true
+- `bypassReason` — Default: Automated config sync via xfg
 - `labels` — Labels must exist on the target repository.
 - `branch` — Per-repo overrides group, group overrides global. CLI --branch flag overrides all.
 - `ai` — Falls back to the default message on any AI error. Disabled by --no-ai.
@@ -230,7 +234,7 @@ Per-repo override for a specific file
 | `content`        | `object` \| `string` \| `string[]` | No       | -       | Content overlay merged onto the file's base content.                             |
 | `override`       | `boolean`                          | No       | `false` | If true, use only this content and skip merging with base.                       |
 | `createOnly`     | `boolean`                          | No       | -       | Override the root-level createOnly setting for this specific repo                |
-| `header`         | `string` \| `string[]`             | No       | -       | YAML only.                                                                       |
+| `header`         | `string` \| `string[]`             | No       | -       | Override the root-level header for this specific repo.                           |
 | `schemaUrl`      | `string`                           | No       | -       | YAML only.                                                                       |
 | `executable`     | `boolean`                          | No       | -       | Override the root-level executable setting for this specific repo.               |
 | `template`       | `boolean`                          | No       | -       | Override the root-level template setting for this specific repo.                 |
@@ -239,11 +243,11 @@ Per-repo override for a specific file
 
 - `content` — Use @path/to/file to reference external template files. Must match the content type of the root file definition.
 - `override` — Default: false
-- `header` — Override the root-level header for this specific repo. Ignored for JSON and text files.
+- `header` — Applies to YAML and .json5 files, ignored for .json and text files.
 - `schemaUrl` — Override the root-level schemaUrl for this specific repo. For JSON files, use $schema property in content instead.
 - `executable` — Set to true to mark executable, or false to disable auto-executable behavior for .sh files.
 - `template` — Set to true to enable xfg templating, or false to disable it.
-- `vars` — These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true.
+- `vars` — These merge per key with the root, group and conditional-group vars for this file and win over them. Accessible as ${xfg:varName} when template: true.
 - `deleteOrphaned` — Set to true to enable orphan tracking, or false to disable it for this repo.
 
 <!-- xfg:generated:end -->
@@ -415,10 +419,10 @@ GitHub repository settings for features, merge options, and security
 
 Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.
 
-| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                    |
-| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id) |
-| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                            |
+| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                             |
+| ------------- | --------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id) |
+| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                                     |
 
 <!-- xfg:generated:end -->
 
@@ -846,14 +850,16 @@ See [Environments](../configuration/environments.md).
 
 ## Validation
 
-The schema validates:
+The JSON Schema describes property types and enum values for editors. The schema root has no `required` list, so editors don't flag a missing `id` or `repos`. xfg's own validator runs when a config loads and enforces:
 
-- Required fields (`id`, `repos`, at least one of `files`, `settings`, or `groups`)
+- Required fields (`id`, `repos`)
 - Command-specific requirements (see below)
 - Enum values (`mergeStrategy`, `merge`, etc.)
 - Content types (object for JSON/YAML, string/array for text files)
-- File path security (no path traversal in file references)
+- File path security (no path traversal in file names or `@path` file references)
 
 ### Config Requirements
 
-The `xfg sync` command accepts configs with files, settings, or both. At least one of `files`, `settings`, `groups`, or `conditionalGroups` must be present.
+The `xfg sync` command accepts configs with files, settings, or both. A config needs `files` at root or in a group or conditional group, or `settings` with at least one entry at root, repo, group, or conditional group level.
+
+Settings that hold only `secrets` don't count, because `xfg sync` never processes secrets (use `xfg secrets sync`). `prOptions` alone at root or in `groups` is not enough, while a conditional group that sets only `prOptions` passes this check.

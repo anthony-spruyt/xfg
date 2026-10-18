@@ -20,7 +20,6 @@ az account show
 
 # Re-authenticate if needed
 az login
-az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG
 ```
 
 ### GitLab
@@ -39,9 +38,20 @@ glab auth login --hostname gitlab.example.com
 ## Permission Denied
 
 - Ensure your token has write access to the target repositories
-- For GitHub, the token needs `repo` scope
+- For GitHub, a classic token needs the `repo` scope, plus `workflow` to push files under `.github/workflows/`
 - For Azure DevOps, ensure the user/service account has "Contribute to pull requests" permission
 - For GitLab, ensure the user has at least "Developer" role on the project
+
+## GitHub Host Not Allowed
+
+If a repo on a GitHub Enterprise Server host fails with "is not in XFG_ALLOWED_GITHUB_HOSTS", xfg refuses to send GitHub credentials to that host. Only github.com is trusted by default:
+
+```bash
+# Comma- or space-separated hostnames
+export XFG_ALLOWED_GITHUB_HOSTS="github.mycompany.com"
+```
+
+Entries are plain hostnames, with no scheme, port, path or IP address. Also list the host in `githubHosts` in the config. See [GitHub Enterprise Server](platforms/github.md#ghe-authentication).
 
 ## Branch Already Exists
 
@@ -75,6 +85,14 @@ If cloning fails behind a corporate proxy:
 # Configure git proxy
 git config --global http.proxy http://proxy.example.com:8080
 git config --global https.proxy http://proxy.example.com:8080
+```
+
+## Debug Output
+
+Set `XFG_DEBUG` (or `DEBUG`) to any non-empty value to print `[debug]` lines for the steps xfg runs:
+
+```bash
+XFG_DEBUG=1 xfg sync --config ./config.yaml
 ```
 
 ## Transient Network Errors

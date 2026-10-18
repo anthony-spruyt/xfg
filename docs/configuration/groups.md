@@ -64,6 +64,7 @@ Each layer deep-merges onto the previous. Later values win for conflicting keys.
 Repos can reference multiple groups. They are applied in order — later groups override earlier ones:
 
 ```yaml
+id: groups
 groups:
   base-tooling:
     files:
@@ -92,6 +93,7 @@ Groups can inherit from parent groups using the `extends` field. When a repo ref
 ### Single Parent
 
 ```yaml
+id: groups
 groups:
   github:
     files:
@@ -144,6 +146,7 @@ groups:
 Inheritance is transitive — if `c extends b` and `b extends a`, a repo with `groups: [c]` gets files from all three:
 
 ```yaml
+id: groups
 groups:
   base:
     files:
@@ -191,6 +194,7 @@ The effective group set used for conditional group evaluation includes transitiv
 A group can remove a root file from the accumulated set:
 
 ```yaml
+id: groups
 files:
   eslint.json:
     content: { extends: ["base"] }
@@ -213,6 +217,7 @@ repos:
 A group can discard all files from previous layers:
 
 ```yaml
+id: groups
 files:
   base.json:
     content: { key: value }
@@ -235,6 +240,7 @@ repos:
 When a repo uses `inherit: false` on its files, both root and group files are discarded:
 
 ```yaml
+id: groups
 groups:
   mygroup:
     files:
@@ -275,6 +281,8 @@ groups:
 Groups can define settings (rulesets, labels, repo settings) that merge into the chain:
 
 ```yaml
+id: my-config
+
 settings:
   rulesets:
     base-protection:
@@ -289,8 +297,9 @@ groups:
           target: branch
           enforcement: active
           rules:
-            pull_request:
-              required_approving_review_count: 2
+            - type: pull_request
+              parameters:
+                requiredApprovingReviewCount: 2
 
 repos:
   - git: git@github.com:org/repo.git
@@ -318,6 +327,10 @@ groups:
 Groups can set PR options that merge into the chain:
 
 ```yaml
+id: groups
+files:
+  .prettierrc.json:
+    content: { semi: false }
 prOptions:
   merge: auto
 
@@ -432,4 +445,4 @@ Conditional groups support the same capabilities as regular groups:
 - Conditional groups cannot be listed in a repo's `groups` array
 - Conditional groups cannot reference other conditional groups
 - A repo with no `groups` field or `groups: []` has an empty effective group set — only `noneOf` conditions can match it
-- Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same frozen set of explicit groups.
+- Conditional groups do not expand the effective group set — one conditional group matching cannot cause another conditional group to match. All conditions are evaluated against the same set: the groups in the repo's `groups` list plus their transitive `extends` parents.

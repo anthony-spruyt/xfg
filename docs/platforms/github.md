@@ -17,7 +17,7 @@ The default authentication method:
 gh auth login
 ```
 
-Your token needs the `repo` scope to create PRs in target repositories.
+Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to change files under `.github/workflows/`.
 
 ### GitHub App (Recommended for Enterprise)
 
@@ -43,6 +43,7 @@ xfg supports GitHub Enterprise Server (GHE) instances in addition to github.com.
 To use GHE repositories, add the hostname(s) to the `githubHosts` array in your config:
 
 ```yaml
+id: my-org-config
 githubHosts:
   - github.mycompany.com
   - ghe.internal.net
@@ -56,6 +57,8 @@ repos:
   - git: git@github.mycompany.com:owner/repo.git
   - git: https://ghe.internal.net/org/project.git
 ```
+
+A GHE host that is not listed in `githubHosts` is detected as a self-hosted GitLab instance, so list every GHE host. See [Platform Support](index.md).
 
 ### GHE Authentication
 
@@ -71,13 +74,17 @@ xfg only hands GitHub credentials (App JWTs, installation tokens, `GH_TOKEN`) to
 export XFG_ALLOWED_GITHUB_HOSTS="github.mycompany.com,ghe.internal.net"
 ```
 
-xfg fails every repo on a GHE host that isn't listed, before running any `gh` or `git` command against it. Entries must be plain hostnames, with no scheme, port, path, userinfo or IP address. The same applies to `githubHosts` entries.
+In the GitHub Action, the `allowed-github-hosts` input sets this variable (comma-separated hostnames). See [Action Inputs](../ci-cd/github-actions.md#action-inputs).
+
+xfg fails every repo on a GHE host that isn't listed, before running any `gh` or `git` command against it. `XFG_ALLOWED_GITHUB_HOSTS` entries must be plain hostnames, with no scheme, port, path, userinfo or IP address. `githubHosts` entries must be plain hostnames, with no scheme, port, path or userinfo. A repo on an IP-address host fails the host check, because the variable cannot list an IP
+address.
 
 ### Mixed Environments
 
 You can use github.com and GHE repositories in the same config file:
 
 ```yaml
+id: my-org-config
 githubHosts:
   - github.mycompany.com
 
@@ -95,7 +102,7 @@ repos:
 
 ## Required Permissions
 
-Your token needs the `repo` scope to create PRs in target repositories.
+Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to change files under `.github/workflows/`.
 
 ## Auto-Merge
 
@@ -128,6 +135,12 @@ xfg uses the `gh` CLI to:
 With `merge: direct`, xfg skips PR creation entirely and pushes directly to the default branch:
 
 ```yaml
+id: my-org-config
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+
 prOptions:
   merge: direct
 
@@ -169,7 +182,7 @@ xfg sync --config ./config.yaml
 
 Managing rulesets requires admin access to the repository. Your token needs:
 
-- **PAT:** `admin:repo` scope
+- **PAT:** the `repo` scope (classic) or the "Administration" repository permission set to "Read and write" (fine-grained)
 - **GitHub App:** "Administration" permission set to "Read and write"
 
 ### Rulesets vs Branch Protection
