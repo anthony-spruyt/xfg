@@ -5,7 +5,7 @@
 The simplest way to use xfg in GitHub Actions is with the official action:
 
 ```yaml
-- uses: actions/checkout@v4
+- uses: actions/checkout@v7
 
 - uses: anthony-spruyt/xfg@v8 # x-release-please-major
   with:
@@ -108,7 +108,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: anthony-spruyt/xfg@v8 # x-release-please-major
         with:

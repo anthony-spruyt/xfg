@@ -50,7 +50,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: anthony-spruyt/xfg@v8 # x-release-please-major
         with:

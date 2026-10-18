@@ -85,4 +85,4 @@ This is useful for repos without branch policies or when PR review isn't require
 
 xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and `xfg secrets sync` apply to GitHub repositories only; they are skipped for Azure DevOps repositories.
 
-Repo lifecycle supports only GitHub as a target: an Azure DevOps repository that sets `upstream` or `source` fails the run. An Azure DevOps repository can be the `source` of a migration into GitHub. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).
+Repo lifecycle supports only GitHub as a target. An Azure DevOps repository that sets `upstream` or `source` fails: xfg logs the error, skips that repository's sync, syncs the remaining repositories, and exits non-zero at the end. An Azure DevOps repository can be the `source` of a migration into GitHub. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).

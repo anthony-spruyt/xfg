@@ -446,7 +446,7 @@ This section is the full description of the release process. `CLAUDE.md` gives a
 
 1. You merge conventional-commit PRs to `main`.
 2. The `Release Please` workflow opens (or updates) a release PR labelled `autorelease: pending`. It shows the exact next version and the changelog entry.
-3. **Merging that release PR cuts the release.** It merges through Mergify once a collaborator approves it, so approve it when you want a release.
+3. **Merging that release PR cuts the release.** Approve it when you want a release.
 4. Merging cuts the `vX.Y.Z` tag, moves the floating `vN` tag, publishes `@aspruyt/xfg` to npm with provenance, and publishes the GitHub Release.
 
 The release PR is opened by `repo-operator-release-bot[bot]`, the same app as every other release-please repo. Like any PR, it merges through Mergify once a collaborator approves it; Mergify never approves it. The rules live in the synced `.mergify.yml`; change them in `repo-operator`, not here.

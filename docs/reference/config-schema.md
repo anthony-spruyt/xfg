@@ -69,8 +69,6 @@ Or configure in `.vscode/settings.json`:
 !!! note "files/settings requirement"
     `xfg sync` accepts configs with files, settings, or both. A config needs `files` at root or in a group or conditional group, or `settings` with at least one entry at root, repo, group, or conditional group level.
 
-Settings that hold only `secrets` don't count, because `xfg sync` never processes secrets. `prOptions` alone at root or in `groups` is not enough, while a conditional group that sets only `prOptions` passes this check.
-
 !!! tip "Multi-file directory config"
     When passing a directory to `-c`, xfg recursively scans subdirectories for `.yaml` and `.yml` files. See [Multi-File Configuration](../configuration/multi-file.md) for ordering rules and constraints.
 

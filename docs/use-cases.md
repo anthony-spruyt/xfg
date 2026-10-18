@@ -59,7 +59,7 @@ files:
         build:
           runs-on: ubuntu-latest
           steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v7
             - uses: actions/setup-node@v4
               with:
                 node-version: "24"
@@ -383,7 +383,7 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
