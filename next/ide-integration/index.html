@@ -2744,13 +2744,15 @@
 <p>For autocomplete and validation in VS Code, install the <a href="https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml">YAML extension</a> and add a schema reference to your config file.</p>
 <h3 id="option-1-inline-comment">Option 1: Inline comment<a class="headerlink" href="#option-1-inline-comment" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">files</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">my.config.json</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nt">repos</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/repo.git</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-config</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">my.config.json</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">value</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/repo.git</span>
 </span></code></pre></div>
 <h3 id="option-2-vs-code-settings">Option 2: VS Code settings<a class="headerlink" href="#option-2-vs-code-settings" title="Permanent link">&para;</a></h3>
 <p>Add to <code>.vscode/settings.json</code>:</p>
@@ -2767,12 +2769,12 @@
 <p>This enables:</p>
 <ul>
 <li>Autocomplete for all config fields:</li>
-<li>Root level: <code>id</code>, <code>files</code>, <code>repos</code>, <code>settings</code>, <code>prOptions</code>, <code>prTemplate</code>, <code>githubHosts</code>, <code>deleteOrphaned</code></li>
+<li>Root level: <code>id</code>, <code>files</code>, <code>groups</code>, <code>conditionalGroups</code>, <code>repos</code>, <code>prOptions</code>, <code>prTemplate</code>, <code>githubHosts</code>, <code>deleteOrphaned</code>, <code>settings</code></li>
 <li>File config: <code>content</code>, <code>mergeStrategy</code>, <code>createOnly</code>, <code>executable</code>, <code>header</code>, <code>schemaUrl</code>, <code>template</code>, <code>vars</code>, <code>deleteOrphaned</code></li>
-<li>Repo config: <code>git</code>, <code>files</code>, <code>settings</code>, <code>prOptions</code></li>
-<li>Settings: <code>repo</code>, <code>rulesets</code> with full ruleset configuration</li>
-<li>Enum suggestions for <code>mergeStrategy</code> (<code>replace</code>, <code>append</code>, <code>prepend</code>), <code>merge</code> mode (<code>manual</code>, <code>auto</code>, <code>force</code>, <code>direct</code>), etc.</li>
-<li>Validation of required fields (<code>id</code>, <code>repos</code>)</li>
+<li>Repo config: <code>git</code>, <code>files</code>, <code>groups</code>, <code>prOptions</code>, <code>settings</code>, <code>upstream</code>, <code>source</code></li>
+<li>Settings: <code>rulesets</code> with full ruleset configuration, <code>repo</code>, <code>labels</code>, <code>codeScanning</code>, <code>variables</code>, <code>secrets</code>, <code>collaborators</code>, <code>environments</code>, <code>deleteOrphaned</code></li>
+<li>Enum suggestions for <code>mergeStrategy</code> (<code>replace</code>, <code>append</code>, <code>prepend</code>, <code>merge</code>), <code>merge</code> mode (<code>manual</code>, <code>auto</code>, <code>force</code>, <code>direct</code>), etc.</li>
+<li>Validation of field types and allowed values. The schema root has no <code>required</code> list, so editors don't flag a missing <code>id</code> or <code>repos</code>; xfg itself requires both when it loads the config</li>
 <li>Hover documentation for each field</li>
 </ul>
 

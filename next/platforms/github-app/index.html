@@ -2994,10 +2994,13 @@
 <li>Configure permissions:</li>
 <li><strong>Repository permissions:</strong><ul>
 <li>Repository creation: Read and write <em>(required to create, migrate and fork repos; Administration does not let the App create repos, see <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>)</em></li>
-<li>Administration: Read and write <em>(required to archive and fork repos and for repo lifecycle settings, see <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>; also required for <a href="../../configuration/environments/">environments</a>)</em></li>
+<li>Administration: Read and write <em>(required to archive and fork repos and for repo lifecycle settings, see <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>; also required to create, update and delete <a href="../../configuration/environments/#permissions">environments</a> and their branch policies)</em></li>
+<li>Actions: Read <em>(required to list environments and their branch policies, see <a href="../../configuration/environments/#permissions">Environments</a>)</em></li>
+<li>Environments: Read and write <em>(required for environment secrets, see <a href="../../configuration/environments/#permissions">Environments</a>)</em></li>
 <li>Contents: Read and write</li>
 <li>Pull requests: Read and write</li>
 <li>Workflows: Read and write <em>(required if syncing <code>.github/workflows/</code> files)</em></li>
+<li>Variables: Read and write <em>(required for <a href="../../configuration/variables/"><code>settings.variables</code></a>)</em></li>
 </ul>
 </li>
 <li><strong>Where can this GitHub App be installed?</strong> Any account</li>
@@ -3008,7 +3011,7 @@
 <ol>
 <li>Go to your app's settings &gt; Install App</li>
 <li>Install the app in each organization where xfg will sync configs</li>
-<li>Select the repositories the app can access (all or specific repos)</li>
+<li>Select the repositories the app can access (all or specific repos). Every repository in your xfg config must be one the installation can access.</li>
 </ol>
 <h3 id="3-store-credentials">3. Store Credentials<a class="headerlink" href="#3-store-credentials" title="Permanent link">&para;</a></h3>
 <p>In your GitHub repository:</p>
@@ -3021,7 +3024,7 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">sync</span><span class="p">:</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v7</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v8</span><span class="w"> </span><span class="c1"># x-release-please-major</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
@@ -3034,15 +3037,16 @@
 <li>Discovers all installations of your GitHub App</li>
 <li>Generates short-lived tokens (1 hour) per-installation</li>
 <li>Caches tokens to minimize API calls</li>
-<li>Skips repositories without app access (with a warning)</li>
+<li>Skips repositories whose owner has no installation of the app (<code>No GitHub App installation found for &lt;owner&gt;</code>)</li>
 </ul>
-<p>The same inputs work with <code>command: secrets-sync</code>. Grant the app <strong>Secrets: Read and write</strong> for that (repo and environment secrets). Unlike <code>sync</code>, secrets sync fails (rather than skips) repos without app access.</p>
+<p>xfg skips a repository only when its owner has no installation. A repository the installation cannot access, for example one left out of a "selected repositories" installation, fails.</p>
+<p>The same inputs work with <code>command: secrets-sync</code>. Grant the app <strong>Secrets: Read and write</strong> for repo secrets, <strong>Environments: Read and write</strong> for environment secrets, and <strong>Actions: Read</strong> to list a repo's environments. Unlike <code>sync</code>, secrets sync fails (rather than skips) repos whose owner has no installation.</p>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When GitHub App credentials are provided, xfg:</p>
 <ol>
 <li><strong>Generates a JWT</strong> using your Client ID and private key</li>
 <li><strong>Discovers installations</strong> by calling GitHub's API to list all installations</li>
-<li><strong>Generates installation tokens</strong> per-installation (tokens are cached for 55 minutes)</li>
+<li><strong>Generates installation tokens</strong> per-installation (tokens are cached for 45 minutes)</li>
 <li><strong>Uses GraphQL API</strong> for commits with the installation token, creating verified commits</li>
 </ol>
 <p>This uses GitHub's <code>createCommitOnBranch</code> mutation instead of git commands, which:</p>
@@ -3084,14 +3088,14 @@
 </tbody>
 </table>
 <p>xfg sends App JWTs, installation tokens and <code>GH_TOKEN</code> only to github.com, unless a host is listed in <code>XFG_ALLOWED_GITHUB_HOSTS</code> (comma- or space-separated hostnames). Repos on any other GitHub host fail. See <a href="../github/#ghe-authentication">GitHub Enterprise Server</a>.</p>
-<p>When <code>XFG_GITHUB_CLIENT_ID</code> and <code>XFG_GITHUB_APP_PRIVATE_KEY</code> are set, xfg uses GitHub App authentication with automatic per-installation token generation. For repositories without app access, xfg will skip processing with a warning.</p>
+<p>When <code>XFG_GITHUB_CLIENT_ID</code> and <code>XFG_GITHUB_APP_PRIVATE_KEY</code> are set, xfg uses GitHub App authentication with automatic per-installation token generation. A repository whose owner has no installation of the app is skipped. A repository the installation cannot access fails.</p>
 <blockquote>
 <p><strong>Note:</strong> You can also get verified commits with PATs by <a href="https://docs.github.com/en/authentication/managing-commit-signature-verification">configuring GPG signing</a>. GitHub App authentication is an alternative that doesn't require GPG key management.</p>
 </blockquote>
 <h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h2>
 <ol>
 <li><strong>Commit author</strong> - Commits appear as the GitHub App, not a custom user</li>
-<li><strong>File size</strong> - Large files (&gt;50MB) should use PAT flow instead</li>
+<li><strong>File size</strong> - A commit whose added and modified files total more than 50MB after base64 encoding (about 37MB of raw content) can't go through the GraphQL API; use the PAT flow instead</li>
 <li><strong>GHE compatibility</strong> - Requires GitHub Enterprise Server 3.6+</li>
 <li><strong>Atomic commits</strong> - All file changes in a single commit (executable file mode changes use a follow-up commit)</li>
 <li><strong>Forks</strong> - GitHub only lets an App fork a repo when it is installed on the target account with access to all its repositories, and on the upstream account with access to the upstream repo. See <a href="../../configuration/lifecycle/#authentication">Repo Lifecycle</a>.</li>
@@ -3118,7 +3122,7 @@
 <h3 id="commits-not-showing-as-verified">Commits not showing as verified<a class="headerlink" href="#commits-not-showing-as-verified" title="Permanent link">&para;</a></h3>
 <p>Ensure you're using GitHub App authentication (<code>github-client-id</code> and <code>github-app-private-key</code> inputs). Only installation tokens from GitHub Apps trigger the GraphQL verified commit flow.</p>
 <h3 id="payload-too-large">Payload too large<a class="headerlink" href="#payload-too-large" title="Permanent link">&para;</a></h3>
-<p>Files exceeding 50MB cannot be committed via the GraphQL API. Use <code>GH_TOKEN</code> (PAT authentication) for repositories with large files.</p>
+<p>The added and modified files in one commit cannot exceed 50MB combined after base64 encoding (about 37MB of raw content) when committed via the GraphQL API. Use <code>GH_TOKEN</code> (PAT authentication) for repositories with large files.</p>
 
 
 

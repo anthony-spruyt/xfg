@@ -2939,12 +2939,16 @@
 <h2 id="the-manifest-file">The Manifest File<a class="headerlink" href="#the-manifest-file" title="Permanent link">&para;</a></h2>
 <p>xfg creates a <code>.xfg.json</code> file in each target repository to track managed files. The manifest is namespaced by config ID, allowing multiple xfg configs to manage the same repo without conflicts:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">"configs"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">"my-org-standards"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">".prettierrc.json"</span><span class="p">,</span><span class="w"> </span><span class="s2">".eslintrc.json"</span><span class="p">],</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">"team-a-config"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"team-a-specific.json"</span><span class="p">]</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="p">}</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="p">}</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">"my-org-standards"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">".eslintrc.json"</span><span class="p">,</span><span class="w"> </span><span class="s2">".prettierrc.json"</span><span class="p">]</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">"team-a-config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="nt">"files"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"team-a-specific.json"</span><span class="p">]</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>This file is committed alongside your synced files. Only files listed under a config's namespace can be deleted by that config.</p>
 <h2 id="multiple-configs">Multiple Configs<a class="headerlink" href="#multiple-configs" title="Permanent link">&para;</a></h2>
@@ -2962,7 +2966,7 @@
 <h2 id="safety-features">Safety Features<a class="headerlink" href="#safety-features" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Opt-in by default</strong>: Files are not tracked unless you explicitly set <code>deleteOrphaned: true</code></li>
-<li><strong>Manifest-based</strong>: Only files previously synced with <code>deleteOrphaned: true</code> can be deleted</li>
+<li><strong>Manifest-based</strong>: Only files tracked in the manifest (those synced with <code>deleteOrphaned: true</code>) can be deleted</li>
 <li><strong>Namespaced</strong>: Each config ID has its own namespace - configs can't delete each other's files</li>
 <li><strong>Runtime override</strong>: Use <code>--no-delete</code> to skip deletions at any time</li>
 <li><strong>Clear visibility</strong>: Deleted files are shown prominently in dry-run output and PR descriptions</li>

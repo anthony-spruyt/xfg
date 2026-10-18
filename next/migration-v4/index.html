@@ -2804,7 +2804,7 @@
 <h3 id="2-github-action-command-input-removed">2. GitHub Action <code>command</code> input removed<a class="headerlink" href="#2-github-action-command-input-removed" title="Permanent link">&para;</a></h3>
 <p>The <code>command</code> input has been removed from the GitHub Action. The action always runs <code>xfg sync</code>.</p>
 <p><strong>Before (v3):</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v4</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthony-spruyt/xfg@v3</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">with</span><span class="p">:</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">settings</span>
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./config.yaml</span>
@@ -2819,7 +2819,7 @@
 <p><strong>Impact:</strong> If you have <code>deleteOrphaned: true</code> and your repos have rulesets or labels that were created outside of xfg, they will be deleted on the first v4 run.</p>
 <p><strong>Mitigation:</strong> Add those rulesets/labels to your config, or use <code>--no-delete</code> on the first run to preview what would be deleted.</p>
 <h3 id="4-manifest-auto-migration-v3-v4">4. Manifest auto-migration (V3 → V4)<a class="headerlink" href="#4-manifest-auto-migration-v3-v4" title="Permanent link">&para;</a></h3>
-<p>The manifest file (<code>.xfg-manifest.json</code>) format has been updated to V4. The migration happens automatically — v4 reads your existing V3 manifest and upgrades it in place. The V4 manifest only tracks files (not rulesets or labels).</p>
+<p>The manifest file (<code>.xfg.json</code>) format has been updated to V4. The migration happens automatically — v4 reads your existing V3 manifest and upgrades it in place. The V4 manifest only tracks files (not rulesets or labels).</p>
 <h2 id="no-changes-required">No Changes Required<a class="headerlink" href="#no-changes-required" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Config file format</strong> — Your YAML config files work as-is</li>

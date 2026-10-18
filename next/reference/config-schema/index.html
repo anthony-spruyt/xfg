@@ -3799,11 +3799,14 @@
 <h2 id="using-the-schema">Using the Schema<a class="headerlink" href="#using-the-schema" title="Permanent link">&para;</a></h2>
 <h3 id="in-vs-code">In VS Code<a class="headerlink" href="#in-vs-code" title="Permanent link">&para;</a></h3>
 <p>Add a comment at the top of your config file:</p>
+<!-- docs-example: skip -->
+
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">files</span><span class="p">:</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="c1"># ...</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">repos</span><span class="p">:</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="c1"># ...</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">config-schema</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="c1"># ...</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="c1"># ...</span>
 </span></code></pre></div>
 <p>Or configure in <code>.vscode/settings.json</code>:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
@@ -3917,8 +3920,8 @@
 <!-- xfg:generated:end -->
 
 <div class="admonition note">
-<p class="admonition-title">files/settings/groups requirement</p>
-<p>At least one of <code>files</code>, <code>settings</code>, <code>groups</code>, or <code>conditionalGroups</code> must be present. The <code>sync</code> command requires files defined in root <code>files</code>, in a group, or in a conditional group. The <code>settings</code> command requires <code>settings</code> at root, repo, group, or conditional group level.</p>
+<p class="admonition-title">files/settings requirement</p>
+<p><code>xfg sync</code> accepts configs with files, settings, or both. A config needs <code>files</code> at root or in a group or conditional group, or <code>settings</code> with at least one entry at root, repo, group, or conditional group level.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Multi-file directory config</p>
@@ -3967,7 +3970,7 @@
 <td><code>string</code> | <code>string[]</code></td>
 <td>No</td>
 <td>-</td>
-<td>YAML only.</td>
+<td>Comment line(s) added at the top of YAML files ('# ' prefix) and .json5 files ('// ' prefix).</td>
 </tr>
 <tr>
 <td><code>schemaUrl</code></td>
@@ -4010,7 +4013,7 @@
 <li><code>content</code> — Object for JSON/YAML files, string or string[] for text files. Use @path/to/file to reference external template files (paths relative to config file). Supports ${VAR} env interpolation; use $${VAR} to output literal ${VAR}. Omit for empty file.</li>
 <li><code>mergeStrategy</code> — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actorId, actor_id). Default: replace</li>
 <li><code>createOnly</code> — Useful for files like .trivyignore or .prettierignore where you want to provide defaults but let repos customize. Default: false</li>
-<li><code>header</code> — Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files.</li>
+<li><code>header</code> — Ignored for .json and text files.</li>
 <li><code>schemaUrl</code> — URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=\<url>' at the top of YAML files. For JSON files, use $schema property in content instead.</li>
 <li><code>executable</code> — Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true.</li>
 <li><code>template</code> — When true, ${xfg:variable} placeholders are replaced with repo-specific values. Available variables: repo.name, repo.owner, repo.fullName, repo.url, repo.platform, repo.host, file.name, date, and any custom vars. Use $${xfg:...} to output literal ${xfg:...}. Default: false</li>
@@ -4141,7 +4144,7 @@
 <td><code>string</code></td>
 <td>No</td>
 <td>-</td>
-<td>Reason for bypassing policies (Azure DevOps only, required when merge=force)</td>
+<td>Reason for bypassing policies (Azure DevOps only, used when merge=force).</td>
 </tr>
 <tr>
 <td><code>labels</code></td>
@@ -4170,6 +4173,7 @@
 <li><code>merge</code> — Default: auto</li>
 <li><code>mergeStrategy</code> — Default: squash</li>
 <li><code>deleteBranch</code> — Default: true</li>
+<li><code>bypassReason</code> — Default: Automated config sync via xfg</li>
 <li><code>labels</code> — Labels must exist on the target repository.</li>
 <li><code>branch</code> — Per-repo overrides group, group overrides global. CLI --branch flag overrides all.</li>
 <li><code>ai</code> — Falls back to the default message on any AI error. Disabled by --no-ai.</li>
@@ -4395,7 +4399,7 @@
 <td><code>string</code> | <code>string[]</code></td>
 <td>No</td>
 <td>-</td>
-<td>YAML only.</td>
+<td>Override the root-level header for this specific repo.</td>
 </tr>
 <tr>
 <td><code>schemaUrl</code></td>
@@ -4437,7 +4441,7 @@
 <ul>
 <li><code>content</code> — Use @path/to/file to reference external template files. Must match the content type of the root file definition.</li>
 <li><code>override</code> — Default: false</li>
-<li><code>header</code> — Override the root-level header for this specific repo. Ignored for JSON and text files.</li>
+<li><code>header</code> — Applies to YAML and .json5 files, ignored for .json and text files.</li>
 <li><code>schemaUrl</code> — Override the root-level schemaUrl for this specific repo. For JSON files, use $schema property in content instead.</li>
 <li><code>executable</code> — Set to true to mark executable, or false to disable auto-executable behavior for .sh files.</li>
 <li><code>template</code> — Set to true to enable xfg templating, or false to disable it.</li>
@@ -6040,16 +6044,17 @@
 
 <p>See <a href="../../configuration/environments/">Environments</a>.</p>
 <h2 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h2>
-<p>The schema validates:</p>
+<p>The JSON Schema describes property types and enum values for editors. The schema root has no <code>required</code> list, so editors don't flag a missing <code>id</code> or <code>repos</code>. xfg's own validator runs when a config loads and enforces:</p>
 <ul>
-<li>Required fields (<code>id</code>, <code>repos</code>, at least one of <code>files</code>, <code>settings</code>, or <code>groups</code>)</li>
+<li>Required fields (<code>id</code>, <code>repos</code>)</li>
 <li>Command-specific requirements (see below)</li>
 <li>Enum values (<code>mergeStrategy</code>, <code>merge</code>, etc.)</li>
 <li>Content types (object for JSON/YAML, string/array for text files)</li>
-<li>File path security (no path traversal in file references)</li>
+<li>File path security (no path traversal in file names or <code>@path</code> file references)</li>
 </ul>
 <h3 id="config-requirements">Config Requirements<a class="headerlink" href="#config-requirements" title="Permanent link">&para;</a></h3>
-<p>The <code>xfg sync</code> command accepts configs with files, settings, or both. At least one of <code>files</code>, <code>settings</code>, <code>groups</code>, or <code>conditionalGroups</code> must be present.</p>
+<p>The <code>xfg sync</code> command accepts configs with files, settings, or both. A config needs <code>files</code> at root or in a group or conditional group, or <code>settings</code> with at least one entry at root, repo, group, or conditional group level.</p>
+<p>Settings that hold only <code>secrets</code> don't count, because <code>xfg sync</code> never processes secrets (use <code>xfg secrets sync</code>). <code>prOptions</code> alone at root or in <code>groups</code> is not enough, while a conditional group that sets only <code>prOptions</code> passes this check.</p>
 
 
 

@@ -1932,6 +1932,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#feature-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#platform-specific-details" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2658,6 +2669,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#feature-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature Support
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#platform-specific-details" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2689,7 +2711,8 @@
 
 
 <h1 id="platform-support">Platform Support<a class="headerlink" href="#platform-support" title="Permanent link">&para;</a></h1>
-<p>xfg supports GitHub, Azure DevOps, and GitLab (including self-hosted instances). The platform is auto-detected from the git URL.</p>
+<p>xfg supports GitHub, Azure DevOps, and GitLab (including self-hosted instances). The platform is detected from the git URL: <code>github.com</code>, <code>dev.azure.com</code> (and <code>ssh.dev.azure.com</code>) and <code>gitlab.com</code> are recognized directly, and hosts listed in <a href="github/#github-enterprise-server"><code>githubHosts</code></a> are GitHub. Any other host with an <code>owner/repo</code> path is treated as a self-hosted GitLab instance, so a
+GitHub Enterprise Server host missing from <code>githubHosts</code> is handled as GitLab.</p>
 <h2 id="supported-platforms">Supported Platforms<a class="headerlink" href="#supported-platforms" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2721,6 +2744,38 @@
 </tr>
 </tbody>
 </table>
+<h2 id="feature-support">Feature Support<a class="headerlink" href="#feature-support" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>GitHub</th>
+<th>Azure DevOps</th>
+<th>GitLab</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File sync</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and <code>secrets sync</code></td>
+<td>Yes</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Repo lifecycle (create, fork, migrate)</td>
+<td>Yes</td>
+<td>Migration source only</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>Settings and secrets are skipped for repositories that are not on GitHub. See <a href="../configuration/lifecycle/#supported-platforms">Repo Lifecycle</a> for lifecycle operations per platform.</p>
 <h2 id="platform-specific-details">Platform-Specific Details<a class="headerlink" href="#platform-specific-details" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="github/">GitHub</a> - SSH and HTTPS URL formats</li>
