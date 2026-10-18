@@ -1,5 +1,11 @@
 # Installation
 
+## Requirements
+
+- Node.js 22 or later
+- `git`
+- The CLI for each platform you target (`gh`, `az`, `glab`). See [Prerequisites](prerequisites.md).
+
 ## From npm
 
 ```bash
@@ -10,10 +16,12 @@ npm install -g @aspruyt/xfg
 
 ```bash
 git clone https://github.com/anthony-spruyt/xfg.git
-cd xfg
+cd xfg/packages/xfg
 npm install
 npm run build
 ```
+
+Run the build with `node dist/cli.js sync --config ./config.yaml`.
 
 ## Using Dev Container
 

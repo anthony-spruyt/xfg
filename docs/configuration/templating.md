@@ -7,6 +7,7 @@ Use `${xfg:variable}` syntax to inject repo-specific values into file content. T
 Set `template: true` on a file to enable variable substitution:
 
 ```yaml
+id: templating
 files:
   README.md:
     template: true
@@ -47,6 +48,7 @@ The `repo.fullName` variable adapts to each platform's conventions:
 Define custom variables with the `vars` property:
 
 ```yaml
+id: templating
 files:
   deploy.yaml:
     template: true
@@ -63,11 +65,14 @@ repos:
   - git: git@github.com:my-org/api.git
 ```
 
+A custom variable replaces the built-in variable of the same name. With `vars: { "repo.name": "Platform API" }`, `${xfg:repo.name}` resolves to `Platform API` in that file.
+
 ### Per-Repo Variable Overrides
 
 Override or add variables for specific repositories:
 
 ```yaml
+id: templating
 files:
   deploy.yaml:
     template: true
@@ -95,6 +100,7 @@ File `vars` from the root, groups, conditional groups and the repo merge per key
 Use `$$` to output literal `${xfg:...}` in the file:
 
 ```yaml
+id: templating
 files:
   README.md:
     template: true
@@ -122,6 +128,7 @@ Use `${xfg:repo.name}` to reference the repo name.
 ## Complete Example
 
 ````yaml
+id: templating
 files:
   # README template with dynamic repo info
   README.md:
@@ -179,6 +186,7 @@ repos:
 xfg templates and environment variables can be used together. Environment variable interpolation (`${VAR}`) runs during config loading, while xfg templating (`${xfg:...}`) runs during file processing:
 
 ```yaml
+id: templating
 files:
   config.yaml:
     template: true

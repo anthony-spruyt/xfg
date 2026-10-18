@@ -15,9 +15,8 @@ files:
   .prettierignore:
     createOnly: true
     content:
-      patterns:
-        - "dist/"
-        - "node_modules/"
+      - "dist/"
+      - "node_modules/"
 
   eslint.config.json:
     content: # Always synced (no createOnly)

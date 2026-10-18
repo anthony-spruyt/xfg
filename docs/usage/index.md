@@ -1,11 +1,11 @@
 # Usage
 
-xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, and labels.
+xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments. The `secrets sync` command manages secrets. See the [CLI Options Reference](../reference/cli-options.md#secrets-sync-command).
 
 ## Basic Usage
 
 ```bash
-# Sync files, settings, rulesets, and labels
+# Sync files and settings
 xfg sync --config ./config.yaml
 
 # Dry run — preview changes without applying
@@ -24,18 +24,17 @@ The `--dry-run` flag lets you preview changes without actually making them.
 
 **For settings:**
 
-- Rulesets are compared but not created/updated/deleted
-- Labels are compared but not created/updated/deleted
-- Repository settings are compared but not applied
+- Rulesets and labels are compared but not created/updated/deleted
+- Repository settings, code scanning, variables, collaborators and environments are compared but not applied
 - Shows planned changes (create, update, delete, unchanged)
 
 ```bash
 xfg sync --config ./config.yaml --dry-run
 ```
 
-### Content Diffs for JSON/YAML Files
+### Content Diffs
 
-For structured data files (`.json`, `.json5`, `.yaml`, `.yml`), xfg shows unified content diffs in both CLI output and GitHub Step Summary. This applies to all modes (dry-run and apply) and all actions (create, update, delete).
+For every text file, xfg shows unified content diffs in both CLI output and GitHub Step Summary. This applies to all modes (dry-run and apply) and all actions (create, update, delete).
 
 ```text
 ~ org/repo
@@ -51,7 +50,7 @@ For structured data files (`.json`, `.json5`, `.yaml`, `.yml`), xfg shows unifie
       +other: setting
 ```
 
-Non-structured files (`.sh`, `.md`, `.txt`, etc.) show only the file path without content diffs.
+Files with a binary extension (images, fonts, archives, etc.) show only the file path without content diffs.
 
 ### Rendering Planned Files
 
@@ -83,44 +82,62 @@ A repo appears in `render.json` even when nothing would change, so an empty entr
 See [CLI Options Reference](../reference/cli-options.md) for the full option list, aliases, and defaults.
 
 !!! note
-    Settings management (rulesets, labels, repo settings) only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
+    Settings management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
 
 ## Console Output
 
 ```text
-[1/3] Processing example-org/repo1...
-  ✓ Cloned repository
-  ✓ Closed existing PR and deleted branch
-  ✓ Created branch chore/sync-config
-  ✓ Wrote .eslintrc.json
-  ✓ Wrote .prettierrc.yaml
-  ✓ Committed changes
-  ✓ Pushed to remote
-  ✓ Created PR: https://github.com/example-org/repo1/pull/42
+Loading config from: /work/config.yaml
+Found 3 repositories to process
+Target files: .eslintrc.json, .prettierrc.yaml
+Branch: chore/sync-config
 
-[2/3] Processing example-org/repo2...
-  ✓ Cloned repository
-  ✓ Created branch chore/sync-config
-  ✓ Wrote .eslintrc.json
-  ✓ Wrote .prettierrc.yaml
-  ⊘ No changes detected, skipping
+[1/3] example-org/repo1: Processing...
+    Default branch: main (detected via remote HEAD)
+    Closed existing PR and deleted branch for fresh sync
+    Writing .eslintrc.json...
+    Writing .prettierrc.yaml...
+    Staging changes...
+    Committed: 8c3f1e0a5b7d94e2c6a1f0b3d8e5a7c9b2f4d610 (verified: false)
+    Creating pull request...
+    Handling merge (mode: auto)...
+    Auto-merge enabled. PR will merge when checks pass.
+[1/3] ✓ example-org/repo1: PR created successfully
+[2/3] example-org/repo2: Processing...
+    Default branch: main (detected via remote HEAD)
+    Writing .eslintrc.json...
+    Writing .prettierrc.yaml...
+[2/3] ⊘ example-org/repo2: Skipped - No changes detected
+[3/3] example-org/repo3: Processing...
+    Default branch: main (detected via remote HEAD)
+    Writing .eslintrc.json...
+    Writing .prettierrc.yaml...
+    Staging changes...
+    Committed: 1d9a47c2e8f05b36a4c7d1e9f2b8a0c5d3e6f741 (verified: false)
+    Creating pull request...
+    Handling merge (mode: auto)...
+    Auto-merge enabled. PR will merge when checks pass.
+[3/3] ✓ example-org/repo3: PR created successfully
 
-[3/3] Processing example-org/repo3...
-  ✓ Cloned repository
-  ✓ Created branch chore/sync-config
-  ✓ Wrote .eslintrc.json
-  ✓ Wrote .prettierrc.yaml
-  ✓ Committed changes
-  ✓ Pushed to remote
-  ✓ Created PR: https://github.com/example-org/repo3/pull/15
+~ example-org/repo1
+    ~ .eslintrc.json
+    + .prettierrc.yaml
+    ~ .xfg.json
 
-Summary: 2 succeeded, 1 skipped, 0 failed
+~ example-org/repo3
+    + .eslintrc.json
+    + .prettierrc.yaml
+    + .xfg.json
+
+Plan: 6 files (4 to create, 2 to update)
 ```
+
+The sample is abridged: the report also prints each file's diff lines. `.xfg.json` appears when a file has `deleteOrphaned: true`.
 
 ## Created PRs
 
 The tool creates PRs with:
 
-- **Title:** `chore: sync config files` (or lists files if ≤3)
-- **Branch:** `chore/sync-config` (or custom `--branch`)
-- **Body:** Describes the sync action and lists changed files
+- **Title:** `chore: sync <file>` for one file, `chore: sync <file>, <file>` for two or three, and `chore: sync N config files` for four or more. The `.xfg.json` manifest counts as a file
+- **Branch:** `chore/sync-<file>` when the config has one unique file, otherwise `chore/sync-config` (or custom `--branch`)
+- **Body:** Describes the sync action and lists the created, updated and deleted files

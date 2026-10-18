@@ -43,6 +43,7 @@ Personal repos have no permission levels. Collaborators always get write access,
 Users from root, groups, and the repo are **added together**. Names are matched without caring about case.
 
 ```yaml
+id: collaborators
 settings:
   collaborators:
     users:

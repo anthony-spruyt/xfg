@@ -40,6 +40,8 @@ xfg secrets sync -c config.yaml
 
 `xfg sync` creates and updates environments and branch policies but never touches secrets, so it never needs secret values. Only `xfg secrets sync` writes environment secrets. Run `xfg sync` first: secrets can't be written to an environment that doesn't exist yet.
 
+A workflow that `xfg sync` pushes in the same run that creates its environment can start before `xfg secrets sync` writes the secrets. It fails until you re-run it after `xfg secrets sync` has written the secrets.
+
 ## Deployment Branch Policy
 
 `deploymentBranchPolicy` controls which refs can deploy to the environment. Use one of these:
@@ -106,6 +108,7 @@ Environments merge by name (ignoring case) through root, groups, conditional gro
 - Set an environment to `false` to drop it, or `inherit: false` to drop every inherited environment. `inherit` is not allowed at root.
 
 ```yaml
+id: environments
 settings:
   environments:
     release:
@@ -178,31 +181,34 @@ Safety:
 ## Dry Run Output
 
 ```text
-your-org/your-repo - Environments:
-    + environment "release"
-        deployment branches: custom
-        + branch "main"
-        + tag "v*.*.*"
-    ~ environment "staging"
-        deployment branches: all → protected
-    ~ environment "production"
-        - branch "hotfix/*"
-    - environment "preview"
-  Plan: 4 environments (1 to create, 2 to update, 1 to delete)
+    your-org/your-repo - Environments:
+        + environment "release"
+            deployment branches: custom
+            + branch "main"
+            + tag "v*.*.*"
+        ~ environment "staging"
+            deployment branches: all → protected
+        ~ environment "production"
+            - branch "hotfix/*"
+        - environment "preview"
+      Plan: 4 environments (1 to create, 2 to update, 1 to delete)
 ```
 
 `xfg secrets sync --dry-run` lists environment secrets next to repo secrets:
 
 ```text
-        - secret "OLD_TOKEN" (environment "release")
+[1/1] ✓ your-org/your-repo: Secrets: [DRY RUN] 1 created, 1 updated, 1 deleted
         + secret "NPM_TOKEN" (environment "release")
         ~ secret "SIGNING_KEY" (environment "release", update, value write-only)
+        - secret "OLD_TOKEN" (environment "release")
+      Plan: 3 secrets (1 to create, 1 to update, 1 to delete)
 ```
 
 ## Permissions
 
-- Environments and branch policies, including deleting them: **Administration: Read and write**.
-- Environment secrets: **Secrets: Read and write**.
+- Creating, updating and deleting environments and branch policies: **Administration: Read and write**.
+- Listing environments and branch policies: **Actions: Read**. `xfg secrets sync` lists environments too.
+- Environment secrets: **Environments: Read and write**.
 
 See [GitHub App](../platforms/github-app.md).
 

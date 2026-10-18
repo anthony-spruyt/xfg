@@ -11,8 +11,9 @@
 
 ```bash
 az login
-az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG project=YOUR_PROJECT
 ```
+
+xfg passes `--org` to every `az` command, and `--project` to those that address a repository, so no `az devops configure` defaults are needed.
 
 ## Required Permissions
 
@@ -28,11 +29,19 @@ Azure DevOps calls it "auto-complete" instead of auto-merge. When enabled, the P
 | `auto`     | Enable auto-complete (`az repos pr update --auto-complete true`) |
 | `force`    | Bypass policies (`--bypass-policy true`)                         |
 
+xfg passes a strategy flag to Azure DevOps only for `mergeStrategy: squash` (`--squash true`). `merge` and `rebase` add no flag, so `rebase` completes like `merge` (no squash).
+
 ## Bypass Reason
 
-When using `merge: force`, Azure DevOps requires a bypass reason:
+When using `merge: force`, xfg records a bypass reason with Azure DevOps. It defaults to `Automated config sync via xfg`; set `bypassReason` to override it:
 
 ```yaml
+id: my-org-config
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+
 repos:
   - git: git@ssh.dev.azure.com:v3/org/project/repo
     prOptions:
@@ -52,6 +61,12 @@ xfg uses the `az repos pr` CLI commands to:
 With `merge: direct`, xfg skips PR creation entirely and pushes directly to the default branch:
 
 ```yaml
+id: my-org-config
+files:
+  .prettierrc.json:
+    content:
+      semi: false
+
 prOptions:
   merge: direct
 
@@ -65,3 +80,9 @@ This is useful for repos without branch policies or when PR review isn't require
 
 - `direct`: Repo has no branch policies, or you want to skip PR workflow entirely
 - `force`: Repo has branch policies, but you have permissions to bypass them (creates a PR and completes with `--bypass-policy`)
+
+## Supported Features
+
+xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and `xfg secrets sync` apply to GitHub repositories only; they are skipped for Azure DevOps repositories.
+
+Repo lifecycle supports only GitHub as a target. An Azure DevOps repository that sets `upstream` or `source` fails: xfg logs the error, skips that repository's sync, syncs the remaining repositories, and exits non-zero at the end. An Azure DevOps repository can be the `source` of a migration into GitHub. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).

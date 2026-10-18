@@ -37,6 +37,11 @@ Before processing each repo, xfg checks if the target repository exists:
 Fork an existing repo into your organization or personal account:
 
 ```yaml
+id: lifecycle
+files:
+  .prettierrc.json:
+    content: { semi: false }
+
 repos:
   # Fork into an organization
   - git: git@github.com:my-org/forked-tool.git
@@ -61,6 +66,11 @@ If the repo already exists, the `upstream` field is ignored.
     When using a `git` array with `upstream`, the same upstream is applied to all expanded repos:
 
     ```yaml
+    id: lifecycle
+    files:
+      .prettierrc.json:
+        content: { semi: false }
+
     repos:
       - git:
           - git@github.com:my-org/fork-a.git
@@ -84,6 +94,11 @@ If the repo already exists, the `upstream` field is ignored.
 Migrate a repo from another platform (e.g., Azure DevOps to GitHub):
 
 ```yaml
+id: lifecycle
+files:
+  .prettierrc.json:
+    content: { semi: false }
+
 repos:
   - git: git@github.com:my-org/migrated-app.git
     source: https://dev.azure.com/myorg/myproject/_git/legacy-app
@@ -104,6 +119,7 @@ If the repo already exists, the `source` field is ignored.
 When creating a new repo (via create, fork, or migrate), xfg applies the repo's merged `settings.repo` (root, groups, and per-repo settings combined). A per-repo `repo: false` skips them. Repos are created as **private** by default. Set `visibility: public` explicitly if needed.
 
 ```yaml
+id: lifecycle
 settings:
   repo:
     description: "My new repository"
@@ -130,15 +146,16 @@ The following settings apply during repo creation:
 
 When `settings.repo.defaultBranch` is set, xfg renames the default branch during lifecycle operations:
 
-| Operation    | Behaviour                                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| **Create**   | After creating the repo, detects the actual branch name and renames it via the GitHub API    |
-| **Migrate**  | Before pushing the mirror clone, renames the source HEAD branch in git                       |
-| **Fork**     | Ignored — forked repos inherit the upstream's branch structure                               |
-| **Settings** | Existing behaviour — updates the GitHub API pointer (branch must already exist by that name) |
+| Operation    | Behaviour                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| **Create**   | After creating the repo, detects the actual branch name and renames it via the GitHub API |
+| **Migrate**  | Before pushing the mirror clone, renames the source HEAD branch in git                    |
+| **Fork**     | Ignored — forked repos inherit the upstream's branch structure                            |
+| **Settings** | Updates the GitHub API pointer (the branch must exist)                                    |
 
 ```yaml
 # Migrate ADO repo with 'master', rename to 'main' on GitHub
+id: lifecycle
 repos:
   - git: git@github.com:my-org/migrated-app.git
     source: https://dev.azure.com/myorg/myproject/_git/legacy-app
@@ -161,9 +178,13 @@ In dry-run mode (`--dry-run`), lifecycle operations are reported but not execute
 
 ```text
 + CREATE my-org/new-repo
-+ FORK github.com/opensource/tool -> my-org/forked-tool
-+ MIGRATE dev.azure.com/myorg/legacy/old-api -> my-org/migrated-app
++ FORK git@github.com:opensource/cool-tool.git -> my-org/forked-tool
++ MIGRATE https://dev.azure.com/myorg/myproject/_git/legacy-app -> my-org/migrated-app
+
+Plan: 3 repos (1 to create, 1 to fork, 1 to migrate)
 ```
+
+`FORK` and `MIGRATE` lines show the `upstream` or `source` URL exactly as written in the config.
 
 ## Supported Platforms
 
