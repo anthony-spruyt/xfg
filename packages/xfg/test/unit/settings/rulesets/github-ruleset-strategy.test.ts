@@ -22,7 +22,6 @@ interface CallRecord {
   options?: ExecOptions;
 }
 
-// Mock executor that records calls and returns configured responses
 class MockExecutor implements ICommandExecutor {
   calls: CallRecord[] = [];
   responses: Map<string, string> = new Map();
@@ -36,7 +35,6 @@ class MockExecutor implements ICommandExecutor {
   ): Promise<string> {
     this.calls.push({ executable, args, cwd, options });
 
-    // Find matching response by checking if any arg includes the pattern
     for (const [pattern, response] of this.responses) {
       if (args.some((a) => a.includes(pattern))) {
         return response;
@@ -71,6 +69,54 @@ const mockAzureRepo: AzureDevOpsRepoInfo = {
   repo: "test-repo",
   gitUrl: "git@ssh.dev.azure.com:v3/test-org/test-project/test-repo",
 };
+
+function endpointOf(args: string[]): string {
+  const endpoint = args.find((a) => a.startsWith("/repos/"));
+  assert.ok(endpoint, "Expected a /repos/ endpoint argument");
+  return endpoint;
+}
+
+// Mirrors gh api: --paginate merges every page into one array, otherwise only page 1 comes back
+class FakeRulesetsApi implements ICommandExecutor {
+  constructor(
+    private readonly ownRulesets: GitHubRuleset[],
+    private readonly inheritedRulesets: GitHubRuleset[]
+  ) {}
+
+  async exec(
+    _executable: string,
+    args: string[],
+    _cwd: string,
+    _options?: ExecOptions
+  ): Promise<string> {
+    const params = new URL(endpointOf(args), "https://api.github.com")
+      .searchParams;
+    const visible =
+      params.get("includes_parents") === "false"
+        ? this.ownRulesets
+        : [...this.inheritedRulesets, ...this.ownRulesets];
+
+    if (args.includes("--paginate")) {
+      return JSON.stringify(visible);
+    }
+    const perPage = Number(params.get("per_page") ?? 30);
+    return `HTTP/2.0 200 OK\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(visible.slice(0, perPage))}`;
+  }
+}
+
+function makeRulesets(
+  count: number,
+  firstId: number,
+  sourceType: "Repository" | "Organization"
+): GitHubRuleset[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: firstId + i,
+    name: `${sourceType.toLowerCase()}-ruleset-${firstId + i}`,
+    target: "branch",
+    enforcement: "active",
+    source_type: sourceType,
+  }));
+}
 
 describe("GitHubRulesetStrategy", () => {
   let mockExecutor: MockExecutor;
@@ -112,6 +158,47 @@ describe("GitHubRulesetStrategy", () => {
         mockExecutor.calls[0].args.some((a) =>
           a.includes("/repos/test-org/test-repo/rulesets")
         )
+      );
+    });
+
+    test("requests only the repository's own rulesets", async () => {
+      mockExecutor.setResponse("/rulesets", "[]");
+
+      await strategy.list(mockGitHubRepo);
+
+      const params = new URL(
+        endpointOf(mockExecutor.calls[0].args),
+        "https://api.github.com"
+      ).searchParams;
+      assert.equal(params.get("includes_parents"), "false");
+    });
+
+    test("paginates with 100 rulesets per page", async () => {
+      mockExecutor.setResponse("/rulesets", "[]");
+
+      await strategy.list(mockGitHubRepo);
+
+      const { args } = mockExecutor.calls[0];
+      assert.ok(args.includes("--paginate"), "Should include --paginate flag");
+      const params = new URL(endpointOf(args), "https://api.github.com")
+        .searchParams;
+      assert.equal(params.get("per_page"), "100");
+    });
+
+    test("returns the repository's own rulesets from every page", async () => {
+      const own = makeRulesets(120, 1000, "Repository");
+      const inherited = makeRulesets(2, 1, "Organization");
+      const paginatedStrategy = new GitHubRulesetStrategy(
+        new FakeRulesetsApi(own, inherited),
+        { retries: 0, cwd: "/test" }
+      );
+
+      const result = await paginatedStrategy.list(mockGitHubRepo);
+
+      assert.equal(result.length, 120);
+      assert.deepEqual(
+        result.map((r) => r.id),
+        own.map((r) => r.id)
       );
     });
 

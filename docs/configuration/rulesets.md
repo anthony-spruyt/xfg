@@ -439,7 +439,7 @@ gh api orgs/{org}/installations --jq '.installations[] | {name: .app_slug, id: .
 
 ## Orphan Deletion
 
-When `deleteOrphaned: true` is set, xfg tracks which rulesets it manages and deletes any that are removed from the config:
+When `deleteOrphaned: true` is set, xfg deletes the repository's own rulesets that are not in the config. Organization-level rulesets that apply to the repository are not touched:
 
 ```yaml
 id: my-config

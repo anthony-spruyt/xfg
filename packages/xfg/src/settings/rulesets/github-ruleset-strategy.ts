@@ -14,9 +14,6 @@ import type {
   RulesetUpdateParams,
 } from "./types.js";
 
-/**
- * Converts camelCase config ruleset to snake_case GitHub API format.
- */
 export function configToGitHub(
   name: string,
   ruleset: Ruleset
@@ -75,11 +72,6 @@ const PULL_REQUEST_DEFAULTS: PullRequestRuleDefaults = {
   allowed_merge_methods: ["merge", "squash", "rebase"],
 };
 
-/**
- * Converts a single rule from config format to GitHub API format.
- * Handles parameter name conversions (camelCase → snake_case).
- * Fills in required defaults for rule types that need them.
- */
 function convertRule(rule: RulesetRule): GitHubRule {
   const result: GitHubRule = { type: rule.type };
 
@@ -95,16 +87,12 @@ function convertRule(rule: RulesetRule): GitHubRule {
       result.parameters = converted;
     }
   } else if (rule.type === "pull_request") {
-    // If no parameters provided, use defaults
     result.parameters = { ...PULL_REQUEST_DEFAULTS };
   }
 
   return result;
 }
 
-/**
- * Converts rule parameters from camelCase to snake_case.
- */
 function convertParameters(
   params: Record<string, unknown>
 ): Record<string, unknown> {
@@ -118,12 +106,8 @@ function convertParameters(
   return converted;
 }
 
-/**
- * Converts nested values within parameters.
- */
 function convertValue(value: unknown): unknown {
   if (Array.isArray(value)) {
-    // Handle arrays of objects (e.g., requiredStatusChecks, codeScanningTools)
     return value.map((item) => {
       if (typeof item === "object" && item !== null) {
         const converted: Record<string, unknown> = {};
@@ -168,8 +152,11 @@ export class GitHubRulesetStrategy implements IRulesetStrategy {
   ): Promise<GitHubRuleset[]> {
     assertGitHubRepo(repoInfo, "GitHub Ruleset strategy");
 
-    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets`;
-    const result = await this.api.call("GET", endpoint, { options });
+    const endpoint = `/repos/${repoInfo.owner}/${repoInfo.repo}/rulesets?includes_parents=false&per_page=100`;
+    const result = await this.api.call("GET", endpoint, {
+      options,
+      paginate: true,
+    });
 
     return parseApiJson<GitHubRuleset[]>(result, "rulesets response");
   }
