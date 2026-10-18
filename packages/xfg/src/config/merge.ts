@@ -1,21 +1,9 @@
-/**
- * Deep merge utilities for JSON configuration objects.
- * Supports per-field array merge strategies via $arrayMerge + $values (+ $matchBy) directives.
- */
-
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 
-/**
- * Candidate keys for matching array items by identity rather than index.
- * Order matters — first key found across all items wins.
- */
-export const MATCH_KEY_CANDIDATES = ["type", "actor_id"] as const;
+/** Order matters: the first key present in every item of both arrays wins. */
+export const MATCH_KEY_CANDIDATES = ["type", "actorId", "actor_id"] as const;
 
-/**
- * Finds a key that uniquely identifies items in both arrays.
- * Returns the first candidate key present in every item of both arrays, or undefined.
- */
 export function findMatchKey(
   base: unknown[],
   overlay: unknown[]
@@ -37,11 +25,7 @@ export function findMatchKey(
   return undefined;
 }
 
-/**
- * Keys reserved for xfg merge directives.
- * Only these are stripped during merge — standard $-prefixed keys
- * like $schema, $id, $ref, $generated are preserved.
- */
+// Only these are stripped; other $-prefixed keys ($schema, $id, $ref) are content
 const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values", "$matchBy"]);
 
 export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
@@ -75,10 +59,6 @@ function describeValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-/**
- * Returns the directive's $matchBy key, or undefined when it has none.
- * Throws unless $matchBy is a non-empty string paired with $arrayMerge: merge.
- */
 function readMatchBy(
   directive: Record<string, unknown>,
   ctx: ErrorContext,
@@ -105,10 +85,7 @@ function isDirectiveOnly(value: Record<string, unknown>): boolean {
   return keys.length > 0 && keys.every((k) => XFG_DIRECTIVES.has(k));
 }
 
-/**
- * Validates a value's directive keys and returns its $matchBy.
- * An object of only directive keys must be a complete directive, or it would resolve to nothing.
- */
+/** An object of only directive keys must be a complete directive, or it would resolve to nothing. */
 function readDirective(
   value: unknown,
   ctx: ErrorContext,
@@ -135,7 +112,7 @@ function readDirective(
   return matchBy;
 }
 
-/** Rejects directive-only objects; mixed-key objects keep their directive keys stripped silently. */
+/** Mixed-key objects pass: their directive keys are stripped silently. */
 function assertNotDirective(
   value: unknown,
   ctx: ErrorContext,
@@ -266,10 +243,6 @@ const arrayMergeStrategies: Map<ArrayMergeStrategy, ArrayMergeHandler> =
     ],
   ]);
 
-/**
- * Checks if a value is an unresolved $arrayMerge directive object
- * (only directive keys, with a valid strategy and array values).
- */
 function isUnresolvedDirective(
   value: unknown
 ): value is Record<string, unknown> & { $values: unknown[] } {
@@ -301,13 +274,6 @@ function mergeArrays(
   return overlay;
 }
 
-/**
- * Deep merge two objects with configurable array handling.
- *
- * @param base - The base object
- * @param overlay - The overlay object (values override base)
- * @param ctx - Merge context with array strategies
- */
 export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,
@@ -402,10 +368,7 @@ function isArrayMergeStrategy(value: unknown): value is ArrayMergeStrategy {
   );
 }
 
-/**
- * Applies an overlay directive to the base array.
- * Returns undefined when it doesn't apply, so the caller falls back to a plain merge.
- */
+/** Returns undefined when the directive doesn't apply, so the caller falls back to a plain merge. */
 function applyArrayDirective(
   base: unknown,
   directive: Record<string, unknown>,
@@ -436,15 +399,9 @@ function applyArrayDirective(
 }
 
 /**
- * Strip xfg merge directive keys ($arrayMerge, $values, $matchBy) from an object.
- * Works recursively on nested objects and arrays.
- * Standard $-prefixed keys ($schema, $id, $ref, etc.) are preserved.
- *
  * A valid directive-only object that is the value of a key had no base array
  * to merge with, and is replaced with its $values array. A directive-only object
  * that is invalid, an array item, or the root is a ValidationError.
- *
- * @param location - Prefixes errors, e.g. the file name being stripped
  */
 export function stripMergeDirectives(
   obj: Record<string, unknown>,
@@ -507,10 +464,6 @@ export function createMergeContext(
     : { defaultArrayStrategy: defaultStrategy, location };
 }
 
-// =============================================================================
-// Text Content Utilities
-// =============================================================================
-
 export function isTextContent(content: unknown): content is string | string[] {
   return (
     typeof content === "string" ||
@@ -519,12 +472,6 @@ export function isTextContent(content: unknown): content is string | string[] {
   );
 }
 
-/**
- * Merge two text content values.
- * For strings: overlay replaces base entirely.
- * For string arrays: applies merge strategy.
- * For mixed types: overlay replaces base.
- */
 export function mergeTextContent(
   base: string | string[],
   overlay: string | string[],
