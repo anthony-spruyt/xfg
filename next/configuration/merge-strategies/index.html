@@ -2979,7 +2979,7 @@
 </tr>
 <tr>
 <td><code>merge</code></td>
-<td>Deep-merges array items matched by identity key (<code>type</code>, <code>actor_id</code>); unmatched items appended</td>
+<td>Deep-merges array items matched by identity key (<code>type</code>, <code>actorId</code>, <code>actor_id</code>); unmatched items appended</td>
 </tr>
 </tbody>
 </table>
@@ -3090,13 +3090,14 @@
 <p>The <code>merge</code> strategy matches array items by an identity key and deep-merges matched pairs. This is useful when multiple conditional groups need to modify properties of the same item rather than duplicating it.</p>
 <p><strong>How it works:</strong></p>
 <ol>
-<li>xfg uses the <a href="#match-by-a-chosen-key"><code>$matchBy</code></a> key if the directive sets one; otherwise it auto-detects the identity key by checking candidates in order: <code>type</code>, <code>actor_id</code></li>
+<li>xfg uses the <a href="#match-by-a-chosen-key"><code>$matchBy</code></a> key if the directive sets one; otherwise it auto-detects the identity key by checking candidates in order: <code>type</code>, <code>actorId</code>, <code>actor_id</code></li>
 <li>The first candidate key present in every item of both arrays wins</li>
 <li>For each overlay item: if a base item shares the same key value, the two are deep-merged; otherwise the overlay item is appended</li>
 <li>Unmatched base items are preserved in their original position</li>
 <li>Nested <code>$arrayMerge</code> directives inside matched items are honored (deep-merge recurses)</li>
 </ol>
-<p><strong>When no match key is found</strong> (e.g. primitive arrays or objects without <code>type</code>/<code>actor_id</code>), the strategy falls back to <code>append</code> behavior.</p>
+<p>Matching uses a single key, so two bypass actors with the same <code>actorId</code> but different <code>actorType</code> are treated as one. Use <code>append</code> to keep both.</p>
+<p><strong>When no match key is found</strong> (e.g. primitive arrays or objects without <code>type</code>/<code>actorId</code>/<code>actor_id</code>), the strategy falls back to <code>append</code> behavior.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Example: merging required_status_checks across conditional groups</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">settings</span><span class="p">:</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">rulesets</span><span class="p">:</span>
@@ -3128,7 +3129,7 @@
 </span></code></pre></div>
 <p>Result for repos with <code>has-mergify</code>: the <code>required_status_checks</code> rule has both <code>ci / build</code> and <code>mergify / queue</code> checks — no duplication of the rule itself, and the nested <code>$arrayMerge: append</code> adds the check inside the matched item.</p>
 <h3 id="match-by-a-chosen-key">Match by a Chosen Key<a class="headerlink" href="#match-by-a-chosen-key" title="Permanent link">&para;</a></h3>
-<p>For lists keyed by anything other than <code>type</code> or <code>actor_id</code>, name the key with <code>$matchBy</code>. Mergify's <code>queue_rules</code>, for example, are keyed by <code>name</code>:</p>
+<p>For lists keyed by anything other than <code>type</code>, <code>actorId</code> or <code>actor_id</code>, name the key with <code>$matchBy</code>. Mergify's <code>queue_rules</code>, for example, are keyed by <code>name</code>:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">files</span><span class="p">:</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">.mergify.yml</span><span class="p">:</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
@@ -3164,7 +3165,7 @@
 <li>A <code>$matchBy</code> value that is not a string, number, boolean or null</li>
 <li>Two items in the same array with the same <code>$matchBy</code> value</li>
 </ul>
-<p>Without <code>$matchBy</code>, <code>merge</code> auto-detects <code>type</code> or <code>actor_id</code> as before. <code>name</code> is deliberately not auto-detected: many lists have <code>name</code> fields (workflow steps, for example), and matching them automatically would silently change existing merges.</p>
+<p>Without <code>$matchBy</code>, <code>merge</code> auto-detects <code>type</code>, <code>actorId</code> or <code>actor_id</code>. <code>name</code> is deliberately not auto-detected: many lists have <code>name</code> fields (workflow steps, for example), and matching them automatically would silently change existing merges.</p>
 <h2 id="text-file-merge-strategies">Text File Merge Strategies<a class="headerlink" href="#text-file-merge-strategies" title="Permanent link">&para;</a></h2>
 <p>For text files with lines array content, merge strategies work the same way:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">files</span><span class="p">:</span>
