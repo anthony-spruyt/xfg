@@ -94,7 +94,7 @@ Configuration for a single file to sync
 | `deleteOrphaned` | `boolean`                                     | No       | `false`   | Track this file for orphan deletion.                                           |
 
 - `content` — Object for JSON/YAML files, string or string[] for text files. Use @path/to/file to reference external template files (paths relative to config file). Supports ${VAR} env interpolation; use $${VAR} to output literal ${VAR}. Omit for empty file.
-- `mergeStrategy` — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace
+- `mergeStrategy` — 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actorId, actor_id). Default: replace
 - `createOnly` — Useful for files like .trivyignore or .prettierignore where you want to provide defaults but let repos customize. Default: false
 - `header` — Comment line(s) added at the top of YAML files. Each line gets a '# ' prefix. Ignored for JSON and text files.
 - `schemaUrl` — URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=\<url>' at the top of YAML files. For JSON files, use $schema property in content instead.
@@ -415,10 +415,10 @@ GitHub repository settings for features, merge options, and security
 
 Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.
 
-| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                    |
-| ------------- | --------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id) |
-| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                            |
+| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                             |
+| ------------- | --------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id) |
+| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                                     |
 
 <!-- xfg:generated:end -->
 
