@@ -29,7 +29,7 @@ Azure DevOps calls it "auto-complete" instead of auto-merge. When enabled, the P
 | `auto`     | Enable auto-complete (`az repos pr update --auto-complete true`) |
 | `force`    | Bypass policies (`--bypass-policy true`)                         |
 
-xfg passes a strategy flag to Azure DevOps only for `mergeStrategy: squash` (`--squash true`). `merge` and `rebase` add no flag, so `rebase` has no effect.
+xfg passes a strategy flag to Azure DevOps only for `mergeStrategy: squash` (`--squash true`). `merge` and `rebase` add no flag, so `rebase` completes like `merge` (no squash).
 
 ## Bypass Reason
 
@@ -83,5 +83,6 @@ This is useful for repos without branch policies or when PR review isn't require
 
 ## Supported Features
 
-xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments), `xfg secrets sync` and repo lifecycle apply to GitHub repositories only; they are skipped for Azure DevOps repositories. An Azure DevOps repository can be the `source` of a migration into GitHub. See
-[Supported Platforms](../configuration/lifecycle.md#supported-platforms).
+xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and `xfg secrets sync` apply to GitHub repositories only; they are skipped for Azure DevOps repositories.
+
+Repo lifecycle supports only GitHub as a target: an Azure DevOps repository that sets `upstream` or `source` fails the run. An Azure DevOps repository can be the `source` of a migration into GitHub. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).

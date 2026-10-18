@@ -31,6 +31,18 @@ Groups add intermediate layers between root and per-repo overrides. When a repo 
 Add or override specific fields for certain repos:
 
 ```yaml
+id: inheritance
+files:
+  service.config.json:
+    content:
+      version: "2.0"
+      logging:
+        level: info
+        format: json
+      features:
+        - health-check
+        - metrics
+
 repos:
   - git: git@github.com:org/api-gateway.git
     files:
@@ -60,6 +72,18 @@ The result is a deep merge of base + overlay:
 Use `override: true` to completely replace the base content:
 
 ```yaml
+id: inheritance
+files:
+  service.config.json:
+    content:
+      version: "2.0"
+      logging:
+        level: info
+        format: json
+      features:
+        - health-check
+        - metrics
+
 repos:
   - git: git@github.com:org/legacy-api.git
     files:
@@ -84,6 +108,7 @@ The base content is ignored entirely, only the override content is used.
 Set a file to `false` to exclude it from a specific repo:
 
 ```yaml
+id: inheritance
 files:
   .eslintrc.json:
     content:
@@ -103,6 +128,7 @@ repos:
 Use `inherit: false` to skip all root-level files for a specific repo. You can optionally add repo-specific files:
 
 ```yaml
+id: inheritance
 files:
   .eslintrc.json:
     content:
@@ -138,6 +164,7 @@ When `inherit: false`:
 ## Example: Team-Specific Configurations
 
 ```yaml
+id: inheritance
 files:
   service.config.json:
     content:

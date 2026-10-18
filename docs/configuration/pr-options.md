@@ -10,7 +10,7 @@ Configure how PRs are handled after creation.
 | `mergeStrategy` | How to merge: `merge`, `squash`, `rebase`                                                                      | `squash` |
 | `deleteBranch`  | Delete source branch after merge                                                                               | `true`   |
 | `bypassReason`  | Reason for bypassing policies (Azure DevOps only, used by `force`). If unset: `Automated config sync via xfg`  | -        |
-| `labels`        | Labels to apply to created PRs (GitHub only, more platforms coming)                                            | -        |
+| `labels`        | Labels to apply to created PRs (GitHub only)                                                                   | -        |
 | `branch`        | Branch name for sync PRs. Per-repo overrides group, group overrides global. CLI `--branch` flag overrides all. | -        |
 | `ai`            | [AI-generated commit messages and PR descriptions](ai-messages.md). `true` or an options object                | -        |
 
@@ -28,6 +28,7 @@ Configure how PRs are handled after creation.
 Set global defaults, then override per-repo as needed:
 
 ```yaml
+id: pr-options
 files:
   .prettierrc.json:
     content:
@@ -58,6 +59,10 @@ repos:
 Apply labels to PRs automatically:
 
 ```yaml
+id: pr-options
+files:
+  .prettierrc.json:
+    content: { semi: false }
 prOptions:
   labels: ["config-sync", "automated"]
 
@@ -76,13 +81,17 @@ repos:
       labels: []
 ```
 
-**Note:** Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. Currently supported on GitHub only.
+**Note:** Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. GitHub only.
 
 ## PR Branch Name
 
 Set a custom branch name for sync PRs:
 
 ```yaml
+id: pr-options
+files:
+  .prettierrc.json:
+    content: { semi: false }
 # Global branch name
 prOptions:
   branch: chore/sync-config
@@ -123,6 +132,10 @@ The `direct` mode pushes changes directly to the default branch without creating
 - Quick config updates where you have direct push permissions
 
 ```yaml
+id: pr-options
+files:
+  .prettierrc.json:
+    content: { semi: false }
 prOptions:
   merge: direct
 

@@ -20,7 +20,6 @@ az account show
 
 # Re-authenticate if needed
 az login
-az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG
 ```
 
 ### GitLab

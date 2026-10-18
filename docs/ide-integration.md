@@ -44,5 +44,5 @@ This enables:
   - Repo config: `git`, `files`, `groups`, `prOptions`, `settings`, `upstream`, `source`
   - Settings: `rulesets` with full ruleset configuration, `repo`, `labels`, `codeScanning`, `variables`, `secrets`, `collaborators`, `environments`, `deleteOrphaned`
 - Enum suggestions for `mergeStrategy` (`replace`, `append`, `prepend`, `merge`), `merge` mode (`manual`, `auto`, `force`, `direct`), etc.
-- Validation of field types and allowed values. The schema marks no field as required; xfg itself requires `id` and `repos` when it loads the config
+- Validation of field types and allowed values. The schema root has no `required` list, so editors don't flag a missing `id` or `repos`; xfg itself requires both when it loads the config
 - Hover documentation for each field

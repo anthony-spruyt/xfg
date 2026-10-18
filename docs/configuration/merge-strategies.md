@@ -229,6 +229,7 @@ Without `$matchBy`, `merge` auto-detects `type` or `actor_id` as before. `name` 
 For text files with lines array content, merge strategies work the same way:
 
 ```yaml
+id: merge-strategies
 files:
   .gitignore:
     mergeStrategy: append
@@ -264,6 +265,7 @@ The `$arrayMerge` directive also works in settings overrides — rulesets, bypas
 ### Appending Bypass Actors
 
 ```yaml
+id: merge-strategies
 # Root — shared across all repos
 settings:
   rulesets:
@@ -326,6 +328,7 @@ Repos with the `github-ci` group get both the `pull_request` rule and the `requi
 ## Example: Different Strategies per File
 
 ```yaml
+id: merge-strategies
 files:
   eslint.config.json:
     mergeStrategy: append # Extends will append

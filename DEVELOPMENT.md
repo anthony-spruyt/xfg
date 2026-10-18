@@ -440,13 +440,13 @@ For CONTEXT7_API_KEY and other MCP server API keys:
 
 Versions are owned by [release-please](https://github.com/googleapis/release-please). Nobody picks a bump by hand.
 
-This section is the only description of the release process. `CLAUDE.md` links here rather than restating it.
+This section is the full description of the release process. `CLAUDE.md` gives a short summary and links here.
 
 ### How a release happens
 
 1. You merge conventional-commit PRs to `main`.
 2. The `Release Please` workflow opens (or updates) a release PR labelled `autorelease: pending`. It shows the exact next version and the changelog entry.
-3. **You merge that release PR when you want a release.** That merge is the trigger.
+3. **Merging that release PR cuts the release.** It merges through Mergify once a collaborator approves it, so approve it when you want a release.
 4. Merging cuts the `vX.Y.Z` tag, moves the floating `vN` tag, publishes `@aspruyt/xfg` to npm with provenance, and publishes the GitHub Release.
 
 The release PR is opened by `repo-operator-release-bot[bot]`, the same app as every other release-please repo. Like any PR, it merges through Mergify once a collaborator approves it; Mergify never approves it. The rules live in the synced `.mergify.yml`; change them in `repo-operator`, not here.

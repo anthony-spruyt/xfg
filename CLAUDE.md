@@ -36,7 +36,7 @@ npm run docs:generate  # Regenerate generated doc tables
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
-   - `npm run test:integration:github-<area>` for the area you modify: `rulesets`, `labels`, `repo-settings`, `code-scanning`, `variables`, `collaborators`, `secrets`, `lifecycle`, `lifecycle-app`, `ai`, `app`
+   - `npm run test:integration:github-<area>` for the area you change (see `package.json`)
 
 ## Release
 
@@ -76,7 +76,7 @@ Paths are relative to `packages/xfg/`.
 | `src/settings/base-processor.ts`          | Shared guards (`withGitHubGuards`), result builders, ISettingsProcessor                                         |
 | `src/settings/rulesets/processor.ts`      | Ruleset sync: diff remote vs config, create/update/delete via GitHub API                                        |
 | `src/lifecycle/repo-lifecycle-manager.ts` | Creates, forks or migrates a missing repo (mirror push: `github-lifecycle-provider.ts`)                         |
-| `src/vcs/authenticated-git-ops.ts`        | Wraps GitOps: clones with a token in the URL, later commands reuse that remote                                  |
+| `src/vcs/authenticated-git-ops.ts`        | Wraps GitOps with token auth for network commands                                                               |
 | `src/shared/xfg-template.ts`              | `${xfg:repo.name}` templating for repo-specific content                                                         |
 | `src/sync/manifest.ts`                    | Tracks managed files for orphan deletion (`deleteOrphaned`)                                                     |
 | `src/ai/`                                 | AI commit messages and PR descriptions (`prOptions.ai`)                                                         |

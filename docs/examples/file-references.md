@@ -39,7 +39,7 @@ config/
 - Other files are returned as strings
 - Metadata fields (`header`, `schemaUrl`, `createOnly`, `mergeStrategy`) remain in the config
 
-## Per-Repo Overlays Still Work
+## Per-Repo Overlays
 
 Per-repo content overlays merge onto the resolved file content:
 

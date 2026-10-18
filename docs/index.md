@@ -84,7 +84,7 @@ repos:
 - **Content Inheritance** - Define base config once, [override per-repo](configuration/inheritance.md) as needed
 - **Flexible Opt-Out** - Exclude specific files per-repo, or use [`inherit: false`](configuration/inheritance.md#skipping-all-inherited-files) to skip all inherited files
 - **Environment Variables** - Use `${VAR}`, `${VAR:-default}`, or `${VAR:?error}` for dynamic values
-- **Merge Strategies** - Control how arrays merge ([replace, append, prepend](configuration/merge-strategies.md))
+- **Merge Strategies** - Control how arrays merge ([replace, append, prepend, merge](configuration/merge-strategies.md))
 - **Orphan Deletion** - Remove files from repos when [removed from config](configuration/index.md#delete-orphaned-files)
 - **YAML Comments** - Add [header comments and schema directives](configuration/content-types.md#yaml-comments) to YAML files
 - **Empty Files** - Create files with no content (e.g., `.prettierignore`)
@@ -225,6 +225,8 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 **Applied: 3 files (2 created, 1 updated), 2 settings (2 updated), 1 ruleset (1 created)**
 ````
 
+The sample is abridged: the report also prints each file's diff lines.
+
 - **Dry-Run Mode** - Preview all changes without applying them (`--dry-run`)
 - **Error Resilience** - Continues processing if individual repos fail
 - **Automatic Retries** - Retries transient network errors with exponential backoff
@@ -355,24 +357,25 @@ flowchart TB
         EXIST -->|"No + source"| MIGRATE["Migrate"] --> FILES
         EXIST -->|No| CREATE["Create with settings"] --> FILES
         FILES["File sync<br/><i>(skips when nothing changes)</i>"]
-    end
 
-    subgraph Settings["Settings (GitHub repos with settings, in order)"]
-        direction TB
-        RS["Rulesets<br/><i>(see detail below)</i>"] --> LBL["Labels<br/><i>(see detail below)</i>"]
-        LBL --> REPO["Repo settings<br/><i>(see detail below)</i>"]
-        REPO --> CS["Code scanning<br/><i>(see detail below)</i>"]
-        CS --> VAR["Variables"]
-        VAR --> COLLAB["Collaborators"]
-        COLLAB --> ENVS["Environments"]
+        subgraph Settings["Settings (GitHub repos with settings, in order)"]
+            direction TB
+            RS["Rulesets<br/><i>(see detail below)</i>"] --> LBL["Labels<br/><i>(see detail below)</i>"]
+            LBL --> REPO["Repo settings<br/><i>(see detail below)</i>"]
+            REPO --> CS["Code scanning<br/><i>(see detail below)</i>"]
+            CS --> VAR["Variables"]
+            VAR --> COLLAB["Collaborators"]
+            COLLAB --> ENVS["Environments"]
+        end
+
+        FILES --> RS
     end
 
     REPORT["Generate Summary Report"]
 
     VALIDATE_CMD --> EXPAND
     OPTS_S --> ForEach
-    FILES --> RS
-    ENVS --> REPORT
+    ForEach --> REPORT
 ```
 
 #### Ruleset Processing (per repo)

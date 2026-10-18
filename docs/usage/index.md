@@ -132,6 +132,8 @@ Branch: chore/sync-config
 Plan: 6 files (4 to create, 2 to update)
 ```
 
+The sample is abridged: the report also prints each file's diff lines. `.xfg.json` appears when a file has `deleteOrphaned: true`.
+
 ## Created PRs
 
 The tool creates PRs with:

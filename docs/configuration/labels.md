@@ -101,6 +101,7 @@ Labels from [conditional groups](groups.md#conditional-groups) merge after expli
 Labels support the same inheritance pattern as rulesets. Root-level labels are inherited by all repos:
 
 ```yaml
+id: labels
 settings:
   labels:
     bug:

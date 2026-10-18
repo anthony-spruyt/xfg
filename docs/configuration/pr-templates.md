@@ -5,6 +5,7 @@ Customize the PR body with a template using `${xfg:...}` variables.
 ## Basic Usage
 
 ```yaml
+id: pr-templates
 prTemplate: |
   ## Configuration Update
 
@@ -28,6 +29,7 @@ repos:
 Reference an external file for larger templates:
 
 ```yaml
+id: pr-templates
 prTemplate: "@templates/pr-body.md"
 
 files:

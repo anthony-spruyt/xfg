@@ -67,7 +67,7 @@ database:
   port: 5432
 ```
 
-Strings are double-quoted. Multi-line strings use the `|` block style.
+Strings are double-quoted. Multi-line strings in map values use the `|` block style; multi-line strings inside arrays stay double-quoted with `\n`.
 
 ### YAML Comments
 

@@ -110,6 +110,7 @@ repos:
     `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
 
 ```yaml
+id: secrets
 settings:
   secrets:
     SHARED_KEY:

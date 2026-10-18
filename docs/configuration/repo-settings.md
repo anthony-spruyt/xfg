@@ -81,6 +81,7 @@ xfg sync -c config.yaml
 Repository settings follow the same inheritance pattern as other xfg configurations. Global settings in the root `settings.repo` are inherited by all repos, and per-repo overrides take precedence.
 
 ```yaml
+id: repo-settings
 settings:
   repo:
     # Global defaults
@@ -111,6 +112,7 @@ repos:
 If you define repo settings at the root level but want specific repos to skip them entirely, set `repo: false` at the per-repo level:
 
 ```yaml
+id: repo-settings
 settings:
   repo:
     allowSquashMerge: true

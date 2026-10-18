@@ -37,6 +37,11 @@ Before processing each repo, xfg checks if the target repository exists:
 Fork an existing repo into your organization or personal account:
 
 ```yaml
+id: lifecycle
+files:
+  .prettierrc.json:
+    content: { semi: false }
+
 repos:
   # Fork into an organization
   - git: git@github.com:my-org/forked-tool.git
@@ -84,6 +89,11 @@ If the repo already exists, the `upstream` field is ignored.
 Migrate a repo from another platform (e.g., Azure DevOps to GitHub):
 
 ```yaml
+id: lifecycle
+files:
+  .prettierrc.json:
+    content: { semi: false }
+
 repos:
   - git: git@github.com:my-org/migrated-app.git
     source: https://dev.azure.com/myorg/myproject/_git/legacy-app
@@ -130,15 +140,16 @@ The following settings apply during repo creation:
 
 When `settings.repo.defaultBranch` is set, xfg renames the default branch during lifecycle operations:
 
-| Operation    | Behaviour                                                                                    |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| **Create**   | After creating the repo, detects the actual branch name and renames it via the GitHub API    |
-| **Migrate**  | Before pushing the mirror clone, renames the source HEAD branch in git                       |
-| **Fork**     | Ignored — forked repos inherit the upstream's branch structure                               |
-| **Settings** | Existing behaviour — updates the GitHub API pointer (branch must already exist by that name) |
+| Operation    | Behaviour                                                                                 |
+| ------------ | ----------------------------------------------------------------------------------------- |
+| **Create**   | After creating the repo, detects the actual branch name and renames it via the GitHub API |
+| **Migrate**  | Before pushing the mirror clone, renames the source HEAD branch in git                    |
+| **Fork**     | Ignored — forked repos inherit the upstream's branch structure                            |
+| **Settings** | Updates the GitHub API pointer (the branch must exist)                                    |
 
 ```yaml
 # Migrate ADO repo with 'master', rename to 'main' on GitHub
+id: lifecycle
 repos:
   - git: git@github.com:my-org/migrated-app.git
     source: https://dev.azure.com/myorg/myproject/_git/legacy-app

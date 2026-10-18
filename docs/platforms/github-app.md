@@ -19,7 +19,9 @@ For enterprises that prefer GitHub Apps over personal access tokens (PATs).
 3. Configure permissions:
    - **Repository permissions:**
      - Repository creation: Read and write _(required to create, migrate and fork repos; Administration does not let the App create repos, see [Repo Lifecycle](../configuration/lifecycle.md#authentication))_
-     - Administration: Read and write _(required to archive and fork repos and for repo lifecycle settings, see [Repo Lifecycle](../configuration/lifecycle.md#authentication); also required for [environments](../configuration/environments.md))_
+     - Administration: Read and write _(required to archive and fork repos and for repo lifecycle settings, see [Repo Lifecycle](../configuration/lifecycle.md#authentication); also required to create, update and delete [environments](../configuration/environments.md#permissions) and their branch policies)_
+     - Actions: Read _(required to list environments and their branch policies, see [Environments](../configuration/environments.md#permissions))_
+     - Environments: Read and write _(required for environment secrets, see [Environments](../configuration/environments.md#permissions))_
      - Contents: Read and write
      - Pull requests: Read and write
      - Workflows: Read and write _(required if syncing `.github/workflows/` files)_

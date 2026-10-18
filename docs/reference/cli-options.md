@@ -73,7 +73,6 @@ Branch: chore/sync-prettierrc
 [1/2] ✓ your-org/frontend: PR created successfully
 
     your-org/frontend - Repo Settings:
-        ~ allowAutoMerge: false → true
         ~ deleteBranchOnMerge: false → true
 [2/2] your-org/shared: Processing...
     Default branch: main (detected via remote HEAD)
@@ -88,11 +87,12 @@ Branch: chore/sync-prettierrc
 Plan: 2 files (2 to create)
 
 ~ your-org/frontend
-    ! allowAutoMerge: false → true
     ! deleteBranchOnMerge: false → true
 
-Plan: 2 settings (2 to update)
+Plan: 1 setting (1 to update)
 ```
+
+The sample is abridged: the report also prints each file's diff lines. `.xfg.json` appears when a file has `deleteOrphaned: true`.
 
 ## Secrets Sync Command
 

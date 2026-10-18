@@ -38,7 +38,9 @@ xfg sync -c config.yaml
 xfg secrets sync -c config.yaml
 ```
 
-`xfg sync` creates and updates environments and branch policies but never touches secrets, so it never needs secret values. Only `xfg secrets sync` writes environment secrets. Run `xfg sync` first: secrets can't be written to an environment that doesn't exist yet. A workflow that `xfg sync` pushes in the same run that creates its environment can start before `xfg secrets sync` writes the secrets; it fails once and passes on re-run.
+`xfg sync` creates and updates environments and branch policies but never touches secrets, so it never needs secret values. Only `xfg secrets sync` writes environment secrets. Run `xfg sync` first: secrets can't be written to an environment that doesn't exist yet.
+
+A workflow that `xfg sync` pushes in the same run that creates its environment can start before `xfg secrets sync` writes the secrets. It fails until you re-run it after `xfg secrets sync` has written the secrets.
 
 ## Deployment Branch Policy
 
@@ -106,6 +108,7 @@ Environments merge by name (ignoring case) through root, groups, conditional gro
 - Set an environment to `false` to drop it, or `inherit: false` to drop every inherited environment. `inherit` is not allowed at root.
 
 ```yaml
+id: environments
 settings:
   environments:
     release:
@@ -178,17 +181,17 @@ Safety:
 ## Dry Run Output
 
 ```text
-your-org/your-repo - Environments:
-    + environment "release"
-        deployment branches: custom
-        + branch "main"
-        + tag "v*.*.*"
-    ~ environment "staging"
-        deployment branches: all → protected
-    ~ environment "production"
-        - branch "hotfix/*"
-    - environment "preview"
-  Plan: 4 environments (1 to create, 2 to update, 1 to delete)
+    your-org/your-repo - Environments:
+        + environment "release"
+            deployment branches: custom
+            + branch "main"
+            + tag "v*.*.*"
+        ~ environment "staging"
+            deployment branches: all → protected
+        ~ environment "production"
+            - branch "hotfix/*"
+        - environment "preview"
+      Plan: 4 environments (1 to create, 2 to update, 1 to delete)
 ```
 
 `xfg secrets sync --dry-run` lists environment secrets next to repo secrets:

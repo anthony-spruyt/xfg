@@ -76,7 +76,9 @@ repos:
 ## GitHub Advanced Security Requirement
 
 !!! warning "Private and Internal Repositories"
-    Code scanning default setup on **private** and **internal** repositories requires [GitHub Advanced Security (GHAS)](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security). If GHAS is not enabled for a repository, the code scanning step for that repo fails with `Code scanning default setup requires GitHub Advanced Security (not available for this repository)`. The repo's other settings still apply, and the run exits with a non-zero status. xfg checks this only when `state` is `configured`. **Public repositories** can use code scanning without GHAS.
+    Code scanning default setup on **private** and **internal** repositories requires [GitHub Advanced Security (GHAS)](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security). **Public repositories** can use code scanning without GHAS.
+
+If GHAS is not enabled for a repository, the code scanning step for that repo fails with `Code scanning default setup requires GitHub Advanced Security (not available for this repository)`. The repo's other settings still apply, and the run exits with a non-zero status. xfg checks this only when `state` is `configured`.
 
 ## Per-Repo Opt-Out
 
@@ -102,6 +104,7 @@ repos:
 Per-repo code scanning settings **fully replace** the root settings (not shallow merge). This means if a repo overrides `querySuite`, it does not inherit `languages` from the root — you must specify all desired fields:
 
 ```yaml
+id: code-scanning
 settings:
   codeScanning:
     state: configured

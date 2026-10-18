@@ -64,6 +64,7 @@ Each layer deep-merges onto the previous. Later values win for conflicting keys.
 Repos can reference multiple groups. They are applied in order — later groups override earlier ones:
 
 ```yaml
+id: groups
 groups:
   base-tooling:
     files:
@@ -92,6 +93,7 @@ Groups can inherit from parent groups using the `extends` field. When a repo ref
 ### Single Parent
 
 ```yaml
+id: groups
 groups:
   github:
     files:
@@ -144,6 +146,7 @@ groups:
 Inheritance is transitive — if `c extends b` and `b extends a`, a repo with `groups: [c]` gets files from all three:
 
 ```yaml
+id: groups
 groups:
   base:
     files:
@@ -191,6 +194,7 @@ The effective group set used for conditional group evaluation includes transitiv
 A group can remove a root file from the accumulated set:
 
 ```yaml
+id: groups
 files:
   eslint.json:
     content: { extends: ["base"] }
@@ -213,6 +217,7 @@ repos:
 A group can discard all files from previous layers:
 
 ```yaml
+id: groups
 files:
   base.json:
     content: { key: value }
@@ -235,6 +240,7 @@ repos:
 When a repo uses `inherit: false` on its files, both root and group files are discarded:
 
 ```yaml
+id: groups
 groups:
   mygroup:
     files:
@@ -321,6 +327,10 @@ groups:
 Groups can set PR options that merge into the chain:
 
 ```yaml
+id: groups
+files:
+  .prettierrc.json:
+    content: { semi: false }
 prOptions:
   merge: auto
 

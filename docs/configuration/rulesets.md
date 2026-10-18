@@ -254,6 +254,7 @@ Like files, rulesets support inheritance with options to opt out.
 Define defaults at the root level and override per-repo:
 
 ```yaml
+id: rulesets
 # Root-level defaults for all repos
 settings:
   rulesets:
@@ -288,6 +289,7 @@ repos:
 Set a ruleset to `false` to exclude it from a specific repo:
 
 ```yaml
+id: rulesets
 settings:
   rulesets:
     main-protection:
@@ -313,6 +315,7 @@ repos:
 Use `inherit: false` to skip all root-level rulesets. You can optionally add repo-specific rulesets:
 
 ```yaml
+id: rulesets
 settings:
   rulesets:
     main-protection:
@@ -346,6 +349,7 @@ repos:
 By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead:
 
 ```yaml
+id: rulesets
 settings:
   rulesets:
     main-protection:

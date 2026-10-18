@@ -17,7 +17,7 @@ The default authentication method:
 gh auth login
 ```
 
-Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to add or update files under `.github/workflows/`.
+Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to change files under `.github/workflows/`.
 
 ### GitHub App (Recommended for Enterprise)
 
@@ -102,7 +102,7 @@ repos:
 
 ## Required Permissions
 
-Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to add or update files under `.github/workflows/`.
+Your token needs the `repo` scope to create PRs in target repositories, and the `workflow` scope to change files under `.github/workflows/`.
 
 ## Auto-Merge
 

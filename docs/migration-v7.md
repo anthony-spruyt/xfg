@@ -51,6 +51,7 @@ See https://anthony-spruyt.github.io/xfg/migration-v7/
 This is the point of the change. Secrets merge through the same layers as variables — root → group → conditional group → repo, innermost wins:
 
 ```yaml
+id: my-config
 settings:
   secrets:
     SHARED_KEY:

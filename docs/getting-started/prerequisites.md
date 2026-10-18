@@ -33,7 +33,6 @@ Before using with Azure DevOps repositories, authenticate with the Azure CLI:
 
 ```bash
 az login
-az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG project=YOUR_PROJECT
 ```
 
 !!! note "Required Permissions"

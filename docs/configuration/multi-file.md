@@ -39,12 +39,13 @@ Processing order: `base.yaml` → `platform/github.yaml` → `platform/gitlab.ya
 
 ## Merge Rules
 
-| Key                 | Behavior                                                 |
-| ------------------- | -------------------------------------------------------- |
-| `groups`            | Merged by name — group names must be unique across files |
-| `conditionalGroups` | Concatenated in alphabetical file order                  |
-| `repos`             | Concatenated in alphabetical file order                  |
-| All other keys      | Dropped without an error                                 |
+| Key                      | Behavior                                                 |
+| ------------------------ | -------------------------------------------------------- |
+| `groups`                 | Merged by name — group names must be unique across files |
+| `conditionalGroups`      | Concatenated in alphabetical file order                  |
+| `repos`                  | Concatenated in alphabetical file order                  |
+| Single-file keys (below) | Taken from the one file that sets them                   |
+| Any other key            | Dropped without an error, except root `secrets` (below)  |
 
 ### Single-file keys
 
@@ -52,7 +53,7 @@ These keys can each appear in at most **one** file across the directory:
 
 `id`, `files`, `settings`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`
 
-If any of these appears in more than one file, xfg exits with an error naming both files. A key outside the table and this list, such as a misspelled `setings`, is dropped without an error.
+If any of these appears in more than one file, xfg exits with an error naming both files. A key outside the table, such as a misspelled `setings`, is dropped without an error. Root-level `secrets` is the exception: it fails with an error that points to `settings.secrets`.
 
 ## Example
 

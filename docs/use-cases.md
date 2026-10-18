@@ -239,6 +239,7 @@ Output shows exactly what will change. The `Skipped` lines refer to file sync, b
 
 ```text
 [1/3] your-org/service-auth: Processing...
+    Default branch: main (detected via remote HEAD)
 [1/3] ⊘ your-org/service-auth: Skipped - No changes detected
 
     your-org/service-auth - Repo Settings:
@@ -247,14 +248,16 @@ Output shows exactly what will change. The `Skipped` lines refer to file sync, b
         + allowAutoMerge: true
         ~ secretScanning: false → true
 [2/3] your-org/service-payments: Processing...
+    Default branch: main (detected via remote HEAD)
 [2/3] ⊘ your-org/service-payments: Skipped - No changes detected
 [2/3] ✓ your-org/service-payments: Repo Settings: No changes needed
 [3/3] your-org/service-notifications: Processing...
+    Default branch: main (detected via remote HEAD)
 [3/3] ⊘ your-org/service-notifications: Skipped - No changes detected
 
     your-org/service-notifications - Repo Settings:
-        + vulnerabilityAlerts: true
-        + automatedSecurityFixes: true
+        ~ vulnerabilityAlerts: false → true
+        ~ automatedSecurityFixes: false → true
 ```
 
 Override settings for specific repos that need different configuration:

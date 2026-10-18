@@ -38,7 +38,9 @@ repos: # List of repositories
 <!-- markdownlint-disable MD046 -->
 
 !!! note "files/settings requirement"
-    A config needs something to sync: `files` at root or in a group or conditional group, or `settings` with at least one entry (such as `rulesets`, `labels` or `repo`) at root, repo, group, or conditional group level. A config with only `groups` that set `prOptions` is rejected. `xfg sync` handles file synchronization and settings management in a single run, so a settings-only config is valid.
+    A config needs something to sync: `files` at root or in a group or conditional group, or `settings` with at least one entry (such as `rulesets`, `labels` or `repo`) at root, repo, group, or conditional group level. `xfg sync` handles file synchronization and settings management in a single run, so a settings-only config is valid.
+
+    Settings that hold only `secrets` don't count: `xfg sync` never processes secrets (use `xfg secrets sync`). `prOptions` alone at root or in `groups` is rejected, while a conditional group that sets only `prOptions` passes this check.
 
 <!-- markdownlint-enable MD046 -->
 
@@ -87,6 +89,11 @@ repos: # List of repositories
 Set a file to `false` to exclude it from a specific repo:
 
 ```yaml
+id: configuration
+files:
+  eslint.json:
+    content: { root: true }
+
 repos:
   - git: git@github.com:org/repo.git
     files:
@@ -117,6 +124,7 @@ repos:
 3. **Per-repo** - Overrides both global and per-file for specific repos
 
 ```yaml
+id: configuration
 deleteOrphaned: true # Global: track all files by default
 
 files:

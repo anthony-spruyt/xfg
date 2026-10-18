@@ -59,6 +59,7 @@ Variable name matching is **case-insensitive** (GitHub treats variable names as 
 Variables support the same inheritance pattern as labels and rulesets. Root-level variables are inherited by all repos:
 
 ```yaml
+id: variables
 settings:
   variables:
     NODE_VERSION: "20"
@@ -91,11 +92,11 @@ repos:
 - `inherit: false` — discard all inherited variables (root + groups)
 - `VAR_NAME: false` — exclude a single inherited variable for this repo
 
-`inherit: false` does not clear an inherited `deleteOrphaned`. With `deleteOrphaned: true` at root, a repo that sets `inherit: false` has the inherited variables deleted from it, because they are not in its config. A variable set to `false` is deleted the same way. Set `deleteOrphaned: false` on the repo to keep them.
+`inherit: false` does not clear an inherited `settings.variables.deleteOrphaned`. With `settings.variables.deleteOrphaned: true` at root, a repo that sets `inherit: false` has the inherited variables deleted from it, because they are not in its config. A variable set to `false` is deleted the same way. Set `settings.variables.deleteOrphaned: false` on the repo to keep them.
 
 ## Deleting Orphaned Variables
 
-When `deleteOrphaned: true` is set on the `variables` block, xfg deletes every repository variable that is not in the config, including variables created by hand. The config is the full list of variables:
+When `settings.variables.deleteOrphaned: true` is set, xfg deletes every repository variable that is not in the config, including variables created by hand. The config is the full list of variables:
 
 ```yaml
 settings:
@@ -106,7 +107,7 @@ settings:
 ```
 
 !!! warning
-    `deleteOrphaned` for variables is independent from the settings-level `deleteOrphaned`. Set it directly on the `variables` block to enable orphan deletion for variables.
+    `settings.variables.deleteOrphaned` is independent from the settings-level `settings.deleteOrphaned`. Set it directly on the `variables` block to enable orphan deletion for variables.
 
 ## Dry Run Output
 
