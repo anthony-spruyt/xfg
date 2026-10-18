@@ -100,7 +100,7 @@ Configuration for a single file to sync
 - `schemaUrl` — URL for yaml-language-server schema directive. Adds '# yaml-language-server: $schema=\<url>' at the top of YAML files. For JSON files, use $schema property in content instead.
 - `executable` — Shell scripts (.sh) are auto-executable unless explicitly set to false. Non-.sh files can be marked executable by setting to true.
 - `template` — When true, ${xfg:variable} placeholders are replaced with repo-specific values. Available variables: repo.name, repo.owner, repo.fullName, repo.url, repo.platform, repo.host, file.name, date, and any custom vars. Use $${xfg:...} to output literal ${xfg:...}. Default: false
-- `vars` — Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars.
+- `vars` — Accessible as ${xfg:varName} when template: true. Root, group, conditional-group and per-repo vars merge per key, and later layers win.
 - `deleteOrphaned` — When true, if this file is removed from the config, it will be deleted from target repos. Tracked via .xfg.json manifest. Overrides global deleteOrphaned setting. Default: false
 
 <!-- xfg:generated:end -->
@@ -243,7 +243,7 @@ Per-repo override for a specific file
 - `schemaUrl` — Override the root-level schemaUrl for this specific repo. For JSON files, use $schema property in content instead.
 - `executable` — Set to true to mark executable, or false to disable auto-executable behavior for .sh files.
 - `template` — Set to true to enable xfg templating, or false to disable it.
-- `vars` — These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true.
+- `vars` — These merge per key with the root, group and conditional-group vars for this file and win over them. Accessible as ${xfg:varName} when template: true.
 - `deleteOrphaned` — Set to true to enable orphan tracking, or false to disable it for this repo.
 
 <!-- xfg:generated:end -->

@@ -143,7 +143,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Per-repo vars merge with (and override) these root-level vars."
+          "description": "Custom template variables for this file. Accessible as ${xfg:varName} when template: true. Root, group, conditional-group and per-repo vars merge per key, and later layers win."
         },
         "deleteOrphaned": {
           "type": "boolean",
@@ -479,7 +479,7 @@
           "additionalProperties": {
             "type": "string"
           },
-          "description": "Per-repo custom template variables. These merge with (and override) root-level vars for this file. Accessible as ${xfg:varName} when template: true."
+          "description": "Per-repo custom template variables. These merge per key with the root, group and conditional-group vars for this file and win over them. Accessible as ${xfg:varName} when template: true."
         },
         "deleteOrphaned": {
           "type": "boolean",
