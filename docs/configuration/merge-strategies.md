@@ -144,6 +144,8 @@ The `merge` strategy matches array items by an identity key and deep-merges matc
 4. Unmatched base items are preserved in their original position
 5. Nested `$arrayMerge` directives inside matched items are honored (deep-merge recurses)
 
+Matching uses a single key, so two bypass actors with the same `actorId` but different `actorType` are treated as one. Use `append` to keep both.
+
 **When no match key is found** (e.g. primitive arrays or objects without `type`/`actorId`/`actor_id`), the strategy falls back to `append` behavior.
 
 ```yaml

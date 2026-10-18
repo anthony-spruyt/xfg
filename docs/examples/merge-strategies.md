@@ -53,12 +53,12 @@ repos:
 
 ## Available Strategies
 
-| Strategy  | Behavior                                                                                       |
-| --------- | ---------------------------------------------------------------------------------------------- |
-| `replace` | Overlay completely replaces base (default)                                                     |
-| `append`  | Overlay items added after base items                                                           |
-| `prepend` | Overlay items added before base items                                                          |
-| `merge`   | Deep-merges array items matched by identity key (`type`, `actor_id`); unmatched items appended |
+| Strategy  | Behavior                                                                                                  |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| `replace` | Overlay completely replaces base (default)                                                                |
+| `append`  | Overlay items added after base items                                                                      |
+| `prepend` | Overlay items added before base items                                                                     |
+| `merge`   | Deep-merges array items matched by identity key (`type`, `actorId`, `actor_id`); unmatched items appended |
 
 ## Inline `$arrayMerge` Directive
 

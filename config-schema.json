@@ -102,7 +102,7 @@
             "merge"
           ],
           "default": "replace",
-          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actor_id). Default: replace"
+          "description": "Array merge strategy for this file. 'replace' replaces arrays, 'append' adds overlay after base, 'prepend' adds overlay before base, 'merge' deep-merges items matched by identity key (type, actorId, actor_id). Default: replace"
         },
         "createOnly": {
           "type": "boolean",
@@ -1145,7 +1145,7 @@
         "$arrayMerge": {
           "type": "string",
           "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actor_id)"
+          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)"
         },
         "$values": {
           "type": "array",
