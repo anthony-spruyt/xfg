@@ -2958,7 +2958,7 @@
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">          </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">staging</span><span class="w"> </span><span class="c1"># Override</span>
 </span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">          </span><span class="nt">region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">eu-west-1</span><span class="w"> </span><span class="c1"># Add new var</span>
 </span></code></pre></div>
-<p>Per-repo vars merge with root-level vars, with per-repo taking precedence.</p>
+<p>File <code>vars</code> from the root, groups, conditional groups and the repo merge per key, and later layers win.</p>
 <h2 id="escaping-variable-syntax">Escaping Variable Syntax<a class="headerlink" href="#escaping-variable-syntax" title="Permanent link">&para;</a></h2>
 <p>Use <code>$$</code> to output literal <code>${xfg:...}</code> in the file:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">files</span><span class="p">:</span>
