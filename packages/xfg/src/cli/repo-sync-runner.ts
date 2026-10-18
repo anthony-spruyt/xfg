@@ -82,7 +82,7 @@ async function runLifecyclePhase(
         token: repo.token,
         repoIndex: repo.index,
         lifecycleManager: ctx.lifecycleManager,
-        repoSettings: ctx.config.settings?.repo,
+        repoSettings: repo.repoConfig.settings?.repo,
       });
 
     for (const line of outputLines) {
