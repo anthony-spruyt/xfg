@@ -59,13 +59,15 @@ The `http.extraheader` applies to `https://dev.azure.com/` URLs only, so list ta
 
 With **Protect access to repositories in YAML pipelines** on, `git` in a script reaches only the Azure Repos Git repositories that the job references. Azure DevOps enables the setting by default for organizations and projects created after May 2020.
 
-Declare each target repository as a repository resource and list it under the job's `uses`, as in the example above, or reference it in a `checkout` step. A script that supplies its own PAT needs no reference, so use the PAT variant below when listing every repository is impractical.
+Declare each target repository as a repository resource and list it under the job's `uses`, as in the example above, or reference it in a `checkout` step. The first run that references a new repository resource can pause on a prompt on the run summary page: choose **Authorize resources** once to continue.
+
+A script that supplies its own PAT needs no reference, so use the PAT variant below when listing every repository is impractical.
 
 If a target repository is in another project, the build service identity also needs access to that project when **Limit job authorization scope to current project** is on.
 
 ### Using System.AccessToken
 
-The `$(System.AccessToken)` provides access within the same Azure DevOps organization, to the repositories the job references. For cross-organization access, or to skip the repository references, use a PAT for both `git` and the `az` CLI. `git` takes it as a base64-encoded basic auth header:
+The `$(System.AccessToken)` provides access within the same Azure DevOps organization, and with **Protect access to repositories in YAML pipelines** on, only to the repositories the job references. For cross-organization access, or to skip the repository references, use a PAT for both `git` and the `az` CLI. `git` takes it as a base64-encoded basic auth header:
 
 ```yaml
 - script: |

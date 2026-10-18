@@ -18,12 +18,14 @@ import {
   validateSecretsConfig,
 } from "../../../src/config/index.js";
 import type { RawConfig } from "../../../src/config/index.js";
+import { parseGitUrl } from "../../../src/repo/index.js";
 import { toErrorMessage } from "../../../src/shared/type-guards.js";
 
 const MARKER = "<!-- docs-example: skip -->";
 const FENCE_OPEN = /^(\s*)(`{3,})\s*(\S*)/;
 const FENCE_CLOSE = /^\s*(`{3,})\s*$/;
-const FILE_REFERENCE = /(?:content|prTemplate):\s*["']?@([^\s"'#]+)/g;
+const FILE_REFERENCE =
+  /(?:content|prTemplate):\s*["']?@(templates\/[^\s"'#]+)/g;
 
 const anyEnv = new Proxy({} as Record<string, string | undefined>, {
   get: (_target, name) => (typeof name === "string" ? "dummy" : undefined),
@@ -140,7 +142,11 @@ function loadExample(yaml: string): void {
     } else {
       validateForSync(raw);
     }
-    validateNormalizedConfig(normalizeConfig(raw, anyEnv));
+    const config = normalizeConfig(raw, anyEnv);
+    validateNormalizedConfig(config);
+    for (const repo of config.repos) {
+      parseGitUrl(repo.git, { githubHosts: config.githubHosts });
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -354,6 +360,40 @@ describe("loadExample", () => {
     );
   });
 
+  test("does not stub an @ value that is not a templates/ reference", () => {
+    assert.throws(
+      () =>
+        loadExample(
+          [
+            "id: demo",
+            "files:",
+            "  .npmrc:",
+            '    content: "@myorg:registry=https://npm.pkg.github.com"',
+            "repos:",
+            "  - git: git@github.com:org/repo.git",
+          ].join("\n")
+        ),
+      /ENOENT/
+    );
+  });
+
+  test("rejects a repo URL the sync pipeline cannot parse", () => {
+    assert.throws(
+      () =>
+        loadExample(
+          [
+            "id: demo",
+            "files:",
+            "  a.txt:",
+            "    content: hi",
+            "repos:",
+            "  - git: github.com/org/repo",
+          ].join("\n")
+        ),
+      /Unrecognized git URL format/
+    );
+  });
+
   test("reports a file reference that escapes the config directory", () => {
     assert.throws(
       () =>
@@ -384,19 +424,25 @@ describe("docs config examples", () => {
 
     for (const example of scan.examples) {
       const where = `${name}:${example.line}`;
-      test(
-        where,
-        { skip: example.skipped ? "marked docs-example: skip" : false },
-        () => {
-          try {
-            loadExample(example.yaml);
-          } catch (error) {
-            assert.fail(
-              `${where} does not load through the config pipeline: ${toErrorMessage(error)}`
-            );
-          }
+      if (example.skipped) {
+        test(`${where} (skipped) does not load`, () => {
+          assert.throws(
+            () => loadExample(example.yaml),
+            Error,
+            `${where} loads through the config pipeline: remove the ${MARKER} marker above it`
+          );
+        });
+        continue;
+      }
+      test(where, () => {
+        try {
+          loadExample(example.yaml);
+        } catch (error) {
+          assert.fail(
+            `${where} does not load through the config pipeline: ${toErrorMessage(error)}`
+          );
         }
-      );
+      });
     }
   }
 

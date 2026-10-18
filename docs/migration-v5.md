@@ -45,9 +45,13 @@ repos:
 
 **After (v5):**
 
-<!-- docs-example: skip -->
-
 ```yaml
+id: migration-v5
+files:
+  config.json:
+    content:
+      features: [core]
+      tags: []
 repos:
   - git: git@github.com:org/repo.git
     files:

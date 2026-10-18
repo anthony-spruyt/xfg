@@ -60,7 +60,7 @@ files:
           runs-on: ubuntu-latest
           steps:
             - uses: actions/checkout@v7
-            - uses: actions/setup-node@v4
+            - uses: actions/setup-node@v7
               with:
                 node-version: "24"
             - run: npm ci
@@ -384,7 +384,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
       - run: npm install -g @aspruyt/xfg

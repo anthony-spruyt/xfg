@@ -513,4 +513,4 @@ cd -
 ./lint.sh        # Run linting (MegaLinter)
 ```
 
-`npm test` loads every yaml block under `docs/` with a top-level `repos:` key through the config pipeline (`packages/xfg/test/unit/docs/doc-examples.test.ts`); put `<!-- docs-example: skip -->` and a blank line directly above a block that is deliberately not loadable (old syntax, a `# ...` skeleton, one file of a directory set).
+`npm test` loads every yaml block in `README.md` and `docs/` with a top-level `repos:` key through the config pipeline (`packages/xfg/test/unit/docs/doc-examples.test.ts`); put `<!-- docs-example: skip -->` and a blank line directly above a block that is deliberately not loadable (old syntax, a `# ...` skeleton, one file of a directory set).
