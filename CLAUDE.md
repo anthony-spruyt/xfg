@@ -28,7 +28,7 @@ npm run docs:generate  # Regenerate generated doc tables
 
 **MUST pass before any PR** (npm commands from `packages/xfg/`, `./lint.sh` from the root):
 
-1. `npm test` - Unit tests
+1. `npm run test:coverage` - Unit tests with the 95% line-coverage gate CI enforces (`npm test` skips the gate)
 2. `npm run test:typecheck` - Test file type checking (catches broken imports/types in tests)
 3. `npm run docs:check` - Generated doc tables are in sync with their sources
 4. `./lint.sh` - Linting
@@ -36,18 +36,19 @@ npm run docs:generate  # Regenerate generated doc tables
    - `npm run test:integration:github`
    - `npm run test:integration:ado`
    - `npm run test:integration:gitlab`
+   - `npm run test:integration:github-<area>` for the area you modify: `rulesets`, `labels`, `repo-settings`, `code-scanning`, `variables`, `collaborators`, `secrets`, `lifecycle`, `lifecycle-app`, `ai`, `app`
 
 ## Release
 
 Versions are owned by release-please — never bump `package.json` by hand.
 
-Conventional commits on `main` keep an open release PR labelled `autorelease: pending`. **Merging that PR cuts the release** (tag, floating `vN` tag, npm publish, GitHub Release). It is not auto-merged; a human merges it.
+Conventional commits on `main` keep an open release PR labelled `autorelease: pending`. **Merging that PR cuts the release** (tag, floating `vN` tag, npm publish, GitHub Release). Like any PR, it merges through Mergify once a collaborator approves it.
 
 See `DEVELOPMENT.md` → Releases.
 
 ## External Dependencies
 
-- Node.js >= 20
+- Node.js >= 22
 - `git`, `gh`, `az`, `glab` CLIs (platform-specific, must be authenticated)
 
 ## Architecture Principles
@@ -64,19 +65,22 @@ This codebase follows SOLID principles strictly:
 
 Paths are relative to `packages/xfg/`.
 
-| Module                                    | Purpose                                                                  |
-| ----------------------------------------- | ------------------------------------------------------------------------ |
-| `src/config/normalizer.ts`                | Parses config, expands git arrays, merges content, interpolates env vars |
-| `src/config/validator.ts`                 | Validates raw config via `validateForSync` (files, settings, or both)    |
-| `src/sync/repository-processor.ts`        | Composition root: wires SyncWorkflow and all per-repo collaborators      |
-| `src/sync/sync-workflow.ts`               | Orchestrates per-repo: clone, write files, commit, PR/push               |
-| `src/settings/base-processor.ts`          | Shared guards (`withGitHubGuards`), result builders, ISettingsProcessor  |
-| `src/settings/rulesets/processor.ts`      | Ruleset sync: diff remote vs config, create/update/delete via GitHub API |
-| `src/lifecycle/repo-lifecycle-manager.ts` | Repo creation, deletion, mirror push, and lifecycle orchestration        |
-| `src/vcs/authenticated-git-ops.ts`        | Wraps GitOps with per-command auth via `-c url.insteadOf`                |
-| `src/shared/xfg-template.ts`              | `${xfg:repo.name}` templating for repo-specific content                  |
-| `src/sync/manifest.ts`                    | Tracks managed files for orphan deletion (`deleteOrphaned`)              |
-| `src/output/github-summary.ts`            | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                        |
+| Module                                    | Purpose                                                                                                         |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `src/config/normalizer.ts`                | Parses config, expands git arrays, merges content, interpolates env vars                                        |
+| `src/config/validator.ts`                 | `validateRawConfig` (run by the loader), `validateForSync`, `validateSecretsConfig`, `validateNormalizedConfig` |
+| `src/cli/sync-command.ts`                 | Composition root for `xfg sync`: loads config, wires processors, iterates repos                                 |
+| `src/cli/secrets-command.ts`              | Composition root for `xfg secrets sync`                                                                         |
+| `src/sync/repository-processor.ts`        | Composition root: wires SyncWorkflow and all per-repo collaborators                                             |
+| `src/sync/sync-workflow.ts`               | Orchestrates per-repo: clone, write files, commit, PR/push                                                      |
+| `src/settings/base-processor.ts`          | Shared guards (`withGitHubGuards`), result builders, ISettingsProcessor                                         |
+| `src/settings/rulesets/processor.ts`      | Ruleset sync: diff remote vs config, create/update/delete via GitHub API                                        |
+| `src/lifecycle/repo-lifecycle-manager.ts` | Creates, forks or migrates a missing repo (mirror push: `github-lifecycle-provider.ts`)                         |
+| `src/vcs/authenticated-git-ops.ts`        | Wraps GitOps: clones with a token in the URL, later commands reuse that remote                                  |
+| `src/shared/xfg-template.ts`              | `${xfg:repo.name}` templating for repo-specific content                                                         |
+| `src/sync/manifest.ts`                    | Tracks managed files for orphan deletion (`deleteOrphaned`)                                                     |
+| `src/ai/`                                 | AI commit messages and PR descriptions (`prOptions.ai`)                                                         |
+| `src/output/github-summary.ts`            | Writes job summary to `GITHUB_STEP_SUMMARY` in CI                                                               |
 
 ## GitHub Rulesets API
 
@@ -95,10 +99,10 @@ Paths are relative to `packages/xfg/`.
 
 - **Wait for CI before claiming done** - verify checks pass, don't just run local lint
 - **Check CI on main after PR merge** - verify integration tests pass before releasing
-- **Do not commit plans or specs to `docs/`** - that's GitHub Pages; use `plans/` for plans and `plans/superpowers/` for superpowers specs/plans (the plugin defaults to `docs/superpowers/` which triggers docs deploy)
+- **Do not commit plans or specs to `docs/`** - that's GitHub Pages; use `plans/` for plans and `plans/superpowers/` for superpowers specs/plans (the plugin defaults to `docs/superpowers/`, which the next docs deploy publishes)
 - **Do not commit plans to main branch** - create a new branch
 - Output format determined by file extension: `.json`/`.json5`/`.yaml`/`.yml` → object content; others → string/string[]
 - Escape `${VAR}` as `$${VAR}` to output literal (for devcontainer.json, shell scripts)
 - Escape `${xfg:var}` as `$${xfg:var}` similarly
 - `.sh` files auto-marked executable unless `executable: false`
-- PR branch default: `chore/sync-config` (reuses existing branch/PR if found)
+- PR branch: `chore/sync-<file>` when the config has one unique file, else `chore/sync-config`. An existing PR on it is closed and its branch deleted before a fresh one is created

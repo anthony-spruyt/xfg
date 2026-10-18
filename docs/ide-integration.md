@@ -8,6 +8,8 @@ For autocomplete and validation in VS Code, install the [YAML extension](https:/
 
 ```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/anthony-spruyt/xfg/main/config-schema.json
+id: my-config
+
 files:
   my.config.json:
     content:
@@ -37,10 +39,10 @@ Add to `.vscode/settings.json`:
 This enables:
 
 - Autocomplete for all config fields:
-  - Root level: `id`, `files`, `repos`, `settings`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`
+  - Root level: `id`, `files`, `groups`, `conditionalGroups`, `repos`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`, `settings`
   - File config: `content`, `mergeStrategy`, `createOnly`, `executable`, `header`, `schemaUrl`, `template`, `vars`, `deleteOrphaned`
-  - Repo config: `git`, `files`, `settings`, `prOptions`
-  - Settings: `repo`, `rulesets` with full ruleset configuration
-- Enum suggestions for `mergeStrategy` (`replace`, `append`, `prepend`), `merge` mode (`manual`, `auto`, `force`, `direct`), etc.
-- Validation of required fields (`id`, `repos`)
+  - Repo config: `git`, `files`, `groups`, `prOptions`, `settings`, `upstream`, `source`
+  - Settings: `rulesets` with full ruleset configuration, `repo`, `labels`, `codeScanning`, `variables`, `secrets`, `collaborators`, `environments`, `deleteOrphaned`
+- Enum suggestions for `mergeStrategy` (`replace`, `append`, `prepend`, `merge`), `merge` mode (`manual`, `auto`, `force`, `direct`), etc.
+- Validation of field types and allowed values. The schema marks no field as required; xfg itself requires `id` and `repos` when it loads the config
 - Hover documentation for each field

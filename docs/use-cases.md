@@ -9,6 +9,8 @@ xfg solves the challenge of keeping configuration files consistent across many G
 **Solution:** Define your organization's standard configs once and sync them everywhere:
 
 ```yaml
+id: platform-standards
+
 files:
   .prettierrc.json:
     content:
@@ -35,7 +37,7 @@ repos:
       # ... hundreds more
 ```
 
-Run `xfg` whenever standards change—PRs are created automatically for review.
+Run `xfg sync --config ./config.yaml` whenever standards change. PRs are created automatically for review.
 
 ______________________________________________________________________
 
@@ -46,6 +48,8 @@ ______________________________________________________________________
 **Solution:** Sync workflow files to subdirectories:
 
 ```yaml
+id: ci-workflows
+
 files:
   ".github/workflows/ci.yaml":
     content:
@@ -87,6 +91,8 @@ ______________________________________________________________________
 **Solution:** Define security configs centrally and push to all repos:
 
 ```yaml
+id: security-baseline
+
 files:
   ".github/dependabot.yml":
     content:
@@ -123,6 +129,8 @@ ______________________________________________________________________
 **Solution:** Define GitHub Rulesets declaratively and apply them with `xfg sync`:
 
 ```yaml
+id: branch-protection
+
 settings:
   rulesets:
     main-protection:
@@ -166,22 +174,23 @@ repos:
   - git:
       - git@github.com:your-org/service-auth.git
       - git@github.com:your-org/service-payments.git
-      - git@github.com:your-org/service-critical.git
-```
 
-Run `xfg sync --config ./config.yaml` to apply rules to all repos. Stricter requirements for specific repos? Override per-repo:
-
-```yaml
-repos:
+  # Stricter requirements for one repo
   - git: git@github.com:your-org/service-critical.git
     settings:
       rulesets:
         main-protection:
           rules:
-            - type: pull_request
-              parameters:
-                requiredApprovingReviewCount: 3 # Override default
+            $arrayMerge: merge
+            $values:
+              - type: pull_request
+                parameters:
+                  requiredApprovingReviewCount: 3 # Override default
 ```
+
+Run `xfg sync --config ./config.yaml` to apply rules to all repos.
+
+A per-repo array replaces the inherited array. Plain `rules:` under `service-critical` would leave it with that one rule only. `$arrayMerge: merge` matches rules by `type` and changes only the review count. See [Merge by Key](configuration/merge-strategies.md#merge-by-key).
 
 ______________________________________________________________________
 
@@ -192,6 +201,8 @@ ______________________________________________________________________
 **Solution:** Define repository settings declaratively and apply them with `xfg sync`:
 
 ```yaml
+id: repo-standards
+
 settings:
   repo:
     # Standardize merge options
@@ -224,32 +235,40 @@ Preview changes with dry-run:
 xfg sync -c config.yaml --dry-run
 ```
 
-Output shows exactly what will change:
+Output shows exactly what will change. The `Skipped` lines refer to file sync, because this config has no files:
 
 ```text
-Processing repo settings for 3 repositories
+[1/3] your-org/service-auth: Processing...
+[1/3] ⊘ your-org/service-auth: Skipped - No changes detected
 
-  your-org/service-auth:
-  Repo Settings:
-    + allowAutoMerge: true
-    ~ allowMergeCommit: true → false
-    ~ deleteBranchOnMerge: false → true
-    + secretScanning: true
+    your-org/service-auth - Repo Settings:
+        ~ allowMergeCommit: true → false
+        ~ deleteBranchOnMerge: false → true
+        + allowAutoMerge: true
+        ~ secretScanning: false → true
+[2/3] your-org/service-payments: Processing...
+[2/3] ⊘ your-org/service-payments: Skipped - No changes detected
+[2/3] ✓ your-org/service-payments: Repo Settings: No changes needed
+[3/3] your-org/service-notifications: Processing...
+[3/3] ⊘ your-org/service-notifications: Skipped - No changes detected
 
-  your-org/service-payments:
-  Repo Settings:
-    (no changes)
-
-  your-org/service-notifications:
-  Repo Settings:
-    + vulnerabilityAlerts: true
-    + automatedSecurityFixes: true
+    your-org/service-notifications - Repo Settings:
+        + vulnerabilityAlerts: true
+        + automatedSecurityFixes: true
 ```
 
 Override settings for specific repos that need different configuration:
 
 ```yaml
+id: repo-standards
+
+settings:
+  repo:
+    allowMergeCommit: false
+    hasWiki: false
+
 repos:
+  - git: git@github.com:your-org/service-auth.git
   - git: git@github.com:your-org/legacy-monolith.git
     settings:
       repo:
@@ -268,6 +287,8 @@ ______________________________________________________________________
 **Solution:** Standardize the developer experience:
 
 ```yaml
+id: developer-experience
+
 files:
   .editorconfig:
     content:
@@ -314,6 +335,8 @@ ______________________________________________________________________
 **Solution:** Manage your project ecosystem from one config:
 
 ```yaml
+id: oss-projects
+
 files:
   ".github/ISSUE_TEMPLATE/bug_report.md":
     content: "@templates/bug-report.md"
@@ -378,6 +401,8 @@ ______________________________________________________________________
 **Solution:** Use `createOnly` for new files that shouldn't overwrite existing ones:
 
 ```yaml
+id: new-standards
+
 files:
   renovate.json:
     createOnly: true # Only create if doesn't exist
@@ -410,6 +435,8 @@ ______________________________________________________________________
 **Solution:** xfg works with all three platforms in the same config:
 
 ```yaml
+id: multi-platform
+
 files:
   .prettierrc.json:
     content:

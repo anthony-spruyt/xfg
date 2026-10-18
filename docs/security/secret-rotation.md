@@ -10,6 +10,7 @@ Rotate credentials used by xfg regularly to limit the blast radius of a compromi
 | GitHub App private key (.pem)        | Every 6 months       |
 | Azure DevOps PAT / service principal | Every 90 days        |
 | GitLab PAT / project access token    | Every 90 days        |
+| AI provider API key                  | Per provider policy  |
 | CONTEXT7_API_KEY / MCP keys          | Per provider policy  |
 
 ## GitHub PAT (GH_TOKEN)
@@ -69,6 +70,16 @@ See [GitHub App Authentication](../platforms/github-app.md) for full setup detai
 1. Generate a new token in your project > Settings > Access Tokens.
 
 2. Update the token in your CI/CD variables.
+
+## AI Provider API Keys
+
+xfg reads the key for `prOptions.ai` from `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`, or from the variable named by `apiKeyEnv`. See [AI Messages](../configuration/ai-messages.md).
+
+1. Generate a new key in the provider's console.
+
+2. Update the key in your CI environment variables.
+
+3. Verify with a test run, then revoke the old key.
 
 ## Dev Environment Keys
 

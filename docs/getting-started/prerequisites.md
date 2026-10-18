@@ -16,9 +16,16 @@ For GitHub Enterprise Server instances:
 gh auth login --hostname github.mycompany.com
 ```
 
-!!! note "Required Scopes"
+xfg sends GitHub credentials only to github.com, unless the host is listed in `XFG_ALLOWED_GITHUB_HOSTS`:
 
-Your token needs the `repo` scope to create PRs in target repositories.
+```bash
+export XFG_ALLOWED_GITHUB_HOSTS="github.mycompany.com"
+```
+
+Also list the host in `githubHosts` in the config. See [GitHub Enterprise Server](../platforms/github.md#ghe-authentication).
+
+!!! note "Required Scopes"
+    A classic token needs the `repo` scope to create PRs in target repositories. To sync files under `.github/workflows/`, it also needs the `workflow` scope.
 
 ## Azure DevOps Authentication
 
@@ -30,8 +37,7 @@ az devops configure --defaults organization=https://dev.azure.com/YOUR_ORG proje
 ```
 
 !!! note "Required Permissions"
-
-Ensure the user/service account has "Contribute to pull requests" permission.
+    Ensure the user/service account has "Contribute to pull requests" permission.
 
 ## GitLab Authentication
 
@@ -48,5 +54,4 @@ glab auth login --hostname gitlab.example.com
 ```
 
 !!! note "Required Permissions"
-
-Ensure the user has at least "Developer" role on the project.
+    Ensure the user has at least "Developer" role on the project.

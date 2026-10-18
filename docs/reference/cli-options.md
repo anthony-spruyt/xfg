@@ -1,10 +1,10 @@
 # CLI Options Reference
 
-xfg uses a `sync` command to handle file synchronization, repository settings, rulesets, labels, and variables. A separate `secrets sync` command handles secret management.
+xfg uses a `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments. A separate `secrets sync` command handles secret management.
 
 ## Sync Command
 
-Sync configuration files, repository settings, rulesets, labels, and variables across repositories.
+Sync configuration files, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments across repositories.
 
 ```bash
 xfg sync --config <path> [options]
@@ -31,7 +31,7 @@ xfg sync --config <path> [options]
 <!-- xfg:generated:end -->
 
 !!! note "GitHub-Only Settings"
-    Repository settings, rulesets, labels, and variables management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
+    Repository settings, rulesets, labels, code scanning, variables, collaborators, and environments management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
 
 ### Examples
 
@@ -57,20 +57,41 @@ xfg sync --config ./config.yaml --no-delete
 ### Output
 
 ```text
-Loading config from: ./config.yaml
-Found 3 repositories with rulesets
+Loading config from: /work/config.yaml
+Found 2 repositories to process
+Target files: .prettierrc.json
+Branch: chore/sync-prettierrc
 
-[1/3] your-org/frontend: Processing rulesets...
-[1/3] ✓ your-org/frontend: 1 created, 0 updated, 0 unchanged
+[1/2] your-org/frontend: Processing...
+    Default branch: main (detected via remote HEAD)
+    Writing .prettierrc.json...
+    Staging changes...
+    Committed: 5e2b9d0c7a41f8e3b6d1a09c4f7e2b85d3a6c190 (verified: false)
+    Creating pull request...
+    Handling merge (mode: auto)...
+    Auto-merge enabled. PR will merge when checks pass.
+[1/2] ✓ your-org/frontend: PR created successfully
 
-[2/3] your-org/backend: Processing rulesets...
-[2/3] ✓ your-org/backend: 0 created, 1 updated, 0 unchanged
+    your-org/frontend - Repo Settings:
+        ~ allowAutoMerge: false → true
+        ~ deleteBranchOnMerge: false → true
+[2/2] your-org/shared: Processing...
+    Default branch: main (detected via remote HEAD)
+    Writing .prettierrc.json...
+[2/2] ⊘ your-org/shared: Skipped - No changes detected
+[2/2] ✓ your-org/shared: Repo Settings: No changes needed
 
-[3/3] your-org/shared-lib: Processing rulesets...
-[3/3] ✓ your-org/shared-lib: 0 created, 0 updated, 1 unchanged
+~ your-org/frontend
+    + .prettierrc.json
+    + .xfg.json
 
-==================================================
-Completed: 3 succeeded, 0 skipped, 0 failed
+Plan: 2 files (2 to create)
+
+~ your-org/frontend
+    ! allowAutoMerge: false → true
+    ! deleteBranchOnMerge: false → true
+
+Plan: 2 settings (2 to update)
 ```
 
 ## Secrets Sync Command

@@ -30,7 +30,7 @@ The `command` input has been removed from the GitHub Action. The action always r
 **Before (v3):**
 
 ```yaml
-- uses: anthony-spruyt/xfg@v4
+- uses: anthony-spruyt/xfg@v3
   with:
     command: settings
     config: ./config.yaml
@@ -54,7 +54,7 @@ In v3, orphan detection for rulesets and labels used a manifest file to track wh
 
 ### 4. Manifest auto-migration (V3 → V4)
 
-The manifest file (`.xfg-manifest.json`) format has been updated to V4. The migration happens automatically — v4 reads your existing V3 manifest and upgrades it in place. The V4 manifest only tracks files (not rulesets or labels).
+The manifest file (`.xfg.json`) format has been updated to V4. The migration happens automatically — v4 reads your existing V3 manifest and upgrades it in place. The V4 manifest only tracks files (not rulesets or labels).
 
 ## No Changes Required
 

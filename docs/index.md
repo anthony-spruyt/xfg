@@ -129,13 +129,19 @@ Manage [GitHub Rulesets](configuration/rulesets.md) as code:
 - **Pattern Conditions** - Apply rules to branches/tags matching glob patterns
 - **Evaluate Mode** - Test rules without enforcement
 - **Inheritance** - Define defaults at root, override or [opt out](configuration/rulesets.md#single-ruleset-opt-out) per-repo
-- **Orphan Deletion** - Automatically remove rulesets no longer in config
+- **Orphan Deletion** - Remove rulesets that are missing from config when `settings.deleteOrphaned` is set
 
 ### Repo Lifecycle Management
 
 Automatically [create, fork, or migrate](configuration/lifecycle.md) repositories before syncing:
 
 ```yaml
+id: my-org-standards
+
+settings:
+  repo:
+    visibility: private
+
 repos:
   # Create a new repo (if it doesn't exist)
   - git: git@github.com:my-org/new-service.git
@@ -151,7 +157,7 @@ repos:
 
 - **Auto-Create** - New repos created with configured settings (visibility, description, features)
 - **Fork** - Fork upstream repos into your org or personal account (GitHub only)
-- **Migrate** - Mirror-clone from Azure DevOps or GitLab to GitHub with all branches and tags
+- **Migrate** - Mirror-clone from Azure DevOps to GitHub with all branches and tags
 - **Dry-Run Support** - Preview lifecycle operations without executing them
 
 ### PR & Merge Options
@@ -184,26 +190,40 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 ### Enterprise & CI/CD
 
 - **[GitHub App Authentication](platforms/github-app.md)** - No user-tied credentials, fine-grained permissions, and verified commits with the "Verified" badge
-- **GitHub Enterprise Server** - Configure custom hostnames via `githubHosts` in config
+- **GitHub Enterprise Server** - List each host in `githubHosts` in config and in the `XFG_ALLOWED_GITHUB_HOSTS` environment variable
 - **[GitHub Actions](ci-cd/github-actions.md)** - Official action (`anthony-spruyt/xfg@v8`) with all options as inputs <!-- x-release-please-major -->
 - **[Azure Pipelines](ci-cd/azure-pipelines.md)** - Run xfg in Azure DevOps pipelines
 - **CI Summary Output** - Rich `GITHUB_STEP_SUMMARY` with diff-style change reports:
 
-```text
+````text
 ## xfg Apply
 
-  @@ your-org/frontend @@
-  + .prettierrc.json
-  ! .github/workflows/ci.yaml
-  + ruleset "main-protection"
+### your-org/frontend
 
-  @@ your-org/backend @@
-  + .prettierrc.json
-  + allowAutoMerge: true
-  ! deleteBranchOnMerge: false → true
+```diff
++ .prettierrc.json
 
-**Applied: 4 files (2 created, 2 updated), 1 ruleset (1 created), 2 settings (1 added, 1 changed)**
+! .github/workflows/ci.yaml
+
++ ruleset "main-protection"
++   target: "branch"
++   enforcement: "active"
++   rules:
++     [0] (required_signatures):
++       type: "required_signatures"
 ```
+
+### your-org/backend
+
+```diff
++ .prettierrc.json
+
+! allowAutoMerge: false → true
+! deleteBranchOnMerge: false → true
+```
+
+**Applied: 3 files (2 created, 1 updated), 2 settings (2 updated), 1 ruleset (1 created)**
+````
 
 - **Dry-Run Mode** - Preview all changes without applying them (`--dry-run`)
 - **Error Resilience** - Continues processing if individual repos fail
@@ -223,7 +243,7 @@ flowchart TB
         MERGE_CFG --> REFS["Resolve @file references<br/>(root, group & repo levels)"]
         YAML --> REFS
         REFS --> VALIDATE["Validate structure"]
-        VALIDATE --> VALIDATE_CMD_S["Validate for sync<br/>(require files to sync)"]
+        VALIDATE --> VALIDATE_CMD_S["Validate for sync<br/>(require files or settings)"]
     end
 
     subgraph Normalization
@@ -329,38 +349,30 @@ flowchart TB
         ENV_S --> OPTS_S["Resolve per-repo fields<br/>(createOnly, executable,<br/>template, vars, etc.)"]
     end
 
-    subgraph Lifecycle["Lifecycle Pre-Check (all unique repos)"]
-        EXIST{"Repo exists?"} -->|Yes| READY["Ready"]
-        EXIST -->|"No + upstream"| FORK["Fork"] --> READY
-        EXIST -->|"No + source"| MIGRATE["Migrate"] --> READY
-        EXIST -->|No| CREATE["Create with settings"] --> READY
+    subgraph ForEach["For Each Repository"]
+        EXIST{"Repo exists?"} -->|Yes| FILES
+        EXIST -->|"No + upstream"| FORK["Fork"] --> FILES
+        EXIST -->|"No + source"| MIGRATE["Migrate"] --> FILES
+        EXIST -->|No| CREATE["Create with settings"] --> FILES
+        FILES["File sync<br/><i>(skips when nothing changes)</i>"]
     end
 
-    subgraph Phase1["Phase 1: Rulesets"]
-        RS["For each repo with rulesets<br/><i>(see detail below)</i>"]
-    end
-
-    subgraph Phase2["Phase 2: Repo Settings"]
-        REPO["For each repo with repo settings<br/><i>(see detail below)</i>"]
-    end
-
-    subgraph Phase3["Phase 3: Labels"]
-        LBL["For each repo with labels<br/><i>(see detail below)</i>"]
-    end
-
-    subgraph Phase4["Phase 4: Code Scanning"]
-        CS["For each repo with codeScanning<br/><i>(see detail below)</i>"]
+    subgraph Settings["Settings (GitHub repos with settings, in order)"]
+        direction TB
+        RS["Rulesets<br/><i>(see detail below)</i>"] --> LBL["Labels<br/><i>(see detail below)</i>"]
+        LBL --> REPO["Repo settings<br/><i>(see detail below)</i>"]
+        REPO --> CS["Code scanning<br/><i>(see detail below)</i>"]
+        CS --> VAR["Variables"]
+        VAR --> COLLAB["Collaborators"]
+        COLLAB --> ENVS["Environments"]
     end
 
     REPORT["Generate Summary Report"]
 
     VALIDATE_CMD --> EXPAND
-    OPTS_S --> Lifecycle
-    Lifecycle --> Phase1
-    Phase1 --> Phase2
-    Phase2 --> Phase3
-    Phase3 --> Phase4
-    Phase4 --> REPORT
+    OPTS_S --> ForEach
+    FILES --> RS
+    ENVS --> REPORT
 ```
 
 #### Ruleset Processing (per repo)
@@ -368,9 +380,7 @@ flowchart TB
 ```mermaid
 flowchart TB
     GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
-    GUARD -->|Yes| FETCH_MANIFEST["Fetch remote manifest<br/>(.xfg.json)"]
-
-    FETCH_MANIFEST --> TOKEN["Resolve auth token"]
+    GUARD -->|Yes| TOKEN["Resolve auth token"]
 
     TOKEN --> LIST["List current rulesets<br/>(summary only)"]
     LIST --> HYDRATE["Hydrate matching rulesets<br/>(full detail: conditions,<br/>rules, bypass_actors)"]
@@ -384,7 +394,7 @@ flowchart TB
     subgraph APPLY["Apply Changes"]
         direction TB
         C["POST — create new rulesets"]
-        U["PUT — update changed rulesets"]
+        U["PUT — update rulesets that differ"]
         D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
     end
 
@@ -435,9 +445,7 @@ flowchart TB
 ```mermaid
 flowchart TB
     GUARD{GitHub repo?} -->|No| SKIP_P["Skip (GitHub only)"]
-    GUARD -->|Yes| FETCH_MANIFEST["Fetch remote manifest<br/>(.xfg.json)"]
-
-    FETCH_MANIFEST --> TOKEN["Resolve auth token"]
+    GUARD -->|Yes| TOKEN["Resolve auth token"]
     TOKEN --> LIST["List current labels"]
 
     LIST --> DIFF["Diff: create / update /<br/>delete / unchanged"]
@@ -449,7 +457,7 @@ flowchart TB
     subgraph APPLY["Apply Changes (ordered)"]
         direction TB
         D["DELETE — remove orphaned<br/>(if deleteOrphaned)"]
-        U["PUT — update changed labels"]
+        U["PUT — update labels that differ"]
         C["POST — create new labels"]
     end
 
