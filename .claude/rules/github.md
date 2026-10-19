@@ -13,6 +13,7 @@ Use the **`gh` CLI** for all GitHub operations (issues, PRs, code search, API ca
 3. Post validator and reviewer reports (validation, QA, reviews) as issue comments, never into the issue body
 4. Keep the issue body current with the work itself (scope, findings, plan, checklist); edit it rather than burying updates in comments
 5. Fill PR bodies from `.github/pull_request_template.md` when it exists
+6. In CI reports, use one state: green, failing `<check>`, pending or unverified, plus "pending approval" when a review is still needed. Never mention ignored checks, Mergify, or merge and approval rules.
 
 ## Issue Lifecycle
 

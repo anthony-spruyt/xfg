@@ -158,7 +158,7 @@
   "viewMode": "default",
   "feedbackSurveyRate": 0,
   "alwaysThinkingEnabled": true,
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "fastMode": false,
   "showClearContextOnPlanAccept": true,
   "autoUpdatesChannel": "latest",
