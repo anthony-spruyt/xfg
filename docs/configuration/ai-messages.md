@@ -50,7 +50,7 @@ prOptions:
       X-Team: TEAM_HEADER_VALUE
     fallback: # optional; tried when the provider above fails
       provider: openai
-      model: gpt-4o-mini
+      model: gpt-6-luna
     prompt: "Mention the Jira ticket if the diff has one." # optional
     maxDiffChars: 20000 # optional
 ```
@@ -133,7 +133,7 @@ Needs `ANTHROPIC_API_KEY` (or the variable named in `apiKeyEnv`).
 prOptions:
   ai:
     provider: openai
-    model: gpt-4o-mini
+    model: gpt-6-luna
 ```
 
 Needs `OPENAI_API_KEY`.
@@ -171,7 +171,7 @@ prOptions:
     provider: openai
     baseUrl: https://openrouter.ai/api/v1
     apiKeyEnv: OPENROUTER_API_KEY
-    model: openai/gpt-4o-mini
+    model: openai/gpt-6-luna
 ```
 
 Needs `OPENROUTER_API_KEY`. Any [OpenRouter model](https://openrouter.ai/models) id works.
@@ -267,7 +267,7 @@ xfg sends only the paths, change types (create/update/delete) and diffs, capped 
 
 ## Cost and Caching
 
-- The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as `openai/gpt-4o-mini` via [OpenRouter](#openrouter) cost several times less and write fine commit messages.
+- The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as `openai/gpt-6-luna` via [OpenRouter](#openrouter) cost several times less and write fine commit messages.
 - Diffs are capped at `maxDiffChars` (20,000 characters by default).
 - Responses are cached in memory for the run. The cache key is the prompt plus provider settings, including the fallback. When 50 repos get the exact same change, xfg makes one API call, not 50.
 - Transient errors (429, 5xx, timeouts) are retried with the same `--retries` setting as git operations.

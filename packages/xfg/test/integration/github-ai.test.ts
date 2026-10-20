@@ -48,7 +48,7 @@ let repoName: string;
 let testRepo: string;
 let tmpDir: string;
 
-const GATEWAY_FIELDS = `model: openai/gpt-4o-mini
+const GATEWAY_FIELDS = `model: openai/gpt-6-luna
 apiKeyEnv: LITELLM_API_KEY
 headersEnv:
   CF-Access-Client-Id: CF_ACCESS_CLIENT_ID
