@@ -67,7 +67,8 @@
       "Read(~/.password-store/*)",
       "Read(~/.password-store/**/*)",
       "Read(~/.claude/.credentials.json)",
-      "Read(~/.secrets/**)"
+      "Read(~/.secrets/**)",
+      "AskUserQuestion"
     ]
   },
   "hooks": {
