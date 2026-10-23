@@ -23,7 +23,7 @@ The brief names the target: a repo and PR number, a diff range, or a local commi
 ## Severity
 
 - **BLOCKER/MAJOR** - Name a concrete failure path: a real input or state leading to a wrong result, an outage, data or secret exposure, or a broken repo rule. If you can't show the path, it is MINOR.
-- **MINOR** - Style, naming, wording, a cleaner approach. Never blocks. List at most 5, most useful first.
+- **MINOR** - Style, naming, wording, a cleaner approach. Never blocks. List only MINORs worth fixing (a reader or user would trip on it, or it breaks a repo convention), most useful first. No findings is a good review: never pad with nits. Don't reverse a choice an earlier round or the owner made unless it causes a failure.
 
 ## Workflow
 
@@ -37,7 +37,7 @@ The brief names the target: a repo and PR number, a diff range, or a local commi
 
 ## Output Format
 
-At most 300 words unless the brief sets another cap:
+At most 300 words unless the brief sets another cap; when the brief sets a cap, put the gates on one line (`Gates: CI pass, CodeQL n/a, ...`) instead of the table:
 
 ```text
 ## VERDICT: READY / NOT READY

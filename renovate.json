@@ -11,6 +11,7 @@
     "github>anthony-spruyt/repo-operator//.github/renovate/custom-datasources.json5",
     "github>anthony-spruyt/repo-operator//.github/renovate/disabled.json5",
     "github>anthony-spruyt/repo-operator//.github/renovate/xfg-managed.json5",
+    "github>anthony-spruyt/renovate-data//image-age",
     "local>anthony-spruyt/xfg//renovate-overrides.json5"
   ],
   "forkProcessing": "enabled"
