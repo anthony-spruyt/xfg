@@ -1,5 +1,23 @@
 # Changelog
 
+## [8.5.4](https://github.com/anthony-spruyt/xfg/compare/v8.5.3...v8.5.4) (2026-10-24)
+
+
+### Dependencies
+
+* **deps:** lock file maintenance ([#1270](https://github.com/anthony-spruyt/xfg/issues/1270)) ([1db7af5](https://github.com/anthony-spruyt/xfg/commit/1db7af52c439cdd4184d0f887f2a814d48179fc7))
+* **deps:** update brace-expansion and esbuild in the lockfile ([#1266](https://github.com/anthony-spruyt/xfg/issues/1266)) ([af6ea66](https://github.com/anthony-spruyt/xfg/commit/af6ea667d08bb6ff49afe893a2d1ab660d6dc374))
+
+
+### Documentation
+
+* **ai:** move OpenAI examples and AI integration test to gpt-6-luna ([#1273](https://github.com/anthony-spruyt/xfg/issues/1273)) ([c5e057d](https://github.com/anthony-spruyt/xfg/commit/c5e057d2da0919b37296b5e14f07fd4743f524d0))
+
+
+### Continuous Integration
+
+* use the shared harden-runner action ([#1278](https://github.com/anthony-spruyt/xfg/issues/1278)) ([0c7be92](https://github.com/anthony-spruyt/xfg/commit/0c7be92ece84ae00cc4ca1db4aa840fbce6d8a8c))
+
 ## [8.5.3](https://github.com/anthony-spruyt/xfg/compare/v8.5.2...v8.5.3) (2026-10-18)
 
 
