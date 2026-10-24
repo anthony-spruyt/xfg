@@ -33,6 +33,10 @@ function jobs(workflow: string): [string, Job][] {
   return Object.entries(parsed.jobs);
 }
 
+function runsAiSuite(job: Job): boolean {
+  return job.steps.some((step) => step.run?.includes("github-ai.test.ts"));
+}
+
 const SECRET_REF =
   /secrets(?:\.([A-Za-z0-9_]+)|\[\s*['"]([A-Za-z0-9_]+)['"]\s*\])/g;
 
@@ -54,9 +58,24 @@ function secretsUsed(steps: Step[]): Set<string> {
   return names;
 }
 
+const SHARED_HARDEN_RUNNER =
+  "anthony-spruyt/repo-operator/.github/actions/harden-runner@";
+
+const SHARED_HARDEN_RUNNER_INPUTS = [
+  "allowed-endpoints",
+  "disable-sudo-and-containers",
+];
+
+function isSharedHardenRunner(step: Step): boolean {
+  return step.uses?.startsWith(SHARED_HARDEN_RUNNER) ?? false;
+}
+
 // Harden Runner is exempt from the preflight ordering only as step 0; its secret use only feeds an allow-list
 function isHardenRunner(step: Step): boolean {
-  return step.uses?.startsWith("step-security/harden-runner@") ?? false;
+  return (
+    isSharedHardenRunner(step) ||
+    (step.uses?.startsWith("step-security/harden-runner@") ?? false)
+  );
 }
 
 function exemptStep(steps: Step[]): number {
@@ -133,6 +152,16 @@ describe("harden-runner exemption", () => {
 
   test("applies when harden-runner is step 0", () => {
     assert.equal(exemptStep([harden, preflight]), 0);
+  });
+
+  test("applies when the shared action is step 0", () => {
+    assert.equal(
+      exemptStep([
+        { ...harden, uses: `${SHARED_HARDEN_RUNNER}abc` },
+        preflight,
+      ]),
+      0
+    );
   });
 
   test("does not apply when harden-runner is not step 0", () => {
@@ -423,9 +452,7 @@ describe("ci.yaml", () => {
 describe("integration lanes", () => {
   const lanes = jobs("_integration-tests.yaml");
 
-  const aiLane = lanes.find(([, job]) =>
-    job.steps.some((step) => step.run?.includes("github-ai.test.ts"))
-  );
+  const aiLane = lanes.find(([, job]) => runsAiSuite(job));
 
   test("the AI lane blocks egress except for an allow-list", () => {
     assert.ok(aiLane, "no lane runs github-ai.test.ts");
@@ -514,6 +541,14 @@ describe("integration lanes", () => {
 });
 
 describe("harden-runner", () => {
+  const aiLane = jobs("_integration-tests.yaml").find(([, job]) =>
+    runsAiSuite(job)
+  );
+  // Drop the pr-title.yaml entry once the synced pr-title.yaml uses the shared action (anthony-spruyt/repo-operator#1042)
+  const direct = [
+    `_integration-tests.yaml: ${aiLane?.[0]}`,
+    "pr-title.yaml: check",
+  ];
   const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
     .filter((file) => /\.ya?ml$/.test(file))
     .sort();
@@ -532,12 +567,30 @@ describe("harden-runner", () => {
   });
 
   for (const [name, step] of hardened) {
-    test(`${name} blocks egress to an allow-list`, () => {
-      assert.equal(step.with?.["egress-policy"], "block");
+    test(`${name} allows an allow-list of endpoints`, () => {
       assert.ok(
         String(step.with?.["allowed-endpoints"] ?? "").trim().length > 0,
         `${name} allows no endpoints`
       );
+    });
+
+    test(`${name} uses the shared action or blocks egress directly`, () => {
+      if (isSharedHardenRunner(step)) {
+        assert.match(step.uses ?? "", /@[0-9a-f]{40}$/);
+        assert.deepEqual(
+          Object.keys(step.with ?? {}).filter(
+            (key) => !SHARED_HARDEN_RUNNER_INPUTS.includes(key)
+          ),
+          [],
+          `${name} passes inputs the shared action does not take`
+        );
+      } else {
+        assert.ok(
+          direct.includes(name),
+          `${name} calls harden-runner directly`
+        );
+        assert.equal(step.with?.["egress-policy"], "block");
+      }
     });
   }
 });
