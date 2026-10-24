@@ -3110,7 +3110,7 @@
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="nt">X-Team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TEAM_HEADER_VALUE</span>
 </span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">fallback</span><span class="p">:</span><span class="w"> </span><span class="c1"># optional; tried when the provider above fails</span>
 </span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o-mini</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-6-luna</span>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">    </span><span class="nt">prompt</span><span class="p">:</span><span class="w"> </span><span class="s">"Mention</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Jira</span><span class="nv"> </span><span class="s">ticket</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">diff</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">one."</span><span class="w"> </span><span class="c1"># optional</span>
 </span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="nt">maxDiffChars</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20000</span><span class="w"> </span><span class="c1"># optional</span>
 </span></code></pre></div>
@@ -3220,7 +3220,7 @@
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o-mini</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-6-luna</span>
 </span></code></pre></div>
 <p>Needs <code>OPENAI_API_KEY</code>.</p>
 <h3 id="ollama-local-no-key">Ollama (local, no key)<a class="headerlink" href="#ollama-local-no-key" title="Permanent link">&para;</a></h3>
@@ -3246,7 +3246,7 @@
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">baseUrl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://openrouter.ai/api/v1</span>
 </span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">apiKeyEnv</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENROUTER_API_KEY</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai/gpt-4o-mini</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai/gpt-6-luna</span>
 </span></code></pre></div>
 <p>Needs <code>OPENROUTER_API_KEY</code>. Any <a href="https://openrouter.ai/models">OpenRouter model</a> id works.</p>
 <h3 id="azure-openai-litellm-and-other-gateways">Azure OpenAI, LiteLLM and other gateways<a class="headerlink" href="#azure-openai-litellm-and-other-gateways" title="Permanent link">&para;</a></h3>
@@ -3316,7 +3316,7 @@
 <p>xfg sends only the paths, change types (create/update/delete) and diffs, capped at <code>maxDiffChars</code>. It does not send repo names, tokens or anything else.</p>
 <h2 id="cost-and-caching">Cost and Caching<a class="headerlink" href="#cost-and-caching" title="Permanent link">&para;</a></h2>
 <ul>
-<li>The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as <code>openai/gpt-4o-mini</code> via <a href="#openrouter">OpenRouter</a> cost several times less and write fine commit messages.</li>
+<li>The default model is Claude Haiku 4.5, the cheapest Claude model but not the cheapest overall. Small models such as <code>openai/gpt-6-luna</code> via <a href="#openrouter">OpenRouter</a> cost several times less and write fine commit messages.</li>
 <li>Diffs are capped at <code>maxDiffChars</code> (20,000 characters by default).</li>
 <li>Responses are cached in memory for the run. The cache key is the prompt plus provider settings, including the fallback. When 50 repos get the exact same change, xfg makes one API call, not 50.</li>
 <li>Transient errors (429, 5xx, timeouts) are retried with the same <code>--retries</code> setting as git operations.</li>
