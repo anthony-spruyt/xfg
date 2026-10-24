@@ -61,6 +61,11 @@ function secretsUsed(steps: Step[]): Set<string> {
 const SHARED_HARDEN_RUNNER =
   "anthony-spruyt/repo-operator/.github/actions/harden-runner@";
 
+const SHARED_HARDEN_RUNNER_INPUTS = [
+  "allowed-endpoints",
+  "disable-sudo-and-containers",
+];
+
 function isSharedHardenRunner(step: Step): boolean {
   return step.uses?.startsWith(SHARED_HARDEN_RUNNER) ?? false;
 }
@@ -539,7 +544,7 @@ describe("harden-runner", () => {
   const aiLane = jobs("_integration-tests.yaml").find(([, job]) =>
     runsAiSuite(job)
   );
-  // pr-title.yaml is synced from repo-operator and still calls the action directly
+  // Drop the pr-title.yaml entry once the synced pr-title.yaml uses the shared action (anthony-spruyt/repo-operator#1042)
   const direct = [
     `_integration-tests.yaml: ${aiLane?.[0]}`,
     "pr-title.yaml: check",
@@ -572,7 +577,13 @@ describe("harden-runner", () => {
     test(`${name} uses the shared action or blocks egress directly`, () => {
       if (isSharedHardenRunner(step)) {
         assert.match(step.uses ?? "", /@[0-9a-f]{40}$/);
-        assert.equal(step.with?.["egress-policy"], undefined);
+        assert.deepEqual(
+          Object.keys(step.with ?? {}).filter(
+            (key) => !SHARED_HARDEN_RUNNER_INPUTS.includes(key)
+          ),
+          [],
+          `${name} passes inputs the shared action does not take`
+        );
       } else {
         assert.ok(
           direct.includes(name),
