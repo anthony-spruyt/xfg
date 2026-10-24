@@ -52,9 +52,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             aka.ms:443
             api.github.com:443
@@ -106,9 +105,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             azure.archive.ubuntu.com:80
@@ -162,9 +160,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
@@ -218,9 +215,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
@@ -274,9 +270,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
@@ -370,9 +365,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
@@ -447,9 +441,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
@@ -642,9 +635,8 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@766304fb089600d37bc7a191eeb9befb32799b5a
         with:
-          egress-policy: block
           allowed-endpoints: >-
             api.github.com:443
             cafe.github.com:443
