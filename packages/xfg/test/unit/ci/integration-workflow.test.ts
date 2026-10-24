@@ -544,11 +544,7 @@ describe("harden-runner", () => {
   const aiLane = jobs("_integration-tests.yaml").find(([, job]) =>
     runsAiSuite(job)
   );
-  // Drop the pr-title.yaml entry once the synced pr-title.yaml uses the shared action (anthony-spruyt/repo-operator#1042)
-  const direct = [
-    `_integration-tests.yaml: ${aiLane?.[0]}`,
-    "pr-title.yaml: check",
-  ];
+  const direct = [`_integration-tests.yaml: ${aiLane?.[0]}`];
   const workflowFiles = readdirSync(join(repoRoot, ".github/workflows"))
     .filter((file) => /\.ya?ml$/.test(file))
     .sort();
