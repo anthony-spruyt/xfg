@@ -9,7 +9,6 @@ import {
 } from "../../../src/config/index.js";
 import { parse } from "yaml";
 
-// Create a temporary directory for test fixtures
 const testDir = join(tmpdir(), "xfg-test-" + Date.now());
 
 function createTestConfig(content: string): string {
@@ -21,7 +20,6 @@ function createTestConfig(content: string): string {
 describe("Config", () => {
   beforeEach(() => {
     mkdirSync(testDir, { recursive: true });
-    // Set up test environment variables
     process.env.TEST_ENV_VAR = "test-value";
   });
 
@@ -543,7 +541,6 @@ repos:
     });
 
     test("file references are resolved before validation", () => {
-      // Create a template file in the test directory
       const templatePath = join(testDir, "templates", "base.json");
       mkdirSync(join(testDir, "templates"), { recursive: true });
       writeFileSync(templatePath, '{"base": true, "version": "1.0"}', "utf-8");

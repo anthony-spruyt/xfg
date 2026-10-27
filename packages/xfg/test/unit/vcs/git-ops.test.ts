@@ -387,7 +387,6 @@ describe("GitOps", () => {
     });
 
     test("accounts for trailing newline in comparison", () => {
-      // File has content + newline
       writeFileSync(join(workDir, "test.json"), "content\n");
 
       const gitOps = new GitOps({ workDir, executor: stubExecutor });
@@ -464,7 +463,6 @@ describe("GitOps", () => {
 
     test("writeFile creates parent directories automatically", () => {
       const gitOps = new GitOps({ workDir, executor: stubExecutor });
-      // Should auto-create parent directory
       gitOps.writeFile("config/settings.json", "content");
       assert.ok(existsSync(join(workDir, "config/settings.json")));
     });
@@ -733,7 +731,6 @@ describe("GitOps", () => {
       const filePath = join(workDir, "script.sh");
       writeFileSync(filePath, "#!/bin/bash\necho hello\n");
 
-      // Verify file is NOT executable before setExecutable
       const modeBefore = statSync(filePath).mode;
       const executableBefore = (modeBefore & 0o111) !== 0;
       assert.equal(
@@ -744,7 +741,6 @@ describe("GitOps", () => {
 
       await gitOps.setExecutable("script.sh");
 
-      // Verify file IS executable after setExecutable
       const modeAfter = statSync(filePath).mode;
       const executableAfter = (modeAfter & 0o111) !== 0;
       assert.equal(
@@ -771,7 +767,6 @@ describe("GitOps", () => {
 
       await gitOps.setExecutable("script.sh");
 
-      // Verify file is still NOT executable (dry-run should skip chmod)
       const mode = statSync(filePath).mode;
       const executable = (mode & 0o111) !== 0;
       assert.equal(
@@ -861,7 +856,6 @@ describe("GitOps", () => {
       assert.ok(
         calls.some((c) => c.args.includes("add") && c.args.includes("-A"))
       );
-      // Should not have called git commit since there were no changes
       assert.ok(!calls.some((c) => c.args.includes("commit")));
     });
   });
@@ -1026,7 +1020,6 @@ describe("GitOps", () => {
 
     test("does nothing when file does not exist", () => {
       const gitOps = new GitOps({ workDir, executor: stubExecutor });
-      // Should not throw
       gitOps.deleteFile("nonexistent.json");
     });
 

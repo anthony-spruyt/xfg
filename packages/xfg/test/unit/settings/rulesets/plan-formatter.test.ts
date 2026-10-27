@@ -1,5 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
+import { stripVTControlCharacters } from "node:util";
 import type { RulesetChange } from "../../../../src/settings/rulesets/diff.js";
 import type { RulesetRule } from "../../../../src/config/types.js";
 import {
@@ -546,10 +547,12 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     assert.equal(result.deletes, 1);
-    assert.deepEqual(result.lines.map((line) => line.trim()).filter(Boolean), [
-      "Delete:",
-      '- ruleset "old-ruleset"',
-    ]);
+    assert.deepEqual(
+      result.lines
+        .map((line) => stripVTControlCharacters(line).trim())
+        .filter(Boolean),
+      ["Delete:", '- ruleset "old-ruleset"']
+    );
   });
 
   test("excludes unchanged from output but includes in count", () => {

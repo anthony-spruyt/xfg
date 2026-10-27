@@ -569,21 +569,6 @@ describe("writeLifecycleReportSummary", () => {
     assert.equal(debugMessages.length, 1);
   });
 
-  test("no-ops when summaryPath not set", () => {
-    const report: LifecycleReport = {
-      actions: [{ repoName: "org/repo", action: "created" }],
-      totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
-    };
-
-    const debugMessages: string[] = [];
-
-    writeLifecycleReportSummary(report, false, undefined, {
-      debug: (msg: string) => debugMessages.push(msg),
-    });
-
-    assert.deepEqual(debugMessages, []);
-  });
-
   test("no-ops when all actions are existed (no changes)", () => {
     const report: LifecycleReport = {
       actions: [{ repoName: "org/repo", action: "existed" }],

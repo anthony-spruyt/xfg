@@ -10,9 +10,7 @@ import {
   TEST_CLIENT_ID,
 } from "../../fixtures/test-fixtures.js";
 function base64UrlDecode(str: string): string {
-  // Add padding if needed
   const padded = str + "=".repeat((4 - (str.length % 4)) % 4);
-  // Convert base64url to base64
   const base64 = padded.replace(/-/g, "+").replace(/_/g, "/");
   return Buffer.from(base64, "base64").toString("utf8");
 }
@@ -29,7 +27,6 @@ function parseJwt(token: string): { header: object; payload: object } {
   };
 }
 
-// Store original fetch
 let originalFetch: typeof globalThis.fetch;
 
 describe("GitHubAppTokenManager", () => {
@@ -41,9 +38,6 @@ describe("GitHubAppTokenManager", () => {
     globalThis.fetch = originalFetch;
   });
 
-  // ============================================================
-  // Task 1: JWT Generation Tests
-  // ============================================================
   describe("constructor and generateJWT", () => {
     test("generateJWT returns a valid JWT structure", () => {
       const manager = new GitHubAppTokenManager(
@@ -52,11 +46,9 @@ describe("GitHubAppTokenManager", () => {
       );
       const jwt = manager.generateJWT();
 
-      // JWT should have 3 parts separated by dots
       const parts = jwt.split(".");
       assert.equal(parts.length, 3, "JWT should have 3 parts");
 
-      // All parts should be base64url encoded (no padding)
       for (const part of parts) {
         assert.ok(
           /^[A-Za-z0-9_-]+$/.test(part),
@@ -72,7 +64,6 @@ describe("GitHubAppTokenManager", () => {
       );
       const jwt = manager.generateJWT();
 
-      // Structural: JWT must have exactly 3 dot-separated parts
       const parts = jwt.split(".");
       assert.equal(parts.length, 3, "JWT must have exactly 3 parts");
 
@@ -91,7 +82,6 @@ describe("GitHubAppTokenManager", () => {
       );
       const jwt = manager.generateJWT();
 
-      // Structural: verify 3-part format before decoding
       const parts = jwt.split(".");
       assert.equal(parts.length, 3, "JWT must have header.payload.signature");
 
@@ -156,7 +146,6 @@ describe("GitHubAppTokenManager", () => {
       );
       const jwt = manager.generateJWT();
 
-      // Verify that the signature part exists and is non-empty
       const parts = jwt.split(".");
       assert.ok(parts[2].length > 0, "Signature should not be empty");
 
@@ -168,9 +157,6 @@ describe("GitHubAppTokenManager", () => {
     });
   });
 
-  // ============================================================
-  // Task 2: Installation Discovery Tests
-  // ============================================================
   describe("discoverInstallations", () => {
     test("calls GET /app/installations with JWT auth", async () => {
       const manager = new GitHubAppTokenManager(
@@ -411,9 +397,6 @@ describe("GitHubAppTokenManager", () => {
     });
   });
 
-  // ============================================================
-  // Task 3: Token Generation with Caching Tests
-  // ============================================================
   describe("getTokenForOwner", () => {
     test("calls POST /app/installations/{id}/access_tokens", async () => {
       const manager = new GitHubAppTokenManager(
@@ -515,7 +498,6 @@ describe("GitHubAppTokenManager", () => {
 
       await manager.discoverInstallations("api.github.com");
 
-      // First call should fetch token
       const token1 = await manager.getTokenForOwner(
         "api.github.com",
         "cached-org"
@@ -523,7 +505,6 @@ describe("GitHubAppTokenManager", () => {
       assert.equal(token1, "token_1");
       assert.equal(tokenCallCount, 1);
 
-      // Second call should use cached token
       const token2 = await manager.getTokenForOwner(
         "api.github.com",
         "cached-org"
@@ -563,17 +544,14 @@ describe("GitHubAppTokenManager", () => {
 
       await manager.discoverInstallations("api.github.com");
 
-      // Get token with custom (expired) timestamp
       const token1 = await manager.getTokenForOwner(
         "api.github.com",
         "expire-org"
       );
       assert.equal(token1, "token_1");
 
-      // Manually expire the cache by setting timestamp to past
       manager._expireCacheForTesting("api.github.com", "expire-org");
 
-      // Now should fetch new token
       const token2 = await manager.getTokenForOwner(
         "api.github.com",
         "expire-org"
@@ -583,9 +561,6 @@ describe("GitHubAppTokenManager", () => {
     });
   });
 
-  // ============================================================
-  // Task 4: getTokenForRepo Tests
-  // ============================================================
   describe("getTokenForRepo", () => {
     test("derives api.github.com for github.com host", async () => {
       const manager = new GitHubAppTokenManager(
@@ -772,9 +747,6 @@ describe("GitHubAppTokenManager", () => {
     });
   });
 
-  // ============================================================
-  // Task 5: Retry Logic Tests
-  // ============================================================
   describe("retry logic", () => {
     test("retries discoverInstallations on 5xx errors", async () => {
       const manager = new GitHubAppTokenManager(

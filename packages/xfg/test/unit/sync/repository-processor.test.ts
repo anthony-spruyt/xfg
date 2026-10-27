@@ -36,7 +36,6 @@ function createMockExecutor(): ICommandExecutor {
   return createExecutorMockFull({}).mock;
 }
 
-// Mock executor that tracks commit messages for tests verifying commit behavior
 function createTrackingMockExecutor() {
   const result = createExecutorMockFull({
     trackGitCommands: true,
@@ -138,7 +137,6 @@ describe("RepositoryProcessor", () => {
     });
 
     test("cleans up workspace on error (finally block)", async () => {
-      // Create a file in the workspace before processing
       mkdirSync(workDir, { recursive: true });
       writeFileSync(join(workDir, "existing.txt"), "content");
 
@@ -154,7 +152,6 @@ describe("RepositoryProcessor", () => {
         // Expected to fail - no real git repo
       }
 
-      // The existing file should have been cleaned up
       const files = readdirSync(workDir);
       assert.equal(files.length, 0, "Workspace should be empty after cleanup");
     });
@@ -587,8 +584,6 @@ describe("RepositoryProcessor", () => {
       );
     });
 
-    // mergeStrategy-in-direct-mode warning moved to CLI layer (sync-command.ts)
-
     test("direct mode should use force: false for push (issue #183)", async () => {
       const { mock: mockLogger } = createMockLogger();
       const {
@@ -841,7 +836,6 @@ describe("RepositoryProcessor", () => {
         `Should not delete createOnly file that exists on base branch, but deleted: ${localCalls.deleteFile.map((c) => c.fileName).join(", ")}`
       );
 
-      // Verify the skip message was logged
       const skipMessage = messages.find(
         (m) => m.includes("Skipping") && m.includes("createOnly")
       );
@@ -1177,7 +1171,6 @@ describe("RepositoryProcessor", () => {
         hasStagedChanges: true,
       });
 
-      // Create mock repositorySession that tracks cleanup calls
       const mockRepositorySession: IRepositorySession = {
         async setup() {
           return {
@@ -1193,7 +1186,6 @@ describe("RepositoryProcessor", () => {
         },
       };
 
-      // Create mock commitPushManager that throws
       const mockCommitPushManager: ICommitPushManager = {
         async commitAndPush() {
           throw new Error("Commit failed");
@@ -1225,7 +1217,6 @@ describe("RepositoryProcessor", () => {
         );
       }
 
-      // Cleanup should have been called
       assert.ok(
         cleanupCallCount >= 1,
         `Should attempt cleanup in finally block, got ${cleanupCallCount} calls`
@@ -1236,7 +1227,6 @@ describe("RepositoryProcessor", () => {
   describe("orphaned file deletion", () => {
     test("should delete orphaned file when removed from config", async () => {
       const { mock: mockLogger } = createMockLogger();
-      // Track which files "exist" in the mock
       const existingFiles = new Set(["orphaned.json"]);
       const {
         gitOps,
@@ -1253,7 +1243,6 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `delete-orphaned-${Date.now()}`);
 
-      // Create manifest file to track orphaned.json
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
@@ -1283,7 +1272,6 @@ describe("RepositoryProcessor", () => {
         executor: createMockExecutor(),
       });
 
-      // Should have deleted orphaned.json
       assert.ok(
         localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
@@ -1307,7 +1295,6 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `nodelete-${Date.now()}`);
 
-      // Create manifest file
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
@@ -1331,7 +1318,6 @@ describe("RepositoryProcessor", () => {
         noDelete: true,
       });
 
-      // Should NOT have deleted anything
       assert.equal(
         localCalls.deleteFile.length,
         0,
@@ -1360,7 +1346,6 @@ describe("RepositoryProcessor", () => {
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
       const localWorkDir = join(testDir, `dryrun-delete-${Date.now()}`);
 
-      // Create manifest file
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
@@ -1389,14 +1374,12 @@ describe("RepositoryProcessor", () => {
         executor: createMockExecutor(),
       });
 
-      // Should NOT actually delete file
       assert.equal(
         localCalls.deleteFile.length,
         0,
         "Should not delete files in dry-run"
       );
 
-      // Should show DELETED status in log
       assert.ok(
         diffStatuses.some(
           (s) => s.fileName === "orphaned.json" && s.status === "DELETED"
@@ -1424,7 +1407,6 @@ describe("RepositoryProcessor", () => {
       const localWorkDir = join(testDir, `track-delete-${Date.now()}`);
       const trackingExecutor = createTrackingMockExecutor();
 
-      // Create manifest file
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
@@ -1453,12 +1435,10 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // orphaned.json should have been deleted
       assert.ok(
         localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
       );
-      // Commit message should include the deleted file
       assert.ok(
         trackingExecutor.lastCommitMessage?.includes("orphaned.json"),
         `Commit message should include deleted file, got: ${trackingExecutor.lastCommitMessage}`
@@ -1552,7 +1532,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Commit message should only mention config1.json
       assert.ok(
         trackingExecutor.lastCommitMessage,
         "Should have commit message"
@@ -1606,7 +1585,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Commit message should only mention actual.json, not skipped.json
       assert.ok(
         trackingExecutor.lastCommitMessage,
         "Should have commit message"
@@ -1641,7 +1619,6 @@ describe("RepositoryProcessor", () => {
       );
       const trackingExecutor = createTrackingMockExecutor();
 
-      // Create the manifest file to simulate it exists
       mkdirSync(localWorkDir, { recursive: true });
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
@@ -1668,7 +1645,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Verify we have a commit message
       assert.ok(
         trackingExecutor.lastCommitMessage,
         "Should have commit message"
@@ -1683,7 +1659,6 @@ describe("RepositoryProcessor", () => {
       const hasCorrectManifest = commitMsg.includes(".xfg.json");
       const hasTestFile = commitMsg.includes(".xfg-test");
 
-      // Count file names in the commit message
       const fileNameMatches = commitMsg.match(
         /\.xfg\.json|\.xfg-test|xfg\.json/g
       );
@@ -1783,7 +1758,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Verify commit message
       assert.ok(
         trackingExecutor.lastCommitMessage,
         "Should have commit message"
@@ -1796,7 +1770,6 @@ describe("RepositoryProcessor", () => {
         !commitMsg.includes("config files") ||
         commitMsg.includes("3 config files");
 
-      // Count unique file names to verify no duplicates
       const fileMatches = commitMsg.match(
         /\.xfg\.json|action-test\.json|action-test-2\.yaml/g
       );
@@ -1820,7 +1793,6 @@ describe("RepositoryProcessor", () => {
 
   describe("CommitStrategy integration", () => {
     test("should use GraphQL commit strategy when GitHub App credentials are set", async () => {
-      // Save original env values
       const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
@@ -1839,7 +1811,6 @@ describe("RepositoryProcessor", () => {
         });
         const mockFactory: GitOpsFactory = () => gitOps;
 
-        // Track executor calls to verify GraphQL vs git commit
         const executorCalls: string[] = [];
         let graphqlCallCount = 0;
         const mockExecutor: ICommandExecutor = {
@@ -1875,7 +1846,6 @@ describe("RepositoryProcessor", () => {
                 },
               });
             }
-            // Return mock PR URL
             if (
               executable === "gh" &&
               args.includes("pr") &&
@@ -1883,7 +1853,6 @@ describe("RepositoryProcessor", () => {
             ) {
               return "https://github.com/test/repo/pull/123";
             }
-            // Return mock HEAD sha for GraphQL strategy
             if (
               executable === "git" &&
               args.includes("rev-parse") &&
@@ -1919,7 +1888,6 @@ describe("RepositoryProcessor", () => {
 
         assert.equal(result.success, true, "Should succeed");
 
-        // Verify GraphQL createCommitOnBranch mutation was called
         const graphqlCommitCall = executorCalls.find((c) =>
           c.includes("createCommitOnBranch")
         );
@@ -1928,7 +1896,6 @@ describe("RepositoryProcessor", () => {
           "Should call gh api graphql with createCommitOnBranch mutation"
         );
 
-        // Verify git commit was NOT called (we use GraphQL instead)
         const gitCommitCall = executorCalls.find((c) =>
           c.includes("git commit")
         );
@@ -1937,13 +1904,11 @@ describe("RepositoryProcessor", () => {
           `Should NOT call git commit when using GraphQL strategy, but found: ${gitCommitCall}`
         );
 
-        // Verify log message mentions verified commit
         const verifiedLog = loggerMessages.find((m: string) =>
           m.includes("verified")
         );
         assert.ok(verifiedLog, "Should log that commit is verified");
       } finally {
-        // Restore original env values
         if (originalClientId === undefined) {
           delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
@@ -1958,7 +1923,6 @@ describe("RepositoryProcessor", () => {
     });
 
     test("direct mode with CommitStrategy should return helpful error on branch protection", async () => {
-      // Save original env values
       const originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       const originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
 
@@ -1976,7 +1940,6 @@ describe("RepositoryProcessor", () => {
         });
         const mockFactory: GitOpsFactory = () => gitOps;
 
-        // Mock executor with ICommandExecutor interface
         const mockExecutor: ICommandExecutor = {
           async exec(
             executable: string,
@@ -2031,7 +1994,6 @@ describe("RepositoryProcessor", () => {
           "Message should suggest using force mode"
         );
       } finally {
-        // Restore original env values
         if (originalClientId === undefined) {
           delete process.env.XFG_GITHUB_CLIENT_ID;
         } else {
@@ -2062,7 +2024,6 @@ describe("RepositoryProcessor", () => {
         });
         const mockFactory: GitOpsFactory = () => gitOps;
 
-        // Test uses mock executor to simulate protected branch error
         const mockExecutor: ICommandExecutor = {
           async exec(
             executable: string,
@@ -2142,7 +2103,6 @@ describe("RepositoryProcessor", () => {
         });
         const mockFactory: GitOpsFactory = () => gitOps;
 
-        // Test uses mock executor to simulate permission denied error
         const mockExecutor: ICommandExecutor = {
           async exec(
             executable: string,
@@ -2366,7 +2326,6 @@ describe("RepositoryProcessor", () => {
 
       const processor = new RepositoryProcessor(mockFactory, mockLogger);
 
-      // Create manifest tracking orphaned.json
       writeFileSync(
         join(localWorkDir, ".xfg.json"),
         JSON.stringify({
@@ -2416,7 +2375,6 @@ describe("RepositoryProcessor", () => {
     beforeEach(() => {
       originalClientId = process.env.XFG_GITHUB_CLIENT_ID;
       originalPrivateKey = process.env.XFG_GITHUB_APP_PRIVATE_KEY;
-      // Clear env vars before each test
       delete process.env.XFG_GITHUB_CLIENT_ID;
       delete process.env.XFG_GITHUB_APP_PRIVATE_KEY;
     });
@@ -2435,7 +2393,6 @@ describe("RepositoryProcessor", () => {
     });
 
     test("does not use token manager when GitHub App credentials are not set", async () => {
-      // Verify env vars are cleared
       assert.equal(
         process.env.XFG_GITHUB_CLIENT_ID,
         undefined,
@@ -2513,7 +2470,6 @@ describe("RepositoryProcessor", () => {
 
       const { mock: mockLogger } = createMockLogger();
 
-      // Mock fetch to return empty installations array
       const originalFetch = globalThis.fetch;
       globalThis.fetch = async (url: string | URL | Request) => {
         const urlString = url.toString();
@@ -2638,7 +2594,6 @@ describe("RepositoryProcessor", () => {
     test("passes auth options to factory when GitHub App token is obtained", async () => {
       const { mock: mockLogger } = createMockLogger();
 
-      // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
 
       const mockGitOpsFactory = createTypedGitOpsFactory({
@@ -2647,7 +2602,6 @@ describe("RepositoryProcessor", () => {
         },
       });
 
-      // Create mock authOptionsBuilder that returns a specific token
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
@@ -2688,7 +2642,6 @@ describe("RepositoryProcessor", () => {
         }
       );
 
-      // Verify auth options were passed
       assert.ok(capturedAuth, "Auth options should be passed to factory");
       const auth = capturedAuth as {
         token: string;
@@ -2709,7 +2662,6 @@ describe("RepositoryProcessor", () => {
     test("passes auth options with custom host for GitHub Enterprise", async () => {
       const { mock: mockLogger } = createMockLogger();
 
-      // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
 
       const mockGitOpsFactory = createTypedGitOpsFactory({
@@ -2718,7 +2670,6 @@ describe("RepositoryProcessor", () => {
         },
       });
 
-      // Create mock authOptionsBuilder that returns a specific token for GHE
       const mockAuthOptionsBuilder: IAuthOptionsBuilder = {
         async resolve() {
           return {
@@ -2759,7 +2710,6 @@ describe("RepositoryProcessor", () => {
         }
       );
 
-      // Verify auth options have custom host
       assert.ok(capturedAuth, "Auth options should be passed to factory");
       const auth = capturedAuth as {
         token: string;
@@ -2777,7 +2727,6 @@ describe("RepositoryProcessor", () => {
     test("uses GH_TOKEN for git auth when no GitHub App token", async () => {
       const { mock: mockLogger } = createMockLogger();
 
-      // Track the auth options passed to factory
       let capturedAuth: unknown = undefined;
 
       const mockGitOpsFactory = createTypedGitOpsFactory({
@@ -2811,7 +2760,6 @@ describe("RepositoryProcessor", () => {
         }
       );
 
-      // Verify gitOpsFactory was called with auth options containing GH_TOKEN
       assert.ok(
         capturedAuth,
         "authOptions should be defined when GH_TOKEN is set"
@@ -2936,7 +2884,6 @@ describe("RepositoryProcessor", () => {
       });
       const mockFactory: GitOpsFactory = () => gitOps;
 
-      // Mock executor
       const trackingExecutor: ICommandExecutor = {
         async exec(
           executable: string,
@@ -2970,7 +2917,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Verify the orphaned file was deleted
       assert.ok(
         localCalls.deleteFile.some((c) => c.fileName === "orphaned.json"),
         "Should delete orphaned file"
@@ -3035,7 +2981,6 @@ describe("RepositoryProcessor", () => {
       });
       const mockFactory: GitOpsFactory = () => gitOps;
 
-      // Mock executor
       const trackingExecutor: ICommandExecutor = {
         async exec(
           executable: string,
@@ -3069,7 +3014,6 @@ describe("RepositoryProcessor", () => {
         executor: trackingExecutor,
       });
 
-      // Verify the orphaned files were deleted
       assert.ok(
         localCalls.deleteFile.some((c) => c.fileName === "orphaned1.json"),
         "Should delete first orphaned file"

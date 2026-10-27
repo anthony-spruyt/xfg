@@ -578,7 +578,6 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   });
 
   test("throws error when output contains no URL", async () => {
-    // BUG: Currently returns the error message as the URL instead of throwing
     mockExecutor.responses.set(
       "gh pr create",
       "Error: failed to create pull request"
@@ -602,7 +601,6 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   });
 
   test("does not capture trailing punctuation in URL", async () => {
-    // BUG: [^\s]+ captures trailing period/punctuation
     mockExecutor.responses.set(
       "gh pr create",
       "PR created: https://github.com/owner/repo/pull/123."
@@ -629,7 +627,6 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   });
 
   test("rejects non-PR GitHub URLs (issue URL)", async () => {
-    // BUG: Current regex matches any GitHub URL, not just PR URLs
     mockExecutor.responses.set(
       "gh pr create",
       "See related: https://github.com/owner/repo/issues/456"
@@ -653,7 +650,6 @@ describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () =>
   });
 
   test("rejects non-PR GitHub URLs (commit URL)", async () => {
-    // BUG: Current regex matches any GitHub URL, not just PR URLs
     mockExecutor.responses.set(
       "gh pr create",
       "Based on commit https://github.com/owner/repo/commit/abc123"

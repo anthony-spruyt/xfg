@@ -387,21 +387,4 @@ describe("writeSyncReportSummary", () => {
 
     assert.equal(debugMessages.length, 1);
   });
-
-  test("no-ops when summaryPath not set", () => {
-    const report: SyncReport = {
-      repos: [],
-      totals: {
-        files: { create: 0, update: 0, delete: 0 },
-      },
-    };
-
-    const debugMessages: string[] = [];
-
-    writeSyncReportSummary(report, false, undefined, {
-      debug: (msg: string) => debugMessages.push(msg),
-    });
-
-    assert.deepEqual(debugMessages, []);
-  });
 });

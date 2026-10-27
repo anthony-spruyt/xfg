@@ -10,14 +10,12 @@ describe("interpolateEnvVars", () => {
   const testEnv: Record<string, string | undefined> = {};
 
   beforeEach(() => {
-    // Set up test environment variables
     testEnv.TEST_VAR = "test-value";
     testEnv.ANOTHER_VAR = "another-value";
     testEnv.EMPTY_VAR = "";
   });
 
   afterEach(() => {
-    // Clean up test env
     for (const key of Object.keys(testEnv)) {
       delete testEnv[key];
     }
@@ -375,7 +373,6 @@ describe("escape mechanism with $$ syntax", () => {
     env: testEnv,
   });
 
-  // Basic escape functionality
   test("$${VAR} outputs literal ${VAR}", () => {
     const input = { key: "$${VAR}" };
     const result = interpolateEnvVars(input, opts());
@@ -394,7 +391,6 @@ describe("escape mechanism with $$ syntax", () => {
     assert.deepEqual(result, { key: "${REQUIRED:?Must be set}" });
   });
 
-  // Mixed escaped and non-escaped
   test("mixes escaped and interpolated vars in same string", () => {
     const input = { key: "${TEST_VAR} and $${NOT_INTERPOLATED}" };
     const result = interpolateEnvVars(input, opts());
@@ -407,7 +403,6 @@ describe("escape mechanism with $$ syntax", () => {
     assert.deepEqual(result, { key: "${VAR1} and ${VAR2}" });
   });
 
-  // Real-world use case: devcontainer.json
   test("devcontainer remoteEnv pattern", () => {
     const input = {
       remoteEnv: {
@@ -426,7 +421,6 @@ describe("escape mechanism with $$ syntax", () => {
     });
   });
 
-  // Nested objects
   test("handles escaped vars in nested objects", () => {
     const input = {
       outer: {
@@ -441,7 +435,6 @@ describe("escape mechanism with $$ syntax", () => {
     });
   });
 
-  // Arrays
   test("handles escaped vars in arrays", () => {
     const input = {
       items: ["$${VAR1}", "${TEST_VAR}", "$${VAR2}"],
@@ -452,13 +445,11 @@ describe("escape mechanism with $$ syntax", () => {
     });
   });
 
-  // String interpolation via interpolateContent
   test("interpolateContent handles escaped vars in string", () => {
     const result = interpolateContent("template: $${localEnv:HOME}", opts());
     assert.equal(result, "template: ${localEnv:HOME}");
   });
 
-  // Lines array via interpolateContent
   test("interpolateContent handles escaped vars in lines", () => {
     const result = interpolateContent(
       ["# Use $${VAR} for local env", "export PATH=${HOME}"],
@@ -470,7 +461,6 @@ describe("escape mechanism with $$ syntax", () => {
     ]);
   });
 
-  // Edge cases
   test("consecutive escaped vars", () => {
     const input = { key: "$${A}$${B}" };
     const result = interpolateEnvVars(input, opts());

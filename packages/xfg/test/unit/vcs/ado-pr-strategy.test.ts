@@ -68,7 +68,6 @@ describe("AdoPRStrategy with mock executor", () => {
       const call0 = mockExecutor.calls[0];
       assert.strictEqual(call0.executable, "az");
       assert.ok(call0.args.includes("pr") && call0.args.includes("list"));
-      // Verify command includes correct org, project, repo, and branch args
       assert.ok(
         call0.args.includes("--repository") && call0.args.includes("myrepo"),
         `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
@@ -203,7 +202,6 @@ describe("AdoPRStrategy with mock executor", () => {
       const call0 = mockExecutor.calls[0];
       assert.strictEqual(call0.executable, "az");
       assert.ok(call0.args.includes("pr") && call0.args.includes("create"));
-      // Verify command includes correct org, project, repo, and branch args
       assert.ok(
         call0.args.includes("--repository") && call0.args.includes("myrepo"),
         `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
@@ -230,7 +228,6 @@ describe("AdoPRStrategy with mock executor", () => {
         call0.args.includes("--project") && call0.args.includes("myproject"),
         `Args should include --project myproject. Got: ${call0.args.join(" ")}`
       );
-      // Verify URL uses org/project/repo from config
       assert.equal(
         result.url,
         "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/789"
@@ -577,7 +574,6 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 
     await strategy.create(options);
 
-    // Verify the args include @/path format for description
     const call0 = mockExecutor.calls[0];
     const descFile = join(testDir, ".pr-description.md");
 
@@ -1286,7 +1282,3 @@ describe("AdoPRStrategy logger coverage", () => {
     );
   });
 });
-
-// Note: "unparseable URL" test removed — closeExistingPR now uses findExistingPRId
-// directly instead of going through findExistingPRUrl → parsePRUrl, eliminating
-// the URL roundtrip that could produce unparseable results.

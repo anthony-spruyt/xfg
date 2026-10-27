@@ -1,7 +1,15 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { createDefaultFactories } from "../../../src/cli/settings-factories.js";
-import { LabelsProcessor } from "../../../src/settings/index.js";
+import {
+  RulesetProcessor,
+  RepoSettingsProcessor,
+  LabelsProcessor,
+  CodeScanningProcessor,
+  VariablesProcessor,
+  CollaboratorsProcessor,
+  EnvironmentsProcessor,
+} from "../../../src/settings/index.js";
 import type { ProcessExecutor } from "../../../src/shared/command-executor.js";
 import type { SettingsProcessorFactories } from "../../../src/cli/types.js";
 
@@ -20,14 +28,16 @@ describe("createDefaultFactories", () => {
     assert.equal(factories.rulesets, customRulesets);
   });
 
-  test("with partial override uses defaults for non-overridden keys", () => {
-    const customRulesets = (() => ({
-      process: async () => ({}),
-    })) as unknown as SettingsProcessorFactories["rulesets"];
-    const factories = createDefaultFactories(stubExecutor, {
-      rulesets: customRulesets,
-    });
+  test("with no overrides builds each key's own processor", () => {
+    const factories = createDefaultFactories(stubExecutor);
+
+    assert.ok(factories.rulesets() instanceof RulesetProcessor);
     assert.ok(factories.labels() instanceof LabelsProcessor);
+    assert.ok(factories.repo() instanceof RepoSettingsProcessor);
+    assert.ok(factories.codeScanning() instanceof CodeScanningProcessor);
+    assert.ok(factories.variables() instanceof VariablesProcessor);
+    assert.ok(factories.collaborators() instanceof CollaboratorsProcessor);
+    assert.ok(factories.environments() instanceof EnvironmentsProcessor);
   });
 
   test("with all overrides uses all provided factories", () => {
