@@ -28,7 +28,20 @@ describe("writeGitHubStepSummary", () => {
   });
 
   test("no-op when summaryPath is undefined", () => {
-    writeGitHubStepSummary(() => "# Hello", undefined);
+    let rendered = false;
+    const debugMessages: string[] = [];
+
+    writeGitHubStepSummary(
+      () => {
+        rendered = true;
+        return "# Hello";
+      },
+      undefined,
+      { debug: (message) => debugMessages.push(message) }
+    );
+
+    assert.equal(rendered, false);
+    assert.deepEqual(debugMessages, []);
   });
 
   test("appends markdown to file", () => {

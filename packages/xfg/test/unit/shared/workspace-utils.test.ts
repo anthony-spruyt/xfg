@@ -42,27 +42,6 @@ describe("generateWorkspaceName", () => {
     assert.ok(pattern.test(name), `Name "${name}" should match pattern`);
   });
 
-  test("timestamp component is reasonable", () => {
-    const before = Date.now();
-    const name = generateWorkspaceName(0);
-    const after = Date.now();
-
-    // Extract timestamp from name
-    const parts = name.split("-");
-    const timestamp = parseInt(parts[1], 10);
-
-    assert.ok(timestamp >= before);
-    assert.ok(timestamp <= after);
-  });
-
-  test("UUID component has correct length", () => {
-    const name = generateWorkspaceName(0);
-    const parts = name.split("-");
-    // parts: ["repo", timestamp, index, uuid]
-    const uuid = parts[parts.length - 1];
-    assert.equal(uuid.length, 8);
-  });
-
   test("handles large index values", () => {
     const name = generateWorkspaceName(999999);
     assert.ok(name.includes("-999999-"));

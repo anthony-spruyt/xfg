@@ -70,11 +70,9 @@ describe("convertContentToString", () => {
     const content = { key: "value", nested: { a: 1 } };
     const result = convertContentToString(content, "config.json");
 
-    // Should be valid JSON
     const parsed = JSON.parse(result);
     assert.deepEqual(parsed, content);
 
-    // Should have 2-space indentation
     assert.ok(result.includes('  "key"'));
   });
 
@@ -82,7 +80,6 @@ describe("convertContentToString", () => {
     const content = { key: "value", nested: { a: 1 } };
     const result = convertContentToString(content, "config.yaml");
 
-    // Should contain YAML format with quoted strings
     assert.ok(result.includes('key: "value"'));
     assert.ok(result.includes("nested:"));
     assert.ok(result.includes("  a: 1"));
@@ -280,7 +277,6 @@ describe("convertContentToString with JSON5 format", () => {
     const parsed = JSON.parse(result);
     assert.deepEqual(parsed, content);
 
-    // Should have 2-space indentation
     assert.ok(result.includes('  "key"'));
   });
 
@@ -548,10 +544,7 @@ describe("convertContentToString YAML string quoting", () => {
   test("does not quote actual null", () => {
     const content = { empty: null };
     const result = convertContentToString(content, "config.yaml");
-    assert.ok(
-      result.includes("empty: null") || result.includes("empty:"),
-      "Actual null stays unquoted"
-    );
+    assert.match(result, /^empty: null$/m, "Actual null stays unquoted");
   });
 
   test("does not quote numbers", () => {

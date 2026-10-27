@@ -68,7 +68,6 @@ describe("AdoPRStrategy with mock executor", () => {
       const call0 = mockExecutor.calls[0];
       assert.strictEqual(call0.executable, "az");
       assert.ok(call0.args.includes("pr") && call0.args.includes("list"));
-      // Verify command includes correct org, project, repo, and branch args
       assert.ok(
         call0.args.includes("--repository") && call0.args.includes("myrepo"),
         `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
@@ -203,7 +202,6 @@ describe("AdoPRStrategy with mock executor", () => {
       const call0 = mockExecutor.calls[0];
       assert.strictEqual(call0.executable, "az");
       assert.ok(call0.args.includes("pr") && call0.args.includes("create"));
-      // Verify command includes correct org, project, repo, and branch args
       assert.ok(
         call0.args.includes("--repository") && call0.args.includes("myrepo"),
         `Args should include --repository myrepo. Got: ${call0.args.join(" ")}`
@@ -230,7 +228,6 @@ describe("AdoPRStrategy with mock executor", () => {
         call0.args.includes("--project") && call0.args.includes("myproject"),
         `Args should include --project myproject. Got: ${call0.args.join(" ")}`
       );
-      // Verify URL uses org/project/repo from config
       assert.equal(
         result.url,
         "https://dev.azure.com/myorg/myproject/_git/myrepo/pullrequest/789"
@@ -577,7 +574,6 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 
     await strategy.create(options);
 
-    // Verify the args include @/path format for description
     const call0 = mockExecutor.calls[0];
     const descFile = join(testDir, ".pr-description.md");
 
@@ -591,26 +587,56 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 });
 
 describe("AdoPRStrategy URL building", () => {
-  test("builds correct PR URL with special characters", () => {
-    const org = "my-org";
-    const project = "my project"; // Has space
-    const repo = "my-repo";
-    const prId = "123";
+  const spacedRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/my org/my project/my repo",
+    owner: "my org",
+    repo: "my repo",
+    organization: "my org",
+    project: "my project",
+  };
 
-    // Expected URL with encoded values
-    const expectedUrl = `https://dev.azure.com/${encodeURIComponent(org)}/${encodeURIComponent(project)}/_git/${encodeURIComponent(repo)}/pullrequest/${prId}`;
+  let mockExecutor: ExecutorMockResult;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  async function createPR() {
+    mockExecutor.responses.set("az repos pr create", "123");
+    return new AdoPRStrategy(mockExecutor.mock).create({
+      repoInfo: spacedRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+  }
+
+  test("encodes organization, project and repo in the PR URL", async () => {
+    const result = await createPR();
 
     assert.equal(
-      expectedUrl,
-      "https://dev.azure.com/my-org/my%20project/_git/my-repo/pullrequest/123"
+      result.url,
+      "https://dev.azure.com/my%20org/my%20project/_git/my%20repo/pullrequest/123"
     );
   });
 
-  test("builds correct org URL", () => {
-    const org = "test-organization";
-    const expectedOrgUrl = `https://dev.azure.com/${encodeURIComponent(org)}`;
+  test("passes the encoded organization URL to az", async () => {
+    await createPR();
 
-    assert.equal(expectedOrgUrl, "https://dev.azure.com/test-organization");
+    const args = mockExecutor.calls[0].args;
+    assert.equal(
+      args[args.indexOf("--org") + 1],
+      "https://dev.azure.com/my%20org"
+    );
   });
 });
 
@@ -1256,7 +1282,3 @@ describe("AdoPRStrategy logger coverage", () => {
     );
   });
 });
-
-// Note: "unparseable URL" test removed — closeExistingPR now uses findExistingPRId
-// directly instead of going through findExistingPRUrl → parsePRUrl, eliminating
-// the URL roundtrip that could produce unparseable results.

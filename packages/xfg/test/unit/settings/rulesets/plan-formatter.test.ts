@@ -1,5 +1,6 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
+import { stripVTControlCharacters } from "node:util";
 import type { RulesetChange } from "../../../../src/settings/rulesets/diff.js";
 import type { RulesetRule } from "../../../../src/config/types.js";
 import {
@@ -546,10 +547,11 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     assert.equal(result.deletes, 1);
-    const output = result.lines.join("\n");
-    assert.ok(output.includes("old-ruleset"));
-    assert.ok(
-      !output.includes("enforcement") || output.split("enforcement").length <= 2
+    assert.deepEqual(
+      result.lines
+        .map((line) => stripVTControlCharacters(line).trim())
+        .filter(Boolean),
+      ["Delete:", '- ruleset "old-ruleset"']
     );
   });
 
@@ -660,7 +662,9 @@ describe("formatRulesetPlan", () => {
 
     assert.equal(result.updates, 1);
     const output = result.lines.join("\n");
-    assert.ok(output.includes("include") || output.includes("ref_name"));
+    assert.ok(output.includes("~ ref_name:"));
+    assert.ok(output.includes('~ include: ["main"] → ["main", "develop"]'));
+    assert.ok(!output.includes("refName"));
   });
 
   test("formats create with mixed array (objects with primitive-like items)", () => {
