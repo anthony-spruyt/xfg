@@ -322,6 +322,16 @@ groups:
           enforcement: active
 ```
 
+A group can also opt its repos out of a single inherited ruleset or label by setting it to `false`. A later group, or the repo, can define it again:
+
+```yaml
+groups:
+  no-reviews:
+    settings:
+      rulesets:
+        base-protection: false  # Repos in this group get no base-protection
+```
+
 ## Group PR Options
 
 Groups can set PR options that merge into the chain:
