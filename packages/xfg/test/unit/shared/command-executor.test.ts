@@ -1,11 +1,10 @@
-import { describe, test } from "node:test";
+import { after, describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   ProcessExecutor,
-  ICommandExecutor,
   getStderr,
 } from "../../../src/shared/command-executor.js";
 
@@ -65,7 +64,7 @@ describe("ProcessExecutor", () => {
     assert.strictEqual(result, "hello");
   });
 
-  test("cleanup", () => {
+  after(() => {
     rmSync(testDir, { recursive: true, force: true });
   });
 });
@@ -73,59 +72,9 @@ describe("ProcessExecutor", () => {
 describe("ProcessExecutor with process.env", () => {
   const processEnvExecutor = new ProcessExecutor(process.env);
 
-  test("is an instance of ProcessExecutor", () => {
-    assert.ok(processEnvExecutor instanceof ProcessExecutor);
-  });
-
-  test("implements ICommandExecutor interface", () => {
-    assert.strictEqual(typeof processEnvExecutor.exec, "function");
-  });
-
   test("runs commands successfully", async () => {
     const result = await processEnvExecutor.exec("echo", ["default"], tmpdir());
     assert.strictEqual(result, "default");
-  });
-});
-
-describe("ICommandExecutor interface", () => {
-  test("can be implemented with custom executor", async () => {
-    const mockExecutor: ICommandExecutor = {
-      async exec(
-        _executable: string,
-        _args: string[],
-        _cwd: string
-      ): Promise<string> {
-        return "mocked output";
-      },
-    };
-
-    const result = await mockExecutor.exec("any", [], "/any/path");
-    assert.strictEqual(result, "mocked output");
-  });
-
-  test("allows tracking of executed commands", async () => {
-    const commands: Array<{ executable: string; args: string[]; cwd: string }> =
-      [];
-
-    const trackingExecutor: ICommandExecutor = {
-      async exec(
-        executable: string,
-        args: string[],
-        cwd: string
-      ): Promise<string> {
-        commands.push({ executable, args, cwd });
-        return "tracked";
-      },
-    };
-
-    await trackingExecutor.exec("git", ["status"], "/repo");
-    await trackingExecutor.exec("git", ["log"], "/repo");
-
-    assert.strictEqual(commands.length, 2);
-    assert.strictEqual(commands[0].executable, "git");
-    assert.deepStrictEqual(commands[0].args, ["status"]);
-    assert.strictEqual(commands[1].executable, "git");
-    assert.deepStrictEqual(commands[1].args, ["log"]);
   });
 });
 

@@ -7,7 +7,6 @@ import {
   isTextContent,
   mergeTextContent,
   findMatchKey,
-  MATCH_KEY_CANDIDATES,
   type ArrayMergeStrategy,
   type MergeContext,
 } from "../../../src/config/merge.js";
@@ -342,13 +341,6 @@ describe("findMatchKey", () => {
 
   test("returns undefined for empty arrays", () => {
     assert.equal(findMatchKey([], []), undefined);
-  });
-
-  test("exports MATCH_KEY_CANDIDATES", () => {
-    assert.deepEqual(
-      [...MATCH_KEY_CANDIDATES],
-      ["type", "actorId", "actor_id"]
-    );
   });
 });
 

@@ -93,9 +93,15 @@ describe("GitHubCollaboratorsStrategy", () => {
 
   test("uses the default retry count when none is given", async () => {
     const executor = new MockExecutor();
-    executor.response = "[]";
+    executor.exec = async (_executable, args, _cwd, options) => {
+      executor.calls.push({ args, options });
+      throw new Error("Connection timed out");
+    };
     const strategy = new GitHubCollaboratorsStrategy(executor, { cwd: "/tmp" });
-    assert.deepEqual(await strategy.listCollaborators(repo), []);
+
+    await assert.rejects(() => strategy.listCollaborators(repo), /timed out/);
+
+    assert.equal(executor.calls.length, 4);
   });
 
   test("rejects non-GitHub repos", async () => {

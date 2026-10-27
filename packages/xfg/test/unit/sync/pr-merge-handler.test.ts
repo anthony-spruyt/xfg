@@ -36,9 +36,7 @@ describe("PRMergeHandler", () => {
       const { mock: mockLogger, messages } = createMockLogger();
       const { mock: mockExecutor } = createMockExecutor({
         responses: new Map([
-          // gh pr create returns the PR URL
           ["gh pr create", "https://github.com/test/repo/pull/1"],
-          // gh pr merge succeeds
           ["gh pr merge", ""],
         ]),
       });
@@ -68,8 +66,9 @@ describe("PRMergeHandler", () => {
 
     test("skips merge when mode is manual", async () => {
       const { mock: mockLogger, messages } = createMockLogger();
-      const { mock: mockExecutor } = createMockExecutor({
+      const { mock: mockExecutor, calls } = createMockExecutor({
         responses: new Map([
+          ["gh pr list", ""],
           ["gh pr create", "https://github.com/test/repo/pull/1"],
         ]),
       });
@@ -86,7 +85,7 @@ describe("PRMergeHandler", () => {
           branchName: "chore/sync",
           baseBranch: "main",
           workDir,
-          dryRun: true,
+          dryRun: false,
           retries: 1,
           executor: mockExecutor,
         },
@@ -95,8 +94,86 @@ describe("PRMergeHandler", () => {
       });
 
       assert.equal(result.success, true);
-      // Should not see "Handling merge" message
+      assert.equal(result.prUrl, "https://github.com/test/repo/pull/1");
+      assert.equal(result.mergeResult, undefined);
       assert.ok(!messages.some((msg) => msg.includes("Handling merge")));
+      assert.ok(
+        !calls.some((c) => c.args.includes("pr") && c.args.includes("merge")),
+        "gh pr merge should not run in manual mode"
+      );
+    });
+
+    test("enables auto-merge with squash and branch deletion when prOptions are unset", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor, calls } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+          ["gh api", "true"],
+          ["gh pr merge", ""],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+
+      await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
+        options: {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 1,
+          executor: mockExecutor,
+        },
+        changedFiles: [{ fileName: "config.json", action: "create" }],
+        repoName: "test/repo",
+      });
+
+      const mergeCall = calls.find(
+        (c) => c.args.includes("pr") && c.args.includes("merge")
+      );
+      assert.ok(mergeCall, "gh pr merge should have been called");
+      assert.ok(mergeCall.args.includes("--auto"));
+      assert.ok(mergeCall.args.includes("--squash"));
+      assert.ok(mergeCall.args.includes("--delete-branch"));
+    });
+
+    test("honours explicit mergeStrategy and deleteBranch", async () => {
+      const { mock: mockLogger } = createMockLogger();
+      const { mock: mockExecutor, calls } = createMockExecutor({
+        responses: new Map([
+          ["gh pr list", ""],
+          ["gh pr create", "https://github.com/test/repo/pull/1"],
+          ["gh api", "true"],
+          ["gh pr merge", ""],
+        ]),
+      });
+
+      const handler = new PRMergeHandler(mockLogger);
+
+      await handler.createAndMerge({
+        repoInfo: mockRepoInfo,
+        prOptions: { mergeStrategy: "rebase", deleteBranch: false },
+        options: {
+          branchName: "chore/sync",
+          baseBranch: "main",
+          workDir,
+          dryRun: false,
+          retries: 1,
+          executor: mockExecutor,
+        },
+        changedFiles: [{ fileName: "config.json", action: "create" }],
+        repoName: "test/repo",
+      });
+
+      const mergeCall = calls.find(
+        (c) => c.args.includes("pr") && c.args.includes("merge")
+      );
+      assert.ok(mergeCall, "gh pr merge should have been called");
+      assert.ok(mergeCall.args.includes("--rebase"));
+      assert.ok(!mergeCall.args.includes("--squash"));
+      assert.ok(!mergeCall.args.includes("--delete-branch"));
     });
 
     test("passes diffStats through to result", async () => {
