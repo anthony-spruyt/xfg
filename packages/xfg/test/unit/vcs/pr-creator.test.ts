@@ -1,9 +1,10 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { existsSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  loadDefaultTemplate,
   formatPRBody,
   formatPRTitle,
   createPR,
@@ -179,55 +180,34 @@ describe("formatPRTitle", () => {
   });
 });
 
-describe("loadPRTemplate (via formatPRBody)", () => {
+describe("default PR template", () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
   const templatePath = join(__dirname, "..", "..", "..", "PR.md");
   const repoInfo = createMockRepoInfo();
+  const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
 
-  test("loads PR.md template when file exists", () => {
-    assert.ok(
-      existsSync(templatePath),
-      `PR.md should exist at ${templatePath}`
-    );
+  test("default body is PR.md rendered", () => {
+    const template = readFileSync(templatePath, "utf-8");
 
-    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files, repoInfo);
-
-    assert.ok(result.length > 50, "Template should have substantial content");
-  });
-
-  test("template contains expected sections", () => {
-    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files, repoInfo);
-
-    assert.ok(
-      result.includes("xfg") ||
-        result.includes("Summary") ||
-        result.includes("Changes"),
-      "Template should have expected sections"
+    assert.equal(
+      formatPRBody(files, repoInfo),
+      formatPRBody(files, repoInfo, template)
     );
   });
 
-  test("fallback template structure is valid", () => {
-    const files: FileAction[] = [{ fileName: "test.json", action: "create" }];
-    const result = formatPRBody(files, repoInfo);
+  test("throws an error naming the path when the template is missing", () => {
+    const missing = join(__dirname, "no-such-dir", "PR.md");
 
-    assert.ok(result.includes("test.json"));
-
-    assert.ok(result.includes("Created"));
-
-    assert.ok(
-      result.includes("#") || result.includes("-") || result.includes("*"),
-      "Should have markdown formatting"
+    assert.throws(
+      () => loadDefaultTemplate(missing),
+      (error: Error) => error.message.includes(missing)
     );
   });
 
   test("interpolates repo variables in default template", () => {
-    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
     const result = formatPRBody(files, repoInfo);
 
-    // Default PR.md uses ${xfg:repo.fullName}
     assert.ok(
       result.includes("test-org/test-repo"),
       "Should interpolate repo.fullName"
