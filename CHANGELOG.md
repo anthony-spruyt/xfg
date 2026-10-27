@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.5](https://github.com/anthony-spruyt/xfg/compare/v8.5.4...v8.5.5) (2026-10-27)
+
+
+### Bug Fixes
+
+* **pr:** load the default PR body from PR.md ([#1296](https://github.com/anthony-spruyt/xfg/issues/1296)) ([bee6053](https://github.com/anthony-spruyt/xfg/commit/bee6053ac6914069c0785da8aa1e6a8cc7ffb86e))
+
 ## [8.5.4](https://github.com/anthony-spruyt/xfg/compare/v8.5.3...v8.5.4) (2026-10-24)
 
 
