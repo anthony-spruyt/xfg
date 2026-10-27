@@ -237,6 +237,7 @@ function mergeLabels(
     const repoLabel = repo[name];
 
     if (repoLabel === false) continue;
+    if (rootLabel === false && !repoLabel) continue;
     if (!inheritLabels && !repoLabel && rootLabel) continue;
 
     const base: Partial<Label> =
@@ -501,7 +502,7 @@ export function mergeSettings(
       const rootRuleset = rootRulesets[name];
       const repoRuleset = repoRulesets[name];
 
-      if (repoRuleset === false) {
+      if (repoRuleset === false || (rootRuleset === false && !repoRuleset)) {
         continue;
       }
 

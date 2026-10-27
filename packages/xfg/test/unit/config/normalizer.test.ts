@@ -3887,7 +3887,51 @@ describe("group configuration", () => {
     };
 
     const result = normalizeConfig(raw, process.env);
-    assert.ok(result.repos[0].settings?.rulesets?.["keep-rule"]);
+    const rulesets = result.repos[0].settings?.rulesets;
+    assert.equal(rulesets?.["root-rule"], undefined);
+    assert.ok(rulesets?.["keep-rule"]);
+  });
+
+  test("group settings ruleset: false yields to a repo ruleset object", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        rulesets: {
+          "root-rule": { target: "branch", enforcement: "active" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            rulesets: {
+              "root-rule": false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          settings: {
+            rulesets: {
+              "root-rule": { target: "tag", enforcement: "evaluate" },
+            },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    const rule = result.repos[0].settings?.rulesets?.["root-rule"] as Record<
+      string,
+      unknown
+    >;
+    assert.equal(rule?.target, "tag");
+    assert.equal(rule?.enforcement, "evaluate");
   });
 
   test("group settings repo: false opts out of repo settings", () => {
@@ -4115,11 +4159,6 @@ describe("group configuration", () => {
         {
           git: "git@github.com:org/repo.git",
           groups: ["mygroup"],
-          settings: {
-            labels: {
-              bug: false,
-            },
-          },
         },
       ],
     };
@@ -4129,6 +4168,43 @@ describe("group configuration", () => {
     assert.equal(labels?.bug, undefined);
     assert.ok(labels?.feature);
     assert.ok(labels?.enhancement);
+  });
+
+  test("group settings labels false yields to a repo label object", () => {
+    const raw: RawConfig = {
+      id: "test-config",
+      files: {
+        "config.json": { content: { key: "value" } },
+      },
+      settings: {
+        labels: {
+          bug: { color: "d73a4a" },
+        },
+      },
+      groups: {
+        mygroup: {
+          settings: {
+            labels: {
+              bug: false,
+            },
+          },
+        },
+      },
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
+          groups: ["mygroup"],
+          settings: {
+            labels: {
+              bug: { color: "ff0000" },
+            },
+          },
+        },
+      ],
+    };
+
+    const result = normalizeConfig(raw, process.env);
+    assert.equal(result.repos[0].settings?.labels?.bug?.color, "ff0000");
   });
 
   test("group settings deleteOrphaned overrides root", () => {
