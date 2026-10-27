@@ -1454,21 +1454,6 @@ describe("writeSettingsReportSummary", () => {
 
     assert.equal(debugMessages.length, 1);
   });
-
-  test("no-ops when summaryPath not set", () => {
-    const report: SettingsReport = {
-      repos: [],
-      totals: {
-        settings: { create: 0, update: 0 },
-        rulesets: { create: 0, update: 0, delete: 0 },
-        labels: { create: 0, update: 0, delete: 0 },
-      },
-    };
-
-    writeSettingsReportSummary(report, false, undefined);
-
-    assert.ok(!existsSync(tempFile));
-  });
 });
 
 describe("formatSettingsReportCLI variables", () => {

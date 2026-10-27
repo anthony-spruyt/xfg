@@ -1378,7 +1378,7 @@ describe("GitHubLifecycleProvider", () => {
       assert.equal(calls[0].options?.env?.GH_TOKEN, "ghs_test_token");
     });
 
-    test("exists() has no prefix when token not provided", async () => {
+    test("exists() sets no GH_TOKEN when token not provided", async () => {
       const { mock: executor, calls } = createMockExecutor({
         defaultResponse: '{"id": 123}',
       });
@@ -1387,7 +1387,7 @@ describe("GitHubLifecycleProvider", () => {
       await provider.exists({ repo: mockRepoInfo });
 
       assert.equal(calls.length, 1);
-      assert.ok(calls[0].executable === "gh" && calls[0].args.includes("api"));
+      assert.equal(calls[0].options?.env?.GH_TOKEN, undefined);
     });
 
     test("create() passes GH_TOKEN via env when token provided", async () => {
