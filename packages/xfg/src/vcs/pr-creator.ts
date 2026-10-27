@@ -16,6 +16,7 @@ import { interpolateXfgContent } from "../shared/xfg-template.js";
 import type { ICommandExecutor } from "../shared/command-executor.js";
 import { inlineCode } from "../shared/markdown-fence.js";
 import { toErrorMessage } from "../shared/type-guards.js";
+import { SyncError } from "../shared/errors.js";
 
 export type { FileAction };
 
@@ -56,8 +57,8 @@ export function loadDefaultTemplate(
   try {
     return readFileSync(templatePath, "utf-8");
   } catch (error) {
-    throw new Error(
-      `Cannot read the default PR template at ${templatePath}: ${toErrorMessage(error)}`,
+    throw new SyncError(
+      `Failed to read default PR template ${templatePath}: ${toErrorMessage(error)}`,
       { cause: error }
     );
   }

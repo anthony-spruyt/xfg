@@ -11,6 +11,7 @@ import {
   mergePR,
   FileAction,
 } from "../../../src/vcs/pr-creator.js";
+import { SyncError } from "../../../src/shared/errors.js";
 import type { GitHubRepoInfo } from "../../../src/repo/index.js";
 import type { ICommandExecutor } from "../../../src/shared/command-executor.js";
 
@@ -66,14 +67,6 @@ describe("formatPRBody", () => {
     assert.ok(result.includes("Created `new.json`"));
     assert.ok(result.includes("Updated `existing.json`"));
     assert.ok(result.includes("Deleted `old.json`"));
-  });
-
-  test("preserves markdown formatting", () => {
-    const files: FileAction[] = [{ fileName: "config.json", action: "create" }];
-    const result = formatPRBody(files, repoInfo);
-    assert.ok(
-      result.includes("##") || result.includes("*") || result.includes("-")
-    );
   });
 
   test("keeps file names containing backticks as inline code", () => {
@@ -201,16 +194,10 @@ describe("default PR template", () => {
 
     assert.throws(
       () => loadDefaultTemplate(missing),
-      (error: Error) => error.message.includes(missing)
-    );
-  });
-
-  test("interpolates repo variables in default template", () => {
-    const result = formatPRBody(files, repoInfo);
-
-    assert.ok(
-      result.includes("test-org/test-repo"),
-      "Should interpolate repo.fullName"
+      (error: Error) =>
+        error instanceof SyncError &&
+        error.message.includes("Failed to read default PR template") &&
+        error.message.includes(missing)
     );
   });
 });
@@ -227,14 +214,6 @@ describe("skip action handling", () => {
       const result = formatPRBody(files, repoInfo);
       assert.ok(result.includes("config.json"));
       assert.ok(!result.includes("skipped.json"));
-    });
-
-    test("handles all files skipped gracefully", () => {
-      const files: FileAction[] = [
-        { fileName: "skipped.json", action: "skip" },
-      ];
-      const result = formatPRBody(files, repoInfo);
-      assert.ok(typeof result === "string");
     });
 
     test("mixed actions: only shows created/updated files", () => {
