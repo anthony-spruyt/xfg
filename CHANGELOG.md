@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.5.6](https://github.com/anthony-spruyt/xfg/compare/v8.5.5...v8.5.6) (2026-10-27)
+
+
+### Bug Fixes
+
+* **config:** honor a group-level false for rulesets and labels ([#1302](https://github.com/anthony-spruyt/xfg/issues/1302)) ([c814462](https://github.com/anthony-spruyt/xfg/commit/c8144620ae9e0701fd10a164689c200c9d8dc825))
+
 ## [8.5.5](https://github.com/anthony-spruyt/xfg/compare/v8.5.4...v8.5.5) (2026-10-27)
 
 
