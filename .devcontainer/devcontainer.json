@@ -28,6 +28,14 @@
     "source=${localWorkspaceFolderBasename}-containers,target=/var/lib/containers,type=volume"
   ],
   "features": {
+    "ghcr.io/devcontainers-extra/features/actionlint": {
+      "version": "v1.7.12"
+    },
+    "ghcr.io/eitsupi/devcontainer-features/jq-likes": {
+      "jqVersion": "1.8.2",
+      "yqVersion": "4.54.1",
+      "gojqVersion": "0.12.19"
+    },
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
       "version": "44.171.1"
     },

@@ -17,7 +17,7 @@ Repo-operator syncs a thin layer on top.
 
 ## Contents
 
-- `devcontainer.json` — VS Code devcontainer spec: base image, repo-specific features, `runArgs`, mounts.
+- `devcontainer.json` — VS Code devcontainer spec: base image, features, `runArgs`, mounts. Every repo gets yq, jq, gojq and actionlint from the base template; a repo adds its own features in its overlay.
 - `Dockerfile` — thin layer on `devcontainer-common` adding Nexus apt proxy when `NEXUS_URL` is set.
 - `setup-devcontainer.sh` — repo-specific tooling install hook (called by `devcontainer-post-create`).
 - `initialize.sh` — host-side SSH agent socket setup (runs before container creation).
