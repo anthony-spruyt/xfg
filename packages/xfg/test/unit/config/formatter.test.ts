@@ -548,10 +548,7 @@ describe("convertContentToString YAML string quoting", () => {
   test("does not quote actual null", () => {
     const content = { empty: null };
     const result = convertContentToString(content, "config.yaml");
-    assert.ok(
-      result.includes("empty: null") || result.includes("empty:"),
-      "Actual null stays unquoted"
-    );
+    assert.match(result, /^empty: null$/m, "Actual null stays unquoted");
   });
 
   test("does not quote numbers", () => {

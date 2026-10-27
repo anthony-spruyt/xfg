@@ -6,18 +6,6 @@ import { tmpdir } from "node:os";
 import {
   loadConfig,
   convertContentToString,
-  type RepoSettings,
-  type RawRepoSettings,
-  type RawConfig,
-  type RawRepoConfig,
-  type RepoConfig,
-  type Config,
-  type Ruleset,
-  type RulesetRule,
-  type BypassActor,
-  type StatusCheckConfig,
-  type CodeScanningTool,
-  type GitHubRepoSettings,
 } from "../../../src/config/index.js";
 import { parse } from "yaml";
 
@@ -840,291 +828,14 @@ describe("convertContentToString", () => {
   });
 });
 
-describe("settings types", () => {
-  test("Ruleset has all expected fields", () => {
-    const ruleset: Ruleset = {
-      target: "branch",
-      enforcement: "active",
-      bypassActors: [
-        { actorId: 123, actorType: "Integration", bypassMode: "always" },
-      ],
-      conditions: { refName: { include: ["refs/heads/main"] } },
-      rules: [{ type: "required_signatures" }],
-    };
-    assert.equal(ruleset.target, "branch");
-    assert.equal(ruleset.enforcement, "active");
-    assert.equal(ruleset.bypassActors?.[0].actorId, 123);
-  });
+describe("directory loading", () => {
+  test("loads and merges all yaml files from a directory", () => {
+    const configDir = join(testDir, "config-dir-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-  test("Ruleset supports all GitHub Rulesets API fields", () => {
-    const ruleset: Ruleset = {
-      target: "branch",
-      enforcement: "active",
-      bypassActors: [
-        { actorId: 2719952, actorType: "Integration", bypassMode: "always" },
-        { actorId: 123, actorType: "Team", bypassMode: "pull_request" },
-      ],
-      conditions: {
-        refName: {
-          include: ["refs/heads/main", "refs/heads/release/*"],
-          exclude: ["refs/heads/dev*"],
-        },
-      },
-      rules: [
-        {
-          type: "pull_request",
-          parameters: {
-            requiredApprovingReviewCount: 2,
-            dismissStaleReviewsOnPush: true,
-            requireCodeOwnerReview: true,
-            requireLastPushApproval: false,
-            requiredReviewThreadResolution: true,
-            allowedMergeMethods: ["squash"],
-          },
-        },
-        {
-          type: "required_status_checks",
-          parameters: {
-            strictRequiredStatusChecksPolicy: true,
-            doNotEnforceOnCreate: false,
-            requiredStatusChecks: [{ context: "ci/build" }],
-          },
-        },
-        { type: "required_signatures" },
-        { type: "required_linear_history" },
-        { type: "non_fast_forward" },
-        {
-          type: "code_scanning",
-          parameters: {
-            codeScanningTools: [
-              {
-                tool: "CodeQL",
-                alertsThreshold: "errors",
-                securityAlertsThreshold: "high_or_higher",
-              },
-            ],
-          },
-        },
-      ],
-    };
-    assert.equal(ruleset.bypassActors?.length, 2);
-    assert.equal(ruleset.conditions?.refName?.include?.length, 2);
-    assert.equal(ruleset.rules?.length, 6);
-  });
-
-  test("BypassActor supports all actor types", () => {
-    const actors: BypassActor[] = [
-      { actorId: 1, actorType: "Integration", bypassMode: "always" },
-      { actorId: 2, actorType: "Team", bypassMode: "pull_request" },
-      { actorId: 3, actorType: "User" },
-      { actorId: 4, actorType: "Integration", bypassMode: "exempt" },
-    ];
-    assert.equal(actors[0].actorType, "Integration");
-    assert.equal(actors[1].actorType, "Team");
-    assert.equal(actors[2].actorType, "User");
-    assert.equal(actors[3].bypassMode, "exempt");
-  });
-
-  test("StatusCheckConfig supports context and integrationId", () => {
-    const check: StatusCheckConfig = { context: "ci/test", integrationId: 456 };
-    assert.equal(check.context, "ci/test");
-    assert.equal(check.integrationId, 456);
-  });
-
-  test("CodeScanningTool supports all threshold options", () => {
-    const tool: CodeScanningTool = {
-      tool: "CodeQL",
-      alertsThreshold: "errors",
-      securityAlertsThreshold: "high_or_higher",
-    };
-    assert.equal(tool.tool, "CodeQL");
-    assert.equal(tool.alertsThreshold, "errors");
-    assert.equal(tool.securityAlertsThreshold, "high_or_higher");
-  });
-
-  test("RulesetRule discriminated union works correctly", () => {
-    const rules: RulesetRule[] = [
-      { type: "pull_request", parameters: { requiredApprovingReviewCount: 1 } },
-      { type: "required_signatures" },
-      {
-        type: "commit_message_pattern",
-        parameters: { operator: "regex", pattern: "^feat:" },
-      },
-    ];
-    assert.equal(rules[0].type, "pull_request");
-    assert.equal(rules[1].type, "required_signatures");
-    assert.equal(rules[2].type, "commit_message_pattern");
-  });
-
-  test("RepoSettings includes rulesets map", () => {
-    const settings: RepoSettings = {
-      rulesets: {
-        "pr-rules": {
-          target: "branch",
-          enforcement: "active",
-          rules: [
-            {
-              type: "pull_request",
-              parameters: { requiredApprovingReviewCount: 1 },
-            },
-          ],
-        },
-      },
-    };
-    assert.ok(settings.rulesets?.["pr-rules"]);
-    assert.equal(settings.rulesets?.["pr-rules"]?.enforcement, "active");
-  });
-});
-
-describe("raw settings types", () => {
-  test("RawRepoSettings can hold rulesets", () => {
-    const settings: RawRepoSettings = {
-      rulesets: {
-        "pr-rules": { target: "branch", enforcement: "active" },
-      },
-    };
-    assert.ok(settings.rulesets);
-  });
-
-  test("RawConfig can include settings at root", () => {
-    const config: RawConfig = {
-      id: "test",
-      files: {},
-      repos: [],
-      settings: {
-        rulesets: {
-          "pr-rules": { target: "branch", enforcement: "active" },
-        },
-      },
-    };
-    assert.ok(config.settings?.rulesets);
-  });
-
-  test("RawRepoConfig can include settings", () => {
-    const repo: RawRepoConfig = {
-      git: "org/repo",
-      settings: {
-        rulesets: {
-          "pr-rules": { target: "branch", enforcement: "active" },
-        },
-      },
-    };
-    assert.ok(repo.settings?.rulesets);
-  });
-});
-
-describe("normalized config types", () => {
-  test("RepoConfig can include resolved settings", () => {
-    const repo: RepoConfig = {
-      git: "org/repo",
-      files: [],
-      settings: {
-        rulesets: {
-          "pr-rules": { target: "branch", enforcement: "active" },
-        },
-      },
-    };
-    assert.ok(repo.settings?.rulesets);
-  });
-
-  test("Config can include root settings", () => {
-    const config: Config = {
-      id: "test",
-      repos: [],
-      settings: {
-        rulesets: {
-          "pr-rules": { target: "branch", enforcement: "active" },
-        },
-      },
-    };
-    assert.ok(config.settings?.rulesets);
-  });
-});
-
-describe("RepoSettings with repo property", () => {
-  test("should accept repo settings in RepoSettings", () => {
-    const settings: RepoSettings = {
-      rulesets: {},
-      repo: {
-        hasIssues: true,
-        allowSquashMerge: true,
-      },
-    };
-    assert.equal(settings.repo?.hasIssues, true);
-  });
-
-  test("should accept repo settings in RawRepoSettings", () => {
-    const settings: RawRepoSettings = {
-      repo: {
-        hasWiki: false,
-        visibility: "private",
-      },
-    };
-    const repo = settings.repo;
-    assert.equal(repo ? repo.visibility : undefined, "private");
-  });
-});
-
-describe("GitHubRepoSettings type", () => {
-  test("should accept valid repo settings", () => {
-    const settings: GitHubRepoSettings = {
-      hasIssues: true,
-      hasWiki: false,
-      allowSquashMerge: true,
-      secretScanning: true,
-    };
-    assert.equal(settings.hasIssues, true);
-  });
-
-  test("should accept all feature settings", () => {
-    const settings: GitHubRepoSettings = {
-      hasIssues: true,
-      hasProjects: false,
-      hasWiki: true,
-      hasDiscussions: false,
-      isTemplate: false,
-      allowForking: true,
-      visibility: "private",
-      archived: false,
-    };
-    assert.equal(settings.visibility, "private");
-  });
-
-  test("should accept all merge settings", () => {
-    const settings: GitHubRepoSettings = {
-      allowSquashMerge: true,
-      allowMergeCommit: false,
-      allowRebaseMerge: true,
-      allowAutoMerge: true,
-      deleteBranchOnMerge: true,
-      allowUpdateBranch: true,
-      squashMergeCommitTitle: "PR_TITLE",
-      squashMergeCommitMessage: "COMMIT_MESSAGES",
-      mergeCommitTitle: "MERGE_MESSAGE",
-      mergeCommitMessage: "PR_BODY",
-    };
-    assert.equal(settings.squashMergeCommitTitle, "PR_TITLE");
-  });
-
-  test("should accept all security settings", () => {
-    const settings: GitHubRepoSettings = {
-      vulnerabilityAlerts: true,
-      automatedSecurityFixes: true,
-      secretScanning: true,
-      secretScanningPushProtection: true,
-      privateVulnerabilityReporting: true,
-    };
-    assert.equal(settings.secretScanning, true);
-  });
-
-  describe("directory loading", () => {
-    test("loads and merges all yaml files from a directory", () => {
-      const configDir = join(testDir, "config-dir-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
-
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-dir
 files:
   base.json:
@@ -1133,41 +844,41 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(configDir, "teams.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "teams.yaml"),
+      `
 repos:
   - git: git@github.com:org/repo-b.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      const config = loadConfig(configDir, {});
+    const config = loadConfig(configDir, {});
 
-      assert.equal(config.repos.length, 2);
-      assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
-      assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
-    });
+    assert.equal(config.repos.length, 2);
+    assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
+    assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
+  });
 
-    test("sorts files alphabetically so merge order is deterministic", () => {
-      const configDir = join(testDir, "config-sort-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("sorts files alphabetically so merge order is deterministic", () => {
+    const configDir = join(testDir, "config-sort-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "b-teams.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "b-teams.yaml"),
+      `
 repos:
   - git: git@github.com:org/repo-b.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(configDir, "a-base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "a-base.yaml"),
+      `
 id: test-sort
 files:
   base.json:
@@ -1176,33 +887,33 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      const config = loadConfig(configDir, {});
+    const config = loadConfig(configDir, {});
 
-      // a-base.yaml sorts before b-teams.yaml
-      assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
-      assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
-    });
+    // a-base.yaml sorts before b-teams.yaml
+    assert.equal(config.repos[0].git, "git@github.com:org/repo-a.git");
+    assert.equal(config.repos[1].git, "git@github.com:org/repo-b.git");
+  });
 
-    test("errors when directory has no yaml files", () => {
-      const configDir = join(testDir, "config-empty-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("errors when directory has no yaml files", () => {
+    const configDir = join(testDir, "config-empty-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      assert.throws(
-        () => loadConfig(configDir, {}),
-        (err: Error) => err.message.includes("No .yaml or .yml files found")
-      );
-    });
+    assert.throws(
+      () => loadConfig(configDir, {}),
+      (err: Error) => err.message.includes("No .yaml or .yml files found")
+    );
+  });
 
-    test("loads both .yaml and .yml files", () => {
-      const configDir = join(testDir, "config-ext-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("loads both .yaml and .yml files", () => {
+    const configDir = join(testDir, "config-ext-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-ext
 files:
   base.json:
@@ -1211,29 +922,29 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(configDir, "extra.yml"),
-        `
+    writeFileSync(
+      join(configDir, "extra.yml"),
+      `
 repos:
   - git: git@github.com:org/repo-b.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      const config = loadConfig(configDir, {});
-      assert.equal(config.repos.length, 2);
-    });
+    const config = loadConfig(configDir, {});
+    assert.equal(config.repos.length, 2);
+  });
 
-    test("ignores non-yaml files in directory", () => {
-      const configDir = join(testDir, "config-ignore-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("ignores non-yaml files in directory", () => {
+    const configDir = join(testDir, "config-ignore-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-ignore
 files:
   base.json:
@@ -1242,23 +953,23 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(join(configDir, "README.md"), "# Not a config", "utf-8");
-      writeFileSync(join(configDir, "notes.txt"), "not yaml", "utf-8");
+    writeFileSync(join(configDir, "README.md"), "# Not a config", "utf-8");
+    writeFileSync(join(configDir, "notes.txt"), "not yaml", "utf-8");
 
-      const config = loadConfig(configDir, {});
-      assert.equal(config.repos.length, 1);
-    });
+    const config = loadConfig(configDir, {});
+    assert.equal(config.repos.length, 1);
+  });
 
-    test("errors when a yaml file in directory is empty", () => {
-      const configDir = join(testDir, "config-empty-yaml-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("errors when a yaml file in directory is empty", () => {
+    const configDir = join(testDir, "config-empty-yaml-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-empty
 files:
   base.json:
@@ -1267,25 +978,25 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(join(configDir, "empty.yaml"), "", "utf-8");
+    writeFileSync(join(configDir, "empty.yaml"), "", "utf-8");
 
-      assert.throws(
-        () => loadConfig(configDir, {}),
-        (err: Error) => err.message.includes("empty or invalid")
-      );
-    });
+    assert.throws(
+      () => loadConfig(configDir, {}),
+      (err: Error) => err.message.includes("empty or invalid")
+    );
+  });
 
-    test("recurses into subdirectories", () => {
-      const configDir = join(testDir, "config-recurse-" + Date.now());
-      const subDir = join(configDir, "subdir");
-      mkdirSync(subDir, { recursive: true });
+  test("recurses into subdirectories", () => {
+    const configDir = join(testDir, "config-recurse-" + Date.now());
+    const subDir = join(configDir, "subdir");
+    mkdirSync(subDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-recurse
 files:
   base.json:
@@ -1294,36 +1005,36 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(subDir, "nested.yaml"),
-        `
+    writeFileSync(
+      join(subDir, "nested.yaml"),
+      `
 repos:
   - git: git@github.com:org/repo-nested.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      const config = loadConfig(configDir, {});
-      assert.equal(config.repos.length, 2);
-    });
+    const config = loadConfig(configDir, {});
+    assert.equal(config.repos.length, 2);
+  });
 
-    test("resolves @path file references relative to each fragment file", () => {
-      const configDir = join(testDir, "config-refs-" + Date.now());
-      const templatesDir = join(configDir, "templates");
-      mkdirSync(templatesDir, { recursive: true });
+  test("resolves @path file references relative to each fragment file", () => {
+    const configDir = join(testDir, "config-refs-" + Date.now());
+    const templatesDir = join(configDir, "templates");
+    mkdirSync(templatesDir, { recursive: true });
 
-      writeFileSync(
-        join(templatesDir, "base-content.json"),
-        JSON.stringify({ fromTemplate: true }),
-        "utf-8"
-      );
+    writeFileSync(
+      join(templatesDir, "base-content.json"),
+      JSON.stringify({ fromTemplate: true }),
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-refs
 files:
   base.json:
@@ -1331,66 +1042,65 @@ files:
 repos:
   - git: git@github.com:org/repo-a.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      const config = loadConfig(configDir, {});
-      const baseFile = config.repos[0].files.find(
-        (f) => f.fileName === "base.json"
-      );
-      assert.ok(baseFile);
-      assert.deepEqual(baseFile.content, { fromTemplate: true });
-    });
+    const config = loadConfig(configDir, {});
+    const baseFile = config.repos[0].files.find(
+      (f) => f.fileName === "base.json"
+    );
+    assert.ok(baseFile);
+    assert.deepEqual(baseFile.content, { fromTemplate: true });
+  });
 
-    test("errors when a yaml file contains invalid YAML syntax", () => {
-      const configDir = join(testDir, "config-bad-yaml-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("errors when a yaml file contains invalid YAML syntax", () => {
+    const configDir = join(testDir, "config-bad-yaml-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-bad
 repos:
   - git: git@github.com:org/repo.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(
-        join(configDir, "broken.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "broken.yaml"),
+      `
 this is: [not: valid: yaml
   broken: {nope
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      assert.throws(
-        () => loadConfig(configDir, {}),
-        (err: Error) => err.message.includes("Failed to parse YAML config")
-      );
-    });
+    assert.throws(
+      () => loadConfig(configDir, {}),
+      (err: Error) => err.message.includes("Failed to parse YAML config")
+    );
+  });
 
-    test("errors when a yaml file contains only a scalar value", () => {
-      const configDir = join(testDir, "config-scalar-" + Date.now());
-      mkdirSync(configDir, { recursive: true });
+  test("errors when a yaml file contains only a scalar value", () => {
+    const configDir = join(testDir, "config-scalar-" + Date.now());
+    mkdirSync(configDir, { recursive: true });
 
-      writeFileSync(
-        join(configDir, "base.yaml"),
-        `
+    writeFileSync(
+      join(configDir, "base.yaml"),
+      `
 id: test-scalar
 repos:
   - git: git@github.com:org/repo.git
 `,
-        "utf-8"
-      );
+      "utf-8"
+    );
 
-      writeFileSync(join(configDir, "scalar.yaml"), "just a string", "utf-8");
+    writeFileSync(join(configDir, "scalar.yaml"), "just a string", "utf-8");
 
-      assert.throws(
-        () => loadConfig(configDir, {}),
-        (err: Error) => err.message.includes("empty or invalid")
-      );
-    });
+    assert.throws(
+      () => loadConfig(configDir, {}),
+      (err: Error) => err.message.includes("empty or invalid")
+    );
   });
 });

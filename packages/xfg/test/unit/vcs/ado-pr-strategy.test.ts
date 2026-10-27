@@ -591,26 +591,56 @@ describe("AdoPRStrategy Azure CLI command format", () => {
 });
 
 describe("AdoPRStrategy URL building", () => {
-  test("builds correct PR URL with special characters", () => {
-    const org = "my-org";
-    const project = "my project"; // Has space
-    const repo = "my-repo";
-    const prId = "123";
+  const spacedRepoInfo: AzureDevOpsRepoInfo = {
+    type: "azure-devops",
+    gitUrl: "git@ssh.dev.azure.com:v3/my org/my project/my repo",
+    owner: "my org",
+    repo: "my repo",
+    organization: "my org",
+    project: "my project",
+  };
 
-    // Expected URL with encoded values
-    const expectedUrl = `https://dev.azure.com/${encodeURIComponent(org)}/${encodeURIComponent(project)}/_git/${encodeURIComponent(repo)}/pullrequest/${prId}`;
+  let mockExecutor: ExecutorMockResult;
+
+  beforeEach(() => {
+    mockExecutor = createMockExecutor();
+    testDir = mkdtempSync(join(tmpdir(), "xfg-ado-pr-strategy-"));
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
+  async function createPR() {
+    mockExecutor.responses.set("az repos pr create", "123");
+    return new AdoPRStrategy(mockExecutor.mock).create({
+      repoInfo: spacedRepoInfo,
+      title: "Test PR",
+      body: "Test body",
+      branchName: "test-branch",
+      baseBranch: "main",
+      workDir: testDir,
+      retries: 0,
+    });
+  }
+
+  test("encodes organization, project and repo in the PR URL", async () => {
+    const result = await createPR();
 
     assert.equal(
-      expectedUrl,
-      "https://dev.azure.com/my-org/my%20project/_git/my-repo/pullrequest/123"
+      result.url,
+      "https://dev.azure.com/my%20org/my%20project/_git/my%20repo/pullrequest/123"
     );
   });
 
-  test("builds correct org URL", () => {
-    const org = "test-organization";
-    const expectedOrgUrl = `https://dev.azure.com/${encodeURIComponent(org)}`;
+  test("passes the encoded organization URL to az", async () => {
+    await createPR();
 
-    assert.equal(expectedOrgUrl, "https://dev.azure.com/test-organization");
+    const args = mockExecutor.calls[0].args;
+    assert.equal(
+      args[args.indexOf("--org") + 1],
+      "https://dev.azure.com/my%20org"
+    );
   });
 });
 

@@ -598,13 +598,6 @@ describe("GitOps", () => {
       assert.equal(calls[0].executable, "git");
       assert.ok(calls[0].args.includes("status"));
     });
-
-    test("uses default executor when not provided", () => {
-      // This test verifies the default executor is used by checking
-      // that GitOps can be constructed without an executor
-      const gitOps = new GitOps({ workDir, executor: stubExecutor });
-      assert.ok(gitOps);
-    });
   });
 
   describe("createBranch", () => {

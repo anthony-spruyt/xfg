@@ -575,9 +575,13 @@ describe("writeLifecycleReportSummary", () => {
       totals: { created: 1, forked: 0, migrated: 0, existed: 0 },
     };
 
-    writeLifecycleReportSummary(report, false, undefined);
+    const debugMessages: string[] = [];
 
-    assert.ok(!existsSync(tempFile));
+    writeLifecycleReportSummary(report, false, undefined, {
+      debug: (msg: string) => debugMessages.push(msg),
+    });
+
+    assert.deepEqual(debugMessages, []);
   });
 
   test("no-ops when all actions are existed (no changes)", () => {

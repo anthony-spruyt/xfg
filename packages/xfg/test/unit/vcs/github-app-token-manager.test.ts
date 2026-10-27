@@ -45,14 +45,6 @@ describe("GitHubAppTokenManager", () => {
   // Task 1: JWT Generation Tests
   // ============================================================
   describe("constructor and generateJWT", () => {
-    test("creates instance with clientId and privateKey", () => {
-      const manager = new GitHubAppTokenManager(
-        TEST_CLIENT_ID,
-        TEST_PRIVATE_KEY
-      );
-      assert.ok(manager);
-    });
-
     test("generateJWT returns a valid JWT structure", () => {
       const manager = new GitHubAppTokenManager(
         TEST_CLIENT_ID,

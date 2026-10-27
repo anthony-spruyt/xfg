@@ -147,17 +147,4 @@ describe("createCommitStrategy", () => {
       "Should return GitCommitStrategy for GitLab regardless of app credentials"
     );
   });
-
-  test("accepts optional executor parameter", () => {
-    const mockExecutor = {
-      exec: async () => "",
-    };
-
-    const strategy = createCommitStrategy(githubRepoInfo, mockExecutor);
-
-    assert.ok(
-      strategy instanceof GitCommitStrategy,
-      "Should create strategy with custom executor"
-    );
-  });
 });

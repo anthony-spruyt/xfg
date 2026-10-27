@@ -139,14 +139,6 @@ describe("interpolateEnvVars", () => {
     assert.deepEqual(result, { key: "${MISSING_VAR}" });
   });
 
-  test("default strict mode is true", () => {
-    const input = { key: "${MISSING_VAR}" };
-    assert.throws(
-      () => interpolateEnvVars(input, opts()),
-      /Missing required environment variable: MISSING_VAR/
-    );
-  });
-
   test("handles empty default value", () => {
     const input = { key: "${MISSING_VAR:-}" };
     const result = interpolateEnvVars(input, opts());

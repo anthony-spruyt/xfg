@@ -8,37 +8,7 @@ import {
   formatSyncReportMarkdown,
   writeSyncReportSummary,
   type SyncReport,
-  type RepoFileChanges,
-  type ReportFileChange,
 } from "../../../src/output/sync-report.js";
-
-describe("sync-report types", () => {
-  test("SyncReport structure is correct", () => {
-    const report: SyncReport = {
-      repos: [],
-      totals: {
-        files: { create: 0, update: 0, delete: 0 },
-      },
-    };
-    assert.ok(report);
-  });
-
-  test("RepoFileChanges structure is correct", () => {
-    const repoChanges: RepoFileChanges = {
-      repoName: "org/repo",
-      files: [],
-    };
-    assert.ok(repoChanges);
-  });
-
-  test("ReportFileChange structure is correct", () => {
-    const change: ReportFileChange = {
-      path: ".github/workflows/ci.yml",
-      action: "create",
-    };
-    assert.ok(change);
-  });
-});
 
 describe("formatSyncReportCLI", () => {
   test("renders empty report as no changes", () => {
@@ -426,8 +396,12 @@ describe("writeSyncReportSummary", () => {
       },
     };
 
-    writeSyncReportSummary(report, false, undefined);
+    const debugMessages: string[] = [];
 
-    assert.ok(!existsSync(tempFile));
+    writeSyncReportSummary(report, false, undefined, {
+      debug: (msg: string) => debugMessages.push(msg),
+    });
+
+    assert.deepEqual(debugMessages, []);
   });
 });

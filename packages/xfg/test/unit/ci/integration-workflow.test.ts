@@ -438,14 +438,11 @@ describe("ci.yaml", () => {
     assert.match(ci.jobs.summary.if ?? "", /^always\(\) && /);
   });
 
-  test("has only the lint, repo, image, summary and sonar jobs", () => {
-    assert.deepEqual(Object.keys(ci.jobs), [
-      "lint",
-      "repo",
-      "image",
-      "summary",
-      "sonar",
-    ]);
+  test("summary needs every other job", () => {
+    const needs = ci.jobs.summary.needs ?? [];
+    for (const name of Object.keys(ci.jobs).filter((n) => n !== "summary")) {
+      assert.ok(needs.includes(name), `summary does not need ${name}`);
+    }
   });
 });
 

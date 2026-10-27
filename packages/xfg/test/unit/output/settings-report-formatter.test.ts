@@ -1465,9 +1465,13 @@ describe("writeSettingsReportSummary", () => {
       },
     };
 
-    writeSettingsReportSummary(report, false, undefined);
+    const debugMessages: string[] = [];
 
-    assert.ok(!existsSync(tempFile));
+    writeSettingsReportSummary(report, false, undefined, {
+      debug: (msg: string) => debugMessages.push(msg),
+    });
+
+    assert.deepEqual(debugMessages, []);
   });
 });
 

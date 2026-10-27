@@ -546,11 +546,10 @@ describe("formatRulesetPlan", () => {
     const result = formatRulesetPlan(changes);
 
     assert.equal(result.deletes, 1);
-    const output = result.lines.join("\n");
-    assert.ok(output.includes("old-ruleset"));
-    assert.ok(
-      !output.includes("enforcement") || output.split("enforcement").length <= 2
-    );
+    assert.deepEqual(result.lines.map((line) => line.trim()).filter(Boolean), [
+      "Delete:",
+      '- ruleset "old-ruleset"',
+    ]);
   });
 
   test("excludes unchanged from output but includes in count", () => {
@@ -660,7 +659,9 @@ describe("formatRulesetPlan", () => {
 
     assert.equal(result.updates, 1);
     const output = result.lines.join("\n");
-    assert.ok(output.includes("include") || output.includes("ref_name"));
+    assert.ok(output.includes("~ ref_name:"));
+    assert.ok(output.includes('~ include: ["main"] → ["main", "develop"]'));
+    assert.ok(!output.includes("refName"));
   });
 
   test("formats create with mixed array (objects with primitive-like items)", () => {

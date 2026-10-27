@@ -227,26 +227,33 @@ describe("FileSyncOrchestrator", () => {
       assert.equal(diffSummaries.length, 1);
     });
 
-    test("calculates diff stats for non-dry-run", async () => {
+    test("counts orphan deletes and manifest updates added after the write", async () => {
       const { gitOps } = createMockAuthenticatedGitOps({});
       const { mock: mockLogger } = createMockLogger();
 
-      const fileChanges = new Map([
-        [
-          "new.json",
-          { fileName: "new.json", content: "{}", action: "create" as const },
-        ],
-        [
-          "updated.json",
-          {
-            fileName: "updated.json",
-            content: "{}",
-            action: "update" as const,
-          },
-        ],
-      ]);
-      const mockFileWriter = createMockFileWriter(fileChanges);
+      const mockFileWriter = createMockFileWriter(
+        new Map([
+          [
+            "new.json",
+            { fileName: "new.json", content: "{}", action: "create" as const },
+          ],
+        ])
+      );
       const mockManifestManager = createMockManifestManager();
+      mockManifestManager.deleteOrphans = (_files, _options, deps) => {
+        deps.fileChanges.set("orphan.json", {
+          fileName: "orphan.json",
+          content: null,
+          action: "delete",
+        });
+      };
+      mockManifestManager.saveUpdatedManifest = (_w, _m, _e, _d, changes) => {
+        changes.set(".xfg.json", {
+          fileName: ".xfg.json",
+          content: "{}",
+          action: "update",
+        });
+      };
 
       const orchestrator = new FileSyncOrchestrator(
         mockFileWriter,
@@ -255,16 +262,11 @@ describe("FileSyncOrchestrator", () => {
         noopRenderWriter
       );
 
-      const repoConfig: RepoConfig = {
-        git: mockRepoInfo.gitUrl,
-        files: [
-          { fileName: "new.json", content: {} },
-          { fileName: "updated.json", content: {} },
-        ],
-      };
-
       const result = await orchestrator.sync(
-        repoConfig,
+        {
+          git: mockRepoInfo.gitUrl,
+          files: [{ fileName: "new.json", content: {} }],
+        },
         mockRepoInfo,
         { gitOps, baseBranch: "main", cleanup: () => {} },
         {
@@ -278,6 +280,7 @@ describe("FileSyncOrchestrator", () => {
 
       assert.equal(result.diffStats.newCount, 1);
       assert.equal(result.diffStats.modifiedCount, 1);
+      assert.equal(result.diffStats.deletedCount, 1);
     });
 
     describe("renderDir", () => {

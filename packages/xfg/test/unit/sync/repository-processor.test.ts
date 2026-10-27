@@ -118,22 +118,23 @@ describe("RepositoryProcessor", () => {
 
   describe("process", () => {
     test("returns ProcessorResult with repoName", async () => {
-      // This test verifies the result structure - actual git operations
-      // will fail without a real repo, which is expected
-      try {
-        await processor.process(mockRepoConfig, mockRepoInfo, {
-          branchName: "chore/sync-config",
-          workDir,
-          configId: "test-config",
-          dryRun: true,
-          executor: createMockExecutor(),
-        });
-      } catch {
-        // Expected to fail without real git repo
-      }
+      const { mock: mockLogger } = createMockLogger();
+      const { gitOps } = createMockAuthenticatedGitOps({
+        fileExists: true,
+        wouldChange: false,
+        hasChanges: false,
+      });
+      const processor = new RepositoryProcessor(() => gitOps, mockLogger);
 
-      // Workspace should be cleaned up even on failure (finally block)
-      // The cleanup creates the directory, so it should exist but be empty
+      const result = await processor.process(mockRepoConfig, mockRepoInfo, {
+        branchName: "chore/sync-config",
+        workDir,
+        configId: "test-config",
+        dryRun: true,
+        executor: createMockExecutor(),
+      });
+
+      assert.equal(result.repoName, "test/repo");
     });
 
     test("cleans up workspace on error (finally block)", async () => {
@@ -454,95 +455,6 @@ describe("RepositoryProcessor", () => {
         localCalls.setExecutable.some((c) => c.fileName === "run"),
         "setExecutable should be called when executable: true"
       );
-    });
-  });
-
-  describe("prOptions defaults", () => {
-    // These tests verify that the default prOptions values are correctly applied
-    // when processing repositories. The defaults are:
-    // - merge: "auto" (instead of "manual")
-    // - mergeStrategy: "squash" (instead of "merge")
-    // - deleteBranch: true (instead of false)
-    //
-    // Note: Full integration tests of the merge flow require mocking the PR
-    // creator module, which is tested via integration tests. These unit tests
-    // verify the config handling at the normalization level.
-
-    test("prOptions with undefined values should allow defaults to be applied", () => {
-      // This test verifies that RepoConfig can have prOptions undefined
-      // and the processor code will apply defaults via ?? operator
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        // prOptions is undefined - processor will use defaults
-      };
-
-      assert.strictEqual(repoConfig.prOptions, undefined);
-
-      // The processor applies defaults like this - demonstrate the pattern works
-      // Use type assertion to avoid TypeScript narrowing after the undefined check
-      const config = repoConfig as RepoConfig;
-      const mergeMode = config.prOptions?.merge ?? "auto";
-      assert.equal(mergeMode, "auto", "Default merge mode should be 'auto'");
-
-      const strategy = config.prOptions?.mergeStrategy ?? "squash";
-      assert.equal(strategy, "squash", "Default strategy should be 'squash'");
-
-      const deleteBranch = config.prOptions?.deleteBranch ?? true;
-      assert.equal(deleteBranch, true, "Default deleteBranch should be true");
-    });
-
-    test("explicit prOptions.merge: manual should override default", () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { merge: "manual" },
-      };
-
-      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-      assert.equal(mergeMode, "manual", "Explicit merge mode should override");
-    });
-
-    test("explicit mergeStrategy should override default", () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { mergeStrategy: "rebase" },
-      };
-
-      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
-      assert.equal(strategy, "rebase", "Explicit strategy should override");
-    });
-
-    test("explicit deleteBranch: false should override default true", () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { deleteBranch: false },
-      };
-
-      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
-      assert.equal(
-        deleteBranch,
-        false,
-        "Explicit deleteBranch should override"
-      );
-    });
-
-    test("partial prOptions should allow other defaults to apply", () => {
-      const repoConfig: RepoConfig = {
-        git: "git@github.com:test/repo.git",
-        files: [{ fileName: "config.json", content: { key: "value" } }],
-        prOptions: { merge: "force" }, // Only merge is set
-      };
-
-      const mergeMode = repoConfig.prOptions?.merge ?? "auto";
-      const strategy = repoConfig.prOptions?.mergeStrategy ?? "squash";
-      const deleteBranch = repoConfig.prOptions?.deleteBranch ?? true;
-
-      assert.equal(mergeMode, "force", "Explicit merge should be used");
-      assert.equal(strategy, "squash", "Default strategy should apply");
-      assert.equal(deleteBranch, true, "Default deleteBranch should apply");
     });
   });
 
@@ -2665,24 +2577,24 @@ describe("RepositoryProcessor", () => {
       const { TEST_PRIVATE_KEY, TEST_CLIENT_ID } =
         await import("../../fixtures/test-fixtures.js");
 
-      // Set GitHub App credentials
-      process.env.XFG_GITHUB_CLIENT_ID = TEST_CLIENT_ID;
-      process.env.XFG_GITHUB_APP_PRIVATE_KEY = TEST_PRIVATE_KEY;
+      const { mock: mockLogger, warnings } = createMockLogger();
 
-      const { mock: mockLogger } = createMockLogger();
-
-      // Mock fetch to fail on installations discovery
       const originalFetch = globalThis.fetch;
       globalThis.fetch = async () => {
-        throw new Error("Network error: connection refused");
+        throw new Error("Bad credentials");
       };
 
       try {
         const mockGitOpsFactory = createTypedGitOpsFactory();
 
+        const tokenManager = new GitHubAppTokenManager(
+          TEST_CLIENT_ID,
+          TEST_PRIVATE_KEY
+        );
         const processor = new RepositoryProcessor(
           mockGitOpsFactory,
-          mockLogger
+          mockLogger,
+          { tokenManager }
         );
         const result = await processor.process(
           {
@@ -2705,15 +2617,19 @@ describe("RepositoryProcessor", () => {
           }
         );
 
-        // Should continue processing (skipped due to no staged changes)
         assert.equal(
           result.skipped,
           true,
           "Should be skipped (no staged changes)"
         );
-
-        // Token resolution falls back gracefully - no warning expected
-        // (shared resolveGitHubToken handles errors silently with env fallback)
+        assert.ok(
+          warnings.some(
+            (msg) =>
+              msg.includes("GitHub App token resolution failed") &&
+              msg.includes("Bad credentials")
+          ),
+          `Expected a token resolution warning, got: ${JSON.stringify(warnings)}`
+        );
       } finally {
         globalThis.fetch = originalFetch;
       }

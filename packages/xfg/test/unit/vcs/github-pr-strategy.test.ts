@@ -556,32 +556,6 @@ describe("GitHubPRStrategy cleanup error handling", () => {
   });
 });
 
-describe("GitHubPRStrategy URL extraction", () => {
-  test("extracts URL from gh output with extra text", () => {
-    const regex = /https:\/\/github\.com\/[^\s]+/;
-
-    const outputs = [
-      "https://github.com/owner/repo/pull/123",
-      "Creating pull request for branch...\nhttps://github.com/owner/repo/pull/456",
-      "https://github.com/owner/repo/pull/789\nDone!",
-    ];
-
-    for (const output of outputs) {
-      const match = output.match(regex);
-      assert.ok(match, `Should extract URL from: ${output}`);
-      assert.ok(match[0].startsWith("https://github.com/"));
-    }
-  });
-
-  test("handles output without URL", () => {
-    const regex = /https:\/\/github\.com\/[^\s]+/;
-    const output = "Error: something went wrong";
-
-    const match = output.match(regex);
-    assert.equal(match, null);
-  });
-});
-
 describe("GitHubPRStrategy URL extraction edge cases (TDD for issue #92)", () => {
   const githubRepoInfo: GitHubRepoInfo = {
     type: "github",
