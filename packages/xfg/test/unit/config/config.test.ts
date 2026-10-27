@@ -1,6 +1,6 @@
 import { test, describe, beforeEach, afterEach } from "node:test";
 import { strict as assert } from "node:assert";
-import { writeFileSync, mkdirSync, rmSync } from "node:fs";
+import { writeFileSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -9,7 +9,7 @@ import {
 } from "../../../src/config/index.js";
 import { parse } from "yaml";
 
-const testDir = join(tmpdir(), "xfg-test-" + Date.now());
+let testDir: string;
 
 function createTestConfig(content: string): string {
   const filePath = join(testDir, `config-${Date.now()}.yaml`);
@@ -19,7 +19,7 @@ function createTestConfig(content: string): string {
 
 describe("Config", () => {
   beforeEach(() => {
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-test-"));
     process.env.TEST_ENV_VAR = "test-value";
   });
 
@@ -635,7 +635,7 @@ repos:
 
 describe("prOptions", () => {
   beforeEach(() => {
-    mkdirSync(testDir, { recursive: true });
+    testDir = mkdtempSync(join(tmpdir(), "xfg-test-"));
   });
 
   afterEach(() => {
@@ -826,6 +826,14 @@ describe("convertContentToString", () => {
 });
 
 describe("directory loading", () => {
+  beforeEach(() => {
+    testDir = mkdtempSync(join(tmpdir(), "xfg-test-"));
+  });
+
+  afterEach(() => {
+    rmSync(testDir, { recursive: true, force: true });
+  });
+
   test("loads and merges all yaml files from a directory", () => {
     const configDir = join(testDir, "config-dir-" + Date.now());
     mkdirSync(configDir, { recursive: true });
