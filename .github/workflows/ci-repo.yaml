@@ -15,7 +15,7 @@ jobs:
       integration-needed: ${{ steps.filter.outputs.integration-needed }}
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@2e6b52bfa7578e6b7264be67f2d0c0699c4e07e9 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@53a1e5b6e010dd1296a1eee62a5ac91bcbbcb453 # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@2e6b52bfa7578e6b7264be67f2d0c0699c4e07e9 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@53a1e5b6e010dd1296a1eee62a5ac91bcbbcb453 # main
         with:
           allowed-endpoints: >-
             api.github.com:443
