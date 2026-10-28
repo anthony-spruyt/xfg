@@ -29,7 +29,7 @@ jobs:
       contents: read
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@53a1e5b6e010dd1296a1eee62a5ac91bcbbcb453 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@4e3d6013ac860db0490c16e021bf1312fa9f6e2c # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -73,7 +73,7 @@ jobs:
         working-directory: packages/xfg
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@53a1e5b6e010dd1296a1eee62a5ac91bcbbcb453 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@4e3d6013ac860db0490c16e021bf1312fa9f6e2c # main
         with:
           allowed-endpoints: >-
             api.github.com:443
