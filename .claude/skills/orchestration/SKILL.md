@@ -31,6 +31,7 @@ New work, or a change to an approach the owner picked, starts with the `intervie
 - Steer a running helper with `SendMessage`, never duplicate it; use a new helper per fix round you delegate
 - A brief for a builder that follows a BLOCKED one names that builder's kept notes path
 - A pre-existing CI failure a helper flags: tell the owner and start a separate fix round at once
+- Shipping a release of one of the owner's repos: once its image is published, bump its tag and digest yourself where it's deployed, in a `workspace.sh` clone, instead of ticking its `Renovate Dashboard` box
 - Never wait for Renovate's bump PR: tick the update's box in the repo's `Renovate Dashboard` issue (else `manual job`), then have a `chore-runner` poll for it (edit the line from `- [ ]` to `- [x]` and pipe the body to `gh issue edit <n> --body-file -`; no Write tool)
 - Every brief has the goal and evidence (`file:line`), constraints and merge rules, what not to touch, when to stop, a report cap, and the Definition of Ready
 - A CI-wait brief gives `--repo <owner/repo>`, the PR or sha, and any `--no-sonar`/`--no-codeql`; never a command such as `gh pr checks` or `gh run watch`: `chore-runner` has its own wait command
