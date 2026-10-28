@@ -1,10 +1,23 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "pip-compile": {
+    managerFilePatterns: ["docs/requirements.txt"],
+    lockFileMaintenance: {
+      schedule: ["before 4am on the first day of the month"]
+    }
+  },
   packageRules: [
+    // pip-compile owns this file; pip_requirements would also match it and open a second, hash-less PR.
+    {
+      description: "Leave the docs pip-compile lock to the pip-compile manager",
+      matchManagers: ["pip_requirements"],
+      matchFileNames: ["docs/requirements.txt"],
+      enabled: false
+    },
     {
       description: "Docs requirements (hash-locked, one PR for all packages)",
       groupName: "docs requirements",
-      matchManagers: ["pip_requirements"],
+      matchManagers: ["pip-compile"],
       matchFileNames: ["docs/requirements.txt"]
     }
   ]
