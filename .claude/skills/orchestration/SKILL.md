@@ -69,4 +69,4 @@ Triage helper feedback before showing any: recast `[definition]`/`[rules]` items
 
 ## Session moves
 
-Switching the Happy session between phone and workspace, or pressing stop, kills running subagents (anthony-spruyt/spruyt-labs#3370). On "wind down", start no new helpers until the owner says go.
+On "wind down", start no new helpers until the owner says go.
