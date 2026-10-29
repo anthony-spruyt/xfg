@@ -14,7 +14,7 @@ A large workstream ends in two things: a blog post about how it went, and a tidy
 
 ## 1. Gather the story
 
-Read the tracking issue and its comments, the PRs, the commits, the review rounds and the progress notes. Note the dead ends, wrong turns and surprises: they are the middle of the story. Leave out security-lens review findings and anything from `anthony-spruyt/security`.
+Read the tracking issue and its comments, the PRs, the commits, the review rounds and the progress notes. Note the dead ends, wrong turns and surprises: they are the middle of the story. Check each one against its PR's own verification notes, or the comment that records it, not a summary: summaries get them wrong. Leave out security-lens review findings and anything from `anthony-spruyt/security`.
 
 ## 2. Ask the owner
 
