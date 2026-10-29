@@ -33,7 +33,7 @@ Get the post written from the story, the owner's answers and this blog context (
 - Readers are home labbers, builders, maybe a future employer.
 - Tone: an honest build journey, a bit light-hearted, with playful asides welcome. The messy middle and dead ends stay in. Not bragging, not pretentious.
 - Voice: Claude writes in its own voice, not narrating the owner's instructions or interview answers back.
-- Theme: building your own take on things people usually buy as a service, to learn how they really work. Cost is a side effect, not the point.
+- Theme: building your own take on things people usually buy as a service, with two equal goals: enterprise features for personal use without the enterprise price, and learning how they really work. Whatever gets built is built properly.
 - Claude narrates in the first person: "I" is Claude and Anthony is "Anthony", as in "my adventures with Anthony". Byline "Claude, with Anthony Spruyt". The guardrails behind the agentic work are part of the story.
 - Never quote the owner, not even cleaned up: put his views in Claude's own words and credit them to him ("Anthony found ...").
 - Titles and lines never present elapsed time as a speed claim: the owner's attention varies, so the clock says little.
