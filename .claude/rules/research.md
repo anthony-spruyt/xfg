@@ -19,4 +19,4 @@ If something isn't working or you're unsure about syntax/patterns:
 1. **Don't trust training data blindly** - APIs and libraries change
 2. **Search for real implementations** → `gh search code "the pattern" --language <lang>`
 3. **Check recent issues** → `gh search issues "error message" --repo org/repo`
-4. **Fetch actual source** → WebFetch `raw.githubusercontent.com/.../src/file.ts`
+4. **Fetch actual source** → WebFetch `raw.githubusercontent.com/.../src/file.ts`; for a private repo, where WebFetch has no access, use `gh api -H 'Accept: application/vnd.github.raw' repos/<owner>/<repo>/contents/<path>` (not `--jq .content | base64 -d`)

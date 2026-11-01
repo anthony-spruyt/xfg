@@ -104,8 +104,37 @@ block_managed_writes() {
   done <<<"$segments"
 }
 
+plain_rest() {
+  local rest=$1 sroot=$2 word='(^|[^A-Za-z0-9_-])(cd|pushd|popd)([^A-Za-z0-9_-]|$)'
+  case "$rest" in
+  *$'\n'* | *';'* | *'||'* | *'$'* | *'`'* | *'~'* | *'#'* | *\\* | *..*) return 1 ;;
+  *) ;;
+  esac
+  [[ $(sed 's/&&//g; s/>&//g; s/&>//g' <<<"$rest") != *'&'* ]] || return 1
+  [[ ! $rest =~ $word ]] || return 1
+  [[ -z "$sroot" || "$rest" != *"$sroot"* ]]
+}
+
+leading_cd_escape() {
+  local sroot=$1 cmd=$2 lead dir rest rsroot droot
+  lead="^[[:blank:]]*cd[[:blank:]]+([\"']?)(/[A-Za-z0-9_./@+-]*)\\1[[:blank:]]*&&"
+  dir=$(printf '%s' "$cmd" | sed -nzE "s#$lead.*#\\2#p")
+  [[ -n "$dir" && "$dir" != *..* ]] || return 0
+  rest=$(printf '%s' "$cmd" | sed -nzE "s#$lead##p")
+  dir=$(realpath -m -- "$dir")
+  if [[ -n "$sroot" ]]; then
+    rsroot=$(realpath -m -- "$sroot")
+    if [[ "$dir" == "$rsroot" || "$dir" == "$rsroot"/* ]]; then return 0; fi
+  fi
+  droot=$(git -C "$(existing_dir "$dir")" rev-parse --show-toplevel 2>/dev/null) || droot=
+  [[ -z "$droot" || "$droot" == "$dir" ]] || return 0
+  plain_rest "$rest" "$sroot" || return 0
+  if [[ -n "$droot" ]]; then block_managed_writes "$droot" "$rest"; fi
+  exit 0
+}
+
 run_hook() {
-  local input tool cwd path root rel
+  local input tool cwd path root rel raw cmd sroot
   input=$(cat)
   tool=$(jq -r '.tool_name // empty' <<<"$input")
   cwd=$(jq -r '.cwd // empty' <<<"$input")
@@ -122,8 +151,12 @@ run_hook() {
     fi
     ;;
   Bash)
-    root=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || exit 0
-    block_managed_writes "$root" "$(jq -r '.tool_input.command // empty' <<<"$input")"
+    raw=$(jq -r '.tool_input.command // empty' <<<"$input")
+    cmd=$(sed -z 's/\\\n//g' <<<"$raw")
+    sroot=$(git -C "$cwd" rev-parse --show-toplevel 2>/dev/null) || sroot=
+    leading_cd_escape "$sroot" "$cmd"
+    [[ -n "$sroot" ]] || exit 0
+    block_managed_writes "$sroot" "$cmd"$'\n'"$raw"
     ;;
   *) ;;
   esac
