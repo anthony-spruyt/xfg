@@ -11,13 +11,13 @@ description: >
 
 The main session plans, decides and talks to the owner. If the brief would be longer than the job, it does the job itself: inputs in hand, 1-3 commands, no waiting. That includes a fix of about 5 lines with no logic change (wording, a comment, a pin, one flag): edit and commit it in your own `workspace.sh` clone, no builder.
 
-| Work                                         | Helper (model)                        |
-| -------------------------------------------- | ------------------------------------- |
-| Edits, commits, fix rounds, rework           | `builder` (sonnet)                    |
-| Waiting or polling, noisy logs, batch sweeps | `chore-runner` (haiku), in background |
-| Reviews, fix-checks, attacker-minded reviews | `reviewer` (opus)                     |
-| Deep investigation                           | `general-purpose` (opus)              |
-| Broad read-only search across files or repos | `Explore` (haiku)                     |
+| Work                                                   | Helper (model)                        |
+| ------------------------------------------------------ | ------------------------------------- |
+| Edits, commits, fix rounds, rework                     | `builder` (sonnet)                    |
+| Waiting or polling, noisy logs, batch sweeps           | `chore-runner` (haiku), in background |
+| Reviews, fix-checks, attacker-minded reviews           | `reviewer` (opus)                     |
+| Root-causing and other deep investigation              | `general-purpose` (opus)              |
+| Finding, listing or gathering facts, even across repos | `Explore` (haiku)                     |
 
 Push reviewed commits yourself from the `workspace.sh` clone that holds them, never the shared checkout, with `push-reviewed.sh <base> <sha> <branch>`, only once fresh reviews cover that exact range and the last round is READY (every full-review lens, then each fix-check; a verbatim fix you checked under step 3 counts as reviewed and READY); if it stops, tell the owner. Give the pushed sha to the CI wait, and the range it prints to any post-push validator the repo's rules name.
 
@@ -34,9 +34,10 @@ New work, or a change to an approach the owner picked, starts with the `intervie
 - Shipping a release of one of the owner's repos: once its image is published, bump its tag and digest yourself where it's deployed, in a `workspace.sh` clone, instead of ticking its `Renovate Dashboard` box
 - Never wait for Renovate's bump PR: tick the update's box in the repo's `Renovate Dashboard` issue (else `manual job`), then have a `chore-runner` poll for it (edit the line from `- [ ]` to `- [x]` and pipe the body to `gh issue edit <n> --body-file -`; no Write tool)
 - Every brief has the goal and evidence (`file:line`), constraints and merge rules, what not to touch, when to stop, a report cap, and the Definition of Ready
-- A CI-wait brief gives `--repo <owner/repo>`, the PR or sha, and any `--no-sonar`/`--no-codeql`; never a command such as `gh pr checks` or `gh run watch`: `chore-runner` has its own wait command
+- A CI-wait brief says "run `ci-status.sh --wait`" with `--repo <owner/repo>`, the PR or sha, and any `--no-sonar`/`--no-codeql`; never `gh pr checks` or `gh run watch`
+- A review brief says whether the target is pushed (give the PR head sha) or local and unpushed
 - A PR's work goes in one push: each push re-runs approval-gated jobs and emails the owner per job; fix commit wording at squash-merge time, not with follow-up commits
-- Spot-check key helper claims (PR state, run status) when cheap
+- Act on a helper's result only once it has finished (`ListAgents` doesn't show it running), and check its key claims first (the sha exists, PR and run state)
 
 ## Review and readiness
 

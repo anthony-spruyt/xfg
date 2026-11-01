@@ -19,7 +19,7 @@ Use another `--since` date if the owner names a window. The script is read-only 
 
 ## 2. Read it
 
-- Routing: general-purpose helpers on Opus mean a brief should have named `builder`, `reviewer` or `chore-runner`, or a rule or agent description is unclear.
+- Routing: general-purpose helpers on Opus that built, reviewed, waited or searched mean a brief should have named `builder`, `reviewer`, `chore-runner` or `Explore`, or a rule or agent description is unclear; spec-reviews and root-causing belong on general-purpose.
 - Over-delegation: many `chore-runner` runs with a low output-token total (under ~1k per run, total divided by runs in the agent table), or `[brief]` feedback from `chore-runner` saying the job was trivial, means short jobs are being handed off against the `orchestration` skill's Routing section.
 - Rework: a PR with a fix round means the full review or the builder's self-review missed something; two (at cap) point to a gap in the brief or design.
 - Feedback: `[definition]` and `[rules]` entries not yet applied to the agent file, `CLAUDE.md` or rules file; `[brief]` entries repeated across runs point to a gap in the `orchestration` skill.

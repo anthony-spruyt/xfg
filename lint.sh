@@ -63,6 +63,11 @@ else
   mkdir "$REPO_ROOT/.output"
 
   LINT_EXIT_CODE=0
+  apply_fixes="${APPLY_FIXES:-all}"
+  fixes_applied=0
+  if [[ "$apply_fixes" == all || "$apply_fixes" == *_* ]]; then
+    fixes_applied=1
+  fi
 
   # Devcontainer podman is rootful; linters still run as the invoking user via -u.
   if [[ "$(id -u)" != "0" ]] && command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
@@ -82,7 +87,7 @@ else
     -e HOME=/tmp \
     -e MEGALINTER_FLAVOR="$MEGALINTER_FLAVOR" \
     -e VALIDATE_ALL_CODEBASE="true" \
-    -e APPLY_FIXES="${APPLY_FIXES:-all}" \
+    -e APPLY_FIXES="$apply_fixes" \
     -e UPDATED_SOURCES_REPORTER="true" \
     -e REPORT_OUTPUT_FOLDER="/tmp/lint/.output" \
     "${linter_args[@]}" \
@@ -91,9 +96,9 @@ else
     "$MEGALINTER_IMAGE" >/dev/null 2>&1 ||
     LINT_EXIT_CODE=$?
 
-  # Linters fix in place in the mounted workspace; this only restores files a
-  # linter rewrote outside it (e.g. via a temp copy).
-  if compgen -G "$REPO_ROOT/.output/updated_sources/*" >/dev/null; then
+  # Copy back only when MegaLinter applies fixes (APPLY_FIXES is all or a linter
+  # list): updated_sources also lists unfixed files, and stale ones undo edits.
+  if [[ "$fixes_applied" -eq 1 ]] && compgen -G "$REPO_ROOT/.output/updated_sources/*" >/dev/null; then
     cp -r "$REPO_ROOT/.output/updated_sources"/* "$REPO_ROOT/"
   fi
 
@@ -103,7 +108,9 @@ else
     echo "MegaLinter failed (exit code $LINT_EXIT_CODE). Check .output/ for details:"
     echo "  .output/megalinter.log        - Full run log"
     echo "  .output/linters_logs/          - Per-linter logs"
-    echo "  .output/updated_sources/       - Auto-fixed files (already copied back)"
+    if [[ "$fixes_applied" -eq 1 ]]; then
+      echo "  .output/updated_sources/       - Auto-fixed files (already copied back)"
+    fi
   fi
 
   exit "$LINT_EXIT_CODE"
