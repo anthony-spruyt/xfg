@@ -81,7 +81,7 @@ describe("escapeCell", () => {
     assert.equal(escapeCell("a | b"), "a \\| b");
   });
 
-  test("escapes opening angle brackets the way mdformat does", () => {
+  test("escapes opening angle brackets so they show as text", () => {
     assert.equal(escapeCell("<path>"), "\\<path>");
   });
 
