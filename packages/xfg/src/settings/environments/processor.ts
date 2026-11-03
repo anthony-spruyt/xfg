@@ -61,9 +61,7 @@ function environmentsOf(repoConfig: RepoConfig): {
 }
 
 function isPermissionError(error: unknown): boolean {
-  return (
-    toErrorMessage(error).includes("HTTP 403") && !isPaidPlanError(error)
-  );
+  return toErrorMessage(error).includes("HTTP 403") && !isPaidPlanError(error);
 }
 
 async function deleteAsAdmin(

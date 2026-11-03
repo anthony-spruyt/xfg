@@ -36,7 +36,10 @@ export interface ExistingBranchPattern extends DeploymentBranchPattern {
 }
 
 export interface IEnvironmentsStrategy {
-  list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubEnvironment[]>;
+  list(
+    repoInfo: RepoInfo,
+    options?: GhApiOptions
+  ): Promise<GitHubEnvironment[]>;
   createOrUpdate(
     repoInfo: RepoInfo,
     name: string,
@@ -68,7 +71,10 @@ export interface IEnvironmentsStrategy {
 }
 
 export interface IEnvironmentSecretsStrategy {
-  list(repoInfo: RepoInfo, options?: GhApiOptions): Promise<GitHubEnvironment[]>;
+  list(
+    repoInfo: RepoInfo,
+    options?: GhApiOptions
+  ): Promise<GitHubEnvironment[]>;
   listSecrets(
     repoInfo: RepoInfo,
     environment: string,

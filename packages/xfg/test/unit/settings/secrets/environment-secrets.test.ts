@@ -458,11 +458,7 @@ describe("SecretsProcessor - environment secrets", () => {
 
   test("ignores environments without secrets", async () => {
     const { envSecrets, processor } = setup();
-    const result = await processor.process(
-      config({ release: {} }),
-      repo,
-      {}
-    );
+    const result = await processor.process(config({ release: {} }), repo, {});
     assert.equal(result.skipped, true);
     assert.equal(result.noSecretsConfigured, true);
     assert.deepEqual(envSecrets.calls, []);
@@ -574,7 +570,9 @@ describe("SecretsProcessor - environment secrets deleteOrphaned", () => {
 
   test("repo-level secrets.deleteOrphaned leaves environment secrets alone", async () => {
     const { envSecrets, processor } = withOld();
-    const repoConfig = config({ release: { secrets: { KEY: { env: "SRC" } } } });
+    const repoConfig = config({
+      release: { secrets: { KEY: { env: "SRC" } } },
+    });
     repoConfig.settings!.secrets = {
       deleteOrphaned: true,
     } as RepoSettings["secrets"];

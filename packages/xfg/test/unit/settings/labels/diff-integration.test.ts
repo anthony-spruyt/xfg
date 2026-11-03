@@ -455,10 +455,7 @@ describe("diffLabels", () => {
         b: { color: "bbbbbb", new_name: "c" },
       };
 
-      assert.throws(
-        () => diffLabels(current, desired, false, false),
-        /chain/i
-      );
+      assert.throws(() => diffLabels(current, desired, false, false), /chain/i);
     });
 
     test("rejects a rename onto a kept new_name entry on both runs", () => {

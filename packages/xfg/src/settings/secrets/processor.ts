@@ -260,7 +260,10 @@ export class SecretsProcessor implements ISecretsProcessor {
     if (secretEntries.length > 0) {
       scopes.set(undefined, {
         values: repoValues,
-        publicKey: await this.strategy.getPublicKey(githubRepo, strategyOptions),
+        publicKey: await this.strategy.getPublicKey(
+          githubRepo,
+          strategyOptions
+        ),
       });
     }
     // Serial: GitHub asks for serial requests to avoid secondary rate limits
@@ -354,10 +357,11 @@ export class SecretsProcessor implements ISecretsProcessor {
     // A missing environment has no secrets to delete, so only writes need it.
     const missing = groups.filter((g) => !g.exists && g.entries.length > 0);
     if (missing.length === 0) return { warnings: [] };
-    const { visibility } = await this.environments!.metadataProvider.getMetadata(
-      githubRepo,
-      strategyOptions
-    );
+    const { visibility } =
+      await this.environments!.metadataProvider.getMetadata(
+        githubRepo,
+        strategyOptions
+      );
     if (visibility === "public") {
       return {
         error: `environment ${quoted(missing[0].environment)} does not exist. Run 'xfg sync' first to create it.`,

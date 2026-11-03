@@ -4,10 +4,7 @@ import {
   mergeSettings,
   normalizeConfig,
 } from "../../../src/config/normalizer.js";
-import type {
-  RawConfig,
-  RawRepoSettings,
-} from "../../../src/config/types.js";
+import type { RawConfig, RawRepoSettings } from "../../../src/config/types.js";
 
 const mainOnly = { custom: [{ type: "branch" as const, name: "main" }] };
 
@@ -148,7 +145,9 @@ describe("mergeSettings - environments", () => {
     const result = mergeSettings(
       { environments: { Release: { deploymentBranchPolicy: mainOnly } } },
       {
-        environments: { release: true } as unknown as RawRepoSettings["environments"],
+        environments: {
+          release: true,
+        } as unknown as RawRepoSettings["environments"],
       }
     );
     assert.deepStrictEqual(result?.environments, {
@@ -178,7 +177,9 @@ describe("mergeSettings - environments", () => {
   });
 
   test("merging does not share the custom array with the raw config", () => {
-    const root = { environments: { release: { deploymentBranchPolicy: mainOnly } } };
+    const root = {
+      environments: { release: { deploymentBranchPolicy: mainOnly } },
+    };
     const result = mergeSettings(root, {});
     result!.environments!.release.deploymentBranchPolicy!.custom!.push({
       type: "tag",
@@ -224,12 +225,18 @@ describe("mergeSettings - environments deleteOrphaned", () => {
   });
 
   test("deleteOrphaned: true alone keeps the map", () => {
-    const result = mergeSettings({ environments: envs({ deleteOrphaned: true }) }, {});
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true }) },
+      {}
+    );
     assert.deepStrictEqual(result?.environments, { deleteOrphaned: true });
   });
 
   test("deleteOrphaned: false alone leaves the key out", () => {
-    const result = mergeSettings({ environments: { deleteOrphaned: false } }, {});
+    const result = mergeSettings(
+      { environments: { deleteOrphaned: false } },
+      {}
+    );
     assert.strictEqual(result?.environments, undefined);
   });
 
@@ -255,7 +262,9 @@ describe("mergeSettings - environments deleteOrphaned", () => {
 
   test("environment secrets deleteOrphaned alone is kept", () => {
     const result = mergeSettings(
-      { environments: envs({ release: { secrets: { deleteOrphaned: true } } }) },
+      {
+        environments: envs({ release: { secrets: { deleteOrphaned: true } } }),
+      },
       {}
     );
     assert.deepStrictEqual(result?.environments, {

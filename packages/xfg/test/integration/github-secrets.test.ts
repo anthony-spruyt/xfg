@@ -320,7 +320,10 @@ repos:
       ),
       `secrets sync output should name the environment secret, got: ${secretsOutput}`
     );
-    assert.ok(!secretsOutput.includes(SECRET_VALUE), "value must not be logged");
+    assert.ok(
+      !secretsOutput.includes(SECRET_VALUE),
+      "value must not be logged"
+    );
 
     await withTestRetry(
       async () => {
@@ -425,9 +428,7 @@ repos:
 
     const secretsOutput = await runSecretsSync(configPath);
     assert.ok(
-      secretsOutput.includes(
-        '- secret "XFG_DROP" (environment "xfg-prune")'
-      ),
+      secretsOutput.includes('- secret "XFG_DROP" (environment "xfg-prune")'),
       secretsOutput
     );
 

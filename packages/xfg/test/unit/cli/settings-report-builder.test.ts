@@ -694,7 +694,11 @@ describe("buildSettingsReport environments", () => {
         secretsResult: {
           planOutput: {
             entries: [
-              { name: "KEY", action: "create" as const, environment: "release" },
+              {
+                name: "KEY",
+                action: "create" as const,
+                environment: "release",
+              },
             ],
           },
         },

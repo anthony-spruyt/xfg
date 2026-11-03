@@ -480,7 +480,11 @@ function validateDeploymentBranchPolicy(
   if (!isPlainObject(policy)) {
     throw new ValidationError(`${ctx} must be an object`);
   }
-  assertKnownKeys(policy, BRANCH_POLICY_KEYS, `${context}: deploymentBranchPolicy`);
+  assertKnownKeys(
+    policy,
+    BRANCH_POLICY_KEYS,
+    `${context}: deploymentBranchPolicy`
+  );
 
   const hasProtected = policy.protectedBranches !== undefined;
   const hasCustom = policy.custom !== undefined;
@@ -557,7 +561,11 @@ function validateSettingsEnvironments(
     }
     validateEnvironmentName(name, context, seenNames);
     if (env !== false) {
-      validateEnvironmentEntry(env, `${context}: environment '${name}'`, !rootCtx);
+      validateEnvironmentEntry(
+        env,
+        `${context}: environment '${name}'`,
+        !rootCtx
+      );
     }
   }
 }
@@ -580,9 +588,7 @@ function validateEnvironmentName(
   seenNames: Map<string, string>
 ): void {
   if (name.trim() === "") {
-    throw new ValidationError(
-      `${context}: environment name must not be blank`
-    );
+    throw new ValidationError(`${context}: environment name must not be blank`);
   }
   if (name.length > ENVIRONMENT_NAME_MAX_LENGTH) {
     throw new ValidationError(

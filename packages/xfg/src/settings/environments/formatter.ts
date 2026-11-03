@@ -25,8 +25,7 @@ export interface EnvironmentsDeleteEntry {
 }
 
 export type EnvironmentsPlanEntry =
-  | EnvironmentsUpsertEntry
-  | EnvironmentsDeleteEntry;
+  EnvironmentsUpsertEntry | EnvironmentsDeleteEntry;
 
 export interface EnvironmentsPlanResult {
   lines: string[];
@@ -51,7 +50,9 @@ function toEntry(change: EnvironmentChange): EnvironmentsUpsertEntry | null {
   return entry;
 }
 
-export function formatPolicyLine(entry: EnvironmentsUpsertEntry): string | null {
+export function formatPolicyLine(
+  entry: EnvironmentsUpsertEntry
+): string | null {
   if (entry.action === "create") {
     return `deployment branches: ${entry.desiredKind}`;
   }

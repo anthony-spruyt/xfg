@@ -11,7 +11,10 @@ import {
 import type { GitHubEnvironment } from "../../../../src/settings/environments/types.js";
 
 const custom = { protected_branches: false, custom_branch_policies: true };
-const protectedOnly = { protected_branches: true, custom_branch_policies: false };
+const protectedOnly = {
+  protected_branches: true,
+  custom_branch_policies: false,
+};
 
 describe("policy kinds", () => {
   test("currentPolicyKind maps GitHub's policy", () => {
@@ -19,7 +22,10 @@ describe("policy kinds", () => {
     assert.equal(currentPolicyKind(protectedOnly), "protected");
     assert.equal(currentPolicyKind(custom), "custom");
     assert.equal(
-      currentPolicyKind({ protected_branches: false, custom_branch_policies: false }),
+      currentPolicyKind({
+        protected_branches: false,
+        custom_branch_policies: false,
+      }),
       "all"
     );
   });
@@ -50,9 +56,21 @@ describe("needsPatternLookup", () => {
     assert.deepEqual(
       needsPatternLookup(
         {
-          release: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } },
-          prod: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } },
-          fresh: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } },
+          release: {
+            deploymentBranchPolicy: {
+              custom: [{ type: "branch", name: "main" }],
+            },
+          },
+          prod: {
+            deploymentBranchPolicy: {
+              custom: [{ type: "branch", name: "main" }],
+            },
+          },
+          fresh: {
+            deploymentBranchPolicy: {
+              custom: [{ type: "branch", name: "main" }],
+            },
+          },
         },
         current
       ),
@@ -115,7 +133,13 @@ describe("diffEnvironments", () => {
 
   test("updates when the policy kind changes", () => {
     const [change] = diffEnvironments(
-      { prod: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } } },
+      {
+        prod: {
+          deploymentBranchPolicy: {
+            custom: [{ type: "branch", name: "main" }],
+          },
+        },
+      },
       [{ name: "prod", deployment_branch_policy: null }],
       new Map()
     );
@@ -124,7 +148,9 @@ describe("diffEnvironments", () => {
     assert.equal(change.desiredKind, "custom");
     assert.equal(change.putPolicy, true);
     assert.equal(change.patternsKnown, false);
-    assert.deepEqual(change.missingPatterns, [{ type: "branch", name: "main" }]);
+    assert.deepEqual(change.missingPatterns, [
+      { type: "branch", name: "main" },
+    ]);
   });
 
   test("adds missing patterns without a PUT and reports unmanaged ones", () => {
@@ -161,7 +187,13 @@ describe("diffEnvironments", () => {
 
   test("is unchanged when all custom patterns exist", () => {
     const [change] = diffEnvironments(
-      { release: { deploymentBranchPolicy: { custom: [{ type: "branch", name: "main" }] } } },
+      {
+        release: {
+          deploymentBranchPolicy: {
+            custom: [{ type: "branch", name: "main" }],
+          },
+        },
+      },
       [{ name: "release", deployment_branch_policy: custom }],
       new Map([["release", [{ id: 1, type: "branch" as const, name: "main" }]]])
     );
@@ -170,7 +202,11 @@ describe("diffEnvironments", () => {
 
   test("treats a branch and a tag with the same name as different patterns", () => {
     const [change] = diffEnvironments(
-      { release: { deploymentBranchPolicy: { custom: [{ type: "tag", name: "main" }] } } },
+      {
+        release: {
+          deploymentBranchPolicy: { custom: [{ type: "tag", name: "main" }] },
+        },
+      },
       [{ name: "release", deployment_branch_policy: custom }],
       new Map([["release", [{ id: 1, type: "branch" as const, name: "main" }]]])
     );
@@ -199,9 +235,7 @@ describe("diffEnvironments with deleteOrphaned", () => {
   const releaseOnGitHub: GitHubEnvironment[] = [
     { name: "release", deployment_branch_policy: custom },
   ];
-  const releasePatterns = new Map([
-    ["release", [{ id: 1, ...main }, stale]],
-  ]);
+  const releasePatterns = new Map([["release", [{ id: 1, ...main }, stale]]]);
 
   test("orphanEnvironments lists environments not in config, in GitHub's spelling", () => {
     assert.deepEqual(orphanEnvironments({ release: {} }, current), [
@@ -233,7 +267,11 @@ describe("diffEnvironments with deleteOrphaned", () => {
 
   test("is an update when the only change is a pattern to delete", () => {
     const [change] = diffEnvironments(
-      { release: { deploymentBranchPolicy: { deleteOrphaned: true, custom: [main] } } },
+      {
+        release: {
+          deploymentBranchPolicy: { deleteOrphaned: true, custom: [main] },
+        },
+      },
       releaseOnGitHub,
       releasePatterns
     );
