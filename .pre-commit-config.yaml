@@ -46,6 +46,7 @@ repos:
       - id: "markdownlint"
         args:
           - "--fix"
+        exclude: "(^|/)(\\.angular|\\.git|\\.jekyll-cache|\\.mypy_cache|\\.nx|\\.output|\\.parcel-cache|\\.pnpm-store|\\.pytest_cache|\\.rbenv|\\.sf|\\.sfdx|\\.terraform|\\.terragrunt-cache|\\.turbo|\\.venv|\\.wireit|\\.worktrees|__pycache__|coverage|dist|node_modules|plans|site|tmp|worktrees)/|^\\.yarn/cache/|CLAUDE\\.md$|CHANGELOG\\.md$|^\\.claude/"
   - repo: "local"
     hooks:
       - id: "xfg-managed"
