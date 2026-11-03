@@ -38,7 +38,14 @@ Once the owner approves, brief the helper with the design verbatim, its gate che
 
 ## Review and readiness
 
-Every PR and fix round gets fresh reviewers, never the author, except the small no-logic changes from Routing (check your own `git diff`, unless a repo rule requires a reviewer), verbatim step 3 fixes, and bot PRs (your checks under Owner). Security-sensitive changes get an attacker-minded brief. Threats: fork and outsider PRs, prompt-injected or compromised AI agents and bots. Trusted: the owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions). Grade a security finding by what an attacker gains that existing controls don't already stop, and drop it if that's nothing.
+**Size checks to risk.** Before each check (a reviewer or lens, a fix-check, `spec-review`, a validator), name what it can catch that the checks already run can't. If nothing, skip it and give the reason in one line of your report.
+
+- **High risk** - the change can take production down, lose or delete data, or weaken security. It gets every check; skip none.
+- **Low risk** - anything else gets the one cheapest pre-push check that covers it. A small no-logic change from Routing needs only your own `git diff`, unless a repo rule requires a reviewer. Post-push validators the repo's rules name still run: nothing before the push sees the live result.
+- **Unsure** - treat it as high risk.
+- The repo's local orchestration rule names its high-risk areas and any validator that counts as a reviewer there.
+
+When a change needs a reviewer, use a fresh one, never the author; verbatim step 3 fixes and bot PRs (your checks under Owner) need none. Security-sensitive changes get an attacker-minded brief. Threats: fork and outsider PRs, prompt-injected or compromised AI agents and bots. Trusted: the owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions). Grade a security finding by what an attacker gains that existing controls don't already stop, and drop it if that's nothing.
 
 Review wide once, then check only the fixes: full re-reviews find new nits forever.
 
