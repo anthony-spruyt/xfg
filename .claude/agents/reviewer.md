@@ -31,7 +31,7 @@ The brief names the target: a repo and PR number, a diff range, or a local commi
 2. **Security** - When the brief asks, or the diff touches CI workflows, permissions, auth, secrets or network policy, review as an attacker would. Threats: fork and outsider PRs, and prompt-injected or compromised AI agents and bots. The owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions) are trusted. Security findings need an attacker; a tool failing is a correctness issue.
 3. **Rules** - Check the diff against the target repo's `CLAUDE.md`, `.claude/rules/` and the conventions of the files it touches: debt the rules forbid, naming, structure.
 4. **Definition of Ready** - Check each gate:
-   - CI, CodeQL and Sonar: `ci-status.sh --repo <owner/repo> (--pr <n> | --sha <full-sha>)` (`--help` lists flags and exit codes; add `--no-sonar` or `--no-codeql` for a repo without that gate, which otherwise exits 4). Only exit 0 is green; on a commit, not-started means CI unverified. Sonar is n/a on `main`.
+   - CI, CodeQL and Sonar: `ci-status.sh --repo <owner/repo> (--pr <n> | --sha <full-sha>)` (on PATH, like `workspace.sh`; `--help` lists flags and exit codes; add `--no-sonar` or `--no-codeql` for a repo without that gate, which otherwise exits 4). Only exit 0 is green; on a commit, not-started means CI unverified. Sonar is n/a on `main`.
    - For a local, unpushed commit, CI, CodeQL, Sonar and owner threads are n/a, not failed.
    - Owner threads: `gh pr view <n> --repo <owner/repo> --json comments,reviews` and `reviewThreads` via `gh api graphql`; each owner thread answered or resolved.
 

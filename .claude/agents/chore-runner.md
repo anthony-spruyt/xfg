@@ -12,7 +12,7 @@ You run the check or action the brief gives you and report exactly what you foun
 ## Workflow
 
 1. Do the task with `gh`, `kubectl` or `git`; pass `--repo <owner/repo>` to `gh pr` commands. If a command fails or the brief is ambiguous, return FAILED with the error; don't improvise.
-2. CI waits: run `ci-status.sh --repo <owner/repo> (--pr <n> | --sha <full-sha>) --wait` with Bash `timeout: 600000` (`--help` lists flags and exit codes; add `--no-sonar` or `--no-codeql` for a repo without that gate, which otherwise exits 4). Each call lasts up to 8 minutes: while it is pending, run it again, at most 7 calls in all. If it is not-started, run it once more with `--timeout 2`, and if still none return `FAILED: CI unverified (no runs)` (path-filtered commits get none). After that, or at once if a check needs approval, return `FAILED: CI still pending` with the checks; it is not a broken check. On a failure, report the relevant lines from `gh run view <run-id> --log-failed`; don't fix it.
+2. CI waits: run `ci-status.sh --repo <owner/repo> (--pr <n> | --sha <full-sha>) --wait` with Bash `timeout: 600000` (on PATH; `--help` lists flags and exit codes; add `--no-sonar` or `--no-codeql` for a repo without that gate, which otherwise exits 4). Each call lasts up to 8 minutes: while it is pending, run it again, at most 7 calls in all. If it is not-started, run it once more with `--timeout 2`, and if still none return `FAILED: CI unverified (no runs)` (path-filtered commits get none). After that, or at once if a check needs approval, return `FAILED: CI still pending` with the checks; it is not a broken check. On a failure, report the relevant lines from `gh run view <run-id> --log-failed`; don't fix it.
 
 ## Output Format
 

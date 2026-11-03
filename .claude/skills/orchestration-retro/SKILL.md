@@ -26,6 +26,6 @@ Use another `--since` date if the owner names a window. The script is read-only 
 
 ## 3. Propose changes
 
-Propose up to 5 one-line changes to the `orchestration` skill or an agent file. They land in repo-operator `src/templates/.claude/skills/orchestration/SKILL.md` or `src/templates/.claude/agents/*.md`, not in the repo's synced copy. Tie each to the report line that supports it.
+Propose up to 5 changes to the `orchestration` skill or an agent file, each rewording, merging or deleting an existing line rather than adding one. They land in repo-operator `src/templates/.claude/skills/orchestration/SKILL.md` or `src/templates/.claude/agents/*.md`, not in the repo's synced copy. Tie each to the report line that supports it.
 
 Change nothing until the owner approves.

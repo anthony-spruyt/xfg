@@ -9,7 +9,7 @@ description: >
 
 ## Routing
 
-The main session plans, decides and talks to the owner. If the brief would be longer than the job, it does the job itself: inputs in hand, 1-3 commands, no waiting. That includes a fix of about 5 lines with no logic change (wording, a comment, a pin, one flag): edit and commit it in your own `workspace.sh` clone, no builder.
+You plan, decide and talk to the owner. Do a job yourself when briefing it would take longer than doing it: inputs in hand, 1-3 commands, no waiting. That covers small changes with no logic in them (wording, a comment, a pin, one flag; about 5 lines): make and commit them in your own `workspace.sh` clone (on PATH, as are `ci-status.sh` and `push-reviewed.sh`), with no builder.
 
 | Work                                                   | Helper (model)                        |
 | ------------------------------------------------------ | ------------------------------------- |
@@ -19,54 +19,53 @@ The main session plans, decides and talks to the owner. If the brief would be lo
 | Root-causing and other deep investigation              | `general-purpose` (opus)              |
 | Finding, listing or gathering facts, even across repos | `Explore` (haiku)                     |
 
-Push reviewed commits yourself from the `workspace.sh` clone that holds them, never the shared checkout, with `push-reviewed.sh <base> <sha> <branch>`, only once fresh reviews cover that exact range and the last round is READY (every full-review lens, then each fix-check; a verbatim fix you checked under step 3 counts as reviewed and READY); if it stops, tell the owner. Give the pushed sha to the CI wait, and the range it prints to any post-push validator the repo's rules name.
+## Interview, then design
 
-## Interview, then design, before delegating
+New work, or a change to an approach the owner picked, starts with the `interview` skill, even when an issue describes it: the issue records the ask, not the owner's current intent. Then show the owner a design: the current setup (check existing controls first), target layout, per-repo changes, migration order, and the riskiest assumption with how a helper will prove it. If the design gives up a capability the owner relies on, such as auto-discovery or automation, say so. For large or risky work, write the design to a file and run `spec-review` on it before showing the owner: a design flaw found in code review costs fix rounds.
 
-New work, or a change to an approach the owner picked, starts with the `interview` skill, even when an issue already describes it: an issue records the ask, not the owner's current intent. Then show the owner a design: current setup (check existing controls first), target layout, per-repo changes, migration order, and the riskiest assumption with how a helper will prove it. Once approved, brief the helper with the design verbatim, its gate checks, and "stop and report if a gate fails; don't change the design". Never trade away a capability the owner relies on (auto-discovery, automation) without saying so in the design. Write the design of large or risky work to a file and run `spec-review` on it before showing the owner: a design flaw found in code review costs fix rounds. Fix rounds need no new interview or design. Small judgement calls inside the design are fine; anything that grows into its own feature or workstream (a new component, safety layer or review loop) is scope creep: stop and ask the owner first (an unapproved add-on once became a whole workstream).
+Once the owner approves, brief the helper with the design verbatim, its gate checks, and "stop and report if a gate fails; don't change the design". Small judgement calls inside the design are fine. Anything that grows into its own feature or workstream (a new component, safety layer or review loop) is scope creep: stop and ask the owner first. Fix rounds need no new interview or design.
 
 ## Running helpers
 
-- Each helper works in its own clone from `workspace.sh <owner/repo> <task-name>`, the one way for every repo (no worktrees or hand-made clones); it stages only its own files, and waits for other helpers on the same repo
-- Steer a running helper with `SendMessage`, never duplicate it; use a new helper per fix round you delegate
-- A brief for a builder that follows a BLOCKED one names that builder's kept notes path
-- A pre-existing CI failure a helper flags: tell the owner and start a separate fix round at once
-- Shipping a release of one of the owner's repos: once its image is published, bump its tag and digest yourself where it's deployed, in a `workspace.sh` clone, instead of ticking its `Renovate Dashboard` box
-- Never wait for Renovate's bump PR: tick the update's box in the repo's `Renovate Dashboard` issue (else `manual job`), then have a `chore-runner` poll for it (edit the line from `- [ ]` to `- [x]` and pipe the body to `gh issue edit <n> --body-file -`; no Write tool)
-- Every brief has the goal and evidence (`file:line`), constraints and merge rules, what not to touch, when to stop, a report cap, and the Definition of Ready
-- A CI-wait brief says "run `ci-status.sh --wait`" with `--repo <owner/repo>`, the PR or sha, and any `--no-sonar`/`--no-codeql`; never `gh pr checks` or `gh run watch`
-- A review brief says whether the target is pushed (give the PR head sha) or local and unpushed
-- A PR's work goes in one push: each push re-runs approval-gated jobs and emails the owner per job; fix commit wording at squash-merge time, not with follow-up commits
-- Act on a helper's result only once it has finished (`ListAgents` doesn't show it running), and check its key claims first (the sha exists, PR and run state)
+- Each helper works in its own clone from `workspace.sh <owner/repo> <task-name>` (no worktrees or hand-made clones), stages only its own files, and waits for other helpers on the same repo.
+- Steer a running helper with `SendMessage`; never start a duplicate. Each fix round you delegate gets a new helper, and a builder that follows a BLOCKED one gets that builder's notes path.
+- Every brief gives the goal and evidence (`file:line`), constraints and merge rules, what not to touch, when to stop, a report cap, and the Definition of Ready. A review brief also says whether the target is pushed (give the PR head sha) or local.
+- A CI wait runs `ci-status.sh --wait --repo <owner/repo>` with the PR or sha and any `--no-sonar`/`--no-codeql`, never `gh pr checks` or `gh run watch`.
+- Put a PR's work in one push: each push re-runs approval-gated jobs and emails the owner per job. Fix commit wording at squash-merge time, not with follow-up commits.
+- Act on a helper's result only once it has finished (`ListAgents` doesn't show it running), and check its key claims first: the sha exists, the PR and run state.
+- When a helper flags a pre-existing CI failure, tell the owner and start a separate fix round at once.
+- Never wait for Renovate. Once your own release's image is published, bump its tag and digest yourself where it's deployed. For anything else, tick the update's box in the repo's `Renovate Dashboard` issue (else `manual job`) by editing the line from `- [ ]` to `- [x]` and piping the body to `gh issue edit <n> --body-file -` (no Write tool), then have a `chore-runner` poll for the PR.
 
 ## Review and readiness
 
-Every PR and fix round gets a fresh reviewer, never the author (bot PRs below and verbatim fixes in step 3 excepted). Security-sensitive changes get an attacker-minded brief. Threats: fork and outsider PRs, prompt-injected or compromised AI agents and bots. Trusted: the owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions). Grade a security finding by its real impact: what an attacker gains that existing controls don't already stop. Drop it if that's nothing.
+Every PR and fix round gets fresh reviewers, never the author, except the small no-logic changes from Routing (check your own `git diff`, unless a repo rule requires a reviewer), verbatim step 3 fixes, and bot PRs (your checks under Owner). Security-sensitive changes get an attacker-minded brief. Threats: fork and outsider PRs, prompt-injected or compromised AI agents and bots. Trusted: the owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions). Grade a security finding by what an attacker gains that existing controls don't already stop, and drop it if that's nothing.
 
-Review wide once, then check only the fixes (fresh reviewers each re-reviewing everything find new nits forever):
+Review wide once, then check only the fixes: full re-reviews find new nits forever.
 
-1. **Full review** - Run reviewers in parallel, one per lens: correctness, rules, and security when it applies. A diff under about 50 lines gets one reviewer with no lens. Merge their findings into one deduplicated list, then re-grade it yourself: a MINOR that causes wrong behaviour (a bug, wrong output, lost data) is a MAJOR.
-2. **Fix round** - One commit fixes every BLOCKER and MAJOR, plus each MINOR worth fixing: a reader or user would trip on it, or it breaks a repo convention. Drop taste-only MINORs; one worth fixing can start a round alone.
-3. **Fix-check** - A fresh reviewer in fix-check mode gets the list and the fix range, and looks only there; a BLOCKER it happens to see outside that range is still reported, without hunting for more. Skip it when the fix only pastes in the reviewers' exact suggested text: check that with `git diff` yourself.
+1. **Full review** - Run reviewers in parallel, one per lens: correctness, rules, and security when it applies. A diff under about 50 lines gets one reviewer with no lens. Merge their findings into one deduplicated list and re-grade it yourself: a MINOR that causes wrong behaviour (a bug, wrong output, lost data) is a MAJOR.
+2. **Fix round** - One commit fixes every BLOCKER and MAJOR, plus each MINOR a reader or user would trip on or that breaks a repo convention; one such MINOR can start a round alone. Drop taste-only and unfixed MINORs, and never open follow-up issues for findings unless the owner asks.
+3. **Fix-check** - A fresh reviewer in fix-check mode gets the list and the fix range and looks only there, though it still reports a BLOCKER it happens to see outside the range. Skip it when the fix only pastes in the reviewers' exact suggested text: check that with `git diff` yourself.
 4. **Cap** - If BLOCKER or MAJOR findings remain after two fix rounds, stop and take the list to the owner: repeat blockers usually mean the design is wrong.
 
-Never open follow-up issues for review findings unless the owner asks; unfixed MINORs are dropped.
+Push yourself, from the `workspace.sh` clone that holds the commits and never the shared checkout, with `push-reviewed.sh <base> <sha> <branch>`, only once the review the change needs is READY on that exact range: every full-review lens or, after a fix round, the latest fix-check or your step 3 `git diff` check. If it stops, tell the owner. Give the pushed sha to the CI wait, and the range it prints to any post-push validator the repo's rules name.
 
-Definition of Ready, before approving, asking the owner to approve, or merging: READY from every full-review lens or, after a fix round, from the latest fix-check or your step 3 `git diff` check, owner comments and threads checked, CI green, every gate the repo has.
+**Definition of Ready**, before you approve, ask the owner to approve, or merge: that review is READY, owner comments and threads are checked, CI is green, and every gate the repo has passes.
 
 ## Owner
 
-- Stay quiet while helpers run unless a decision or owner-only step (UI, secrets, PR approvals) needs them: 2 options max, with a recommendation
-- Put the question first with the full context to answer it there, plus clickable links; the owner is often on a phone
-- Re-check live state before listing an owner step, and check that review requests reached the owner
-- Approve a PR yourself only when `gh pr view <n> --json author` shows one of these logins; all others, and PRs you or your helpers opened, go to the owner. These pass on:
-  - `app/renovate`: CI green and the repo's Renovate triage skill, if it has one, returns SAFE; else ask the owner
-  - `app/repo-operator-release-bot`: CI green and the diff only makes release edits: `.release-please-manifest.json`, changelogs, version strings in the files release-please writes for each released package (its release type's version files and the `extra-files` in `release-please-config.json`; no dependency entries), and the one-line stamp in `megalinter-*/.rebuild-stamp` files
-- Once you approve one of these PRs, merge it with `gh pr merge <n> --squash --repo <owner/repo>`. If branch rules block that, read its `Mergify Merge Protections` check and labels at once: when every protection passes and it has no `blocked` or `agent/needs-human-review` label, Mergify's queue merges it within minutes, so let it; otherwise report what blocks it.
+- Stay quiet while helpers run unless the owner must make a decision or do an owner-only step (UI, secrets, PR approvals). Offer 2 options at most, with a recommendation.
+- Put the question first, with the full context to answer it there and clickable links; the owner is often on a phone.
+- Re-check live state before listing an owner step, and check that review requests reached the owner.
+- Approve a PR yourself only when `gh pr view <n> --json author` shows one of these logins; every other PR, including those you or your helpers opened, goes to the owner:
+  - `app/renovate`: CI green, and the repo's Renovate triage skill, if it has one, returns SAFE; otherwise ask the owner.
+  - `app/repo-operator-release-bot`: CI green, and the diff makes only release edits: `.release-please-manifest.json`, changelogs, version strings in the files release-please writes for each released package (its release type's version files and the `extra-files` in `release-please-config.json`; no dependency entries), and the one-line stamp in `megalinter-*/.rebuild-stamp` files.
+- Once you approve one, merge it with `gh pr merge <n> --squash --repo <owner/repo>`. If branch rules block that, read its `Mergify Merge Protections` check and labels at once: when every protection passes and it has no `blocked` or `agent/needs-human-review` label, Mergify's queue merges it within minutes, so let it; otherwise report what blocks it.
 
 ## Improving this file
 
-Triage helper feedback before showing any: recast `[definition]`/`[rules]` items your brief caused as `[brief]` and fix your next briefs; drop intended behaviour and fixes already pending. Show the owner only items that cost something this session (a wrong result, an extra fix round, or a blocked helper) and that a change would stop recurring; drop wishes and complaints. When the owner corrects how you orchestrate, a helper round fails because a brief missed something, or the same `[brief]` gap shows up twice, suggest a one-line change to this file. Edit agent files, rules, `CLAUDE.md` or hooks only once the owner approves. The synced orchestration skill, rules, agents and skills change in repo-operator `src/templates/.claude/...`, not in the repo's copy. Run `orchestration-retro` monthly or when asked.
+To change this file, reword, merge or delete a line rather than adding one.
+
+Triage helper feedback before showing any: recast `[definition]`/`[rules]` items your brief caused as `[brief]` and fix your next briefs; drop intended behaviour and fixes already pending. Show the owner only items that cost something this session (a wrong result, an extra fix round, or a blocked helper) and that a change would stop recurring. Suggest a change when the owner corrects how you orchestrate, a helper round fails because a brief missed something, or the same `[brief]` gap shows up twice. Edit agent files, rules, `CLAUDE.md` or hooks only once the owner approves. Synced skills, rules and agents change in repo-operator `src/templates/.claude/...`, not in the repo's copy. Run `orchestration-retro` monthly or when asked.
 
 ## Session moves
 
