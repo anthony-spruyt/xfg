@@ -101,7 +101,10 @@ function config(environments?: Record<string, EnvironmentConfig>): RepoConfig {
 }
 
 function pruning(environments: Record<string, EnvironmentConfig>): RepoConfig {
-  return config({ ...environments, deleteOrphaned: true } as EnvironmentsConfig);
+  return config({
+    ...environments,
+    deleteOrphaned: true,
+  } as EnvironmentsConfig);
 }
 
 const custom = { protected_branches: false, custom_branch_policies: true };
@@ -175,7 +178,9 @@ describe("EnvironmentsProcessor", () => {
 
   test("leaves a matching environment alone", async () => {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: custom },
+    ];
     strategy.patterns.set("release", [main]);
     const processor = new EnvironmentsProcessor(strategy, metadata());
     const result = await processor.process(
@@ -191,7 +196,9 @@ describe("EnvironmentsProcessor", () => {
 
   test("warns about patterns not in config and leaves them in place", async () => {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: custom },
+    ];
     strategy.patterns.set("release", [main, { type: "tag", name: "v*" }]);
     const processor = new EnvironmentsProcessor(strategy, metadata());
     const result = await processor.process(
@@ -206,13 +213,17 @@ describe("EnvironmentsProcessor", () => {
 
   test("re-reads patterns after switching an environment to custom", async () => {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: null }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: null },
+    ];
     strategy.patterns.set("release", [main]);
     const processor = new EnvironmentsProcessor(strategy, metadata());
     await processor.process(
       config({
         release: {
-          deploymentBranchPolicy: { custom: [main, { type: "tag", name: "v*" }] },
+          deploymentBranchPolicy: {
+            custom: [main, { type: "tag", name: "v*" }],
+          },
         },
       }),
       repo,
@@ -310,7 +321,9 @@ describe("EnvironmentsProcessor", () => {
 
   test("skips a private repo when the first pattern write needs an upgrade", async () => {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: custom },
+    ];
     strategy.failOn = "createBranchPolicy";
     strategy.failWith = upgradeError;
     const processor = new EnvironmentsProcessor(strategy, metadata("private"));
@@ -389,7 +402,9 @@ describe("EnvironmentsProcessor deleteOrphaned", () => {
 
   function withStaleTag(): MockStrategy {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: custom }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: custom },
+    ];
     strategy.patterns.set("release", [
       { id: 1, ...main },
       { id: 7, type: "tag", name: "v*.*.*" },
@@ -415,7 +430,10 @@ describe("EnvironmentsProcessor deleteOrphaned", () => {
     assert.match(result.message, /Applied: 1 deleted/);
     assert.deepEqual(
       result.planOutput?.lines.map((l) =>
-        l.replace(new RegExp(String.fromCharCode(0x1b) + "\\[[0-9;]*m", "g"), "")
+        l.replace(
+          new RegExp(String.fromCharCode(0x1b) + "\\[[0-9;]*m", "g"),
+          ""
+        )
       ),
       ['    - environment "npm"', "  Applied: 1 environment (1 deleted)"]
     );
@@ -459,7 +477,9 @@ describe("EnvironmentsProcessor deleteOrphaned", () => {
     const strategy = withNpm();
     const processor = new EnvironmentsProcessor(strategy, metadata());
     await processor.process(
-      pruning({ release: { deploymentBranchPolicy: { protectedBranches: true } } }),
+      pruning({
+        release: { deploymentBranchPolicy: { protectedBranches: true } },
+      }),
       repo,
       {}
     );
@@ -514,7 +534,9 @@ describe("EnvironmentsProcessor deleteOrphaned", () => {
 
   test("deletes no patterns it could not plan after switching to custom", async () => {
     const strategy = new MockStrategy();
-    strategy.environments = [{ name: "release", deployment_branch_policy: null }];
+    strategy.environments = [
+      { name: "release", deployment_branch_policy: null },
+    ];
     strategy.patterns.set("release", [{ id: 7, type: "tag", name: "v*.*.*" }]);
     const processor = new EnvironmentsProcessor(strategy, metadata());
     await processor.process(config(pruneRelease), repo, {});

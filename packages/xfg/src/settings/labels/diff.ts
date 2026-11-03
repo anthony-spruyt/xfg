@@ -155,10 +155,7 @@ export function diffLabels(
         }
       }
 
-      if (
-        labelConfig.new_name &&
-        labelConfig.new_name !== currentLabel.name
-      ) {
+      if (labelConfig.new_name && labelConfig.new_name !== currentLabel.name) {
         propChanges.push({
           property: "new_name",
           oldValue: currentLabel.name,

@@ -85,7 +85,8 @@ describe("settings.environments validation", () => {
 
   test("rejects inherit at root level", () => {
     assert.throws(
-      () => validateRawConfig(base({ environments: asEnvs({ inherit: false }) })),
+      () =>
+        validateRawConfig(base({ environments: asEnvs({ inherit: false }) })),
       /'inherit' is not allowed in root-level environments/
     );
   });
@@ -95,7 +96,9 @@ describe("settings.environments validation", () => {
       () =>
         validateRawConfig(
           base(undefined, {
-            environments: { inherit: "no" } as unknown as RawRepoSettings["environments"],
+            environments: {
+              inherit: "no",
+            } as unknown as RawRepoSettings["environments"],
           })
         ),
       /environments\.inherit must be a boolean/
@@ -104,7 +107,8 @@ describe("settings.environments validation", () => {
 
   test("rejects an environment that is neither an object nor false", () => {
     assert.throws(
-      () => validateRawConfig(base({ environments: asEnvs({ release: true }) })),
+      () =>
+        validateRawConfig(base({ environments: asEnvs({ release: true }) })),
       /environment 'release' must be an object, or false to opt out/
     );
   });
@@ -201,7 +205,8 @@ describe("settings.environments validation", () => {
 
     test("rejects unknown policy keys", () => {
       assert.throws(
-        () => validateRawConfig(withPolicy({ protectedBranches: true, all: 1 })),
+        () =>
+          validateRawConfig(withPolicy({ protectedBranches: true, all: 1 })),
         /deploymentBranchPolicy: unknown key 'all'/
       );
     });
@@ -216,7 +221,9 @@ describe("settings.environments validation", () => {
     test("rejects a custom entry with an invalid type", () => {
       assert.throws(
         () =>
-          validateRawConfig(withPolicy({ custom: [{ type: "ref", name: "main" }] })),
+          validateRawConfig(
+            withPolicy({ custom: [{ type: "ref", name: "main" }] })
+          ),
         /custom\[0\]\.type must be 'branch' or 'tag'/
       );
     });
@@ -393,7 +400,9 @@ describe("validateSecretsConfig - environment secrets", () => {
       () =>
         validateSecretsConfig(
           base({
-            environments: { release: { secrets: { "BAD-NAME": { env: "X" } } } },
+            environments: {
+              release: { secrets: { "BAD-NAME": { env: "X" } } },
+            },
           })
         ),
       /Secret name 'BAD-NAME' contains invalid characters/
@@ -419,7 +428,9 @@ describe("validateSecretsConfig - environment secrets", () => {
       () =>
         validateSecretsConfig(
           base({
-            environments: { release: { secrets: { KEY: { env: "GH_TOKEN" } } } },
+            environments: {
+              release: { secrets: { KEY: { env: "GH_TOKEN" } } },
+            },
           })
         ),
       /credential/
@@ -466,7 +477,10 @@ describe("validateSecretsConfig - environment secrets", () => {
 
 describe("hasActionableSettings - environments", () => {
   test("an environment is actionable for xfg sync", () => {
-    assert.equal(hasActionableSettings({ environments: { release: {} } }), true);
+    assert.equal(
+      hasActionableSettings({ environments: { release: {} } }),
+      true
+    );
   });
 
   test("only inherit or opt-outs is not actionable", () => {

@@ -66,7 +66,10 @@ describe("GitHubEnvironmentsStrategy", () => {
         ],
       })
     );
-    const envs = await strategy.list(mockRepo, { token: "t", host: "github.com" });
+    const envs = await strategy.list(mockRepo, {
+      token: "t",
+      host: "github.com",
+    });
     assert.deepEqual(envs, [
       {
         name: "release",
