@@ -53,12 +53,12 @@
         "anthropic.claude-code",
         "bierner.markdown-mermaid",
         "blueglassblock.better-json5",
-        "esbenp.prettier-vscode",
         "jetmartin.bats",
         "mhutchie.git-graph",
         "nk2552003.forest-ash-theme-vscode",
         "redhat.vscode-yaml",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "esbenp.prettier-vscode"
       ],
       "settings": {
         "workbench.startupEditor": "none"
