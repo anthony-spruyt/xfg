@@ -74,7 +74,7 @@ function renderDefault(schema: JsonSchema): string {
   return schema.default === undefined ? "-" : literal(schema.default);
 }
 
-// mdformat pads every cell to its column width, so one long description widens
+// renderTable pads every cell to its column width, so one long description widens
 // every row in the table. Detail beyond the first sentence goes in a list below.
 function propertyDetails(schema: JsonSchema): string[] {
   return Object.entries(schema.properties ?? {})
