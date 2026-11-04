@@ -7,6 +7,7 @@ import type {
   IRepoSettingsProcessor,
   ILabelsProcessor,
   ICodeScanningProcessor,
+  IActionsProcessor,
   IVariablesProcessor,
   ICollaboratorsProcessor,
   IEnvironmentsProcessor,
@@ -27,6 +28,8 @@ export type RepoSettingsProcessorFactory =
 export type LabelsProcessorFactory = SettingsProcessorFactory<ILabelsProcessor>;
 export type CodeScanningProcessorFactory =
   SettingsProcessorFactory<ICodeScanningProcessor>;
+export type ActionsProcessorFactory =
+  SettingsProcessorFactory<IActionsProcessor>;
 export type VariablesProcessorFactory =
   SettingsProcessorFactory<IVariablesProcessor>;
 export type CollaboratorsProcessorFactory =
@@ -39,6 +42,7 @@ export type SettingsKind =
   | "labels"
   | "repo"
   | "codeScanning"
+  | "actions"
   | "variables"
   | "collaborators"
   | "environments";
@@ -48,14 +52,12 @@ export interface SettingsProcessorFactories {
   labels: LabelsProcessorFactory;
   repo: RepoSettingsProcessorFactory;
   codeScanning: CodeScanningProcessorFactory;
+  actions: ActionsProcessorFactory;
   variables: VariablesProcessorFactory;
   collaborators: CollaboratorsProcessorFactory;
   environments: EnvironmentsProcessorFactory;
 }
 
-/**
- * Dependencies for the sync command (dependency injection).
- */
 export interface SyncDependencies {
   processorFactory?: ProcessorFactory;
   lifecycleManager?: IRepoLifecycleManager;
@@ -93,10 +95,6 @@ export interface SettingsResult extends BaseProcessorResult {
   warnings?: string[];
 }
 
-/**
- * Context for applying repo settings (rulesets, labels, repo config).
- * Groups parameters that were previously passed individually.
- */
 export interface ApplyRepoSettingsContext {
   repoConfig: RepoConfig;
   repoInfo: RepoInfo;

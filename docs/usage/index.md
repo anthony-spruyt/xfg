@@ -1,6 +1,6 @@
 # Usage
 
-xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments. The `secrets sync` command manages secrets. See the [CLI Options Reference](../reference/cli-options.md#secrets-sync-command).
+xfg uses a single `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, Actions settings, variables, collaborators, and environments. The `secrets sync` command manages secrets. See the [CLI Options Reference](../reference/cli-options.md#secrets-sync-command).
 
 ## Basic Usage
 
@@ -25,7 +25,7 @@ The `--dry-run` flag lets you preview changes without actually making them.
 **For settings:**
 
 - Rulesets and labels are compared but not created/updated/deleted
-- Repository settings, code scanning, variables, collaborators and environments are compared but not applied
+- Repository settings, code scanning, Actions settings, variables, collaborators and environments are compared but not applied
 - Shows planned changes (create, update, delete, unchanged)
 
 ```bash

@@ -669,6 +669,74 @@
         }
       }
     },
+    "actionsSettings": {
+      "type": "object",
+      "description": "GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether GitHub Actions is enabled for the repository. Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer."
+        },
+        "allowedActions": {
+          "type": "string",
+          "enum": ["all", "local_only", "selected"],
+          "description": "Which actions and reusable workflows may run. Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected."
+        },
+        "shaPinningRequired": {
+          "type": "boolean",
+          "description": "Require actions to be referenced by full commit SHA. Maps to sha_pinning_required of PUT actions/permissions."
+        },
+        "githubOwnedAllowed": {
+          "type": "boolean",
+          "description": "Allow actions created by GitHub when allowedActions is selected. Maps to github_owned_allowed of PUT actions/permissions/selected-actions."
+        },
+        "verifiedAllowed": {
+          "type": "boolean",
+          "description": "Allow actions from Marketplace verified creators when allowedActions is selected. Maps to verified_allowed of PUT actions/permissions/selected-actions."
+        },
+        "patternsAllowed": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Action patterns to allow when allowedActions is selected, such as docker/login-action@*. Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole."
+        },
+        "defaultWorkflowPermissions": {
+          "type": "string",
+          "enum": ["read", "write"],
+          "description": "Default permissions of the GITHUB_TOKEN in workflows. Maps to default_workflow_permissions of PUT actions/permissions/workflow."
+        },
+        "canApprovePullRequestReviews": {
+          "type": "boolean",
+          "description": "Let workflows create and approve pull requests. Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them."
+        },
+        "forkPrApprovalPolicy": {
+          "type": "string",
+          "enum": [
+            "first_time_contributors_new_to_github",
+            "first_time_contributors",
+            "all_external_contributors"
+          ],
+          "description": "Which contributors need approval before workflows run on their fork pull requests. Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval."
+        },
+        "artifactAndLogRetentionDays": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days to keep workflow artifacts and logs. Maps to days of PUT actions/permissions/artifact-and-log-retention. The upper bound depends on visibility and plan, and GitHub enforces it."
+        },
+        "cacheRetentionDays": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Days to keep unused Actions caches. Maps to max_cache_retention_days of PUT actions/cache/retention-limit. Needs a paid plan or a payment method on file."
+        },
+        "cacheSizeGb": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum Actions cache size in gigabytes. Maps to max_cache_size_gb of PUT actions/cache/storage-limit. Needs a paid plan or a payment method on file."
+        }
+      }
+    },
     "rootSettings": {
       "type": "object",
       "description": "Global repository settings including GitHub Rulesets and repository features. inherit is not valid at root level.",
@@ -718,6 +786,10 @@
         "codeScanning": {
           "$ref": "#/definitions/codeScanningSettings",
           "description": "GitHub code scanning default setup configuration."
+        },
+        "actions": {
+          "$ref": "#/definitions/actionsSettings",
+          "description": "GitHub Actions settings (Settings > Actions)."
         },
         "variables": {
           "type": "object",
@@ -890,6 +962,19 @@
             }
           ],
           "description": "GitHub code scanning default setup configuration. Set to false at per-repo level to opt out of inherited settings."
+        },
+        "actions": {
+          "oneOf": [
+            {
+              "type": "boolean",
+              "const": false,
+              "description": "Set to false to opt out of inherited Actions settings"
+            },
+            {
+              "$ref": "#/definitions/actionsSettings"
+            }
+          ],
+          "description": "GitHub Actions settings (Settings > Actions). Set to false at per-repo level to opt out of inherited settings."
         },
         "variables": {
           "type": "object",

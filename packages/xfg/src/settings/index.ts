@@ -37,6 +37,13 @@ export {
 } from "./code-scanning/index.js";
 
 export {
+  type ActionsPlanEntry,
+  ActionsProcessor,
+  type IActionsProcessor,
+  GitHubActionsStrategy,
+} from "./actions/index.js";
+
+export {
   type VariablesPlanEntry,
   VariablesProcessor,
   type IVariablesProcessor,

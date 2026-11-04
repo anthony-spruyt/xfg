@@ -28,6 +28,7 @@ import type {
   Ruleset,
   Label,
   GitHubRepoSettings,
+  ActionsSettings,
   CollaboratorsConfig,
   RawCollaboratorsConfig,
   EnvironmentConfig,
@@ -83,10 +84,6 @@ function resolveFileContent(
   );
 }
 
-/**
- * Merge two content values using the appropriate strategy.
- * Handles text+text, object+object, and type mismatch cases.
- */
 function mergeContentPair(
   fileName: string,
   base: ContentValue,
@@ -108,9 +105,6 @@ function mergeContentPair(
   return cloneContent(overlay, fileName);
 }
 
-/**
- * Checks whether an object's `inherit` property is not explicitly set to false.
- */
 function shouldInherit(obj: { inherit?: boolean } | undefined): boolean {
   return obj?.inherit !== false;
 }
@@ -126,10 +120,6 @@ function normalizeHeader(
 // lastAi remembers the ai object hidden by `ai: false` so a later `ai: true` can re-enable it.
 type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
 
-/**
- * Merges PR options: per-repo overrides global defaults.
- * Returns undefined if no options are set.
- */
 function mergePROptions(
   global: MergedPROptions | undefined,
   perRepo: PRMergeOptions | undefined
@@ -180,9 +170,6 @@ function rulesetLocation(name: string): string {
   return `ruleset '${name}'`;
 }
 
-/**
- * Deep merges two rulesets: per-repo values override root values.
- */
 function mergeRuleset(
   name: string,
   root: Ruleset | undefined,
@@ -474,10 +461,6 @@ function mergeEnvironments(
   return result;
 }
 
-/**
- * Merges settings: per-repo settings deep merge with root settings.
- * Returns undefined if no settings are defined.
- */
 export function mergeSettings(
   root: RawRootSettings | undefined,
   perRepo: RawRepoSettings | undefined
@@ -557,6 +540,17 @@ export function mergeSettings(
       if (typeof mergedCodeScanning === "object") {
         result.codeScanning = mergedCodeScanning;
       }
+    }
+  }
+
+  if (perRepo?.actions !== false) {
+    const rootActions = root?.actions;
+    const perRepoActions = perRepo?.actions;
+    if (rootActions || perRepoActions) {
+      result.actions = {
+        ...(rootActions === false ? {} : rootActions),
+        ...perRepoActions,
+      } as ActionsSettings;
     }
   }
 
@@ -672,9 +666,6 @@ function applyFileLayer(
   return accumulated;
 }
 
-/**
- * Merges group file layers onto root files, producing an effective root file map.
- */
 function mergeGroupFiles(
   rootFiles: Record<string, RawFileConfig>,
   groupNames: string[],
@@ -786,6 +777,17 @@ function mergeRawSettings(
       result.codeScanning = false;
     } else {
       result.codeScanning = structuredClone(overlay.codeScanning);
+    }
+  }
+
+  if (overlay.actions !== undefined) {
+    if (overlay.actions === false) {
+      result.actions = false;
+    } else {
+      result.actions = {
+        ...(result.actions === false ? {} : result.actions),
+        ...overlay.actions,
+      } as ActionsSettings;
     }
   }
 
@@ -1005,10 +1007,6 @@ function normalizeRepoEntry(ctx: NormalizeRepoEntryContext): RepoConfig {
   };
 }
 
-/**
- * Normalizes raw config into expanded, merged config.
- * Pipeline: expand git arrays -> merge content -> interpolate env vars
- */
 export function normalizeConfig(
   raw: RawConfig,
   env: Record<string, string | undefined>

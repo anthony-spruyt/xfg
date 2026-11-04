@@ -149,6 +149,22 @@ function buildSettingsDescriptors(
         ),
     },
     {
+      key: "actions" as const,
+      label: "Actions",
+      run: () =>
+        runAndStoreResult(
+          factories.actions,
+          repoConfig,
+          repoInfo,
+          sharedOpts,
+          repoName,
+          settingsCollector,
+          (e, r) => {
+            e.actionsResult = r;
+          }
+        ),
+    },
+    {
       key: "variables" as const,
       label: "Variables",
       run: () =>

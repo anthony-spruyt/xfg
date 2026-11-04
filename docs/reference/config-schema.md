@@ -309,6 +309,42 @@ GitHub code scanning default setup configuration
 
 <!-- xfg:generated:end -->
 
+### actionsSettings
+
+<!-- xfg:generated schema:actionsSettings -->
+
+GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.
+
+| Field                          | Type                                                                                                | Required | Default | Description                                                                              |
+| ------------------------------ | --------------------------------------------------------------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------- |
+| `enabled`                      | `boolean`                                                                                           | No       | -       | Whether GitHub Actions is enabled for the repository.                                    |
+| `allowedActions`               | `all` \| `local_only` \| `selected`                                                                 | No       | -       | Which actions and reusable workflows may run.                                            |
+| `shaPinningRequired`           | `boolean`                                                                                           | No       | -       | Require actions to be referenced by full commit SHA.                                     |
+| `githubOwnedAllowed`           | `boolean`                                                                                           | No       | -       | Allow actions created by GitHub when allowedActions is selected.                         |
+| `verifiedAllowed`              | `boolean`                                                                                           | No       | -       | Allow actions from Marketplace verified creators when allowedActions is selected.        |
+| `patternsAllowed`              | `string[]`                                                                                          | No       | -       | Action patterns to allow when allowedActions is selected, such as docker/login-action@*. |
+| `defaultWorkflowPermissions`   | `read` \| `write`                                                                                   | No       | -       | Default permissions of the GITHUB_TOKEN in workflows.                                    |
+| `canApprovePullRequestReviews` | `boolean`                                                                                           | No       | -       | Let workflows create and approve pull requests.                                          |
+| `forkPrApprovalPolicy`         | `first_time_contributors_new_to_github` \| `first_time_contributors` \| `all_external_contributors` | No       | -       | Which contributors need approval before workflows run on their fork pull requests.       |
+| `artifactAndLogRetentionDays`  | `integer`                                                                                           | No       | -       | Days to keep workflow artifacts and logs.                                                |
+| `cacheRetentionDays`           | `integer`                                                                                           | No       | -       | Days to keep unused Actions caches.                                                      |
+| `cacheSizeGb`                  | `integer`                                                                                           | No       | -       | Maximum Actions cache size in gigabytes.                                                 |
+
+- `enabled` — Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer.
+- `allowedActions` — Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected.
+- `shaPinningRequired` — Maps to sha_pinning_required of PUT actions/permissions.
+- `githubOwnedAllowed` — Maps to github_owned_allowed of PUT actions/permissions/selected-actions.
+- `verifiedAllowed` — Maps to verified_allowed of PUT actions/permissions/selected-actions.
+- `patternsAllowed` — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.
+- `defaultWorkflowPermissions` — Maps to default_workflow_permissions of PUT actions/permissions/workflow.
+- `canApprovePullRequestReviews` — Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them.
+- `forkPrApprovalPolicy` — Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval.
+- `artifactAndLogRetentionDays` — Maps to days of PUT actions/permissions/artifact-and-log-retention. The upper bound depends on visibility and plan, and GitHub enforces it.
+- `cacheRetentionDays` — Maps to max_cache_retention_days of PUT actions/cache/retention-limit. Needs a paid plan or a payment method on file.
+- `cacheSizeGb` — Maps to max_cache_size_gb of PUT actions/cache/storage-limit. Needs a paid plan or a payment method on file.
+
+<!-- xfg:generated:end -->
+
 ### rootSettings
 
 <!-- xfg:generated schema:rootSettings -->
@@ -321,6 +357,7 @@ Global repository settings including GitHub Rulesets and repository features. in
 | `repo`           | [`githubRepoSettings`](#githubreposettings)                              | No       | -       | GitHub repository settings (features, merge options, security).                                                          |
 | `labels`         | `object` of `false` \| [`label`](#label)                                 | No       | -       | Map of label names to configurations.                                                                                    |
 | `codeScanning`   | [`codeScanningSettings`](#codescanningsettings)                          | No       | -       | GitHub code scanning default setup configuration.                                                                        |
+| `actions`        | [`actionsSettings`](#actionssettings)                                    | No       | -       | GitHub Actions settings (Settings > Actions).                                                                            |
 | `variables`      | `object` of `false` \| `string`                                          | No       | -       | Map of GitHub Actions variable names to values.                                                                          |
 | `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)                   | No       | -       | Map of GitHub Actions secret names to SecretConfig.                                                                      |
 | `collaborators`  | `object`                                                                 | No       | -       | Direct collaborators for personal (user-owned) repos.                                                                    |
@@ -351,6 +388,7 @@ Repository settings including GitHub Rulesets and repository features
 | `repo`           | `false` \| [`githubRepoSettings`](#githubreposettings)           | No       | -       | GitHub repository settings (features, merge options, security).                                                          |
 | `labels`         | `object` of `false` \| [`label`](#label)                         | No       | -       | Map of label names to configurations.                                                                                    |
 | `codeScanning`   | `false` \| [`codeScanningSettings`](#codescanningsettings)       | No       | -       | GitHub code scanning default setup configuration.                                                                        |
+| `actions`        | `false` \| [`actionsSettings`](#actionssettings)                 | No       | -       | GitHub Actions settings (Settings > Actions).                                                                            |
 | `variables`      | `object` of `false` \| `string`                                  | No       | -       | Map of GitHub Actions variable names to values.                                                                          |
 | `secrets`        | `object` of `false` \| [`secretConfig`](#secretconfig)           | No       | -       | Map of GitHub Actions secret names to SecretConfig.                                                                      |
 | `collaborators`  | `object`                                                         | No       | -       | Direct collaborators for personal (user-owned) repos.                                                                    |
@@ -361,6 +399,7 @@ Repository settings including GitHub Rulesets and repository features
 - `repo` — Set to false at per-repo level to opt out of inherited settings.
 - `labels` — Set a label to false to opt out. Set inherit: false to skip all inherited labels.
 - `codeScanning` — Set to false at per-repo level to opt out of inherited settings.
+- `actions` — Set to false at per-repo level to opt out of inherited settings.
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
 - `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.

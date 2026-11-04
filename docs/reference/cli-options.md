@@ -1,10 +1,10 @@
 # CLI Options Reference
 
-xfg uses a `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments. A separate `secrets sync` command handles secret management.
+xfg uses a `sync` command to handle file synchronization, repository settings, rulesets, labels, code scanning, Actions settings, variables, collaborators, and environments. A separate `secrets sync` command handles secret management.
 
 ## Sync Command
 
-Sync configuration files, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments across repositories.
+Sync configuration files, repository settings, rulesets, labels, code scanning, Actions settings, variables, collaborators, and environments across repositories.
 
 ```bash
 xfg sync --config <path> [options]
@@ -31,7 +31,7 @@ xfg sync --config <path> [options]
 <!-- xfg:generated:end -->
 
 !!! note "GitHub-Only Settings"
-    Repository settings, rulesets, labels, code scanning, variables, collaborators, and environments management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
+    Repository settings, rulesets, labels, code scanning, Actions settings, variables, collaborators, and environments management only works with GitHub repositories. Azure DevOps and GitLab repos are skipped for settings.
 
 ### Examples
 

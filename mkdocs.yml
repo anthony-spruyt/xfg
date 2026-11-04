@@ -87,6 +87,7 @@ nav:
       - GitHub Collaborators: configuration/collaborators.md
       - GitHub Environments: configuration/environments.md
       - Code Scanning: configuration/code-scanning.md
+      - GitHub Actions Settings: configuration/actions.md
   - Examples:
       - Overview: examples/index.md
       - Multi-File Sync: examples/multi-file-sync.md

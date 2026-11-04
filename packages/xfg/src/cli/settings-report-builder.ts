@@ -4,6 +4,7 @@ import {
   type RulesetPlanEntry,
   type LabelsPlanEntry,
   type CodeScanningPlanEntry,
+  type ActionsPlanEntry,
   type VariablesPlanEntry,
   type CollaboratorsPlanEntry,
   type SecretsPlanEntry,
@@ -32,6 +33,11 @@ export interface ProcessorResults {
   codeScanningResult?: {
     planOutput?: {
       entries?: CodeScanningPlanEntry[];
+    };
+  };
+  actionsResult?: {
+    planOutput?: {
+      entries?: ActionsPlanEntry[];
     };
   };
   variablesResult?: {
@@ -100,6 +106,18 @@ export function buildSettingsReport(
         if (!isActiveAction(entry)) continue;
         repoChanges.settings.push({
           name: `codeScanning.${entry.property}`,
+          action: entry.action,
+          oldValue: entry.oldValue,
+          newValue: entry.newValue ?? null,
+        });
+      }
+    }
+
+    if (result.actionsResult?.planOutput?.entries) {
+      for (const entry of result.actionsResult.planOutput.entries) {
+        if (!isActiveAction(entry)) continue;
+        repoChanges.settings.push({
+          name: `actions.${entry.property}`,
           action: entry.action,
           oldValue: entry.oldValue,
           newValue: entry.newValue ?? null,

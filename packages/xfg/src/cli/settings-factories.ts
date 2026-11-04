@@ -3,6 +3,7 @@ import {
   RepoSettingsProcessor,
   LabelsProcessor,
   CodeScanningProcessor,
+  ActionsProcessor,
   VariablesProcessor,
   CollaboratorsProcessor,
   EnvironmentsProcessor,
@@ -10,6 +11,7 @@ import {
   GitHubRepoSettingsStrategy,
   GitHubLabelsStrategy,
   GitHubCodeScanningStrategy,
+  GitHubActionsStrategy,
   GitHubVariablesStrategy,
   GitHubCollaboratorsStrategy,
   GitHubEnvironmentsStrategy,
@@ -21,6 +23,7 @@ import type {
   RepoSettingsProcessorFactory,
   LabelsProcessorFactory,
   CodeScanningProcessorFactory,
+  ActionsProcessorFactory,
   VariablesProcessorFactory,
   CollaboratorsProcessorFactory,
   EnvironmentsProcessorFactory,
@@ -62,6 +65,14 @@ export function createDefaultCodeScanningProcessorFactory(
       new GitHubCodeScanningStrategy(executor, { cwd }),
       new GitHubRepoMetadataProvider(executor, { cwd })
     );
+}
+
+export function createDefaultActionsProcessorFactory(
+  executor: ProcessExecutor
+): ActionsProcessorFactory {
+  const cwd = process.cwd();
+  return () =>
+    new ActionsProcessor(new GitHubActionsStrategy(executor, { cwd }));
 }
 
 export function createDefaultVariablesProcessorFactory(
@@ -107,6 +118,8 @@ export function createDefaultFactories(
     codeScanning:
       overrides?.codeScanning ??
       createDefaultCodeScanningProcessorFactory(executor),
+    actions:
+      overrides?.actions ?? createDefaultActionsProcessorFactory(executor),
     variables:
       overrides?.variables ?? createDefaultVariablesProcessorFactory(executor),
     collaborators:
