@@ -1365,6 +1365,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2462,6 +2490,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#actionssettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actionsSettings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#rootsettings" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3359,6 +3398,17 @@
     <span class="md-ellipsis">
       
         codeScanningSettings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#actionssettings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        actionsSettings
       
     </span>
   </a>
@@ -4599,6 +4649,123 @@
 </ul>
 <!-- xfg:generated:end -->
 
+<h3 id="actionssettings">actionsSettings<a class="headerlink" href="#actionssettings" title="Permanent link">&para;</a></h3>
+<!-- xfg:generated schema:actionsSettings -->
+
+<p>GitHub Actions settings for the repository (Settings &gt; Actions). Each field maps to one field of the Actions REST API.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Whether GitHub Actions is enabled for the repository.</td>
+</tr>
+<tr>
+<td><code>allowedActions</code></td>
+<td><code>all</code> | <code>local_only</code> | <code>selected</code></td>
+<td>No</td>
+<td>-</td>
+<td>Which actions and reusable workflows may run.</td>
+</tr>
+<tr>
+<td><code>shaPinningRequired</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Require actions to be referenced by full commit SHA.</td>
+</tr>
+<tr>
+<td><code>githubOwnedAllowed</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Allow actions created by GitHub when allowedActions is selected.</td>
+</tr>
+<tr>
+<td><code>verifiedAllowed</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Allow actions from Marketplace verified creators when allowedActions is selected.</td>
+</tr>
+<tr>
+<td><code>patternsAllowed</code></td>
+<td><code>string[]</code></td>
+<td>No</td>
+<td>-</td>
+<td>Action patterns to allow when allowedActions is selected, such as docker/login-action@*.</td>
+</tr>
+<tr>
+<td><code>defaultWorkflowPermissions</code></td>
+<td><code>read</code> | <code>write</code></td>
+<td>No</td>
+<td>-</td>
+<td>Default permissions of the GITHUB_TOKEN in workflows.</td>
+</tr>
+<tr>
+<td><code>canApprovePullRequestReviews</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Let workflows create and approve pull requests.</td>
+</tr>
+<tr>
+<td><code>forkPrApprovalPolicy</code></td>
+<td><code>first_time_contributors_new_to_github</code> | <code>first_time_contributors</code> | <code>all_external_contributors</code></td>
+<td>No</td>
+<td>-</td>
+<td>Which contributors need approval before workflows run on their fork pull requests.</td>
+</tr>
+<tr>
+<td><code>artifactAndLogRetentionDays</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td>-</td>
+<td>Days to keep workflow artifacts and logs.</td>
+</tr>
+<tr>
+<td><code>cacheRetentionDays</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td>-</td>
+<td>Days to keep unused Actions caches.</td>
+</tr>
+<tr>
+<td><code>cacheSizeGb</code></td>
+<td><code>integer</code></td>
+<td>No</td>
+<td>-</td>
+<td>Maximum Actions cache size in gigabytes.</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>enabled</code> — Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer.</li>
+<li><code>allowedActions</code> — Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected.</li>
+<li><code>shaPinningRequired</code> — Maps to sha_pinning_required of PUT actions/permissions.</li>
+<li><code>githubOwnedAllowed</code> — Maps to github_owned_allowed of PUT actions/permissions/selected-actions.</li>
+<li><code>verifiedAllowed</code> — Maps to verified_allowed of PUT actions/permissions/selected-actions.</li>
+<li><code>patternsAllowed</code> — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.</li>
+<li><code>defaultWorkflowPermissions</code> — Maps to default_workflow_permissions of PUT actions/permissions/workflow.</li>
+<li><code>canApprovePullRequestReviews</code> — Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them.</li>
+<li><code>forkPrApprovalPolicy</code> — Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval.</li>
+<li><code>artifactAndLogRetentionDays</code> — Maps to days of PUT actions/permissions/artifact-and-log-retention. The upper bound depends on visibility and plan, and GitHub enforces it.</li>
+<li><code>cacheRetentionDays</code> — Maps to max_cache_retention_days of PUT actions/cache/retention-limit. Needs a paid plan or a payment method on file.</li>
+<li><code>cacheSizeGb</code> — Maps to max_cache_size_gb of PUT actions/cache/storage-limit. Needs a paid plan or a payment method on file.</li>
+</ul>
+<!-- xfg:generated:end -->
+
 <h3 id="rootsettings">rootSettings<a class="headerlink" href="#rootsettings" title="Permanent link">&para;</a></h3>
 <!-- xfg:generated schema:rootSettings -->
 
@@ -4641,6 +4808,13 @@
 <td>No</td>
 <td>-</td>
 <td>GitHub code scanning default setup configuration.</td>
+</tr>
+<tr>
+<td><code>actions</code></td>
+<td><a href="#actionssettings"><code>actionsSettings</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub Actions settings (Settings &gt; Actions).</td>
 </tr>
 <tr>
 <td><code>variables</code></td>
@@ -4735,6 +4909,13 @@
 <td>GitHub code scanning default setup configuration.</td>
 </tr>
 <tr>
+<td><code>actions</code></td>
+<td><code>false</code> | <a href="#actionssettings"><code>actionsSettings</code></a></td>
+<td>No</td>
+<td>-</td>
+<td>GitHub Actions settings (Settings &gt; Actions).</td>
+</tr>
+<tr>
 <td><code>variables</code></td>
 <td><code>object</code> of <code>false</code> | <code>string</code></td>
 <td>No</td>
@@ -4776,6 +4957,7 @@
 <li><code>repo</code> — Set to false at per-repo level to opt out of inherited settings.</li>
 <li><code>labels</code> — Set a label to false to opt out. Set inherit: false to skip all inherited labels.</li>
 <li><code>codeScanning</code> — Set to false at per-repo level to opt out of inherited settings.</li>
+<li><code>actions</code> — Set to false at per-repo level to opt out of inherited settings.</li>
 <li><code>variables</code> — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.</li>
 <li><code>secrets</code> — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
 <li><code>collaborators</code> — Users are added to inherited users. Set inherit: false to drop inherited users.</li>

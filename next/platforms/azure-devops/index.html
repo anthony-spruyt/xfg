@@ -1365,6 +1365,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../configuration/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2912,7 +2940,7 @@
 <li><code>force</code>: Repo has branch policies, but you have permissions to bypass them (creates a PR and completes with <code>--bypass-policy</code>)</li>
 </ul>
 <h2 id="supported-features">Supported Features<a class="headerlink" href="#supported-features" title="Permanent link">&para;</a></h2>
-<p>xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and <code>xfg secrets sync</code> apply to GitHub repositories only; they are skipped for Azure DevOps repositories.</p>
+<p>xfg syncs files to Azure DevOps repositories through pull requests. Settings (rulesets, labels, repo settings, code scanning, Actions settings, variables, collaborators, environments) and <code>xfg secrets sync</code> apply to GitHub repositories only; they are skipped for Azure DevOps repositories.</p>
 <p>Repo lifecycle supports only GitHub as a target. An Azure DevOps repository that sets <code>upstream</code> or <code>source</code> fails: xfg logs the error, skips that repository's sync, syncs the remaining repositories, and exits non-zero at the end. An Azure DevOps repository can be the <code>source</code> of a migration into GitHub. See <a href="../../configuration/lifecycle/#supported-platforms">Supported Platforms</a>.</p>
 
 

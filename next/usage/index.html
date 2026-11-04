@@ -1495,6 +1495,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GitHub Actions Settings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2808,7 +2836,7 @@
 
 
 <h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h1>
-<p>xfg uses a single <code>sync</code> command to handle file synchronization, repository settings, rulesets, labels, code scanning, variables, collaborators, and environments. The <code>secrets sync</code> command manages secrets. See the <a href="../reference/cli-options/#secrets-sync-command">CLI Options Reference</a>.</p>
+<p>xfg uses a single <code>sync</code> command to handle file synchronization, repository settings, rulesets, labels, code scanning, Actions settings, variables, collaborators, and environments. The <code>secrets sync</code> command manages secrets. See the <a href="../reference/cli-options/#secrets-sync-command">CLI Options Reference</a>.</p>
 <h2 id="basic-usage">Basic Usage<a class="headerlink" href="#basic-usage" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Sync files and settings</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml
@@ -2827,7 +2855,7 @@
 <p><strong>For settings:</strong></p>
 <ul>
 <li>Rulesets and labels are compared but not created/updated/deleted</li>
-<li>Repository settings, code scanning, variables, collaborators and environments are compared but not applied</li>
+<li>Repository settings, code scanning, Actions settings, variables, collaborators and environments are compared but not applied</li>
 <li>Shows planned changes (create, update, delete, unchanged)</li>
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>xfg<span class="w"> </span>sync<span class="w"> </span>--config<span class="w"> </span>./config.yaml<span class="w"> </span>--dry-run
