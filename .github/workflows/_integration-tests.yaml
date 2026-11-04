@@ -605,6 +605,13 @@ jobs:
         working-directory: packages/xfg
         run: npm run test:integration:ci -- test/integration/github-repo-settings.test.ts
 
+      - name: Run GitHub Actions settings integration tests
+        if: ${{ !cancelled() && steps.git.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_ORG }}
+        working-directory: packages/xfg
+        run: npm run test:integration:ci -- test/integration/github-actions-settings.test.ts
+
       - name: Run GitHub AI commit message integration tests (PAT)
         if: ${{ !cancelled() && steps.git.outcome == 'success' }}
         env:

@@ -42,7 +42,7 @@ This enables:
   - Root level: `id`, `files`, `groups`, `conditionalGroups`, `repos`, `prOptions`, `prTemplate`, `githubHosts`, `deleteOrphaned`, `settings`
   - File config: `content`, `mergeStrategy`, `createOnly`, `executable`, `header`, `schemaUrl`, `template`, `vars`, `deleteOrphaned`
   - Repo config: `git`, `files`, `groups`, `prOptions`, `settings`, `upstream`, `source`
-  - Settings: `rulesets` with full ruleset configuration, `repo`, `labels`, `codeScanning`, `variables`, `secrets`, `collaborators`, `environments`, `deleteOrphaned`
+  - Settings: `rulesets` with full ruleset configuration, `repo`, `labels`, `codeScanning`, `actions`, `variables`, `secrets`, `collaborators`, `environments`, `deleteOrphaned`
 - Enum suggestions for `mergeStrategy` (`replace`, `append`, `prepend`, `merge`), `merge` mode (`manual`, `auto`, `force`, `direct`), etc.
 - Validation of field types and allowed values. The schema root has no `required` list, so editors don't flag a missing `id` or `repos`; xfg itself requires both when it loads the config
 - Hover documentation for each field

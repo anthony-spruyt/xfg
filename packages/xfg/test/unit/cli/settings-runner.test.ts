@@ -15,10 +15,6 @@ import type {
 import type { RepoConfig } from "../../../src/config/index.js";
 import type { ILogger, Logger } from "../../../src/shared/logger.js";
 
-// ---------------------------------------------------------------------------
-// Fixtures
-// ---------------------------------------------------------------------------
-
 const githubRepo: GitHubRepoInfo = {
   type: "github",
   gitUrl: "git@github.com:org/repo.git",
@@ -37,10 +33,6 @@ const adoRepo: AzureDevOpsRepoInfo = {
 };
 
 const options: SyncOptions = { config: "xfg.yaml", dryRun: false };
-
-// ---------------------------------------------------------------------------
-// Mock helpers
-// ---------------------------------------------------------------------------
 
 interface LogCall {
   method: string;
@@ -66,10 +58,6 @@ function createMockLogger(): { logger: Logger; calls: LogCall[] } {
   return { logger: logger as unknown as Logger, calls };
 }
 
-/**
- * Creates a mock processor factory that returns the given result.
- * The `called` array is mutated each time the factory is invoked.
- */
 function createMockFactory(
   result: SettingsResult,
   called: boolean[] = []
@@ -80,9 +68,6 @@ function createMockFactory(
   };
 }
 
-/**
- * Creates a mock processor factory that throws when process() is called.
- */
 function createThrowingFactory(
   error: unknown
 ): () => { process: () => Promise<SettingsResult> } {
@@ -93,7 +78,6 @@ function createThrowingFactory(
   });
 }
 
-/** A factory that should never be invoked — fails the test if called. */
 function neverCalledFactory(): () => {
   process: () => Promise<SettingsResult>;
 } {
@@ -123,9 +107,6 @@ const failResult: SettingsResult = {
   message: "something went wrong",
 };
 
-/**
- * Build a minimal context. Override individual fields as needed per test.
- */
 function buildCtx(
   overrides: Partial<ApplyRepoSettingsContext>
 ): ApplyRepoSettingsContext {
@@ -138,6 +119,8 @@ function buildCtx(
     repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
     codeScanning:
       neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+    actions:
+      neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
     variables:
       neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
     collaborators:
@@ -159,12 +142,7 @@ function buildCtx(
   };
 }
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
-
 describe("applyRepoSettings", () => {
-  // 1. Non-GitHub repo — returns early without calling any factory
   test("returns early for non-GitHub repo", async () => {
     const rulesetsCalledLog: boolean[] = [];
     const { logger, calls } = createMockLogger();
@@ -186,6 +164,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -206,7 +186,6 @@ describe("applyRepoSettings", () => {
     assert.equal(calls.length, 0, "logger must not be called");
   });
 
-  // 2. settings is undefined — returns early without calling any factory
   test("returns early when settings is undefined", async () => {
     const rulesetsCalledLog: boolean[] = [];
     const { logger, calls } = createMockLogger();
@@ -222,6 +201,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -242,7 +223,6 @@ describe("applyRepoSettings", () => {
     assert.equal(calls.length, 0, "logger must not be called");
   });
 
-  // 3. Descriptor key present but empty object — descriptor is skipped
   test("skips descriptor when its settings value is an empty object", async () => {
     const rulesetsCalledLog: boolean[] = [];
     const { logger, calls } = createMockLogger();
@@ -263,6 +243,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -287,7 +269,6 @@ describe("applyRepoSettings", () => {
     );
   });
 
-  // 4. Successful result — logger.success called with correct args
   test("calls logger.success when processor returns success", async () => {
     const { logger, calls } = createMockLogger();
     const ctx = buildCtx({
@@ -308,6 +289,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -334,7 +317,6 @@ describe("applyRepoSettings", () => {
     );
   });
 
-  // 5. Failed result — logger.error called and settingsCollector.appendError called
   test("calls logger.error and settingsCollector.appendError for failed result", async () => {
     const { logger, calls } = createMockLogger();
     const collector = new ResultsCollector();
@@ -355,6 +337,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -381,7 +365,6 @@ describe("applyRepoSettings", () => {
     );
   });
 
-  // 6. Plan output — logger.info called for each line
   test("logs plan output lines via logger.info", async () => {
     const planResult: SettingsResult = {
       success: true,
@@ -408,6 +391,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -428,7 +413,6 @@ describe("applyRepoSettings", () => {
     assert.equal(calls.filter((c) => c.method === "success").length, 0);
   });
 
-  // 7. Plan output with warnings — logger.warn called for each warning
   test("logs warnings via logger.warn when planOutput and warnings both present", async () => {
     const planWithWarnings: SettingsResult = {
       success: true,
@@ -455,6 +439,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -473,7 +459,6 @@ describe("applyRepoSettings", () => {
     assert.equal(warnCalls[1].args[0], "also this");
   });
 
-  // 8. Thrown error — logger.error and settingsCollector.appendError called
   test("handles thrown error: calls logger.error and appendError on the collector", async () => {
     const thrownError = new Error("network failure");
     const { logger, calls } = createMockLogger();
@@ -495,6 +480,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -525,7 +512,6 @@ describe("applyRepoSettings", () => {
     );
   });
 
-  // 9. Non-skipped result stored in collector via findOrCreate
   test("stores non-skipped result in the collector", async () => {
     const collector = new ResultsCollector();
     const { logger } = createMockLogger();
@@ -546,6 +532,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -561,14 +549,12 @@ describe("applyRepoSettings", () => {
     const all = collector.getAll();
     assert.equal(all.length, 1, "collector must have one entry");
     assert.equal(all[0].repoName, "org/repo");
-    // rulesetResult is assigned on the entry by the assign callback
     assert.ok(
       "rulesetResult" in all[0],
       "rulesetResult must be stored on the collector entry"
     );
   });
 
-  // 10. codeScanning descriptor exercises the codeScanning factory
   test("exercises codeScanning descriptor when codeScanning settings present", async () => {
     const codeScanningCalled: boolean[] = [];
     const { logger } = createMockLogger();
@@ -593,6 +579,8 @@ describe("applyRepoSettings", () => {
           successResult,
           codeScanningCalled
         ) as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -618,7 +606,48 @@ describe("applyRepoSettings", () => {
     );
   });
 
-  // 11. Skipped result not stored in collector
+  test("exercises actions descriptor when actions settings present", async () => {
+    const actionsCalled: boolean[] = [];
+    const { logger } = createMockLogger();
+    const collector = new ResultsCollector();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { actions: { allowedActions: "all" } },
+      } as unknown as RepoConfig,
+      settingsCollector: collector,
+      factories: {
+        ...buildCtx({}).factories,
+        actions: createMockFactory(
+          successResult,
+          actionsCalled
+        ) as unknown as SettingsProcessorFactories["actions"],
+      },
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+
+    assert.equal(actionsCalled.length, 1, "actions factory must be called");
+    assert.ok(
+      "actionsResult" in collector.getAll()[0],
+      "actionsResult must be stored"
+    );
+  });
+
+  test("skips the actions descriptor for an empty actions block", async () => {
+    const { logger } = createMockLogger();
+    const ctx = buildCtx({
+      repoConfig: {
+        name: "org/repo",
+        settings: { actions: {} },
+      } as unknown as RepoConfig,
+      logger,
+    });
+
+    await applyRepoSettings(ctx);
+  });
+
   test("does not store skipped result in the collector", async () => {
     const collector = new ResultsCollector();
     const { logger } = createMockLogger();
@@ -639,6 +668,8 @@ describe("applyRepoSettings", () => {
         repo: neverCalledFactory() as unknown as SettingsProcessorFactories["repo"],
         codeScanning:
           neverCalledFactory() as unknown as SettingsProcessorFactories["codeScanning"],
+        actions:
+          neverCalledFactory() as unknown as SettingsProcessorFactories["actions"],
         variables:
           neverCalledFactory() as unknown as SettingsProcessorFactories["variables"],
         collaborators:
@@ -651,7 +682,6 @@ describe("applyRepoSettings", () => {
 
     await applyRepoSettings(ctx);
 
-    // skipped results must not be written into the collector
     assert.equal(
       collector.getAll().length,
       0,

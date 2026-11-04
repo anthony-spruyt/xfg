@@ -6,6 +6,7 @@ import {
   RepoSettingsProcessor,
   LabelsProcessor,
   CodeScanningProcessor,
+  ActionsProcessor,
   VariablesProcessor,
   CollaboratorsProcessor,
   EnvironmentsProcessor,
@@ -35,6 +36,7 @@ describe("createDefaultFactories", () => {
     assert.ok(factories.labels() instanceof LabelsProcessor);
     assert.ok(factories.repo() instanceof RepoSettingsProcessor);
     assert.ok(factories.codeScanning() instanceof CodeScanningProcessor);
+    assert.ok(factories.actions() instanceof ActionsProcessor);
     assert.ok(factories.variables() instanceof VariablesProcessor);
     assert.ok(factories.collaborators() instanceof CollaboratorsProcessor);
     assert.ok(factories.environments() instanceof EnvironmentsProcessor);
@@ -47,6 +49,7 @@ describe("createDefaultFactories", () => {
       labels: stub,
       repo: stub,
       codeScanning: stub,
+      actions: stub,
     } as unknown as SettingsProcessorFactories;
 
     const factories = createDefaultFactories(stubExecutor, overrides);
@@ -55,5 +58,6 @@ describe("createDefaultFactories", () => {
     assert.equal(factories.labels, overrides.labels);
     assert.equal(factories.repo, overrides.repo);
     assert.equal(factories.codeScanning, overrides.codeScanning);
+    assert.equal(factories.actions, overrides.actions);
   });
 });

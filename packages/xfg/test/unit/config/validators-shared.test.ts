@@ -250,6 +250,7 @@ describe("validateSettings", () => {
       rulesetNames: [],
       hasRepoSettings: true,
       hasCodeScanningSettings: false,
+      hasActionsSettings: false,
       labelNames: [],
     };
     assert.doesNotThrow(() =>
@@ -262,6 +263,7 @@ describe("validateSettings", () => {
       rulesetNames: [],
       hasRepoSettings: false,
       hasCodeScanningSettings: false,
+      hasActionsSettings: false,
       labelNames: [],
     };
     assert.throws(
@@ -282,6 +284,7 @@ describe("validateSettings", () => {
       rulesetNames: [],
       hasRepoSettings: false,
       hasCodeScanningSettings: true,
+      hasActionsSettings: false,
       labelNames: [],
     };
     assert.doesNotThrow(() =>
@@ -322,6 +325,7 @@ describe("validateSettings", () => {
       rulesetNames: [],
       hasRepoSettings: false,
       hasCodeScanningSettings: false,
+      hasActionsSettings: false,
       labelNames: [],
     };
     assert.throws(
@@ -366,6 +370,7 @@ describe("enrichSettingsContext", () => {
       rulesetNames: [],
       hasRepoSettings: false,
       hasCodeScanningSettings: false,
+      hasActionsSettings: false,
       labelNames: [],
     };
   }

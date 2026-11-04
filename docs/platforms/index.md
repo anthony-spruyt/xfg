@@ -13,11 +13,11 @@ GitHub Enterprise Server host missing from `githubHosts` is handled as GitLab.
 
 ## Feature Support
 
-| Feature                                                                                                              | GitHub | Azure DevOps          | GitLab |
-| -------------------------------------------------------------------------------------------------------------------- | ------ | --------------------- | ------ |
-| File sync                                                                                                            | Yes    | Yes                   | Yes    |
-| Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and `secrets sync` | Yes    | -                     | -      |
-| Repo lifecycle (create, fork, migrate)                                                                               | Yes    | Migration source only | -      |
+| Feature                                                                                                                                | GitHub | Azure DevOps          | GitLab |
+| -------------------------------------------------------------------------------------------------------------------------------------- | ------ | --------------------- | ------ |
+| File sync                                                                                                                              | Yes    | Yes                   | Yes    |
+| Settings (rulesets, labels, repo settings, code scanning, Actions settings, variables, collaborators, environments) and `secrets sync` | Yes    | -                     | -      |
+| Repo lifecycle (create, fork, migrate)                                                                                                 | Yes    | Migration source only | -      |
 
 Settings and secrets are skipped for repositories that are not on GitHub. See [Repo Lifecycle](../configuration/lifecycle.md#supported-platforms) for lifecycle operations per platform.
 

@@ -8,6 +8,7 @@ import {
 } from "./file-validator.js";
 import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
+import { validateActionsSettings } from "./actions-validator.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
 import type {
@@ -20,6 +21,7 @@ export interface RootSettingsContext {
   rulesetNames: string[];
   hasRepoSettings: boolean;
   hasCodeScanningSettings: boolean;
+  hasActionsSettings: boolean;
   labelNames: string[];
 }
 
@@ -35,6 +37,9 @@ export function buildRootSettingsContext(
     hasCodeScanningSettings:
       config.settings?.codeScanning !== undefined &&
       config.settings.codeScanning !== false,
+    hasActionsSettings:
+      config.settings?.actions !== undefined &&
+      config.settings.actions !== false,
     labelNames: config.settings?.labels
       ? Object.keys(config.settings.labels).filter((k) => k !== "inherit")
       : [],
@@ -339,6 +344,28 @@ function validateSettingsCodeScanning(
   );
 }
 
+function validateSettingsActions(
+  settings: Record<string, unknown>,
+  context: string,
+  rootCtx?: RootSettingsContext
+): void {
+  if (settings.actions === undefined) return;
+  if (settings.actions === false) {
+    if (!rootCtx) {
+      throw new ValidationError(
+        `${context}: actions: false is not valid at root level. Define actions settings or remove the field.`
+      );
+    }
+    if (!rootCtx.hasActionsSettings) {
+      throw new ValidationError(
+        `${context}: Cannot opt out of actions settings — not defined in root settings.actions`
+      );
+    }
+    return;
+  }
+  validateActionsSettings(settings.actions, `${context} actions`);
+}
+
 function validateSettingsSecrets(
   settings: RawRepoSettings | RawRootSettings,
   context: string
@@ -637,6 +664,7 @@ export function validateSettings(
   validateSettingsDeleteOrphaned(settings, context);
   validateSettingsRepo(settings, context, rootCtx);
   validateSettingsCodeScanning(settings, context, rootCtx);
+  validateSettingsActions(settings, context, rootCtx);
   validateSettingsSecrets(settings, context);
   validateSettingsCollaborators(settings, context);
   validateSettingsEnvironments(settings, context, rootCtx);
@@ -662,5 +690,8 @@ export function enrichSettingsContext(
   }
   if (settings.codeScanning !== undefined && settings.codeScanning !== false) {
     rootCtx.hasCodeScanningSettings = true;
+  }
+  if (settings.actions !== undefined && settings.actions !== false) {
+    rootCtx.hasActionsSettings = true;
   }
 }

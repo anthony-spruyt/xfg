@@ -254,10 +254,6 @@ function hasConditionalGroupPR(config: RawConfig): boolean {
   );
 }
 
-/**
- * Validates raw config structure before normalization.
- * @throws ValidationError if validation fails
- */
 export function validateRawConfig(config: RawConfig): void {
   // Must run before the "nothing to do" check below, or an old secrets-only
   // config trips the generic error and never sees the migration message.
@@ -325,10 +321,6 @@ export function validateRawConfig(config: RawConfig): void {
   }
 }
 
-/**
- * Validates that config is suitable for the sync command.
- * @throws ValidationError if neither files nor settings are present
- */
 export function validateForSync(config: RawConfig): void {
   const hasRootFiles = config.files && Object.keys(config.files).length > 0;
   const hasGrpFiles = hasGroupFiles(config);
@@ -473,6 +465,10 @@ export function hasActionableSettings(
   }
 
   if (settings.codeScanning) {
+    return true;
+  }
+
+  if (settings.actions && Object.keys(settings.actions).length > 0) {
     return true;
   }
 

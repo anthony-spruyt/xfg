@@ -77,13 +77,11 @@ export interface RulesetConditions {
   refName?: RefNameCondition;
 }
 
-/** Status check in required_status_checks rule */
 export interface StatusCheckConfig {
   context: string;
   integrationId?: number;
 }
 
-/** Reviewer configuration for pull_request rule (beta) */
 export interface RequiredReviewer {
   filePatterns: string[];
   minimumApprovals: number;
@@ -93,14 +91,12 @@ export interface RequiredReviewer {
   };
 }
 
-/** Code scanning tool configuration */
 export interface CodeScanningTool {
   tool: string;
   alertsThreshold: AlertsThreshold;
   securityAlertsThreshold: SecurityAlertsThreshold;
 }
 
-/** Workflow configuration */
 interface WorkflowConfig {
   path: string;
   repositoryId: number;
@@ -296,15 +292,10 @@ export type RulesetRule =
  * @see https://docs.github.com/en/rest/repos/rules
  */
 export interface Ruleset {
-  /** Target type: branch or tag */
   target?: RulesetTarget;
-  /** Enforcement level */
   enforcement?: RulesetEnforcement;
-  /** Actors who can bypass this ruleset */
   bypassActors?: BypassActor[];
-  /** Conditions for when this ruleset applies */
   conditions?: RulesetConditions;
-  /** Rules to enforce */
   rules?: RulesetRule[];
 }
 
@@ -328,19 +319,14 @@ export const RULESET_COMPARABLE_FIELDS = new Set(
   Object.values(RULESET_FIELD_MAP)
 );
 
-/** Squash merge commit title format */
 export type SquashMergeCommitTitle = "PR_TITLE" | "COMMIT_OR_PR_TITLE";
 
-/** Squash merge commit message format */
 export type SquashMergeCommitMessage = "PR_BODY" | "COMMIT_MESSAGES" | "BLANK";
 
-/** Merge commit title format */
 export type MergeCommitTitle = "PR_TITLE" | "MERGE_MESSAGE";
 
-/** Merge commit message format */
 export type MergeCommitMessage = "PR_BODY" | "PR_TITLE" | "BLANK";
 
-/** Repository visibility */
 export type RepoVisibility = "public" | "private" | "internal";
 
 /**
@@ -349,7 +335,6 @@ export type RepoVisibility = "public" | "private" | "internal";
  * @see https://docs.github.com/en/rest/repos/repos#update-a-repository
  */
 export interface GitHubRepoSettings {
-  // Features
   description?: string;
   hasIssues?: boolean;
   hasProjects?: boolean;
@@ -362,7 +347,6 @@ export interface GitHubRepoSettings {
   webCommitSignoffRequired?: boolean;
   defaultBranch?: string;
 
-  // Merge options
   allowSquashMerge?: boolean;
   allowMergeCommit?: boolean;
   allowRebaseMerge?: boolean;
@@ -374,7 +358,6 @@ export interface GitHubRepoSettings {
   mergeCommitTitle?: MergeCommitTitle;
   mergeCommitMessage?: MergeCommitMessage;
 
-  // Security
   vulnerabilityAlerts?: boolean;
   automatedSecurityFixes?: boolean;
   secretScanning?: boolean;
@@ -413,6 +396,44 @@ export interface CodeScanningSettings {
   querySuite?: CodeScanningQuerySuite;
   languages?: CodeScanningLanguage[];
 }
+
+export type ActionsAllowedActions = "all" | "local_only" | "selected";
+export type ActionsDefaultWorkflowPermissions = "read" | "write";
+export type ActionsForkPrApprovalPolicy =
+  | "first_time_contributors_new_to_github"
+  | "first_time_contributors"
+  | "all_external_contributors";
+
+/**
+ * GitHub Actions repository settings.
+ * @see https://docs.github.com/en/rest/actions/permissions
+ */
+export interface ActionsSettings {
+  /** Whether GitHub Actions is enabled on the repo */
+  enabled?: boolean;
+  allowedActions?: ActionsAllowedActions;
+  shaPinningRequired?: boolean;
+  /** Only applies when allowedActions is `selected` */
+  githubOwnedAllowed?: boolean;
+  /** Only applies when allowedActions is `selected` */
+  verifiedAllowed?: boolean;
+  /** Only applies when allowedActions is `selected`; `!` prefix blocks a pattern */
+  patternsAllowed?: string[];
+  defaultWorkflowPermissions?: ActionsDefaultWorkflowPermissions;
+  /** Covers creating pull requests as well as approving them */
+  canApprovePullRequestReviews?: boolean;
+  forkPrApprovalPolicy?: ActionsForkPrApprovalPolicy;
+  artifactAndLogRetentionDays?: number;
+  cacheRetentionDays?: number;
+  cacheSizeGb?: number;
+}
+
+/** Fields of the selected-actions endpoint; GitHub only accepts them when allowedActions is `selected`. */
+export const ACTIONS_SELECTED_FIELDS = [
+  "githubOwnedAllowed",
+  "verifiedAllowed",
+  "patternsAllowed",
+] as const satisfies ReadonlyArray<keyof ActionsSettings>;
 
 export interface SecretConfig {
   env: string;
@@ -469,21 +490,14 @@ export interface RawCollaboratorsConfig extends CollaboratorsConfig {
 }
 
 export interface RepoSettings {
-  /** GitHub rulesets keyed by name */
   rulesets?: Record<string, Ruleset>;
-  /** GitHub repository settings */
   repo?: GitHubRepoSettings;
-  /** GitHub labels keyed by name */
   labels?: Record<string, Label>;
-  /** GitHub code scanning default setup */
   codeScanning?: CodeScanningSettings;
-  /** GitHub Actions variables keyed by name */
+  actions?: ActionsSettings;
   variables?: Record<string, string> & { deleteOrphaned?: boolean };
-  /** GitHub Actions secrets keyed by name */
   secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
-  /** Direct collaborators on personal (user-owned) repos */
   collaborators?: CollaboratorsConfig;
-  /** GitHub deployment environments keyed by name */
   environments?: EnvironmentsConfig;
   deleteOrphaned?: boolean;
 }
@@ -528,7 +542,6 @@ export interface RawGroupConfig {
   settings?: RawRepoSettings;
 }
 
-/** Condition for conditional group activation */
 export interface RawConditionalGroupWhen {
   /** All listed groups must be present in the repo's effective group set */
   allOf?: string[];
@@ -538,17 +551,13 @@ export interface RawConditionalGroupWhen {
   noneOf?: string[];
 }
 
-/** Conditional group: activates based on which groups a repo has */
 export interface RawConditionalGroupConfig {
-  /** Condition that determines when this group activates */
   when: RawConditionalGroupWhen;
   /** File definitions or overrides (same capabilities as regular groups) */
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };
-  /** PR merge options */
   prOptions?: PRMergeOptions;
-  /** Repository settings (rulesets, labels, repo settings) */
   settings?: RawRepoSettings;
 }
 
@@ -558,6 +567,7 @@ export interface RawRootSettings {
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false>;
   codeScanning?: CodeScanningSettings | false;
+  actions?: ActionsSettings | false;
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
   collaborators?: CollaboratorsConfig;
@@ -573,6 +583,7 @@ export interface RawRepoSettings {
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false> & { inherit?: boolean };
   codeScanning?: CodeScanningSettings | false;
+  actions?: ActionsSettings | false;
   variables?: Record<string, string | false> & {
     inherit?: boolean;
     deleteOrphaned?: boolean;
