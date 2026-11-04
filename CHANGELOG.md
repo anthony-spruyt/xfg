@@ -1,5 +1,17 @@
 # Changelog
 
+## [8.6.0](https://github.com/anthony-spruyt/xfg/compare/v8.5.6...v8.6.0) (2026-11-04)
+
+
+### Features
+
+* **settings:** manage GitHub Actions settings ([#1347](https://github.com/anthony-spruyt/xfg/issues/1347)) ([d793c91](https://github.com/anthony-spruyt/xfg/commit/d793c919427a8e3d7a046f7bc7cce91fb04327a3))
+
+
+### Dependencies
+
+* **docs:** drop stale mdformat references ([#1339](https://github.com/anthony-spruyt/xfg/issues/1339)) ([5e499ee](https://github.com/anthony-spruyt/xfg/commit/5e499eebef6a0d8c0b10d818742b746ae1ced98a))
+
 ## [8.5.6](https://github.com/anthony-spruyt/xfg/compare/v8.5.5...v8.5.6) (2026-10-27)
 
 
