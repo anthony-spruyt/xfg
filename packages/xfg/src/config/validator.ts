@@ -444,6 +444,10 @@ export function validateNormalizedConfig(config: Config): void {
   }
 }
 
+function hasKeys(value: object | false | undefined): boolean {
+  return !!value && Object.keys(value).length > 0;
+}
+
 export function hasActionableSettings(
   settings: RawRootSettings | RawRepoSettings | undefined
 ): boolean {
@@ -456,7 +460,7 @@ export function hasActionableSettings(
     return true;
   }
 
-  if (settings.repo && Object.keys(settings.repo).length > 0) {
+  if (hasKeys(settings.repo)) {
     return true;
   }
 
@@ -471,7 +475,7 @@ export function hasActionableSettings(
     return true;
   }
 
-  if (settings.actions && Object.keys(settings.actions).length > 0) {
+  if (hasKeys(settings.actions)) {
     return true;
   }
 

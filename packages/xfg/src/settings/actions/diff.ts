@@ -24,6 +24,11 @@ function sameValue(current: unknown, desired: unknown): boolean {
   return current === desired;
 }
 
+function classify(oldValue: unknown, newValue: unknown): SettingsAction {
+  if (sameValue(oldValue, newValue)) return "unchanged";
+  return oldValue === undefined ? "create" : "update";
+}
+
 /** Only fields set in desired are compared; patternsAllowed compares as a set. */
 export function diffActions(
   current: ActionsSettings,
@@ -36,11 +41,7 @@ export function diffActions(
     if (newValue === undefined) continue;
 
     const oldValue = current[property];
-    const action: SettingsAction = sameValue(oldValue, newValue)
-      ? "unchanged"
-      : oldValue === undefined
-        ? "create"
-        : "update";
+    const action = classify(oldValue, newValue);
     changes.push({ property, action, oldValue, newValue });
   }
 

@@ -1,6 +1,7 @@
 import type { ActionsSettings, RepoConfig } from "../../config/index.js";
 import type { GitHubRepoInfo, RepoInfo } from "../../repo/index.js";
 import type { GhApiOptions } from "../../shared/gh-api-utils.js";
+import { runSequentially } from "../../shared/sequential.js";
 import type { IActionsStrategy } from "./types.js";
 import {
   ACTIONS_ENDPOINTS,
@@ -143,15 +144,17 @@ export class ActionsProcessor implements IActionsProcessor {
       );
     }
 
-    for (const endpoint of endpoints) {
-      if (!changed(endpoint, changes)) continue;
-      await this.strategy.update(
-        githubRepo,
-        endpoint.name,
-        buildPayload(endpoint, desired, current),
-        strategyOptions
-      );
-    }
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(
+      endpoints.filter((e) => changed(e, changes)),
+      (endpoint) =>
+        this.strategy.update(
+          githubRepo,
+          endpoint.name,
+          buildPayload(endpoint, desired, current),
+          strategyOptions
+        )
+    );
 
     const appliedCount = changes.filter((c) => c.action !== "unchanged").length;
     return withWarnings(
@@ -166,22 +169,25 @@ export class ActionsProcessor implements IActionsProcessor {
     strategyOptions: GhApiOptions
   ): Promise<ActionsSettings> {
     let current: ActionsSettings = {};
-    for (const endpoint of ACTIONS_ENDPOINTS) {
-      if (!touches(endpoint, desired)) continue;
-      // GitHub answers 409 to a selected-actions GET in any other mode
-      if (
-        endpoint.name === "selectedActions" &&
-        current.allowedActions !== "selected"
-      ) {
-        continue;
+    // Serial: GitHub asks for serial requests to avoid secondary rate limits
+    await runSequentially(
+      ACTIONS_ENDPOINTS.filter((e) => touches(e, desired)),
+      async (endpoint) => {
+        // GitHub answers 409 to a selected-actions GET in any other mode
+        if (
+          endpoint.name === "selectedActions" &&
+          current.allowedActions !== "selected"
+        ) {
+          return;
+        }
+        const body = await this.strategy.get(
+          githubRepo,
+          endpoint.name,
+          strategyOptions
+        );
+        current = { ...current, ...readEndpoint(endpoint, body) };
       }
-      const body = await this.strategy.get(
-        githubRepo,
-        endpoint.name,
-        strategyOptions
-      );
-      current = { ...current, ...readEndpoint(endpoint, body) };
-    }
+    );
     return current;
   }
 }

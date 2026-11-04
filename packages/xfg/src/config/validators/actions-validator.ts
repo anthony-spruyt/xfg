@@ -58,13 +58,15 @@ const ENUM_FIELDS: ReadonlyArray<readonly [string, readonly string[]]> = [
   ],
 ];
 
-function validateValues(a: Record<string, unknown>, context: string): void {
+function validateBooleans(a: Record<string, unknown>, context: string): void {
   for (const field of BOOLEAN_FIELDS) {
     if (a[field] !== undefined && typeof a[field] !== "boolean") {
       throw new ValidationError(`${context}: ${field} must be a boolean`);
     }
   }
+}
 
+function validateEnums(a: Record<string, unknown>, context: string): void {
   for (const [field, allowed] of ENUM_FIELDS) {
     if (a[field] !== undefined && !allowed.includes(a[field] as string)) {
       throw new ValidationError(
@@ -72,7 +74,12 @@ function validateValues(a: Record<string, unknown>, context: string): void {
       );
     }
   }
+}
 
+function validatePositiveIntegers(
+  a: Record<string, unknown>,
+  context: string
+): void {
   for (const field of POSITIVE_INTEGER_FIELDS) {
     const value = a[field];
     if (
@@ -84,32 +91,46 @@ function validateValues(a: Record<string, unknown>, context: string): void {
       );
     }
   }
+}
 
-  if (a.patternsAllowed !== undefined) {
-    if (!Array.isArray(a.patternsAllowed)) {
+function validatePatternsAllowed(
+  a: Record<string, unknown>,
+  context: string
+): void {
+  if (a.patternsAllowed === undefined) return;
+
+  if (!Array.isArray(a.patternsAllowed)) {
+    throw new ValidationError(
+      `${context}: patternsAllowed must be an array of strings`
+    );
+  }
+  a.patternsAllowed.forEach((pattern: unknown, i) => {
+    if (typeof pattern !== "string" || pattern.trim() === "") {
       throw new ValidationError(
-        `${context}: patternsAllowed must be an array of strings`
+        `${context}: patternsAllowed[${i}] must be a non-empty string`
       );
     }
-    a.patternsAllowed.forEach((pattern: unknown, i) => {
-      if (typeof pattern !== "string" || pattern.trim() === "") {
-        throw new ValidationError(
-          `${context}: patternsAllowed[${i}] must be a non-empty string`
-        );
-      }
-    });
-  }
+  });
+}
+
+function validateValues(a: Record<string, unknown>, context: string): void {
+  validateBooleans(a, context);
+  validateEnums(a, context);
+  validatePositiveIntegers(a, context);
+  validatePatternsAllowed(a, context);
 }
 
 function validateCoupling(a: Record<string, unknown>, context: string): void {
   const selectedField = ACTIONS_SELECTED_FIELDS.find((f) => a[f] !== undefined);
+  const { allowedActions } = a;
+  // validateValues has already limited a defined allowedActions to a string
   if (
     selectedField &&
-    a.allowedActions !== undefined &&
-    a.allowedActions !== "selected"
+    typeof allowedActions === "string" &&
+    allowedActions !== "selected"
   ) {
     throw new ValidationError(
-      `${context}: ${selectedField} requires allowedActions: selected, but this layer sets allowedActions: ${String(a.allowedActions)}`
+      `${context}: ${selectedField} requires allowedActions: selected, but this layer sets allowedActions: ${allowedActions}`
     );
   }
 

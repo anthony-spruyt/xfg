@@ -15,7 +15,7 @@ interface GitHubActionsStrategyOptions {
 }
 
 export class GitHubActionsStrategy implements IActionsStrategy {
-  private api: GhApiClient;
+  private readonly api: GhApiClient;
 
   constructor(
     executor: ICommandExecutor,
