@@ -17,6 +17,7 @@
         ".claude/restore-shell-tools.sh",
         ".claude/rules/comments.md",
         ".claude/rules/do-it-yourself.md",
+        ".claude/rules/docs-drift.md",
         ".claude/rules/github.md",
         ".claude/rules/orchestration.md",
         ".claude/rules/public-repos.md",
