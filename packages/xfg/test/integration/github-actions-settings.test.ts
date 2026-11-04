@@ -91,8 +91,9 @@ async function resetActions(): Promise<void> {
   await execWithRetry(
     `gh api --method PUT repos/${testRepo}/actions/permissions -F enabled=true -f allowed_actions=all -F sha_pinning_required=false`
   );
+  // The org forbids write workflow permissions (409), so read/false is the only baseline
   await execWithRetry(
-    `gh api --method PUT repos/${testRepo}/actions/permissions/workflow -f default_workflow_permissions=write -F can_approve_pull_request_reviews=true`
+    `gh api --method PUT repos/${testRepo}/actions/permissions/workflow -f default_workflow_permissions=read -F can_approve_pull_request_reviews=false`
   );
   await execWithRetry(
     `gh api --method PUT repos/${testRepo}/actions/permissions/fork-pr-contributor-approval -f approval_policy=first_time_contributors_new_to_github`
@@ -101,7 +102,13 @@ async function resetActions(): Promise<void> {
     async () => {
       const state = await getState();
       assert.equal(state.permissions.allowed_actions, "all");
-      assert.equal(state.workflow.default_workflow_permissions, "write");
+      assert.equal(state.permissions.sha_pinning_required, false);
+      assert.equal(state.workflow.default_workflow_permissions, "read");
+      assert.equal(state.workflow.can_approve_pull_request_reviews, false);
+      assert.equal(
+        state.forkPrApproval.approval_policy,
+        "first_time_contributors_new_to_github"
+      );
     },
     { description: "Actions settings reset visible" }
   );
@@ -245,14 +252,18 @@ describe("GitHub Actions Settings Integration", () => {
       configFor(`    allowedActions: selected
     patternsAllowed:
       - hashicorp/setup-terraform@*
-    defaultWorkflowPermissions: write`)
+    forkPrApprovalPolicy: first_time_contributors`)
     );
 
     await withTestRetry(
       async () => {
         const state = await getState();
-        assert.equal(state.workflow.default_workflow_permissions, "write");
+        assert.equal(
+          state.forkPrApproval.approval_policy,
+          "first_time_contributors"
+        );
         assert.equal(state.permissions.sha_pinning_required, true);
+        assert.equal(state.workflow.default_workflow_permissions, "read");
         assert.equal(state.workflow.can_approve_pull_request_reviews, false);
 
         const selected = await api<{
@@ -289,7 +300,7 @@ repos:
     settings:
       actions:
         allowedActions: all
-        defaultWorkflowPermissions: read
+        shaPinningRequired: true
 `
     );
 
@@ -303,7 +314,7 @@ repos:
       async () => {
         const state = await getState();
         assert.equal(state.permissions.allowed_actions, "all");
-        assert.equal(state.workflow.default_workflow_permissions, "read");
+        assert.equal(state.permissions.sha_pinning_required, true);
       },
       {
         retries: 5,
