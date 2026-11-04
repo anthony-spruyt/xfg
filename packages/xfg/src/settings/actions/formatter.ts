@@ -18,9 +18,6 @@ function formatValue(val: unknown): string {
   return formatScalarValue(val) ?? String(val);
 }
 
-/**
- * Formats Actions changes as Terraform-style plan output.
- */
 export function formatActionsPlan(changes: ActionsChange[]): ActionsPlanResult {
   return formatChangeLines(changes, formatValue);
 }

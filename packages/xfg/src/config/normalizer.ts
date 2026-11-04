@@ -84,10 +84,6 @@ function resolveFileContent(
   );
 }
 
-/**
- * Merge two content values using the appropriate strategy.
- * Handles text+text, object+object, and type mismatch cases.
- */
 function mergeContentPair(
   fileName: string,
   base: ContentValue,
@@ -124,10 +120,6 @@ function normalizeHeader(
 // lastAi remembers the ai object hidden by `ai: false` so a later `ai: true` can re-enable it.
 type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
 
-/**
- * Merges PR options: per-repo overrides global defaults.
- * Returns undefined if no options are set.
- */
 function mergePROptions(
   global: MergedPROptions | undefined,
   perRepo: PRMergeOptions | undefined

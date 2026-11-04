@@ -127,9 +127,6 @@ function validateCoupling(a: Record<string, unknown>, context: string): void {
   }
 }
 
-/**
- * Validates one layer (root, group or repo) of GitHub Actions settings.
- */
 export function validateActionsSettings(
   actions: unknown,
   context: string
@@ -146,4 +143,24 @@ export function validateActionsSettings(
 
   validateValues(actions, context);
   validateCoupling(actions, context);
+}
+
+/**
+ * Selected-actions fields need allowedActions: selected from some layer. A layer
+ * may omit it and inherit it, so only the merged block can be checked.
+ */
+export function validateMergedActionsSettings(
+  actions: ActionsSettings | undefined,
+  context: string
+): void {
+  if (!actions || actions.allowedActions !== undefined) return;
+
+  const present = ACTIONS_SELECTED_FIELDS.filter(
+    (f) => actions[f] !== undefined
+  );
+  if (present.length > 0) {
+    throw new ValidationError(
+      `${context}: ${present.join(", ")} require allowedActions: selected, but no layer sets allowedActions`
+    );
+  }
 }

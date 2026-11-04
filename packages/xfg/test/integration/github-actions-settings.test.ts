@@ -16,6 +16,11 @@ import {
 
 const OWNER = "spruyt-labs";
 
+interface OrgActionsPolicy {
+  enabled_repositories: string;
+  allowed_actions?: string;
+}
+
 interface ActionsApiState {
   permissions: {
     enabled: boolean;
@@ -102,6 +107,28 @@ async function resetActions(): Promise<void> {
   );
 }
 
+async function assertOrgAllowsRepoChanges(): Promise<void> {
+  let policy: OrgActionsPolicy;
+  try {
+    policy = JSON.parse(
+      await execWithRetry(`gh api orgs/${OWNER}/actions/permissions`)
+    ) as OrgActionsPolicy;
+  } catch (error) {
+    // Reading the org policy needs org admin; without it the check can't run
+    console.log(
+      `  Could not read the ${OWNER} Actions policy, skipping the check: ${String(error)}`
+    );
+    return;
+  }
+
+  assert.ok(
+    policy.enabled_repositories === "all" && policy.allowed_actions === "all",
+    `The ${OWNER} org Actions policy must be enabled_repositories=all and allowed_actions=all ` +
+      `so a repo can change its own Actions settings, got enabled_repositories=${policy.enabled_repositories}, ` +
+      `allowed_actions=${policy.allowed_actions}`
+  );
+}
+
 describe("GitHub Actions Settings Integration", () => {
   before(async () => {
     repoName = generateRepoName("actions-settings");
@@ -109,6 +136,7 @@ describe("GitHub Actions Settings Integration", () => {
     tmpDir = join(tmpdir(), `xfg-actions-settings-test-${Date.now()}`);
     mkdirSync(tmpDir, { recursive: true });
 
+    await assertOrgAllowsRepoChanges();
     await createRepo(OWNER, repoName);
   });
 

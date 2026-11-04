@@ -8,7 +8,7 @@ import {
   readEndpoint,
   type ActionsEndpoint,
 } from "./endpoints.js";
-import { resolveActionsSettings } from "./resolve.js";
+import { resolveActionsSettings, resolveForCurrentState } from "./resolve.js";
 import { diffActions, hasActionsChanges, type ActionsChange } from "./diff.js";
 import { formatActionsPlan, type ActionsPlanResult } from "./formatter.js";
 import {
@@ -90,8 +90,21 @@ export class ActionsProcessor implements IActionsProcessor {
     }
 
     const resolved = resolveActionsSettings(configured);
-    const desired = resolved.settings;
-    const warnings = resolved.warnings.map((w) => `${repoName}: ${w}`);
+    const strategyOptions: GhApiOptions = {
+      token: effectiveToken,
+      host: githubRepo.host,
+    };
+    const current = await this.readCurrent(
+      githubRepo,
+      resolved.settings,
+      strategyOptions
+    );
+
+    const settled = resolveForCurrentState(resolved.settings, current);
+    const desired = settled.settings;
+    const warnings = [...resolved.warnings, ...settled.warnings].map(
+      (w) => `${repoName}: ${w}`
+    );
 
     const endpoints = ACTIONS_ENDPOINTS.filter((e) => touches(e, desired));
     if (endpoints.length === 0) {
@@ -105,16 +118,6 @@ export class ActionsProcessor implements IActionsProcessor {
         warnings
       );
     }
-
-    const strategyOptions: GhApiOptions = {
-      token: effectiveToken,
-      host: githubRepo.host,
-    };
-    const current = await this.readCurrent(
-      githubRepo,
-      endpoints,
-      strategyOptions
-    );
 
     const changes = diffActions(current, desired);
     const changeCounts = countActions(changes);
@@ -159,11 +162,12 @@ export class ActionsProcessor implements IActionsProcessor {
 
   private async readCurrent(
     githubRepo: GitHubRepoInfo,
-    endpoints: ActionsEndpoint[],
+    desired: ActionsSettings,
     strategyOptions: GhApiOptions
   ): Promise<ActionsSettings> {
     let current: ActionsSettings = {};
-    for (const endpoint of endpoints) {
+    for (const endpoint of ACTIONS_ENDPOINTS) {
+      if (!touches(endpoint, desired)) continue;
       // GitHub answers 409 to a selected-actions GET in any other mode
       if (
         endpoint.name === "selectedActions" &&

@@ -125,7 +125,9 @@ repos:
         allowedActions: all   # overrides selected; the inherited selected-actions fields are ignored
 ```
 
-When the merged `allowedActions` is not `selected`, xfg ignores the selected-actions fields and prints a warning, so a repo can override an inherited `selected` without restating the block. When the merged `enabled` is `false`, it ignores `allowedActions`, `shaPinningRequired` and the selected-actions fields the same way.
+When the merged `allowedActions` is set to `all` or `local_only`, xfg ignores the selected-actions fields and prints a warning, so a repo can override an inherited `selected` without restating the block. When the merged `enabled` is `false`, it ignores `allowedActions`, `shaPinningRequired` and the selected-actions fields the same way.
+
+The same goes for a repo that has Actions turned off when you run xfg and whose merged config doesn't set `enabled`: xfg ignores those fields with a warning, because GitHub rejects them while Actions is off. Set `enabled: true` to turn Actions on and apply them.
 
 ## Per-Repo Opt-Out
 
@@ -158,6 +160,7 @@ xfg checks each layer before it syncs:
 - `patternsAllowed` entries must be non-empty strings.
 - A layer that sets `githubOwnedAllowed`, `verifiedAllowed` or `patternsAllowed` together with an `allowedActions` other than `selected` is an error.
 - A layer that sets `enabled: false` together with `allowedActions`, `shaPinningRequired` or a selected-actions field is an error.
+- After the layers merge, a repo whose block sets `githubOwnedAllowed`, `verifiedAllowed` or `patternsAllowed` must get `allowedActions: selected` from some layer, otherwise the config is rejected. A layer can leave `allowedActions` out and inherit it.
 - A config whose only `actions` block is empty does not count as having settings to sync.
 
 ## What xfg Calls
@@ -179,5 +182,6 @@ The credential xfg runs with needs **Administration: Read and write** on the rep
 ## Limits
 
 - GitHub returns errors for settings the repo can't take, for example when an organization or enterprise policy controls the setting (`409`), or an unsupported value (`422`). xfg shows GitHub's message and the run exits non-zero.
-- `cacheRetentionDays` and `cacheSizeGb` need a paid plan or a payment method on file; without one GitHub answers `402`.
+- `forkPrApprovalPolicy` applies to public repos only; GitHub rejects it on a private or internal repo, which fails the Actions block in the plan and on apply. A private repo that inherits it opts out with `actions: false`, because inheritance merges field by field and can't remove a single inherited field.
+- `cacheRetentionDays` and `cacheSizeGb` need a paid plan or a payment method on file; GitHub rejects the write otherwise.
 - xfg does not manage organization or enterprise Actions policies, settings that only exist for private repositories, or OIDC subject customization.

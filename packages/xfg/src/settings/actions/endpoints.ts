@@ -77,7 +77,6 @@ export function endpointByName(name: ActionsEndpointName): ActionsEndpoint {
   return endpoint;
 }
 
-/** Translates an API response into config terms, keeping only managed fields the response has. */
 export function readEndpoint(
   endpoint: ActionsEndpoint,
   body: ActionsApiBody
@@ -90,24 +89,25 @@ export function readEndpoint(
 }
 
 /**
- * Builds a PUT body: configured values, plus the current value of every other
- * field, because GitHub doesn't document whether a PUT keeps omitted fields.
+ * GitHub doesn't document whether a PUT keeps omitted fields, so the current
+ * value of every unconfigured field is sent too.
  */
 export function buildPayload(
   endpoint: ActionsEndpoint,
   desired: ActionsSettings,
   current: ActionsSettings
 ): ActionsApiBody {
-  // GitHub answers 409 to allowed_actions sent together with enabled: false
-  const echoCurrent =
-    endpoint.name !== "permissions" ||
-    (desired.enabled ?? current.enabled) !== false;
+  // Only enabled is written while Actions is off: GitHub answers 409 to allowed_actions with enabled: false
+  if (
+    endpoint.name === "permissions" &&
+    (desired.enabled ?? current.enabled) === false
+  ) {
+    return { enabled: false };
+  }
 
   const body: ActionsApiBody = {};
   for (const { setting, api } of endpoint.fields) {
-    const value =
-      desired[setting] ??
-      (echoCurrent || setting === "enabled" ? current[setting] : undefined);
+    const value = desired[setting] ?? current[setting];
     if (value !== undefined) body[api] = value;
   }
   return body;

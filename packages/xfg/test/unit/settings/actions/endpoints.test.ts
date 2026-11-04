@@ -96,16 +96,13 @@ describe("buildPayload", () => {
     assert.deepStrictEqual(payload, { enabled: false });
   });
 
-  test("permissions does not echo values while the current state is disabled", () => {
+  test("permissions sends only enabled while the current state is disabled", () => {
     const payload = buildPayload(
       endpointByName("permissions"),
       { shaPinningRequired: true },
       { enabled: false, shaPinningRequired: false }
     );
-    assert.deepStrictEqual(payload, {
-      enabled: false,
-      sha_pinning_required: true,
-    });
+    assert.deepStrictEqual(payload, { enabled: false });
   });
 
   test("selected-actions echoes the other current fields", () => {

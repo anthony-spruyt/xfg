@@ -671,7 +671,7 @@
     },
     "actionsSettings": {
       "type": "object",
-      "description": "GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the repository Actions permissions API.",
+      "description": "GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.",
       "properties": {
         "enabled": {
           "type": "boolean",

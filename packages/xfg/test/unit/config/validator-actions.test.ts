@@ -3,8 +3,10 @@ import { strict as assert } from "node:assert";
 import {
   validateRawConfig,
   validateForSync,
+  validateNormalizedConfig,
   hasActionableSettings,
 } from "../../../src/config/validator.js";
+import { normalizeConfig } from "../../../src/config/normalizer.js";
 import type { RawConfig } from "../../../src/config/types.js";
 
 function makeConfig(actions: unknown): RawConfig {
@@ -154,6 +156,110 @@ describe("validateRawConfig - actions coupled fields", () => {
 
   test("accepts enabled: false with fields of other endpoints", () => {
     accepts({ enabled: false, defaultWorkflowPermissions: "read" });
+  });
+});
+
+describe("validateNormalizedConfig - actions", () => {
+  const validateMerged = (config: unknown) =>
+    validateNormalizedConfig(normalizeConfig(config as RawConfig, {}));
+
+  const repo = { git: "https://github.com/org/repo.git" };
+
+  for (const field of [
+    { githubOwnedAllowed: true },
+    { verifiedAllowed: false },
+    { patternsAllowed: ["a/b@*"] },
+  ]) {
+    const name = Object.keys(field)[0];
+
+    test(`rejects ${name} when no layer sets allowedActions`, () => {
+      assert.throws(
+        () =>
+          validateMerged({
+            id: "test",
+            settings: { actions: field },
+            repos: [repo],
+          }),
+        new RegExp(`${name}.*require allowedActions: selected`)
+      );
+    });
+  }
+
+  test("names the repo in the error", () => {
+    assert.throws(
+      () =>
+        validateMerged({
+          id: "test",
+          settings: { actions: { githubOwnedAllowed: true } },
+          repos: [repo],
+        }),
+      /Repo 'https:\/\/github\.com\/org\/repo\.git'/
+    );
+  });
+
+  test("accepts allowedActions: selected set at root with fields at repo level", () => {
+    assert.doesNotThrow(() =>
+      validateMerged({
+        id: "test",
+        settings: { actions: { allowedActions: "selected" } },
+        repos: [
+          { ...repo, settings: { actions: { githubOwnedAllowed: true } } },
+        ],
+      })
+    );
+  });
+
+  test("accepts allowedActions: selected set in a group", () => {
+    assert.doesNotThrow(() =>
+      validateMerged({
+        id: "test",
+        settings: { actions: { patternsAllowed: ["a/b@*"] } },
+        groups: {
+          strict: { settings: { actions: { allowedActions: "selected" } } },
+        },
+        repos: [{ ...repo, groups: ["strict"] }],
+      })
+    );
+  });
+
+  test("accepts a repo that overrides an inherited selected mode (fields are dropped with a warning at apply time)", () => {
+    assert.doesNotThrow(() =>
+      validateMerged({
+        id: "test",
+        settings: {
+          actions: { allowedActions: "selected", githubOwnedAllowed: true },
+        },
+        repos: [{ ...repo, settings: { actions: { allowedActions: "all" } } }],
+      })
+    );
+  });
+
+  test("accepts a repo that opts out with actions: false", () => {
+    assert.doesNotThrow(() =>
+      validateMerged({
+        id: "test",
+        settings: { actions: { githubOwnedAllowed: true } },
+        repos: [{ ...repo, settings: { actions: false } }],
+      })
+    );
+  });
+
+  test("rejects only the repo whose merged block lacks allowedActions", () => {
+    assert.throws(
+      () =>
+        validateMerged({
+          id: "test",
+          settings: { actions: { githubOwnedAllowed: true } },
+          repos: [
+            {
+              git: "https://github.com/org/ok.git",
+              settings: { actions: { allowedActions: "selected" } },
+            },
+            { git: "https://github.com/org/bad.git" },
+          ],
+        }),
+      /org\/bad\.git/
+    );
   });
 });
 

@@ -636,7 +636,7 @@ describe("applyRepoSettings", () => {
   });
 
   test("skips the actions descriptor for an empty actions block", async () => {
-    const { logger } = createMockLogger();
+    const { logger, calls } = createMockLogger();
     const ctx = buildCtx({
       repoConfig: {
         name: "org/repo",
@@ -646,6 +646,12 @@ describe("applyRepoSettings", () => {
     });
 
     await applyRepoSettings(ctx);
+
+    assert.equal(
+      calls.length,
+      0,
+      "the actions factory must not run for an empty actions block"
+    );
   });
 
   test("does not store skipped result in the collector", async () => {

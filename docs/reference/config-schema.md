@@ -313,7 +313,7 @@ GitHub code scanning default setup configuration
 
 <!-- xfg:generated schema:actionsSettings -->
 
-GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the repository Actions permissions API.
+GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.
 
 | Field                          | Type                                                                                                | Required | Default | Description                                                                              |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------- |

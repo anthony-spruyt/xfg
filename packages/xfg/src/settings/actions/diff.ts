@@ -24,10 +24,7 @@ function sameValue(current: unknown, desired: unknown): boolean {
   return current === desired;
 }
 
-/**
- * Compares current Actions settings with the configured ones.
- * Only fields set in desired are compared; patternsAllowed compares as a set.
- */
+/** Only fields set in desired are compared; patternsAllowed compares as a set. */
 export function diffActions(
   current: ActionsSettings,
   desired: ActionsSettings

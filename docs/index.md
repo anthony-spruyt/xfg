@@ -363,7 +363,8 @@ flowchart TB
             RS["Rulesets<br/><i>(see detail below)</i>"] --> LBL["Labels<br/><i>(see detail below)</i>"]
             LBL --> REPO["Repo settings<br/><i>(see detail below)</i>"]
             REPO --> CS["Code scanning<br/><i>(see detail below)</i>"]
-            CS --> VAR["Variables"]
+            CS --> ACT["Actions settings"]
+            ACT --> VAR["Variables"]
             VAR --> COLLAB["Collaborators"]
             COLLAB --> ENVS["Environments"]
         end

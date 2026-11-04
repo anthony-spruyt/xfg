@@ -13,10 +13,6 @@ export type ActionsEndpointName =
 /** JSON body of an Actions settings endpoint, in the API's snake_case. */
 export type ActionsApiBody = Record<string, unknown>;
 
-/**
- * Strategy interface for the GitHub Actions settings endpoints.
- * Abstracts the GitHub API calls for testability.
- */
 export interface IActionsStrategy {
   get(
     repoInfo: RepoInfo,

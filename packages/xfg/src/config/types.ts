@@ -409,7 +409,6 @@ export type ActionsForkPrApprovalPolicy =
  * @see https://docs.github.com/en/rest/actions/permissions
  */
 export interface ActionsSettings {
-  /** Whether GitHub Actions is enabled on the repo */
   enabled?: boolean;
   allowedActions?: ActionsAllowedActions;
   shaPinningRequired?: boolean;

@@ -20,6 +20,12 @@ function drop(
   warnings.push(`actions: ${present.join(", ")} ignored: ${reason}`);
 }
 
+const FIELDS_NEEDING_ENABLED = [
+  "allowedActions",
+  "shaPinningRequired",
+  ...ACTIONS_SELECTED_FIELDS,
+] as const satisfies ReadonlyArray<keyof ActionsSettings>;
+
 /**
  * Drops merged fields GitHub would reject: a repo can override an inherited
  * `selected` mode or disable Actions without restating the rest of the block.
@@ -33,17 +39,43 @@ export function resolveActionsSettings(
   if (settings.enabled === false) {
     drop(
       settings,
-      ["allowedActions", "shaPinningRequired", ...ACTIONS_SELECTED_FIELDS],
+      FIELDS_NEEDING_ENABLED,
       "GitHub Actions is disabled (enabled: false)",
       warnings
     );
   }
 
-  if (settings.allowedActions !== "selected") {
+  if (
+    settings.allowedActions !== undefined &&
+    settings.allowedActions !== "selected"
+  ) {
     drop(
       settings,
       ACTIONS_SELECTED_FIELDS,
       'they only apply when allowedActions is "selected"',
+      warnings
+    );
+  }
+
+  return { settings, warnings };
+}
+
+/**
+ * Drops the fields GitHub rejects while Actions is off on the repo, unless the
+ * config turns it on, so an inherited block can't fail every run.
+ */
+export function resolveForCurrentState(
+  desired: ActionsSettings,
+  current: ActionsSettings
+): ResolvedActionsSettings {
+  const settings: ActionsSettings = { ...desired };
+  const warnings: string[] = [];
+
+  if (desired.enabled === undefined && current.enabled === false) {
+    drop(
+      settings,
+      FIELDS_NEEDING_ENABLED,
+      "GitHub Actions is disabled on the repo (set enabled: true to apply them)",
       warnings
     );
   }

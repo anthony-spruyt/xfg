@@ -339,16 +339,72 @@ describe("ActionsProcessor", () => {
     );
   });
 
-  test("returns a skipped result with the warning when nothing is left to apply", async () => {
-    const result = await processor.process(
-      makeConfig({ githubOwnedAllowed: true }),
-      githubRepo,
-      {}
-    );
+  describe("when Actions is disabled on the repo and enabled is not configured", () => {
+    beforeEach(() => {
+      strategy.state = {
+        permissions: { enabled: false },
+        workflow: {
+          default_workflow_permissions: "write",
+          can_approve_pull_request_reviews: false,
+        },
+      };
+    });
 
-    assert.ok(result.skipped);
-    assert.equal(strategy.calls.length, 0);
-    assert.equal(result.warnings?.length, 1);
+    test("plans and writes only the fields GitHub accepts, and warns about the rest", async () => {
+      const result = await processor.process(
+        makeConfig({
+          ...SELECTED,
+          shaPinningRequired: true,
+          defaultWorkflowPermissions: "read",
+        }),
+        githubRepo,
+        {}
+      );
+
+      assert.ok(result.success);
+      assert.deepStrictEqual(
+        (result.planOutput?.entries ?? []).map((e) => e.property),
+        ["defaultWorkflowPermissions"]
+      );
+      assert.deepStrictEqual(strategy.endpointsOf("get"), [
+        "permissions",
+        "workflow",
+      ]);
+      assert.deepStrictEqual(strategy.endpointsOf("update"), ["workflow"]);
+      assert.equal(result.warnings?.length, 1);
+      assert.match(result.warnings?.[0] ?? "", /test-org\/test-repo/);
+      assert.match(
+        result.warnings?.[0] ?? "",
+        /allowedActions, shaPinningRequired, githubOwnedAllowed, verifiedAllowed, patternsAllowed/
+      );
+    });
+
+    test("returns a skipped result with the warning when nothing else is configured", async () => {
+      const result = await processor.process(
+        makeConfig({ ...SELECTED, shaPinningRequired: true }),
+        githubRepo,
+        {}
+      );
+
+      assert.ok(result.skipped);
+      assert.deepStrictEqual(strategy.endpointsOf("update"), []);
+      assert.equal(result.warnings?.length, 1);
+    });
+
+    test("turns Actions on when enabled: true is configured", async () => {
+      const result = await processor.process(
+        makeConfig({ enabled: true, allowedActions: "all" }),
+        githubRepo,
+        {}
+      );
+
+      assert.ok(result.success);
+      assert.equal(result.warnings, undefined);
+      assert.deepStrictEqual(strategy.payloads.permissions, {
+        enabled: true,
+        allowed_actions: "all",
+      });
+    });
   });
 
   test("an API error fails the result with GitHub's message", async () => {
