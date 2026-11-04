@@ -1,5 +1,4 @@
 export type {
-  // PR Merge Options
   PRMergeOptions,
   RepoPROptions,
   AiConfig,
@@ -9,7 +8,6 @@ export type {
   ResolvedAiProviderConfig,
   MergeMode,
   MergeStrategy,
-  // Rulesets
   BypassActor,
   BypassMode,
   StatusCheckConfig,
@@ -17,21 +15,21 @@ export type {
   PullRequestRuleParameters,
   RulesetRule,
   Ruleset,
-  // Repo Settings
   GitHubRepoSettings,
   RepoVisibility,
   SquashMergeCommitTitle,
   SquashMergeCommitMessage,
   MergeCommitTitle,
   MergeCommitMessage,
-  // Labels
   Label,
-  // Code Scanning
   CodeScanningSettings,
   CodeScanningState,
   CodeScanningQuerySuite,
   CodeScanningLanguage,
-  // Environments
+  ActionsSettings,
+  ActionsAllowedActions,
+  ActionsDefaultWorkflowPermissions,
+  ActionsForkPrApprovalPolicy,
   DeploymentBranchPatternType,
   DeploymentBranchPattern,
   DeploymentBranchPolicy,
@@ -39,7 +37,6 @@ export type {
   EnvironmentsConfig,
   RawEnvironmentConfig,
   RepoSettings,
-  // Raw Config
   RawFileConfig,
   RawRepoFileOverride,
   RawGroupConfig,
@@ -53,22 +50,18 @@ export type {
   RawConfig,
   RawConditionalGroupWhen,
   RawConditionalGroupConfig,
-  // Normalized Config
   RepoConfig,
   Config,
-  // File content
   FileContent,
   ContentValue,
 } from "./types.js";
 
-export { RULESET_COMPARABLE_FIELDS } from "./types.js";
+export { RULESET_COMPARABLE_FIELDS, ACTIONS_SELECTED_FIELDS } from "./types.js";
 
 export { loadRawConfig, loadConfig, normalizeConfig } from "./loader.js";
 
-// Config formatting
 export { convertContentToString } from "./formatter.js";
 
-// Config validation
 export {
   validateForSync,
   validateSecretsConfig,

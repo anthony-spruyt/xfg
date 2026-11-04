@@ -22,6 +22,7 @@ import {
   validateConditionalGroups,
 } from "./validators/group-validator.js";
 import { validateRepoEntry } from "./validators/repo-entry-validator.js";
+import { validateMergedActionsSettings } from "./validators/actions-validator.js";
 
 const CONFIG_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 const VARIABLE_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
@@ -254,10 +255,6 @@ function hasConditionalGroupPR(config: RawConfig): boolean {
   );
 }
 
-/**
- * Validates raw config structure before normalization.
- * @throws ValidationError if validation fails
- */
 export function validateRawConfig(config: RawConfig): void {
   // Must run before the "nothing to do" check below, or an old secrets-only
   // config trips the generic error and never sees the migration message.
@@ -325,10 +322,6 @@ export function validateRawConfig(config: RawConfig): void {
   }
 }
 
-/**
- * Validates that config is suitable for the sync command.
- * @throws ValidationError if neither files nor settings are present
- */
 export function validateForSync(config: RawConfig): void {
   const hasRootFiles = config.files && Object.keys(config.files).length > 0;
   const hasGrpFiles = hasGroupFiles(config);
@@ -437,7 +430,8 @@ function assertNoOverlap(
 
 /**
  * Cross-validates the MERGED settings of each repo: a variable and a secret with
- * the same name collide at GitHub. Must run post-normalize — a per-layer check
+ * the same name collide at GitHub, and selected-actions fields need an
+ * allowedActions from some layer. Must run post-normalize — a per-layer check
  * misses a root secret colliding with a repo variable.
  */
 export function validateNormalizedConfig(config: Config): void {
@@ -446,7 +440,12 @@ export function validateNormalizedConfig(config: Config): void {
 
   for (const repo of config.repos) {
     assertNoOverlap(repo.settings, `Repo '${repo.git}'`);
+    validateMergedActionsSettings(repo.settings?.actions, `Repo '${repo.git}'`);
   }
+}
+
+function hasKeys(value: object | false | undefined): boolean {
+  return !!value && Object.keys(value).length > 0;
 }
 
 export function hasActionableSettings(
@@ -461,7 +460,7 @@ export function hasActionableSettings(
     return true;
   }
 
-  if (settings.repo && Object.keys(settings.repo).length > 0) {
+  if (hasKeys(settings.repo)) {
     return true;
   }
 
@@ -473,6 +472,10 @@ export function hasActionableSettings(
   }
 
   if (settings.codeScanning) {
+    return true;
+  }
+
+  if (hasKeys(settings.actions)) {
     return true;
   }
 

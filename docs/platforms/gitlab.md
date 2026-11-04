@@ -84,6 +84,6 @@ This is useful for repos without branch protection or when MR review isn't requi
 
 ## Supported Features
 
-xfg syncs files to GitLab repositories through merge requests. Settings (rulesets, labels, repo settings, code scanning, variables, collaborators, environments) and `xfg secrets sync` apply to GitHub repositories only; they are skipped for GitLab repositories.
+xfg syncs files to GitLab repositories through merge requests. Settings (rulesets, labels, repo settings, code scanning, Actions settings, variables, collaborators, environments) and `xfg secrets sync` apply to GitHub repositories only; they are skipped for GitLab repositories.
 
 Repo lifecycle supports only GitHub as a target. A GitLab repository that sets `upstream` or `source` fails: xfg logs the error, skips that repository's sync, syncs the remaining repositories, and exits non-zero at the end. See [Supported Platforms](../configuration/lifecycle.md#supported-platforms).

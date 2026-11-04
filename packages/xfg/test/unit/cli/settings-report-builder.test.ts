@@ -162,10 +162,8 @@ describe("buildSettingsReport", () => {
 
     const report = buildSettingsReport(results);
 
-    // Unchanged entries should be filtered out
     assert.equal(report.repos[0].labels.length, 3);
 
-    // Verify create entry
     const createLabel = report.repos[0].labels[0];
     assert.equal(createLabel.name, "bug");
     assert.equal(createLabel.action, "create");
@@ -174,7 +172,6 @@ describe("buildSettingsReport", () => {
       description: "Something is broken",
     });
 
-    // Verify update entry
     const updateLabel = report.repos[0].labels[1];
     assert.equal(updateLabel.name, "old-name");
     assert.equal(updateLabel.action, "update");
@@ -183,12 +180,10 @@ describe("buildSettingsReport", () => {
       { property: "color", oldValue: "ffffff", newValue: "000000" },
     ]);
 
-    // Verify delete entry
     const deleteLabel = report.repos[0].labels[2];
     assert.equal(deleteLabel.name, "stale");
     assert.equal(deleteLabel.action, "delete");
 
-    // Verify totals
     assert.equal(report.totals.labels.create, 1);
     assert.equal(report.totals.labels.update, 1);
     assert.equal(report.totals.labels.delete, 1);
@@ -408,14 +403,10 @@ describe("buildSettingsReport", () => {
 
     const report = buildSettingsReport(results);
 
-    // repo1: 1 settings create + 1 code scanning create = 2 creates, 1 code scanning update
-    // repo2: 1 code scanning update
     assert.equal(report.totals.settings.create, 2);
     assert.equal(report.totals.settings.update, 2);
 
-    // repo1 should have 3 settings entries (1 regular + 2 code scanning)
     assert.equal(report.repos[0].settings.length, 3);
-    // repo2 should have 1 settings entry (code scanning)
     assert.equal(report.repos[1].settings.length, 1);
   });
 
@@ -441,6 +432,51 @@ describe("buildSettingsReport", () => {
 
     assert.equal(report.repos[0].settings.length, 1);
     assert.equal(report.repos[0].settings[0].newValue, null);
+  });
+
+  test("converts actionsResult entries into settings keyed actions.<field>", () => {
+    const results = [
+      {
+        repoName: "org/repo",
+        actionsResult: {
+          planOutput: {
+            entries: [
+              {
+                property: "allowedActions",
+                action: "update" as const,
+                oldValue: "all",
+                newValue: "selected",
+              },
+              {
+                property: "patternsAllowed",
+                action: "create" as const,
+                newValue: ["docker/login-action@*"],
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const report = buildSettingsReport(results);
+
+    assert.deepEqual(
+      report.repos[0].settings.map((s) => [s.name, s.action]),
+      [
+        ["actions.allowedActions", "update"],
+        ["actions.patternsAllowed", "create"],
+      ]
+    );
+    assert.equal(report.repos[0].settings[0].oldValue, "all");
+    assert.equal(report.totals.settings.create, 1);
+    assert.equal(report.totals.settings.update, 1);
+  });
+
+  test("handles actionsResult with no planOutput gracefully", () => {
+    const report = buildSettingsReport([
+      { repoName: "org/repo", actionsResult: {} },
+    ]);
+    assert.deepEqual(report.repos[0].settings, []);
   });
 
   test("converts variablesResult with create/update/delete entries", () => {
@@ -480,29 +516,24 @@ describe("buildSettingsReport", () => {
 
     const report = buildSettingsReport(results);
 
-    // Unchanged entries should be filtered out
     assert.equal(report.repos[0].variables!.length, 3);
 
-    // Verify create entry
     const createVar = report.repos[0].variables![0];
     assert.equal(createVar.name, "NODE_ENV");
     assert.equal(createVar.action, "create");
     assert.equal(createVar.newValue, "production");
 
-    // Verify update entry
     const updateVar = report.repos[0].variables![1];
     assert.equal(updateVar.name, "API_URL");
     assert.equal(updateVar.action, "update");
     assert.equal(updateVar.oldValue, "http://old.example.com");
     assert.equal(updateVar.newValue, "http://new.example.com");
 
-    // Verify delete entry
     const deleteVar = report.repos[0].variables![2];
     assert.equal(deleteVar.name, "DEPRECATED_VAR");
     assert.equal(deleteVar.action, "delete");
     assert.equal(deleteVar.oldValue, "old-value");
 
-    // Verify totals
     assert.equal(report.totals.variables!.create, 1);
     assert.equal(report.totals.variables!.update, 1);
     assert.equal(report.totals.variables!.delete, 1);
@@ -612,10 +643,8 @@ describe("buildSettingsReport", () => {
 
     const report = buildSettingsReport(results);
 
-    // Unchanged entry should be filtered out
     assert.equal(report.repos[0].settings.length, 1);
     assert.equal(report.repos[0].settings[0].name, "deleteBranchOnMerge");
-    // Totals should only count the active setting
     assert.equal(report.totals.settings.update, 1);
   });
 });
