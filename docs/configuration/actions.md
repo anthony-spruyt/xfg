@@ -160,7 +160,7 @@ xfg checks each layer before it syncs:
 - `patternsAllowed` entries must be non-empty strings.
 - A layer that sets `githubOwnedAllowed`, `verifiedAllowed` or `patternsAllowed` together with an `allowedActions` other than `selected` is an error.
 - A layer that sets `enabled: false` together with `allowedActions`, `shaPinningRequired` or a selected-actions field is an error.
-- After the layers merge, a repo whose block sets `githubOwnedAllowed`, `verifiedAllowed` or `patternsAllowed` must get `allowedActions: selected` from some layer, otherwise the config is rejected. A layer can leave `allowedActions` out and inherit it.
+- After the layers merge, a repo whose block sets `githubOwnedAllowed`, `verifiedAllowed` or `patternsAllowed` must get an `allowedActions` from some layer, otherwise the config is rejected. A layer can leave `allowedActions` out and inherit it.
 - A config whose only `actions` block is empty does not count as having settings to sync.
 
 ## What xfg Calls
