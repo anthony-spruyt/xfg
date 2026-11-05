@@ -520,7 +520,9 @@ describe("prOptions.ai layers inherit the fields they omit", () => {
   test("a repo adds the key name to a root provider", () => {
     const config = baseConfig({
       prOptions: { ai: { provider: "openai", model: "m" } },
-      repos: [{ git: REPO, prOptions: { ai: { apiKeyEnv: "OPENAI_API_KEY" } } }],
+      repos: [
+        { git: REPO, prOptions: { ai: { apiKeyEnv: "OPENAI_API_KEY" } } },
+      ],
     });
     assert.doesNotThrow(() => validateWhole(config));
   });
@@ -573,7 +575,11 @@ describe("prOptions.ai merged result is still checked", () => {
   test("rejects an openai fallback no layer gives a model", () => {
     const config = baseConfig({
       prOptions: {
-        ai: { provider: "openai", model: "m", fallback: { provider: "openai" } },
+        ai: {
+          provider: "openai",
+          model: "m",
+          fallback: { provider: "openai" },
+        },
       },
     });
     assert.doesNotThrow(() => validateRawConfig(config));
