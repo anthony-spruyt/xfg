@@ -487,6 +487,8 @@ export interface RawDeploymentBranchPolicy extends DeploymentBranchPolicy {
 }
 
 export interface RawEnvironmentConfig {
+  /** `false` drops this environment's inherited fields; not valid at root */
+  inherit?: boolean;
   /** `false` clears an inherited policy so any branch can deploy */
   deploymentBranchPolicy?: RawDeploymentBranchPolicy | false;
   secrets?: Record<string, SecretConfig | false> & { deleteOrphaned?: boolean };
@@ -593,9 +595,13 @@ export interface RawRootSettings {
 
 // Per-repo settings (before normalization) - inherit controls whether root settings are inherited
 export interface RawRepoSettings {
-  rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
+  rulesets?: Record<string, (Ruleset & { inherit?: boolean }) | false> & {
+    inherit?: boolean;
+  };
   repo?: (GitHubRepoSettings & { inherit?: boolean }) | false;
-  labels?: Record<string, Label | false> & { inherit?: boolean };
+  labels?: Record<string, (Label & { inherit?: boolean }) | false> & {
+    inherit?: boolean;
+  };
   codeScanning?: (RawCodeScanningSettings & { inherit?: boolean }) | false;
   actions?: (ActionsSettings & { inherit?: boolean }) | false;
   variables?: Record<string, string | false> & {

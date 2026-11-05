@@ -146,6 +146,20 @@ export function validateFileConfigFields(
   }
 }
 
+/** `inherit` on a ruleset, label or environment entry; root entries have nothing to inherit. */
+function validateEntryInherit(
+  entry: unknown,
+  kind: string,
+  name: string,
+  context: string,
+  isRoot: boolean
+): void {
+  if (!isPlainObject(entry)) return;
+  const entryName = `${kind} '${name}'`;
+  if (isRoot) assertNoRootInherit(entry, entryName, context);
+  validateInheritFlag(entry, `${context}: ${entryName}`);
+}
+
 function validateLabel(label: unknown, name: string, context: string): void {
   if (!isPlainObject(label)) {
     throw new ValidationError(`${context}: label '${name}' must be an object`);
@@ -275,6 +289,7 @@ function validateSettingsRulesets(
       continue;
     }
 
+    validateEntryInherit(ruleset, "ruleset", name, context, !rootCtx);
     validateRuleset(ruleset, name, context);
   }
 }
@@ -299,6 +314,7 @@ function validateSettingsLabels(
       }
       continue;
     }
+    validateEntryInherit(label, "label", name, context, !rootCtx);
     validateLabel(label, name, context);
   }
 }
@@ -466,7 +482,11 @@ function validateSettingsCollaborators(
   }
 }
 
-const ENVIRONMENT_KEYS = new Set(["deploymentBranchPolicy", "secrets"]);
+const ENVIRONMENT_KEYS = new Set([
+  "deploymentBranchPolicy",
+  "secrets",
+  "inherit",
+]);
 const BRANCH_POLICY_KEYS = new Set([
   "protectedBranches",
   "custom",
@@ -651,6 +671,7 @@ function validateSettingsEnvironments(
     }
     validateEnvironmentName(name, context, seenNames);
     if (env !== false) {
+      validateEntryInherit(env, "environment", name, context, !rootCtx);
       validateEnvironmentEntry(
         env,
         `${context}: environment '${name}'`,

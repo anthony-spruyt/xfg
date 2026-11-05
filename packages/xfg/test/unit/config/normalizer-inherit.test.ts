@@ -122,6 +122,142 @@ describe("inherit: false on object blocks", () => {
     });
   });
 
+  describe("a single ruleset, label or environment", () => {
+    const rootRuleset = {
+      target: "branch",
+      enforcement: "active",
+      bypassActors: [{ actorId: 1, actorType: "Team" }],
+      rules: [{ type: "deletion" }],
+    };
+
+    test("a ruleset with inherit: false drops only its own inherited fields", () => {
+      const result = merge(
+        {
+          rulesets: {
+            main: rootRuleset,
+            other: { target: "tag", enforcement: "active" },
+          },
+        },
+        { rulesets: { main: { inherit: false, enforcement: "evaluate" } } }
+      ) as { rulesets: Record<string, unknown> };
+      assert.deepStrictEqual(result.rulesets, {
+        main: { enforcement: "evaluate" },
+        other: { target: "tag", enforcement: "active" },
+      });
+    });
+
+    test("a ruleset without inherit merges field by field and keeps no inherit key", () => {
+      const result = merge(
+        { rulesets: { main: rootRuleset } },
+        { rulesets: { main: { inherit: true, enforcement: "evaluate" } } }
+      ) as { rulesets: Record<string, unknown> };
+      assert.deepStrictEqual(result.rulesets, {
+        main: { ...rootRuleset, enforcement: "evaluate" },
+      });
+    });
+
+    test("a directive in a ruleset with inherit: false has no base", () => {
+      const result = merge(
+        { rulesets: { main: rootRuleset } },
+        {
+          rulesets: {
+            main: {
+              inherit: false,
+              rules: { $arrayMerge: "append", $values: [{ type: "creation" }] },
+            },
+          },
+        }
+      ) as { rulesets: Record<string, unknown> };
+      assert.deepStrictEqual(result.rulesets, {
+        main: { rules: [{ type: "creation" }] },
+      });
+    });
+
+    test("a new ruleset with inherit: false does not keep the key", () => {
+      const result = merge(
+        {},
+        { rulesets: { main: { inherit: false, enforcement: "active" } } }
+      ) as { rulesets: Record<string, unknown> };
+      assert.deepStrictEqual(result.rulesets, {
+        main: { enforcement: "active" },
+      });
+    });
+
+    test("a label with inherit: false drops its inherited description", () => {
+      const result = merge(
+        { labels: { bug: { color: "d73a4a", description: "Broken" } } },
+        { labels: { bug: { inherit: false, color: "00ff00" } } }
+      ) as { labels: Record<string, unknown> };
+      assert.deepStrictEqual(result.labels, { bug: { color: "00ff00" } });
+    });
+
+    test("an environment with inherit: false drops its inherited policy and secrets", () => {
+      const result = merge(
+        {
+          environments: {
+            release: {
+              deploymentBranchPolicy: { protectedBranches: true },
+              secrets: { A: { env: "A_SRC" } },
+            },
+            staging: { deploymentBranchPolicy: { protectedBranches: true } },
+          },
+        },
+        {
+          environments: {
+            release: { inherit: false, secrets: { B: { env: "B_SRC" } } },
+          },
+        }
+      ) as { environments: Record<string, unknown> };
+      assert.deepStrictEqual(result.environments, {
+        release: { secrets: { B: { env: "B_SRC" } } },
+        staging: { deploymentBranchPolicy: { protectedBranches: true } },
+      });
+    });
+
+    test("a group's entry inherit: false is applied there, and a repo adds on top", () => {
+      const config = normalize({
+        settings: { rulesets: { main: rootRuleset } },
+        groups: {
+          g: {
+            settings: {
+              rulesets: { main: { inherit: false, enforcement: "evaluate" } },
+            },
+          },
+        },
+        repos: [
+          {
+            git: "https://github.com/org/repo.git",
+            groups: ["g"],
+            settings: { rulesets: { main: { target: "branch" } } },
+          },
+        ],
+      });
+      assert.deepStrictEqual(config.repos[0].settings?.rulesets, {
+        main: { enforcement: "evaluate", target: "branch" },
+      });
+    });
+
+    test("map-level inherit: false drops a same-named entry's inherited fields", () => {
+      const result = merge(
+        {
+          rulesets: { main: rootRuleset },
+          labels: { bug: { color: "d73a4a", description: "Broken" } },
+        },
+        {
+          rulesets: { inherit: false, main: { enforcement: "evaluate" } },
+          labels: { inherit: false, bug: { color: "00ff00" } },
+        }
+      ) as {
+        rulesets: Record<string, unknown>;
+        labels: Record<string, unknown>;
+      };
+      assert.deepStrictEqual(result.rulesets, {
+        main: { enforcement: "evaluate" },
+      });
+      assert.deepStrictEqual(result.labels, { bug: { color: "00ff00" } });
+    });
+  });
+
   describe("prOptions", () => {
     test("drops the inherited fields, ai included", () => {
       const config = normalize({

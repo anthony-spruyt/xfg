@@ -485,12 +485,14 @@ GitHub Ruleset configuration
 
 | Field          | Type                                                                             | Required | Default  | Description                                                                                                                    |
 | -------------- | -------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `inherit`      | `boolean`                                                                        | No       | -        | Set to false to drop this ruleset's inherited fields, then apply this layer's own.                                             |
 | `target`       | `branch` \| `tag`                                                                | No       | `branch` | Target type: 'branch' for branch rules, 'tag' for tag rules.                                                                   |
 | `enforcement`  | `active` \| `disabled` \| `evaluate`                                             | No       | `active` | Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). |
 | `bypassActors` | [`bypassActor`](#bypassactor)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -        | Actors who can bypass this ruleset                                                                                             |
 | `conditions`   | [`rulesetConditions`](#rulesetconditions)                                        | No       | -        | Conditions for when this ruleset applies (which branches/tags to target)                                                       |
 | `rules`        | [`rulesetRule`](#rulesetrule)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -        | Rules to enforce on matching refs                                                                                              |
 
+- `inherit` — Not valid at root level. Default: true
 - `target` — Default: branch
 - `enforcement` — Default: active
 
@@ -784,12 +786,14 @@ Restrict maximum file size
 
 GitHub label configuration
 
-| Field         | Type     | Required | Default | Description                            |
-| ------------- | -------- | -------- | ------- | -------------------------------------- |
-| `color`       | `string` | Yes      | -       | Hex color code (with or without #).    |
-| `description` | `string` | No       | -       | Label description (max 100 characters) |
-| `new_name`    | `string` | No       | -       | Rename this label.                     |
+| Field         | Type      | Required | Default | Description                                                                      |
+| ------------- | --------- | -------- | ------- | -------------------------------------------------------------------------------- |
+| `inherit`     | `boolean` | No       | -       | Set to false to drop this label's inherited fields, then apply this layer's own. |
+| `color`       | `string`  | Yes      | -       | Hex color code (with or without #).                                              |
+| `description` | `string`  | No       | -       | Label description (max 100 characters)                                           |
+| `new_name`    | `string`  | No       | -       | Rename this label.                                                               |
 
+- `inherit` — Not valid at root level. Default: true
 - `color` — Example: 'd73a4a' or '#d73a4a'
 - `new_name` — Maps to GitHub API's new_name field.
 
@@ -829,11 +833,13 @@ A GitHub deployment environment
 
 A GitHub deployment environment, merged over the inherited one
 
-| Field                    | Type                                                           | Required | Default | Description                        |
-| ------------------------ | -------------------------------------------------------------- | -------- | ------- | ---------------------------------- |
-| `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.             |
-| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name. |
+| Field                    | Type                                                           | Required | Default | Description                                                                                        |
+| ------------------------ | -------------------------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `inherit`                | `boolean`                                                      | No       | -       | Set to false to drop this environment's inherited policy and secrets, then apply this layer's own. |
+| `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.                                                                             |
+| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name.                                                                 |
 
+- `inherit` — Not valid at root level. Default: true
 - `deploymentBranchPolicy` — Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy.
 - `secrets` — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.
 

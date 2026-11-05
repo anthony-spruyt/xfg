@@ -91,3 +91,46 @@ describe("raw validation of inherit on object blocks", () => {
     });
   });
 });
+
+describe("raw validation of inherit on a single entry", () => {
+  const ruleset = { target: "branch", enforcement: "active" };
+  const label = { color: "d73a4a" };
+  const environment = { deploymentBranchPolicy: { protectedBranches: true } };
+
+  for (const [block, name, entry, label_] of [
+    ["rulesets", "main", ruleset, "ruleset 'main'"],
+    ["labels", "bug", label, "label 'bug'"],
+    ["environments", "release", environment, "environment 'release'"],
+  ] as const) {
+    describe(`settings.${block}`, () => {
+      const root = { settings: { [block]: { [name]: entry } } };
+      const withInherit = (value: unknown) => ({
+        [block]: { [name]: { ...entry, inherit: value } },
+      });
+
+      test("accepts inherit: false in a repo layer", () => {
+        accepts({ ...root, ...repoLayer(withInherit(false)) });
+      });
+
+      test("accepts inherit: false in a group layer", () => {
+        accepts({ ...root, ...groupLayer(withInherit(false)) });
+      });
+
+      test("rejects an inherit that is not a boolean", () => {
+        rejects(
+          { ...root, ...repoLayer(withInherit("no")) },
+          new RegExp(`${label_}: inherit must be a boolean`)
+        );
+      });
+
+      test("rejects inherit on a root entry", () => {
+        rejects(
+          { settings: withInherit(false) },
+          new RegExp(
+            `'inherit' is not allowed in root-level ${label_} \\(nothing to inherit from\\)`
+          )
+        );
+      });
+    });
+  }
+});

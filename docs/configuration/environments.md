@@ -105,7 +105,7 @@ Environments merge by name (ignoring case) through root, groups, conditional gro
 - A `deploymentBranchPolicy` set at a lower layer merges field by field with the inherited one. To switch between `protectedBranches` and `custom`, set `inherit: false` on the layer that changes it.
 - `deploymentBranchPolicy: false` clears an inherited policy, so any branch can deploy. Not allowed at root.
 - Secrets merge by name. Set a secret to `false` to drop an inherited one.
-- Set an environment to `false` to drop it, or `inherit: false` to drop every inherited environment. `inherit` is not allowed at root.
+- Set an environment to `false` to drop it. `inherit: false` in the `environments` map drops every inherited environment. Inside one environment, `inherit: false` drops only that environment's inherited fields, so restate everything it needs. `inherit` is not allowed at root.
 
 ```yaml
 id: environments

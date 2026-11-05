@@ -797,7 +797,8 @@ function mergeGroupPROptions(
 /**
  * Merges a named-entry map (e.g. rulesets, labels) where overlay entries
  * extend or replace base entries. `inherit: false` in the overlay discards
- * the base; `false` values mark explicit opt-outs. The merge callback runs
+ * the whole base; inside one entry it discards only that entry's inherited
+ * fields. `false` values mark explicit opt-outs. The merge callback runs
  * when both base and overlay have an entry with the same name.
  */
 function mergeNamedEntries<T>(
@@ -813,8 +814,11 @@ function mergeNamedEntries<T>(
     if (entry === false) {
       result[name] = false;
     } else if (typeof entry === "object" && entry !== null) {
-      const existing = result[name];
-      result[name] = merge(existing, entry as T, name);
+      const { inherit: entryInherit, ...own } = entry as T & {
+        inherit?: boolean;
+      };
+      const existing = entryInherit === false ? undefined : result[name];
+      result[name] = merge(existing, own as T, name);
     }
   }
 

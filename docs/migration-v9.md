@@ -137,6 +137,35 @@ repos:
         model: claude-haiku-4-5
 ```
 
+### 6. A same-named ruleset or label under `inherit: false` replaces the inherited one
+
+With `inherit: false` in the `rulesets` or `labels` map of a repo, a ruleset or label that had the same name as an inherited one used to merge with it field by field, and only the other inherited entries were dropped. Now it replaces the inherited entry, so any field you do not restate is gone.
+
+To get the old result, drop the map-level `inherit: false` and opt out of the other inherited entries by name:
+
+```yaml
+id: my-config
+settings:
+  labels:
+    bug:
+      color: d73a4a
+      description: "Something isn't working"
+    enhancement:
+      color: a2eeef
+
+repos:
+  - git: git@github.com:your-org/web.git
+    settings:
+      labels:
+        enhancement: false       # was: inherit: false on the labels map
+        bug:
+          color: ff0000          # still inherits the description
+```
+
+### 7. `inherit: false` inside one ruleset, label or environment is honoured
+
+`inherit: false` inside a single ruleset or label used to be ignored, and the entry still merged with the inherited one. An environment entry with `inherit: false` failed validation. Now it drops only that entry's inherited fields, and the entry starts fresh. Remove the line to keep the old result for a ruleset or label.
+
 ## Other Changes
 
 These do not break a working config:
