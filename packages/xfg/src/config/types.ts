@@ -1,4 +1,4 @@
-import type { ArrayMergeStrategy } from "./merge.js";
+import type { ArrayMergeStrategy } from "./array-directive.js";
 
 export type MergeMode = "manual" | "auto" | "force" | "direct";
 export type MergeStrategy = "merge" | "squash" | "rebase";
@@ -541,11 +541,6 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
-// Group configuration (shared config layer between root and per-repo)
-// Groups need the same file override capabilities as repos: file: false to remove,
-// inherit: false to discard accumulated files. So files uses the repo-style type.
-// Groups need inherit: false support on settings sub-sections (rulesets, labels),
-// so settings uses RawRepoSettings (which has inherit on rulesets/labels).
 export interface RawGroupConfig {
   extends?: string | string[];
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {

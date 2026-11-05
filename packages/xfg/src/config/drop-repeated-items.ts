@@ -8,11 +8,7 @@ function isPrimitiveItem(item: unknown): boolean {
   );
 }
 
-/**
- * Drops repeated items from every array in the tree, first one wins. Only arrays
- * of strings, numbers and booleans are touched; an array holding anything else
- * keeps its items, because objects that look alike can still differ.
- */
+/** First repeat wins; arrays holding objects are left alone, since lookalike objects can differ. */
 export function dropRepeatedItems<T>(value: T): T {
   if (Array.isArray(value)) {
     const items: unknown[] = value.every(isPrimitiveItem)

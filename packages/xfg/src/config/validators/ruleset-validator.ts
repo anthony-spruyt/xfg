@@ -101,9 +101,6 @@ const ARRAY_PARAMS_BY_RULE_TYPE: Record<string, string[]> = {
   file_extension_restriction: ["restrictedFileExtensions"],
 };
 
-/**
- * Validates a single ruleset rule.
- */
 function validateRule(rule: unknown, context: string): void {
   if (typeof rule !== "object" || rule === null || Array.isArray(rule)) {
     throw new ValidationError(`${context}: rule must be an object`);
@@ -123,7 +120,6 @@ function validateRule(rule: unknown, context: string): void {
     );
   }
 
-  // Validate parameters based on rule type
   if (r.parameters !== undefined) {
     if (
       typeof r.parameters !== "object" ||
@@ -137,7 +133,6 @@ function validateRule(rule: unknown, context: string): void {
 
     const params = r.parameters as Record<string, unknown>;
 
-    // Validate pattern rule parameters
     if (r.type.toString().endsWith("_pattern")) {
       if (
         params.operator !== undefined &&
@@ -154,7 +149,6 @@ function validateRule(rule: unknown, context: string): void {
       }
     }
 
-    // Validate pull_request parameters
     if (r.type === "pull_request") {
       if (params.requiredApprovingReviewCount !== undefined) {
         const count = params.requiredApprovingReviewCount;
@@ -185,7 +179,6 @@ function validateRule(rule: unknown, context: string): void {
       }
     }
 
-    // Validate code_scanning parameters
     if (r.type === "code_scanning") {
       const tools = arrayParam(params, "codeScanningTools", context);
       for (const tool of tools ?? []) {
@@ -222,9 +215,6 @@ function validateRule(rule: unknown, context: string): void {
   }
 }
 
-/**
- * Validates a single ruleset.
- */
 export function validateRuleset(
   ruleset: unknown,
   name: string,
@@ -260,7 +250,6 @@ export function validateRuleset(
     );
   }
 
-  // Validate bypassActors
   if (rs.bypassActors !== undefined) {
     const actors = arrayValues(rs.bypassActors);
     if (actors === null) {
@@ -296,7 +285,6 @@ export function validateRuleset(
     }
   }
 
-  // Validate conditions
   if (rs.conditions !== undefined) {
     if (
       typeof rs.conditions !== "object" ||
@@ -338,7 +326,6 @@ export function validateRuleset(
     }
   }
 
-  // Validate rules array
   if (rs.rules !== undefined) {
     const rules = arrayValues(rs.rules);
     if (rules === null) {

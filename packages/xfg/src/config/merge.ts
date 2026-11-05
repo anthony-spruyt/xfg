@@ -1,12 +1,11 @@
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 import {
+  ARRAY_MERGE_STRATEGIES,
   DIRECTIVE_KEYS,
   isArrayMergeStrategy,
   type ArrayMergeStrategy,
 } from "./array-directive.js";
-
-export type { ArrayMergeStrategy };
 
 /** Order matters: the first key present in every item of both arrays wins. */
 export const MATCH_KEY_CANDIDATES = ["type", "actorId", "actor_id"] as const;
@@ -97,11 +96,10 @@ function readDirective(
   const matchBy = readMatchBy(value, ctx, path);
   if (!isDirectiveOnly(value)) return matchBy;
   if (!isArrayMergeStrategy(value.$arrayMerge)) {
-    const strategies = [...arrayMergeStrategies.keys()].join(", ");
     throw mergeError(
       ctx,
       path,
-      `$arrayMerge must be one of ${strategies}, got ${describeValue(value.$arrayMerge)}`
+      `$arrayMerge must be one of ${ARRAY_MERGE_STRATEGIES.join(", ")}, got ${describeValue(value.$arrayMerge)}`
     );
   }
   if (!Array.isArray(value.$values)) {
@@ -276,10 +274,7 @@ function mergeArrays(
   return overlay;
 }
 
-/**
- * Resolves `inherit` for one object block before it is merged: `inherit: false`
- * in the overlay empties the base. The `inherit` key never reaches the merge.
- */
+/** `inherit` is stripped so it never lands in the merged block as content. */
 export function applyInherit(
   base: Record<string, unknown> | false | undefined,
   overlay: Record<string, unknown>

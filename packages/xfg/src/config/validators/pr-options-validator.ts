@@ -3,6 +3,7 @@ import { validateBranchName } from "../../shared/branch-validation.js";
 import { arrayValues } from "../array-directive.js";
 import type { RawPRMergeOptions } from "../types.js";
 import { validateAiOption } from "./ai-validator.js";
+import { assertNoRootInherit } from "./inherit-flag.js";
 
 /** Validates prOptions of one layer; `context` names the layer, empty for the root. */
 export function validatePrOptions(
@@ -12,15 +13,12 @@ export function validatePrOptions(
   if (prOptions === undefined) return;
   const prefix = context ? `${context}: ` : "";
 
-  if (prOptions.inherit !== undefined) {
-    if (!context) {
-      throw new ValidationError(
-        "'inherit' is not allowed in root-level prOptions (nothing to inherit from)"
-      );
-    }
-    if (typeof prOptions.inherit !== "boolean") {
-      throw new ValidationError(`${prefix}prOptions.inherit must be a boolean`);
-    }
+  if (!context) assertNoRootInherit(prOptions, "prOptions");
+  if (
+    prOptions.inherit !== undefined &&
+    typeof prOptions.inherit !== "boolean"
+  ) {
+    throw new ValidationError(`${prefix}prOptions.inherit must be a boolean`);
   }
 
   if (prOptions.branch !== undefined) {

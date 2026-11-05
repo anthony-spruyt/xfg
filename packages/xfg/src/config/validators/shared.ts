@@ -9,7 +9,7 @@ import {
 import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
-import { validateInheritFlag } from "./inherit-flag.js";
+import { assertNoRootInherit, validateInheritFlag } from "./inherit-flag.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { arrayValues, isArrayMergeDirective } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
@@ -240,10 +240,7 @@ function validateCodeScanningSettings(
   }
 }
 
-/**
- * A layer may omit `state` and inherit it, so only the merged block can be
- * checked. A layer with `inherit: false` drops the inherited state.
- */
+/** A layer may omit `state` and inherit it, so only the merged block can be checked. */
 export function validateMergedCodeScanningSettings(
   codeScanning: RawCodeScanningSettings | undefined,
   context: string
@@ -553,14 +550,8 @@ function validateDeploymentBranchPolicyLayer(
     `${context}: deploymentBranchPolicy`
   );
 
-  if (policy.inherit !== undefined) {
-    if (isRoot) {
-      throw new ValidationError(
-        `${context}: 'inherit' is not allowed in root-level deploymentBranchPolicy (nothing to inherit from)`
-      );
-    }
-    validateInheritFlag(policy, `${context}: deploymentBranchPolicy`);
-  }
+  if (isRoot) assertNoRootInherit(policy, "deploymentBranchPolicy", context);
+  validateInheritFlag(policy, `${context}: deploymentBranchPolicy`);
   if (
     policy.protectedBranches !== undefined &&
     policy.protectedBranches !== true

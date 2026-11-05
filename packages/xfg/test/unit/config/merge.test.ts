@@ -8,9 +8,9 @@ import {
   isTextContent,
   mergeTextContent,
   findMatchKey,
-  type ArrayMergeStrategy,
   type MergeContext,
 } from "../../../src/config/merge.js";
+import type { ArrayMergeStrategy } from "../../../src/config/array-directive.js";
 
 function createContext(
   defaultStrategy: ArrayMergeStrategy = "replace"

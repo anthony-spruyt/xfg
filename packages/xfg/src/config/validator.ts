@@ -12,6 +12,7 @@ import { ValidationError } from "../shared/errors.js";
 import { isValidHostname } from "../shared/github-host-policy.js";
 import { isCredentialEnvName } from "../shared/credential-env.js";
 import { validatePrOptions } from "./validators/pr-options-validator.js";
+import { assertNoRootInherit } from "./validators/inherit-flag.js";
 import { arrayValues } from "./array-directive.js";
 import {
   validateDeploymentBranchPolicy,
@@ -106,13 +107,16 @@ function validateRootSettings(config: RawConfig): void {
 
   validateSettings(config.settings, "Root");
 
-  for (const block of ["repo", "actions", "codeScanning"] as const) {
-    const value = config.settings[block];
-    if (value && typeof value === "object" && "inherit" in value) {
-      throw new ValidationError(
-        `'inherit' is not allowed in root-level ${block} (nothing to inherit from)`
-      );
-    }
+  for (const block of [
+    "repo",
+    "actions",
+    "codeScanning",
+    "variables",
+    "secrets",
+    "collaborators",
+    "environments",
+  ] as const) {
+    assertNoRootInherit(config.settings[block], block);
   }
 
   if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
@@ -124,36 +128,6 @@ function validateRootSettings(config: RawConfig): void {
   if (config.settings.labels && "inherit" in config.settings.labels) {
     throw new ValidationError(
       "'inherit' is a reserved key and cannot be used as a label name"
-    );
-  }
-
-  if (config.settings.variables && "inherit" in config.settings.variables) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level variables (nothing to inherit from)"
-    );
-  }
-
-  if (config.settings.secrets && "inherit" in config.settings.secrets) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level secrets (nothing to inherit from)"
-    );
-  }
-
-  if (
-    config.settings.collaborators &&
-    "inherit" in config.settings.collaborators
-  ) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level collaborators (nothing to inherit from)"
-    );
-  }
-
-  if (
-    config.settings.environments &&
-    "inherit" in config.settings.environments
-  ) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level environments (nothing to inherit from)"
     );
   }
 }

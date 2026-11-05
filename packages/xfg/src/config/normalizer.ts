@@ -6,7 +6,7 @@ import {
   isTextContent,
   mergeTextContent,
 } from "./merge.js";
-import type { ArrayMergeStrategy } from "./merge.js";
+import type { ArrayMergeStrategy } from "./array-directive.js";
 import { dropRepeatedItems } from "./drop-repeated-items.js";
 import { interpolateContent } from "./env.js";
 import type {

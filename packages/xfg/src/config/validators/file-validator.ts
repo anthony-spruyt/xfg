@@ -1,5 +1,6 @@
 import { extname, isAbsolute } from "node:path";
-import { isTextContent, type ArrayMergeStrategy } from "../merge.js";
+import { isTextContent } from "../merge.js";
+import { ARRAY_MERGE_STRATEGIES } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { hasGitDirSegment } from "../../shared/path-safety.js";
@@ -13,12 +14,7 @@ export function validValues<T extends string>(
   return values;
 }
 
-const VALID_STRATEGIES = validValues<ArrayMergeStrategy>([
-  "replace",
-  "append",
-  "prepend",
-  "merge",
-]);
+const VALID_STRATEGIES: readonly string[] = ARRAY_MERGE_STRATEGIES;
 
 /**
  * Check if file extension is for structured output (JSON/YAML).

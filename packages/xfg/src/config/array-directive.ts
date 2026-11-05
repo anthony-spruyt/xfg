@@ -16,7 +16,7 @@ export const DIRECTIVE_KEYS: ReadonlySet<string> = new Set([
   "$matchBy",
 ]);
 
-export interface ArrayMergeDirective {
+interface ArrayMergeDirective {
   $arrayMerge: ArrayMergeStrategy;
   $values: unknown[];
   $matchBy?: string;
