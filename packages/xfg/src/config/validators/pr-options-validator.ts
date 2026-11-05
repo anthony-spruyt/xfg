@@ -1,6 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { validateBranchName } from "../../shared/branch-validation.js";
-import { arrayValues } from "../array-directive.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import type { RawPRMergeOptions } from "../types.js";
 import { validateAiLayer } from "./ai-validator.js";
 import { assertNoRootInherit } from "./inherit-flag.js";
@@ -31,7 +31,10 @@ export function validatePrOptions(
   const labels = arrayValues(prOptions.labels);
   if (labels === null) {
     throw new ValidationError(
-      `${prefix}prOptions.labels must be an array of strings or $arrayMerge directive`
+      explainNotArray(
+        `${prefix}prOptions.labels must be an array of strings or $arrayMerge directive`,
+        prOptions.labels
+      )
     );
   }
   for (const label of labels) {

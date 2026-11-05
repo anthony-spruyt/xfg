@@ -282,10 +282,10 @@ describe("raw validation of array directives", () => {
       accepts(group(bypassActors(1, 2)));
     });
 
-    test("rejects a repeated value and names the layer", () => {
+    test("rejects a repeated value, names the layer and says why", () => {
       rejects(
         group(bypassActors(1, 1)),
-        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive/
+        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive: \$values items 0 and 1 share \$matchBy actorId '1'/
       );
     });
 
@@ -296,9 +296,112 @@ describe("raw validation of array directives", () => {
           $matchBy: "actorId",
           $values: [{ actorId: { id: 1 }, actorType: "Team" }],
         }),
-        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive/
+        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive: \$values item 0 \$matchBy actorId must be a string, number, boolean or null/
       );
     });
+
+    test("rejects an item that lacks the key", () => {
+      rejects(
+        group({
+          $arrayMerge: "merge",
+          $matchBy: "actorId",
+          $values: [{ actorType: "Team" }],
+        }),
+        /bypassActors must be an array or \$arrayMerge directive: \$values item 0 has no \$matchBy key 'actorId'/
+      );
+    });
+
+    test("gives no reason for a directive that fails for another cause", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            config(group({ $arrayMerge: "append", $values: "not-an-array" }))
+          ),
+        (error: Error) =>
+          error.message.endsWith(
+            "bypassActors must be an array or $arrayMerge directive"
+          )
+      );
+    });
+
+    const unmatchable = {
+      $arrayMerge: "merge",
+      $matchBy: "k",
+      $values: [{ k: 1 }, { k: 1 }],
+    };
+    const reason = "\\$values items 0 and 1 share \\$matchBy k '1'";
+    const sites: [string, Record<string, unknown>][] = [
+      [
+        "ruleset rules",
+        { settings: { rulesets: { main: { rules: unmatchable } } } },
+      ],
+      [
+        "conditions.refName.include",
+        {
+          settings: {
+            rulesets: {
+              main: { conditions: { refName: { include: unmatchable } } },
+            },
+          },
+        },
+      ],
+      [
+        "conditions.refName.exclude",
+        {
+          settings: {
+            rulesets: {
+              main: { conditions: { refName: { exclude: unmatchable } } },
+            },
+          },
+        },
+      ],
+      [
+        "a rule parameter",
+        {
+          settings: {
+            rulesets: {
+              main: {
+                rules: [
+                  {
+                    type: "pull_request",
+                    parameters: { allowedMergeMethods: unmatchable },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ],
+      [
+        "codeScanning.languages",
+        {
+          settings: {
+            codeScanning: { state: "configured", languages: unmatchable },
+          },
+        },
+      ],
+      [
+        "collaborators.users",
+        { settings: { collaborators: { users: unmatchable } } },
+      ],
+      [
+        "actions.patternsAllowed",
+        {
+          settings: {
+            actions: {
+              allowedActions: "selected",
+              patternsAllowed: unmatchable,
+            },
+          },
+        },
+      ],
+      ["prOptions.labels", { prOptions: { labels: unmatchable } }],
+    ];
+    for (const [name, extra] of sites) {
+      test(`${name} says why a directive cannot match`, () => {
+        rejects(extra, new RegExp(`\\$arrayMerge directive.*: ${reason}`));
+      });
+    }
   });
 
   describe("prOptions.labels", () => {

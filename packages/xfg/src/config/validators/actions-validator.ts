@@ -1,6 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
-import { arrayValues } from "../array-directive.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import {
   ACTIONS_SELECTED_FIELDS,
   type ActionsAllowedActions,
@@ -107,7 +107,10 @@ function validatePatternsAllowed(
   const patterns = arrayValues(a.patternsAllowed);
   if (patterns === null) {
     throw new ValidationError(
-      `${context}: patternsAllowed must be an array of strings or $arrayMerge directive`
+      explainNotArray(
+        `${context}: patternsAllowed must be an array of strings or $arrayMerge directive`,
+        a.patternsAllowed
+      )
     );
   }
   patterns.forEach((pattern: unknown, i) => {

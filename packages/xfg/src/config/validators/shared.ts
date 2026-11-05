@@ -11,7 +11,7 @@ import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
 import { assertNoRootInherit, validateInheritFlag } from "./inherit-flag.js";
 import { isPlainObject } from "../../shared/type-guards.js";
-import { arrayValues } from "../array-directive.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
 import type {
   CodeScanningState,
@@ -241,7 +241,10 @@ function validateCodeScanningSettings(
     const languages = arrayValues(settings.languages);
     if (languages === null) {
       throw new ValidationError(
-        `${context}: languages must be an array or $arrayMerge directive`
+        explainNotArray(
+          `${context}: languages must be an array or $arrayMerge directive`,
+          settings.languages
+        )
       );
     }
     for (const lang of languages) {
@@ -470,7 +473,10 @@ function validateSettingsCollaborators(
   const users = arrayValues(collaborators.users);
   if (users === null) {
     throw new ValidationError(
-      `${context}: collaborators.users must be an array of GitHub usernames or $arrayMerge directive`
+      explainNotArray(
+        `${context}: collaborators.users must be an array of GitHub usernames or $arrayMerge directive`,
+        collaborators.users
+      )
     );
   }
   for (const user of users) {

@@ -59,26 +59,58 @@ export function keyedItemsProblem(
   return undefined;
 }
 
+type DirectiveShape = Record<string, unknown> & {
+  $arrayMerge: ArrayMergeStrategy;
+  $values: unknown[];
+};
+
+function hasDirectiveShape(value: unknown): value is DirectiveShape {
+  if (!isPlainObject(value)) return false;
+  const keys = Object.keys(value);
+  return (
+    keys.length > 0 &&
+    keys.every((key) => DIRECTIVE_KEYS.has(key)) &&
+    isArrayMergeStrategy(value.$arrayMerge) &&
+    Array.isArray(value.$values)
+  );
+}
+
+/** The `$matchBy` of a merge directive when it is a usable name, else undefined. */
+function matchByName(value: DirectiveShape): string | undefined {
+  const matchBy = value.$matchBy;
+  return value.$arrayMerge === "merge" &&
+    typeof matchBy === "string" &&
+    matchBy !== ""
+    ? matchBy
+    : undefined;
+}
+
 /** Accepts exactly what merge.ts resolves, so validation and merge agree. */
 export function isArrayMergeDirective(
   value: unknown
 ): value is ArrayMergeDirective {
-  if (!isPlainObject(value)) return false;
-  const keys = Object.keys(value);
-  if (keys.length === 0 || !keys.every((key) => DIRECTIVE_KEYS.has(key))) {
-    return false;
-  }
-  if (!isArrayMergeStrategy(value.$arrayMerge)) return false;
-  if (!Array.isArray(value.$values)) return false;
+  if (!hasDirectiveShape(value)) return false;
   if (!("$matchBy" in value)) return true;
 
-  const matchBy = value.$matchBy;
+  const matchBy = matchByName(value);
   return (
-    value.$arrayMerge === "merge" &&
-    typeof matchBy === "string" &&
-    matchBy !== "" &&
+    matchBy !== undefined &&
     keyedItemsProblem(value.$values, matchBy) === undefined
   );
+}
+
+/**
+ * Adds to `message` why a directive that is otherwise well formed was refused,
+ * so a `$matchBy` that cannot match its `$values` is not reported as "not a directive".
+ */
+export function explainNotArray(message: string, value: unknown): string {
+  if (!hasDirectiveShape(value)) return message;
+  const matchBy = matchByName(value);
+  const problem =
+    matchBy === undefined
+      ? undefined
+      : keyedItemsProblem(value.$values, matchBy);
+  return problem === undefined ? message : `${message}: $values ${problem}`;
 }
 
 /** An array as it is, a valid directive's `$values`, or null for anything else. */

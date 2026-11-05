@@ -1,6 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
-import { arrayValues } from "../array-directive.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import type {
   RulesetTarget,
   RulesetEnforcement,
@@ -87,7 +87,10 @@ function arrayParam(
   const values = arrayValues(params[key]);
   if (values === null) {
     throw new ValidationError(
-      `${context}: ${key} must be an array or $arrayMerge directive`
+      explainNotArray(
+        `${context}: ${key} must be an array or $arrayMerge directive`,
+        params[key]
+      )
     );
   }
   return values;
@@ -254,7 +257,10 @@ export function validateRuleset(
     const actors = arrayValues(rs.bypassActors);
     if (actors === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`
+        explainNotArray(
+          `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`,
+          rs.bypassActors
+        )
       );
     }
     for (let i = 0; i < actors.length; i++) {
@@ -311,7 +317,10 @@ export function validateRuleset(
         const include = arrayValues(refName.include);
         if (include === null || !include.every((s) => typeof s === "string")) {
           throw new ValidationError(
-            `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`
+            explainNotArray(
+              `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`,
+              refName.include
+            )
           );
         }
       }
@@ -319,7 +328,10 @@ export function validateRuleset(
         const exclude = arrayValues(refName.exclude);
         if (exclude === null || !exclude.every((s) => typeof s === "string")) {
           throw new ValidationError(
-            `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`
+            explainNotArray(
+              `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`,
+              refName.exclude
+            )
           );
         }
       }
@@ -330,7 +342,10 @@ export function validateRuleset(
     const rules = arrayValues(rs.rules);
     if (rules === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`
+        explainNotArray(
+          `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`,
+          rs.rules
+        )
       );
     }
     for (let i = 0; i < rules.length; i++) {
