@@ -191,7 +191,7 @@ Customize PR descriptions with [PR templates](configuration/pr-templates.md) usi
 
 - **[GitHub App Authentication](platforms/github-app.md)** - No user-tied credentials, fine-grained permissions, and verified commits with the "Verified" badge
 - **GitHub Enterprise Server** - List each host in `githubHosts` in config and in the `XFG_ALLOWED_GITHUB_HOSTS` environment variable
-- **[GitHub Actions](ci-cd/github-actions.md)** - Official action (`anthony-spruyt/xfg@v8`) with all options as inputs <!-- x-release-please-major -->
+- **[GitHub Actions](ci-cd/github-actions.md)** - Official action (`anthony-spruyt/xfg@v9`) with all options as inputs <!-- x-release-please-major -->
 - **[Azure Pipelines](ci-cd/azure-pipelines.md)** - Run xfg in Azure DevOps pipelines
 - **CI Summary Output** - Rich `GITHUB_STEP_SUMMARY` with diff-style change reports:
 

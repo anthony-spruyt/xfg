@@ -7,7 +7,7 @@ The simplest way to use xfg in GitHub Actions is with the official action:
 ```yaml
 - uses: actions/checkout@v7
 
-- uses: anthony-spruyt/xfg@v8 # x-release-please-major
+- uses: anthony-spruyt/xfg@v9 # x-release-please-major
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }} # PAT with repo scope for cross-repo access
@@ -48,7 +48,7 @@ Each input is passed to xfg as exactly one argument. Put extra flags in their ow
 Sync configs across GitHub, Azure DevOps, and GitLab repositories:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v8 # x-release-please-major
+- uses: anthony-spruyt/xfg@v9 # x-release-please-major
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -67,7 +67,7 @@ The action also exports `azure-devops-token` as `AZURE_DEVOPS_EXT_PAT` and `gitl
 Automatically merge PRs when CI passes:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v8 # x-release-please-major
+- uses: anthony-spruyt/xfg@v9 # x-release-please-major
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -79,7 +79,7 @@ Automatically merge PRs when CI passes:
 Push directly to the default branch without creating PRs:
 
 ```yaml
-- uses: anthony-spruyt/xfg@v8 # x-release-please-major
+- uses: anthony-spruyt/xfg@v9 # x-release-please-major
   with:
     config: ./sync-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -91,7 +91,7 @@ Push directly to the default branch without creating PRs:
 Apply branch protection rulesets and labels to repositories (no files section needed):
 
 ```yaml
-- uses: anthony-spruyt/xfg@v8 # x-release-please-major
+- uses: anthony-spruyt/xfg@v9 # x-release-please-major
   with:
     config: ./settings-config.yml
     github-token: ${{ secrets.GH_PAT }}
@@ -110,7 +110,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: anthony-spruyt/xfg@v8 # x-release-please-major
+      - uses: anthony-spruyt/xfg@v9 # x-release-please-major
         with:
           config: ./sync-config.yml
           github-client-id: ${{ vars.CLIENT_ID }}
