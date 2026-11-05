@@ -221,6 +221,30 @@ describe("mergeSettings - empty blocks", () => {
     });
   });
 
+  describe("inherit: false and an entry of the same name", () => {
+    test("a ruleset drops the inherited fields of that ruleset", () => {
+      assert.deepStrictEqual(
+        merge(
+          { rulesets: { x: { target: "branch", enforcement: "active" } } },
+          {
+            rulesets: { inherit: false, x: { rules: [{ type: "deletion" }] } },
+          }
+        ),
+        { rulesets: { x: { rules: [{ type: "deletion" }] } } }
+      );
+    });
+
+    test("a label drops the inherited fields of that label", () => {
+      assert.deepStrictEqual(
+        merge(
+          { labels: { a: { color: "ff0000", description: "d" } } },
+          { labels: { inherit: false, a: { color: "00ff00" } } }
+        ),
+        { labels: { a: { color: "00ff00" } } }
+      );
+    });
+  });
+
   describe("settings as a whole", () => {
     test("no settings anywhere is undefined", () => {
       assert.strictEqual(merge(undefined, undefined), undefined);

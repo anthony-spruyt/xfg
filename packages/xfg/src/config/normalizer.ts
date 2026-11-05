@@ -188,59 +188,6 @@ function mergeRuleset(
   ) as Ruleset;
 }
 
-/**
- * Label map from config: each key is a label name mapped to a Label config
- * or `false` to opt out. The special `inherit` key controls whether parent
- * labels are inherited (defaults to true).
- *
- * The index signature accommodates both label entries and the boolean
- * `inherit` flag to avoid a type intersection conflict.
- */
-interface LabelMap {
-  inherit?: boolean;
-  [key: string]: Label | false | boolean | undefined;
-}
-
-function mergeLabels(
-  rootLabels: LabelMap | undefined,
-  repoLabels: LabelMap | undefined
-): Record<string, Label> | undefined {
-  if (!rootLabels && !repoLabels) return undefined;
-
-  const root: LabelMap = rootLabels ?? {};
-  const repo: LabelMap = repoLabels ?? {};
-  const inheritLabels = shouldInherit(repo);
-
-  const allLabelNames = new Set([
-    ...Object.keys(root).filter((name) => name !== "inherit"),
-    ...Object.keys(repo).filter((name) => name !== "inherit"),
-  ]);
-
-  if (allLabelNames.size === 0) return undefined;
-
-  const result: Record<string, Label> = {};
-  for (const name of allLabelNames) {
-    const rootLabel = root[name];
-    const repoLabel = repo[name];
-
-    if (repoLabel === false) continue;
-    if (rootLabel === false && !repoLabel) continue;
-    if (!inheritLabels && !repoLabel && rootLabel) continue;
-
-    const base: Partial<Label> =
-      rootLabel && typeof rootLabel === "object" ? rootLabel : {};
-    const overlay: Partial<Label> =
-      repoLabel && typeof repoLabel === "object" ? repoLabel : {};
-    const color = (overlay.color ?? base.color ?? "")
-      .replace(/^#/, "")
-      .toLowerCase();
-    const merged: Label = { ...base, ...overlay, color };
-    result[name] = merged;
-  }
-
-  return Object.keys(result).length > 0 ? result : undefined;
-}
-
 // GitHub treats variable and secret names case-insensitively; overlay keys win over base keys with same name but different casing.
 function mergeCaseInsensitiveEntries(
   base: Record<string, unknown>,
@@ -436,21 +383,69 @@ function mergeEnvironmentEntries(
   return result;
 }
 
-function mergeEnvironments(
-  root: RawRootSettings["environments"],
-  perRepo: RawRepoSettings["environments"]
-): EnvironmentsConfig | undefined {
-  if (!root && !perRepo) return undefined;
+interface BlockMerger<K extends keyof RawRepoSettings> {
+  merge(
+    base: RawRootSettings[K],
+    overlay: NonNullable<RawRepoSettings[K]>
+  ): RawRootSettings[K];
+  finalize(merged: NonNullable<RawRootSettings[K]>): RepoSettings[K];
+}
 
-  const { deleteOrphaned, ...merged } = mergeEnvironmentEntries(
-    root,
-    perRepo ?? {}
-  );
+function objectBlock<T extends object>() {
+  return {
+    merge: (base: T | false | undefined, overlay: T | false): T | false =>
+      overlay === false
+        ? false
+        : ({ ...(base === false ? {} : base), ...overlay } as T),
+    finalize: (merged: T | false): T | undefined =>
+      merged === false ? undefined : merged,
+  };
+}
+
+const entryMapBlock = {
+  merge: (
+    base: Record<string, unknown> | undefined,
+    overlay: Record<string, unknown>
+  ) => mergeEntryMapLayer(base, overlay),
+  finalize: (merged: Record<string, unknown>) =>
+    dropEntryMapIfEmpty(mergeEntryMapLayer(undefined, merged)),
+};
+
+function finalizeRulesets(
+  merged: Record<string, Ruleset | false>
+): Record<string, Ruleset> | undefined {
+  const result: Record<string, Ruleset> = {};
+  for (const [name, ruleset] of Object.entries(merged)) {
+    if (name === "inherit" || !ruleset || typeof ruleset !== "object") continue;
+    result[name] = stripMergeDirectives(
+      ruleset as Record<string, unknown>,
+      rulesetLocation(name)
+    ) as Ruleset;
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function finalizeLabels(
+  merged: Record<string, Label | false>
+): Record<string, Label> | undefined {
+  const result: Record<string, Label> = {};
+  for (const [name, label] of Object.entries(merged)) {
+    if (name === "inherit" || !label || typeof label !== "object") continue;
+    const color = (label.color ?? "").replace(/^#/, "").toLowerCase();
+    result[name] = { ...label, color };
+  }
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function finalizeEnvironments(
+  merged: NonNullable<RawRootSettings["environments"]>
+): EnvironmentsConfig | undefined {
+  const { deleteOrphaned, ...entries } = merged;
 
   const result: EnvironmentsConfig = {};
-  for (const [name, env] of Object.entries(merged)) {
-    if (env === false) continue;
-    result[name] = finalizeEnvironment(env);
+  for (const [name, entry] of Object.entries(entries)) {
+    if (name === "inherit" || entry === false) continue;
+    result[name] = finalizeEnvironment(entry);
   }
   if (Object.keys(result).length === 0 && deleteOrphaned !== true) {
     return undefined;
@@ -461,140 +456,100 @@ function mergeEnvironments(
   return result;
 }
 
+// Key order is the order of keys in the normalized settings
+const BLOCKS: { [K in keyof RawRepoSettings]-?: BlockMerger<K> } = {
+  rulesets: {
+    merge: (base, overlay) =>
+      mergeNamedEntries(base, overlay, (existing, entry, name) =>
+        existing && typeof existing === "object"
+          ? mergeRuleset(name, existing, entry)
+          : structuredClone(entry)
+      ),
+    finalize: finalizeRulesets,
+  },
+  deleteOrphaned: {
+    merge: (_base, overlay) => overlay,
+    finalize: (merged) => merged,
+  },
+  repo: objectBlock<GitHubRepoSettings>(),
+  labels: {
+    merge: (base, overlay) =>
+      mergeNamedEntries(base, overlay, (existing, entry) => ({
+        ...(existing && typeof existing === "object" ? existing : {}),
+        ...entry,
+      })),
+    finalize: finalizeLabels,
+  },
+  // Replaces whole: state, querySuite and languages are coupled
+  codeScanning: {
+    merge: (_base, overlay) =>
+      overlay === false ? false : structuredClone(overlay),
+    finalize: (merged) => (merged === false ? undefined : merged),
+  },
+  actions: objectBlock<ActionsSettings>(),
+  variables: entryMapBlock as BlockMerger<"variables">,
+  secrets: entryMapBlock as BlockMerger<"secrets">,
+  collaborators: {
+    merge: mergeCollaboratorsLayer,
+    finalize: (merged) =>
+      dropCollaboratorsIfEmpty(mergeCollaboratorsLayer(undefined, merged)),
+  },
+  environments: {
+    merge: mergeEnvironmentEntries,
+    finalize: finalizeEnvironments,
+  },
+};
+
+const BLOCK_KEYS = Object.keys(BLOCKS) as Array<keyof RawRepoSettings>;
+
+interface UntypedBlock {
+  merge(base: unknown, overlay: unknown): unknown;
+  finalize(merged: unknown): unknown;
+}
+
+function mergeBlock(
+  key: keyof RawRepoSettings,
+  result: RawRootSettings,
+  overlay: RawRepoSettings
+): void {
+  const value = overlay[key];
+  if (value === undefined || value === null) return;
+  const slots = result as Record<string, unknown>;
+  slots[key] = (BLOCKS[key] as UntypedBlock).merge(slots[key], value);
+}
+
+function finalizeBlock(
+  key: keyof RawRepoSettings,
+  merged: RawRootSettings,
+  result: RepoSettings
+): void {
+  const value = merged[key];
+  if (value === undefined || value === null) return;
+  const final = (BLOCKS[key] as UntypedBlock).finalize(value);
+  if (final !== undefined) (result as Record<string, unknown>)[key] = final;
+}
+
+function mergeRawSettings(
+  base: RawRootSettings | undefined,
+  overlay: RawRepoSettings | undefined
+): RawRootSettings | undefined {
+  if (!base && !overlay) return undefined;
+  if (!overlay) return structuredClone(base);
+
+  const result: RawRootSettings = base ? structuredClone(base) : {};
+  for (const key of BLOCK_KEYS) mergeBlock(key, result, overlay);
+  return result;
+}
+
 export function mergeSettings(
   root: RawRootSettings | undefined,
   perRepo: RawRepoSettings | undefined
 ): RepoSettings | undefined {
-  if (!root && !perRepo) return undefined;
+  const merged = mergeRawSettings(root, perRepo);
+  if (!merged) return undefined;
 
   const result: RepoSettings = {};
-
-  const rootRulesets = root?.rulesets ?? {};
-  const repoRulesets = perRepo?.rulesets ?? {};
-
-  const inheritRulesets = shouldInherit(repoRulesets);
-
-  const allRulesetNames = new Set([
-    ...Object.keys(rootRulesets).filter((name) => name !== "inherit"),
-    ...Object.keys(repoRulesets).filter((name) => name !== "inherit"),
-  ]);
-
-  if (allRulesetNames.size > 0) {
-    result.rulesets = {};
-    for (const name of allRulesetNames) {
-      const rootRuleset = rootRulesets[name];
-      const repoRuleset = repoRulesets[name];
-
-      if (repoRuleset === false || (rootRuleset === false && !repoRuleset)) {
-        continue;
-      }
-
-      if (!inheritRulesets && !repoRuleset && rootRuleset) {
-        continue;
-      }
-
-      const merged = mergeRuleset(
-        name,
-        rootRuleset as Ruleset | undefined,
-        repoRuleset as Ruleset | undefined
-      );
-      result.rulesets[name] = stripMergeDirectives(
-        merged as Record<string, unknown>,
-        rulesetLocation(name)
-      ) as Ruleset;
-    }
-
-    if (Object.keys(result.rulesets).length === 0) {
-      delete result.rulesets;
-    }
-  }
-
-  const deleteOrphaned =
-    perRepo?.deleteOrphaned !== undefined
-      ? perRepo.deleteOrphaned
-      : root?.deleteOrphaned;
-  if (deleteOrphaned !== undefined) {
-    result.deleteOrphaned = deleteOrphaned;
-  }
-
-  if (perRepo?.repo !== false) {
-    const rootRepo = root?.repo;
-    const perRepoRepo = perRepo?.repo;
-    if (rootRepo || perRepoRepo) {
-      result.repo = {
-        ...(rootRepo === false ? {} : rootRepo),
-        ...perRepoRepo,
-      } as GitHubRepoSettings;
-    }
-  }
-
-  const mergedLabels = mergeLabels(root?.labels, perRepo?.labels);
-  if (mergedLabels) {
-    result.labels = mergedLabels;
-  }
-
-  // Per-repo replaces root whole: state, querySuite and languages are coupled, so partial inheritance would confuse.
-  if (perRepo?.codeScanning !== false) {
-    const mergedCodeScanning = perRepo?.codeScanning ?? root?.codeScanning;
-    if (mergedCodeScanning) {
-      if (typeof mergedCodeScanning === "object") {
-        result.codeScanning = mergedCodeScanning;
-      }
-    }
-  }
-
-  if (perRepo?.actions !== false) {
-    const rootActions = root?.actions;
-    const perRepoActions = perRepo?.actions;
-    if (rootActions || perRepoActions) {
-      result.actions = {
-        ...(rootActions === false ? {} : rootActions),
-        ...perRepoActions,
-      } as ActionsSettings;
-    }
-  }
-
-  if (root?.variables || perRepo?.variables) {
-    const merged = dropEntryMapIfEmpty(
-      mergeEntryMapLayer(
-        root?.variables as Record<string, unknown> | undefined,
-        perRepo?.variables as Record<string, unknown> | undefined
-      )
-    );
-    if (merged) {
-      result.variables = merged as RepoSettings["variables"];
-    }
-  }
-
-  if (root?.secrets || perRepo?.secrets) {
-    const merged = dropEntryMapIfEmpty(
-      mergeEntryMapLayer(
-        root?.secrets as Record<string, unknown> | undefined,
-        perRepo?.secrets as Record<string, unknown> | undefined
-      )
-    );
-    if (merged) {
-      result.secrets = merged as RepoSettings["secrets"];
-    }
-  }
-
-  if (root?.collaborators || perRepo?.collaborators) {
-    const merged = dropCollaboratorsIfEmpty(
-      mergeCollaboratorsLayer(root?.collaborators, perRepo?.collaborators)
-    );
-    if (merged) {
-      result.collaborators = merged;
-    }
-  }
-
-  const mergedEnvironments = mergeEnvironments(
-    root?.environments,
-    perRepo?.environments
-  );
-  if (mergedEnvironments) {
-    result.environments = mergedEnvironments;
-  }
-
+  for (const key of BLOCK_KEYS) finalizeBlock(key, merged, result);
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
@@ -720,107 +675,6 @@ function mergeNamedEntries<T>(
       const existing = result[name];
       result[name] = merge(existing, entry as T, name);
     }
-  }
-
-  return result;
-}
-
-/**
- * Merges two raw settings layers (root/group into accumulated).
- * Unlike mergeSettings(), this operates on raw types and returns raw types,
- * preserving false values and inherit keys for downstream processing.
- */
-function mergeRawSettings(
-  base: RawRootSettings | undefined,
-  overlay: RawRepoSettings | undefined
-): RawRootSettings | undefined {
-  if (!base && !overlay) return undefined;
-  if (!overlay) return structuredClone(base);
-
-  const result: RawRootSettings = base ? structuredClone(base) : {};
-
-  if (overlay.rulesets) {
-    result.rulesets = mergeNamedEntries(
-      result.rulesets,
-      overlay.rulesets,
-      (existing, entry, name) =>
-        existing && typeof existing === "object"
-          ? mergeRuleset(name, existing as Ruleset, entry as Ruleset)
-          : structuredClone(entry)
-    );
-  }
-
-  if (overlay.repo !== undefined) {
-    if (overlay.repo === false) {
-      result.repo = false;
-    } else {
-      result.repo = {
-        ...(result.repo === false ? {} : result.repo),
-        ...overlay.repo,
-      } as GitHubRepoSettings;
-    }
-  }
-
-  if (overlay.labels) {
-    result.labels = mergeNamedEntries(
-      result.labels,
-      overlay.labels,
-      (existing, entry) => ({
-        ...(existing && typeof existing === "object" ? existing : {}),
-        ...(entry as Label),
-      })
-    );
-  }
-
-  if (overlay.codeScanning !== undefined) {
-    if (overlay.codeScanning === false) {
-      result.codeScanning = false;
-    } else {
-      result.codeScanning = structuredClone(overlay.codeScanning);
-    }
-  }
-
-  if (overlay.actions !== undefined) {
-    if (overlay.actions === false) {
-      result.actions = false;
-    } else {
-      result.actions = {
-        ...(result.actions === false ? {} : result.actions),
-        ...overlay.actions,
-      } as ActionsSettings;
-    }
-  }
-
-  if (overlay.variables) {
-    result.variables = mergeEntryMapLayer(
-      result.variables as Record<string, unknown> | undefined,
-      overlay.variables as Record<string, unknown>
-    ) as typeof result.variables;
-  }
-
-  if (overlay.secrets) {
-    result.secrets = mergeEntryMapLayer(
-      result.secrets as Record<string, unknown> | undefined,
-      overlay.secrets as Record<string, unknown>
-    ) as typeof result.secrets;
-  }
-
-  if (overlay.collaborators) {
-    result.collaborators = mergeCollaboratorsLayer(
-      result.collaborators,
-      overlay.collaborators
-    );
-  }
-
-  if (overlay.environments) {
-    result.environments = mergeEnvironmentEntries(
-      result.environments,
-      overlay.environments
-    );
-  }
-
-  if (overlay.deleteOrphaned !== undefined) {
-    result.deleteOrphaned = overlay.deleteOrphaned;
   }
 
   return result;
