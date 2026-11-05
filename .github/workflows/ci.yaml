@@ -24,7 +24,7 @@ jobs:
       actions: "read"
       contents: "read"
       security-events: "write"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@0a89fc7ada868772a05e47ea83cb51399e02948a"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_lint.yaml@f6e036f1b8d14b66fb144e0905e424e1c83f9fc3"
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
   repo:
     needs:
@@ -41,7 +41,7 @@ jobs:
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
     permissions:
       contents: "read"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@0a89fc7ada868772a05e47ea83cb51399e02948a"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_images.yaml@f6e036f1b8d14b66fb144e0905e424e1c83f9fc3"
   summary:
     needs:
       - "lint"
@@ -52,8 +52,8 @@ jobs:
     permissions:
       actions: "read"
       contents: "read"
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@0a89fc7ada868772a05e47ea83cb51399e02948a"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_summary.yaml@f6e036f1b8d14b66fb144e0905e424e1c83f9fc3"
   sonar:
     permissions: {}
-    uses: "anthony-spruyt/repo-operator/.github/workflows/_sonar-new-issues.yaml@0a89fc7ada868772a05e47ea83cb51399e02948a"
+    uses: "anthony-spruyt/repo-operator/.github/workflows/_sonar-new-issues.yaml@f6e036f1b8d14b66fb144e0905e424e1c83f9fc3"
     if: "github.event.action != 'labeled' || github.event.label.name == 'run-integration'"
