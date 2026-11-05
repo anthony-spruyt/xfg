@@ -1,5 +1,16 @@
 # Changelog
 
+## [9.0.0](https://github.com/anthony-spruyt/xfg/compare/v8.6.0...v9.0.0) (2026-11-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** one merge model for every settings block and array ([#1355](https://github.com/anthony-spruyt/xfg/issues/1355))
+
+### Features
+
+* **config:** one merge model for every settings block and array ([#1355](https://github.com/anthony-spruyt/xfg/issues/1355)) ([e9686d2](https://github.com/anthony-spruyt/xfg/commit/e9686d2a71d1ddecf05d53f162c26d1f7adea503))
+
 ## [8.6.0](https://github.com/anthony-spruyt/xfg/compare/v8.5.6...v8.6.0) (2026-11-04)
 
 
