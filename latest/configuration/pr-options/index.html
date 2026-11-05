@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/8.x/configuration/pr-options/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/9.x/configuration/pr-options/">
       
       
         <link rel="prev" href="../multi-file/">
@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2498,6 +2498,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -3001,12 +3029,21 @@
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">    </span><span class="nt">prOptions</span><span class="p">:</span>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"critical-config"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"urgent"</span><span class="p p-Indicator">]</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="c1"># Clear labels for this repo</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/no-labels.git</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">  </span><span class="c1"># Add to the global labels</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/extra.git</span>
 </span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">    </span><span class="nt">prOptions</span><span class="p">:</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">        </span><span class="nt">$arrayMerge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">append</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">        </span><span class="nt">$values</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"extra"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span><span class="c1"># Clear labels for this repo</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/no-labels.git</span>
+</span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">    </span><span class="nt">prOptions</span><span class="p">:</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">      </span><span class="nt">labels</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </span></code></pre></div>
 <p><strong>Note:</strong> Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. GitHub only.</p>
+<p><code>prOptions</code> set in a group or repo merges field by field with the options it inherits, and so does an <code>ai</code> object inside it (see <a href="../ai-messages/">AI Messages</a>). Set <code>inherit: false</code> inside <code>prOptions</code> to drop everything inherited, <code>ai</code> included, and use only that layer's own options.</p>
+<p>Set <code>inherit</code> inside <code>ai</code> to drop only the inherited <code>ai</code> fields. <code>inherit</code> is not allowed in the root <code>prOptions</code> or the root <code>ai</code>.</p>
 <h2 id="pr-branch-name">PR Branch Name<a class="headerlink" href="#pr-branch-name" title="Permanent link">&para;</a></h2>
 <p>Set a custom branch name for sync PRs:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pr-options</span>

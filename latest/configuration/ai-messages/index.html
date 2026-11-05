@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/8.x/configuration/ai-messages/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/9.x/configuration/ai-messages/">
       
       
         <link rel="prev" href="../pr-templates/">
@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2615,6 +2615,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -3199,7 +3227,9 @@
 </tbody>
 </table>
 <p>The default key (<code>ANTHROPIC_API_KEY</code> / <code>OPENAI_API_KEY</code>) is only sent to that provider's own API. With any other <code>baseUrl</code>, name a dedicated variable in <code>apiKeyEnv</code>. <code>apiKeyEnv</code> can't name a credential xfg uses elsewhere, such as <code>GH_TOKEN</code> (see <a href="../env-variables/#credential-variables">Environment Variables</a>).</p>
-<p><code>ai</code> lives on <code>prOptions</code>, so it follows the normal root → group → repo override chain. An <code>ai</code> object at a lower level replaces the one above it (it is not deep-merged). Set <code>ai: false</code> on a repo or group to turn it off there. A later <code>ai: true</code> turns it back on with the <code>ai</code> object from above.</p>
+<p><code>ai</code> lives on <code>prOptions</code>, so it follows the normal root → group → repo override chain. An <code>ai</code> object at a lower level merges field by field with the one above it, <code>fallback</code> and <code>headersEnv</code> included, so a repo can change just the <code>model</code> and keep the provider and key. Set <code>inherit: false</code> inside the <code>ai</code> object to drop everything inherited and use only that layer's fields.</p>
+<p>Set <code>ai: false</code> on a repo or group to turn it off there. A later <code>ai: true</code> turns it back on with the <code>ai</code> object from above, and an <code>ai</code> object after <code>ai: false</code> starts fresh.</p>
+<p>xfg checks each layer's field types and allowed values on their own, so a layer may leave out a field another layer sets. It checks the rules that relate fields (an <code>openai</code> provider needs a <code>model</code>, which key goes with which <code>baseUrl</code>) on the merged <code>ai</code> of each repo, and an error there names the repo.</p>
 <h3 id="base-url-from-an-env-var">Base URL from an env var<a class="headerlink" href="#base-url-from-an-env-var" title="Permanent link">&para;</a></h3>
 <p><code>baseUrlEnv</code> reads the API base URL from an env var, for when the gateway's address must not be written in config. It takes the <strong>name of an env var</strong>, and it is valid on the provider and on its <code>fallback</code>. Setting both <code>baseUrl</code> and <code>baseUrlEnv</code> on the same provider is a validation error.</p>
 <ul>

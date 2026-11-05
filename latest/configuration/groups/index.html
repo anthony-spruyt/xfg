@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/8.x/configuration/groups/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/9.x/configuration/groups/">
       
       
         <link rel="prev" href="../inheritance/">
@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2720,6 +2720,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -3593,7 +3621,7 @@
 </span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">    </span><span class="c1"># Gets both base-protection and strict-reviews rulesets</span>
 </span></code></pre></div>
 <h3 id="inherit-false-on-group-settings"><code>inherit: false</code> on Group Settings<a class="headerlink" href="#inherit-false-on-group-settings" title="Permanent link">&para;</a></h3>
-<p>Groups can discard accumulated rulesets or labels:</p>
+<p>Groups can discard what a settings block would inherit: accumulated rulesets, labels or environments, or the fields of <code>repo</code>, <code>actions</code>, <code>codeScanning</code>, <code>deploymentBranchPolicy</code> and <code>prOptions</code>:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">groups</span><span class="p">:</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">custom-rules</span><span class="p">:</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>

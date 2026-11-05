@@ -10,7 +10,7 @@
       
       
       
-        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/8.x/configuration/merge-strategies/">
+        <link rel="canonical" href="https://anthony-spruyt.github.io/xfg/9.x/configuration/merge-strategies/">
       
       
         <link rel="prev" href="../templating/">
@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -1147,6 +1147,28 @@
     <span class="md-ellipsis">
       
         Appending Rules via Conditional Groups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#replacing-or-adding-to-a-plain-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replacing or Adding to a Plain List
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#starting-a-block-fresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting a Block Fresh
       
     </span>
   </a>
@@ -2554,6 +2576,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -2946,6 +2996,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#replacing-or-adding-to-a-plain-list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replacing or Adding to a Plain List
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#starting-a-block-fresh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Starting a Block Fresh
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3225,7 +3297,60 @@
 <p>String content (not lines array) always uses replace strategy - the entire string is replaced.</p>
 </div>
 <h2 id="settings-array-merge">Settings Array Merge<a class="headerlink" href="#settings-array-merge" title="Permanent link">&para;</a></h2>
-<p>The <code>$arrayMerge</code> directive also works in settings overrides — rulesets, bypass actors, rules, conditions, and any other array field. This eliminates duplicating shared entries when a repo needs to add its own items.</p>
+<p>Settings blocks and <a href="../pr-options/"><code>prOptions</code></a> share one merge model, through root, groups, conditional groups and the repo:</p>
+<ul>
+<li><strong>Objects merge field by field.</strong> A field a layer leaves out is inherited.</li>
+<li><strong>A plain array replaces</strong> the inherited array.</li>
+<li><strong>A <code>$arrayMerge</code> directive combines</strong> with it: <code>append</code>, <code>prepend</code>, <code>replace</code> or <code>merge</code>, with <code>$values</code> (and <code>$matchBy</code> for <code>merge</code>). It is the same syntax as in file content, and it works on every array in the list below.</li>
+<li><strong><code>inherit: false</code> starts a block fresh.</strong> Inside a block, it drops everything that block would inherit, then the layer's own fields apply. It works in <code>repo</code>, <code>actions</code>, <code>codeScanning</code>, <code>deploymentBranchPolicy</code>, <code>prOptions</code> and <code>prOptions.ai</code>, and, as before, in rulesets, labels, environments, collaborators, variables and secrets. It is not allowed at root, where there is nothing to inherit.</li>
+<li><strong><code>inherit: false</code> inside one ruleset, label or environment</strong> drops only that entry's inherited fields. In the <code>rulesets</code> or <code>labels</code> map, a same-named entry then replaces the inherited one, so restate it in full.</li>
+<li><strong><code>false</code> opts out.</strong> Setting a block (or a named entry) to <code>false</code> removes it.</li>
+<li><strong><code>deleteOrphaned</code> is an ordinary field.</strong> The innermost layer wins, and where it deletes things on GitHub it works on the merged result, so an appended item is kept, not deleted.</li>
+<li><strong>Repeated items are dropped</strong> from the merged array, first one wins (usernames are compared ignoring case). Only strings and numbers are compared; objects are never dropped.</li>
+</ul>
+<p>The arrays that take a directive:</p>
+<table>
+<thead>
+<tr>
+<th>Block</th>
+<th>Arrays</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rulesets</td>
+<td><code>bypassActors</code>, <code>rules</code>, <code>conditions.refName.include</code>, <code>conditions.refName.exclude</code></td>
+</tr>
+<tr>
+<td>Rule parameters</td>
+<td><code>allowedMergeMethods</code>, <code>requiredReviewers</code> (and its <code>filePatterns</code>), <code>requiredStatusChecks</code>, <code>requiredDeploymentEnvironments</code>, <code>codeScanningTools</code>, <code>workflows</code>, <code>restrictedFilePaths</code>, <code>restrictedFileExtensions</code></td>
+</tr>
+<tr>
+<td>Code scanning</td>
+<td><code>languages</code></td>
+</tr>
+<tr>
+<td>Actions</td>
+<td><code>patternsAllowed</code></td>
+</tr>
+<tr>
+<td>Collaborators</td>
+<td><code>users</code></td>
+</tr>
+<tr>
+<td>Environments</td>
+<td><code>deploymentBranchPolicy.custom</code></td>
+</tr>
+<tr>
+<td>PR options</td>
+<td><code>labels</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title"><code>custom</code> does not take <code>merge</code></p>
+<p>A deployment branch pattern is identified by its type and name together, and no single <code>$matchBy</code> key covers both: <code>$matchBy: name</code> would fold a branch pattern and a tag pattern with the same name into one, and with <code>deleteOrphaned: true</code> xfg would then delete one of them on GitHub. xfg rejects <code>$arrayMerge: merge</code> on <code>custom</code>, with or without <code>$matchBy</code>; use <code>append</code>, <code>prepend</code> or <code>replace</code>.</p>
+</div>
 <h3 id="appending-bypass-actors">Appending Bypass Actors<a class="headerlink" href="#appending-bypass-actors" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge-strategies</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="c1"># Root — shared across all repos</span>
@@ -3278,37 +3403,82 @@
 </span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="w">                    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="s">"summary</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">Check</span><span class="nv"> </span><span class="s">Results"</span>
 </span></code></pre></div>
 <p>Repos with the <code>github-ci</code> group get both the <code>pull_request</code> rule and the <code>required_status_checks</code> rule. Repos without <code>github-ci</code> only get the <code>pull_request</code> rule.</p>
+<h3 id="replacing-or-adding-to-a-plain-list">Replacing or Adding to a Plain List<a class="headerlink" href="#replacing-or-adding-to-a-plain-list" title="Permanent link">&para;</a></h3>
+<p>A plain list replaces the inherited one. A directive adds to it:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge-strategies</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">actions</span><span class="p">:</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">allowedActions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">selected</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">patternsAllowed</span><span class="p">:</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/*</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span><span class="c1"># Replaces the inherited patterns</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/strict.git</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">      </span><span class="nt">actions</span><span class="p">:</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">        </span><span class="nt">patternsAllowed</span><span class="p">:</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@*</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">  </span><span class="c1"># Adds to the inherited patterns</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/docker.git</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">      </span><span class="nt">actions</span><span class="p">:</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">        </span><span class="nt">patternsAllowed</span><span class="p">:</span>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">          </span><span class="nt">$arrayMerge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">append</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">          </span><span class="nt">$values</span><span class="p">:</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker/login-action@*</span>
+</span></code></pre></div>
+<h3 id="starting-a-block-fresh">Starting a Block Fresh<a class="headerlink" href="#starting-a-block-fresh" title="Permanent link">&para;</a></h3>
+<p><code>inherit: false</code> drops everything the block would inherit, so a layer can state a block from scratch:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge-strategies</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">codeScanning</span><span class="p">:</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">configured</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">languages</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">go</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">python</span><span class="p p-Indicator">]</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span><span class="c1"># Inherits state and languages</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/api.git</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="c1"># Drops the inherited languages, so GitHub auto-detects them</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/web.git</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">settings</span><span class="p">:</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">      </span><span class="nt">codeScanning</span><span class="p">:</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">        </span><span class="nt">inherit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">        </span><span class="nt">state</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">configured</span>
+</span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Same syntax as file content</p>
 <p>The <code>$arrayMerge</code> directive uses the same <code>$arrayMerge</code> + <code>$values</code> syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: <code>append</code>, <code>prepend</code>, <code>replace</code>, <code>merge</code>. <code>merge</code> accepts <a href="#match-by-a-chosen-key"><code>$matchBy</code></a> here too.</p>
 </div>
 <h2 id="example-different-strategies-per-file">Example: Different Strategies per File<a class="headerlink" href="#example-different-strategies-per-file" title="Permanent link">&para;</a></h2>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge-strategies</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nt">files</span><span class="p">:</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">eslint.config.json</span><span class="p">:</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">mergeStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">append</span><span class="w"> </span><span class="c1"># Extends will append</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"@company/base"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">  </span><span class="nt">tsconfig.json</span><span class="p">:</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span><span class="nt">mergeStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">replace</span><span class="w"> </span><span class="c1"># Lib will replace entirely</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">      </span><span class="nt">compilerOptions</span><span class="p">:</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">        </span><span class="nt">lib</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"ES2022"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nt">repos</span><span class="p">:</span>
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/frontend.git</span>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">      </span><span class="nt">eslint.config.json</span><span class="p">:</span>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">          </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"plugin:react/recommended"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">      </span><span class="c1"># Results in extends: ["@company/base", "plugin:react/recommended"]</span>
-</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">      </span><span class="nt">tsconfig.json</span><span class="p">:</span>
-</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
-</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="w">          </span><span class="nt">compilerOptions</span><span class="p">:</span>
-</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="w">            </span><span class="nt">lib</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"ES2022"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"DOM"</span><span class="p p-Indicator">]</span>
-</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span class="w">      </span><span class="c1"># Results in lib: ["ES2022", "DOM"] (replaced)</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">merge-strategies</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">eslint.config.json</span><span class="p">:</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">mergeStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">append</span><span class="w"> </span><span class="c1"># Extends will append</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"@company/base"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span><span class="nt">tsconfig.json</span><span class="p">:</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">    </span><span class="nt">mergeStrategy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">replace</span><span class="w"> </span><span class="c1"># Lib will replace entirely</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">      </span><span class="nt">compilerOptions</span><span class="p">:</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="w">        </span><span class="nt">lib</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"ES2022"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="nt">repos</span><span class="p">:</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">git</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">git@github.com:org/frontend.git</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="nt">files</span><span class="p">:</span>
+</span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">      </span><span class="nt">eslint.config.json</span><span class="p">:</span>
+</span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">          </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"plugin:react/recommended"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-12-20"><a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a><span class="w">      </span><span class="c1"># Results in extends: ["@company/base", "plugin:react/recommended"]</span>
+</span><span id="__span-12-21"><a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>
+</span><span id="__span-12-22"><a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a><span class="w">      </span><span class="nt">tsconfig.json</span><span class="p">:</span>
+</span><span id="__span-12-23"><a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a><span class="w">        </span><span class="nt">content</span><span class="p">:</span>
+</span><span id="__span-12-24"><a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a><span class="w">          </span><span class="nt">compilerOptions</span><span class="p">:</span>
+</span><span id="__span-12-25"><a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a><span class="w">            </span><span class="nt">lib</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"ES2022"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"DOM"</span><span class="p p-Indicator">]</span>
+</span><span id="__span-12-26"><a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a><span class="w">      </span><span class="c1"># Results in lib: ["ES2022", "DOM"] (replaced)</span>
 </span></code></pre></div>
 
 
