@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2504,6 +2504,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -2963,7 +2991,7 @@ conditional groups → repo overrides</strong>. When groups use <a href="../grou
 <ul>
 <li><strong>Objects</strong>: Fields are merged recursively; overlay fields overwrite base fields</li>
 <li><strong>Arrays</strong>: By default, overlay arrays replace base arrays (see <a href="../merge-strategies/">Merge Strategies</a> to change this)</li>
-<li><strong>Settings arrays</strong>: By default, overlay arrays replace base arrays in settings too (rulesets, bypass actors, rules, conditions). Use the <a href="../merge-strategies/#settings-array-merge"><code>$arrayMerge</code> directive</a> to append or prepend instead — same syntax as file content.</li>
+<li><strong>Settings arrays</strong>: Overlay arrays replace base arrays in settings too, in every block. Use the <a href="../merge-strategies/#settings-array-merge"><code>$arrayMerge</code> directive</a> to append or prepend instead — same syntax as file content. <code>inherit: false</code> inside a settings block drops everything the block would inherit.</li>
 <li><strong>Scalars</strong>: Overlay values replace base values</li>
 </ul>
 <h2 id="file-exclusion">File Exclusion<a class="headerlink" href="#file-exclusion" title="Permanent link">&para;</a></h2>

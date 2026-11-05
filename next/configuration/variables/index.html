@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2504,6 +2504,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migration-v7/" class="md-nav__link">
         
   
@@ -2956,7 +2984,8 @@
 <li><code>inherit: false</code> — discard all inherited variables (root + groups)</li>
 <li><code>VAR_NAME: false</code> — exclude a single inherited variable for this repo</li>
 </ul>
-<p><code>inherit: false</code> does not clear an inherited <code>settings.variables.deleteOrphaned</code>. With <code>settings.variables.deleteOrphaned: true</code> at root, a repo that sets <code>inherit: false</code> has the inherited variables deleted from it, because they are not in its config. A variable set to <code>false</code> is deleted the same way. Set <code>settings.variables.deleteOrphaned: false</code> on the repo to keep them.</p>
+<p><code>inherit: false</code> also drops an inherited <code>settings.variables.deleteOrphaned</code>. With <code>settings.variables.deleteOrphaned: true</code> at root, a repo that sets <code>inherit: false</code> and no <code>deleteOrphaned</code> of its own deletes nothing: xfg leaves the variables it does not manage on the repo.</p>
+<p>Set <code>deleteOrphaned: true</code> in the same layer to delete every variable that is not in its config, including the inherited ones and any set to <code>false</code>.</p>
 <h2 id="deleting-orphaned-variables">Deleting Orphaned Variables<a class="headerlink" href="#deleting-orphaned-variables" title="Permanent link">&para;</a></h2>
 <p>When <code>settings.variables.deleteOrphaned: true</code> is set, xfg deletes every repository variable that is not in the config, including variables created by hand. The config is the full list of variables:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">settings</span><span class="p">:</span>

@@ -16,7 +16,7 @@
         <link rel="prev" href="../cli-options/">
       
       
-        <link rel="next" href="../../migration-v7/">
+        <link rel="next" href="../../migration-v9/">
       
       
         
@@ -410,7 +410,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../migration-v7/" class="md-tabs__link">
+        <a href="../../migration-v9/" class="md-tabs__link">
           
   
   
@@ -2545,28 +2545,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bypassactorsarraymergedirective" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        bypassActorsArrayMergeDirective
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rulesarraymergedirective" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        rulesArrayMergeDirective
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#ruleset" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2976,6 +2954,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../migration-v9/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v8 to v9
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -3453,28 +3459,6 @@
     <span class="md-ellipsis">
       
         arrayMergeDirective
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bypassactorsarraymergedirective" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        bypassActorsArrayMergeDirective
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rulesarraymergedirective" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        rulesArrayMergeDirective
       
     </span>
   </a>
@@ -4169,6 +4153,13 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop every inherited prOptions field (including ai), then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>merge</code></td>
 <td><code>manual</code> | <code>auto</code> | <code>force</code> | <code>direct</code></td>
 <td>No</td>
@@ -4198,7 +4189,7 @@
 </tr>
 <tr>
 <td><code>labels</code></td>
-<td><code>string[]</code></td>
+<td><code>string[]</code> | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
 <td>Labels to apply to created PRs/MRs.</td>
@@ -4220,6 +4211,7 @@
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>merge</code> — Default: auto</li>
 <li><code>mergeStrategy</code> — Default: squash</li>
 <li><code>deleteBranch</code> — Default: true</li>
@@ -4246,6 +4238,13 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop every inherited ai field (fallback included), then apply this layer's own.</td>
+</tr>
 <tr>
 <td><code>provider</code></td>
 <td><code>anthropic</code> | <code>openai</code></td>
@@ -4312,6 +4311,7 @@
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>provider</code> — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic</li>
 <li><code>model</code> — Default for anthropic: claude-haiku-4-5. Required for openai.</li>
 <li><code>baseUrl</code> — <code>http://localhost:11434/v1</code> for Ollama. With openai, a baseUrl makes the API key optional.</li>
@@ -4609,7 +4609,7 @@
 <h3 id="codescanningsettings">codeScanningSettings<a class="headerlink" href="#codescanningsettings" title="Permanent link">&para;</a></h3>
 <!-- xfg:generated schema:codeScanningSettings -->
 
-<p>GitHub code scanning default setup configuration</p>
+<p>GitHub code scanning default setup configuration. Fields merge with the inherited block; set inherit: false to drop what it would inherit, for example to go back to auto-detected languages.</p>
 <table>
 <thead>
 <tr>
@@ -4622,11 +4622,18 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop every inherited code scanning setting, then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>state</code></td>
 <td><code>configured</code> | <code>not-configured</code></td>
-<td>Yes</td>
+<td>No</td>
 <td>-</td>
-<td>Enable or disable code scanning default setup</td>
+<td>Enable or disable code scanning default setup.</td>
 </tr>
 <tr>
 <td><code>querySuite</code></td>
@@ -4637,7 +4644,7 @@
 </tr>
 <tr>
 <td><code>languages</code></td>
-<td><code>actions</code> | <code>c-cpp</code> | <code>csharp</code> | <code>go</code> | <code>java-kotlin</code> | <code>javascript-typescript</code> | <code>python</code> | <code>ruby</code> | <code>swift[]</code></td>
+<td><code>actions</code> | <code>c-cpp</code> | <code>csharp</code> | <code>go</code> | <code>java-kotlin</code> | <code>javascript-typescript</code> | <code>python</code> | <code>ruby</code> | <code>swift[]</code> | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
 <td>Languages to analyze.</td>
@@ -4645,7 +4652,9 @@
 </tbody>
 </table>
 <ul>
-<li><code>languages</code> — If omitted, GitHub auto-detects languages in the repository.</li>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
+<li><code>state</code> — Some layer must set it.</li>
+<li><code>languages</code> — If omitted, GitHub auto-detects languages in the repository. A layer that omits it inherits the parent's list; a plain list replaces it, and inherit: false goes back to auto-detect.</li>
 </ul>
 <!-- xfg:generated:end -->
 
@@ -4664,6 +4673,13 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop every inherited actions setting, then apply this layer's own.</td>
+</tr>
 <tr>
 <td><code>enabled</code></td>
 <td><code>boolean</code></td>
@@ -4701,7 +4717,7 @@
 </tr>
 <tr>
 <td><code>patternsAllowed</code></td>
-<td><code>string[]</code></td>
+<td><code>string[]</code> | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
 <td>Action patterns to allow when allowedActions is selected, such as docker/login-action@*.</td>
@@ -4751,12 +4767,13 @@
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>enabled</code> — Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer.</li>
 <li><code>allowedActions</code> — Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected.</li>
 <li><code>shaPinningRequired</code> — Maps to sha_pinning_required of PUT actions/permissions.</li>
 <li><code>githubOwnedAllowed</code> — Maps to github_owned_allowed of PUT actions/permissions/selected-actions.</li>
 <li><code>verifiedAllowed</code> — Maps to verified_allowed of PUT actions/permissions/selected-actions.</li>
-<li><code>patternsAllowed</code> — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.</li>
+<li><code>patternsAllowed</code> — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set. A plain list replaces the inherited patterns; use $arrayMerge to add to them.</li>
 <li><code>defaultWorkflowPermissions</code> — Maps to default_workflow_permissions of PUT actions/permissions/workflow.</li>
 <li><code>canApprovePullRequestReviews</code> — Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them.</li>
 <li><code>forkPrApprovalPolicy</code> — Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval.</li>
@@ -4960,7 +4977,7 @@
 <li><code>actions</code> — Set to false at per-repo level to opt out of inherited settings.</li>
 <li><code>variables</code> — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.</li>
 <li><code>secrets</code> — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.</li>
-<li><code>collaborators</code> — Users are added to inherited users. Set inherit: false to drop inherited users.</li>
+<li><code>collaborators</code> — A plain users list replaces the inherited users; use $arrayMerge: append to add to them. Set inherit: false to drop inherited users.</li>
 <li><code>environments</code> — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.</li>
 <li><code>deleteOrphaned</code> — Default: false</li>
 </ul>
@@ -4981,6 +4998,13 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop every inherited repo setting, then apply this layer's own.</td>
+</tr>
 <tr>
 <td><code>description</code></td>
 <td><code>string</code></td>
@@ -5166,6 +5190,7 @@
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>description</code> — Used when creating new repositories via lifecycle management (upstream/source fields).</li>
 <li><code>hasIssues</code> — Warning: Disabling may hide existing issues.</li>
 <li><code>hasProjects</code> — Warning: Disabling may hide existing projects.</li>
@@ -5178,7 +5203,7 @@
 <h3 id="arraymergedirective">arrayMergeDirective<a class="headerlink" href="#arraymergedirective" title="Permanent link">&para;</a></h3>
 <!-- xfg:generated schema:arrayMergeDirective -->
 
-<p>Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.</p>
+<p>Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.</p>
 <table>
 <thead>
 <tr>
@@ -5195,87 +5220,14 @@
 <td><code>replace</code> | <code>append</code> | <code>prepend</code> | <code>merge</code></td>
 <td>Yes</td>
 <td>-</td>
-<td>How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)</td>
+<td>How to combine with the inherited array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)</td>
 </tr>
 <tr>
 <td><code>$values</code></td>
-<td><code>string[]</code></td>
+<td><code>any[]</code></td>
 <td>Yes</td>
 <td>-</td>
-<td>Values to merge with the base array</td>
-</tr>
-</tbody>
-</table>
-<!-- xfg:generated:end -->
-
-<h3 id="bypassactorsarraymergedirective">bypassActorsArrayMergeDirective<a class="headerlink" href="#bypassactorsarraymergedirective" title="Permanent link">&para;</a></h3>
-<!-- xfg:generated schema:bypassActorsArrayMergeDirective -->
-
-<p>Merge directive for bypassActors array</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Required</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>$arrayMerge</code></td>
-<td><code>replace</code> | <code>append</code> | <code>prepend</code> | <code>merge</code></td>
-<td>Yes</td>
-<td>-</td>
-<td>How to merge with the base array</td>
-</tr>
-<tr>
-<td><code>$values</code></td>
-<td><a href="#bypassactor"><code>bypassActor</code></a>[]</td>
-<td>Yes</td>
-<td>-</td>
-<td>Bypass actor values to merge</td>
-</tr>
-<tr>
-<td><code>$matchBy</code></td>
-<td><code>string</code></td>
-<td>No</td>
-<td>-</td>
-<td>Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values</td>
-</tr>
-</tbody>
-</table>
-<!-- xfg:generated:end -->
-
-<h3 id="rulesarraymergedirective">rulesArrayMergeDirective<a class="headerlink" href="#rulesarraymergedirective" title="Permanent link">&para;</a></h3>
-<!-- xfg:generated schema:rulesArrayMergeDirective -->
-
-<p>Merge directive for rules array</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Required</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>$arrayMerge</code></td>
-<td><code>replace</code> | <code>append</code> | <code>prepend</code> | <code>merge</code></td>
-<td>Yes</td>
-<td>-</td>
-<td>How to merge with the base array</td>
-</tr>
-<tr>
-<td><code>$values</code></td>
-<td><a href="#rulesetrule"><code>rulesetRule</code></a>[]</td>
-<td>Yes</td>
-<td>-</td>
-<td>Rule values to merge</td>
+<td>Values to combine with the inherited array</td>
 </tr>
 <tr>
 <td><code>$matchBy</code></td>
@@ -5304,6 +5256,13 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop this ruleset's inherited fields, then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>target</code></td>
 <td><code>branch</code> | <code>tag</code></td>
 <td>No</td>
@@ -5319,10 +5278,10 @@
 </tr>
 <tr>
 <td><code>bypassActors</code></td>
-<td><a href="#bypassactor"><code>bypassActor</code></a>[] | <a href="#bypassactorsarraymergedirective"><code>bypassActorsArrayMergeDirective</code></a></td>
+<td><a href="#bypassactor"><code>bypassActor</code></a>[] | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
-<td></td>
+<td>Actors who can bypass this ruleset</td>
 </tr>
 <tr>
 <td><code>conditions</code></td>
@@ -5333,14 +5292,15 @@
 </tr>
 <tr>
 <td><code>rules</code></td>
-<td><a href="#rulesetrule"><code>rulesetRule</code></a>[] | <a href="#rulesarraymergedirective"><code>rulesArrayMergeDirective</code></a></td>
+<td><a href="#rulesetrule"><code>rulesetRule</code></a>[] | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
-<td></td>
+<td>Rules to enforce on matching refs</td>
 </tr>
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>target</code> — Default: branch</li>
 <li><code>enforcement</code> — Default: active</li>
 </ul>
@@ -5487,7 +5447,7 @@
 <tbody>
 <tr>
 <td><code>filePatterns</code></td>
-<td><code>string[]</code></td>
+<td><code>string[]</code> | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>Yes</td>
 <td>-</td>
 <td>File path patterns that require this reviewer</td>
@@ -6019,6 +5979,13 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop this label's inherited fields, then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>color</code></td>
 <td><code>string</code></td>
 <td>Yes</td>
@@ -6042,6 +6009,7 @@
 </tbody>
 </table>
 <ul>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
 <li><code>color</code> — Example: 'd73a4a' or '#d73a4a'</li>
 <li><code>new_name</code> — Maps to GitHub API's new_name field.</li>
 </ul>
@@ -6126,6 +6094,13 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop this environment's inherited policy and secrets, then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>deploymentBranchPolicy</code></td>
 <td><code>false</code> | <a href="#deploymentbranchpolicy"><code>deploymentBranchPolicy</code></a></td>
 <td>No</td>
@@ -6142,7 +6117,8 @@
 </tbody>
 </table>
 <ul>
-<li><code>deploymentBranchPolicy</code> — Replaces the inherited policy as a whole.</li>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
+<li><code>deploymentBranchPolicy</code> — Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy.</li>
 <li><code>secrets</code> — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.</li>
 </ul>
 <!-- xfg:generated:end -->
@@ -6150,7 +6126,7 @@
 <h3 id="deploymentbranchpolicy">deploymentBranchPolicy<a class="headerlink" href="#deploymentbranchpolicy" title="Permanent link">&para;</a></h3>
 <!-- xfg:generated schema:deploymentBranchPolicy -->
 
-<p>Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.</p>
+<p>Which refs can deploy. Layers merge field by field, and the merged policy must have exactly one of protectedBranches: true or custom; to switch between them, set inherit: false in the layer that changes it. Omit the policy to let any branch deploy.</p>
 <table>
 <thead>
 <tr>
@@ -6163,6 +6139,13 @@
 </thead>
 <tbody>
 <tr>
+<td><code>inherit</code></td>
+<td><code>boolean</code></td>
+<td>No</td>
+<td>-</td>
+<td>Set to false to drop the inherited policy, then apply this layer's own.</td>
+</tr>
+<tr>
 <td><code>protectedBranches</code></td>
 <td><code>true</code></td>
 <td>No</td>
@@ -6171,7 +6154,7 @@
 </tr>
 <tr>
 <td><code>custom</code></td>
-<td><a href="#deploymentbranchpattern"><code>deploymentBranchPattern</code></a>[]</td>
+<td><a href="#deploymentbranchpattern"><code>deploymentBranchPattern</code></a>[] | <a href="#arraymergedirective"><code>arrayMergeDirective</code></a></td>
 <td>No</td>
 <td>-</td>
 <td>Only refs matching these patterns can deploy.</td>
@@ -6181,13 +6164,14 @@
 <td><code>boolean</code></td>
 <td>No</td>
 <td><code>false</code></td>
-<td>Delete patterns on GitHub that are not in custom.</td>
+<td>Delete patterns on GitHub that are not in the merged custom list.</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li><code>custom</code> — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.</li>
-<li><code>deleteOrphaned</code> — Only valid with custom. Default: false</li>
+<li><code>inherit</code> — Not valid at root level. Default: true</li>
+<li><code>custom</code> — A plain list replaces the inherited patterns; use $arrayMerge: append to add to them. A pattern is identified by type and name together, so $arrayMerge: merge is not accepted. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.</li>
+<li><code>deleteOrphaned</code> — Inherited like other fields; only valid with custom. Default: false</li>
 </ul>
 <!-- xfg:generated:end -->
 
