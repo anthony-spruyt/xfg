@@ -13,15 +13,21 @@ import { normalizeConfig } from "../../../src/config/normalizer.js";
 import { toErrorMessage } from "../../../src/shared/type-guards.js";
 import type {
   ActionsSettings,
+  AiConfig,
+  AiProviderConfig,
+  BypassActor,
   CodeScanningRule,
   CodeScanningSettings,
+  CodeScanningTool,
   CollaboratorsConfig,
   Config,
+  DeploymentBranchPattern,
   DeploymentBranchPolicy,
   EnvironmentConfig,
   FileExtensionRestrictionRule,
   FilePathRestrictionRule,
   GitHubRepoSettings,
+  Label,
   MaxFileSizeRule,
   MaxFilePathLengthRule,
   PRMergeOptions,
@@ -30,8 +36,12 @@ import type {
   RawConfig,
   RepoSettings,
   RequiredDeploymentsRule,
+  RequiredReviewer,
   RequiredStatusChecksRule,
   Ruleset,
+  RulesetConditions,
+  SecretConfig,
+  StatusCheckConfig,
   UpdateRule,
   WorkflowsRule,
   BranchNamePatternRule,
@@ -89,6 +99,7 @@ function allowsType(node: Json, type: string): boolean {
 interface Walk {
   sites: Set<string>;
   blocks: Set<string>;
+  objects: Map<Json, string>;
 }
 
 function joinPath(path: string, key: string): string {
@@ -122,6 +133,7 @@ function walk(raw: unknown, path: string, out: Walk): void {
   if (allowsType(node, "array")) out.sites.add(path);
 
   const props = asNode(node.properties);
+  if (props && !out.objects.has(node)) out.objects.set(node, path);
   if (props && asNode(props.inherit)) out.blocks.add(path);
   for (const [key, child] of Object.entries(props ?? {})) {
     walk(child, joinPath(path, key), out);
@@ -138,7 +150,11 @@ function walk(raw: unknown, path: string, out: Walk): void {
 }
 
 function walkFrom(node: Json, path: string): Walk {
-  const out: Walk = { sites: new Set(), blocks: new Set() };
+  const out: Walk = {
+    sites: new Set(),
+    blocks: new Set(),
+    objects: new Map(),
+  };
   walk(node, path, out);
   return out;
 }
@@ -158,12 +174,14 @@ const EXCLUDED: Record<string, string> = {
   "**.$values": "the directive's own payload",
 };
 
+function pathMatches(pattern: string, path: string): boolean {
+  if (pattern.startsWith("**.")) return path.endsWith(pattern.slice(2));
+  if (pattern.endsWith(".**")) return path.startsWith(pattern.slice(0, -2));
+  return path === pattern;
+}
+
 function excluded(path: string): boolean {
-  return Object.keys(EXCLUDED).some((pattern) => {
-    if (pattern.startsWith("**.")) return path.endsWith(pattern.slice(2));
-    if (pattern.endsWith(".**")) return path.startsWith(pattern.slice(0, -2));
-    return path === pattern;
-  });
+  return Object.keys(EXCLUDED).some((pattern) => pathMatches(pattern, path));
 }
 
 const LAYER_PREFIX =
@@ -485,10 +503,9 @@ function runPath(path: string): string[] {
   const primitive = typeof sample.a !== "object";
 
   for (const layer of LAYERS) {
-    const where = layer;
     expectArray(
       failures,
-      `append in ${where}`,
+      `append in ${layer}`,
       {
         root: base([sample.a]),
         layers: { [layer]: over(directive("append", [sample.b])) },
@@ -498,14 +515,14 @@ function runPath(path: string): string[] {
     );
     expectArray(
       failures,
-      `plain replaces in ${where}`,
+      `plain replaces in ${layer}`,
       { root: base([sample.a]), layers: { [layer]: over([sample.b]) } },
       tokens,
       [sample.b]
     );
     expectArray(
       failures,
-      `no base in ${where}`,
+      `no base in ${layer}`,
       { layers: { [layer]: over(directive("append", [sample.b])) } },
       tokens,
       [sample.b]
@@ -513,7 +530,7 @@ function runPath(path: string): string[] {
     if (layer !== "repo") {
       expectArray(
         failures,
-        `no base then plain repo after ${where}`,
+        `no base then plain repo after ${layer}`,
         {
           layers: {
             [layer]: over(directive("append", [sample.b])),
@@ -527,7 +544,7 @@ function runPath(path: string): string[] {
     if (primitive) {
       expectArray(
         failures,
-        `repeat dropped in ${where}`,
+        `repeat dropped in ${layer}`,
         {
           root: base([sample.a]),
           layers: { [layer]: over(directive("append", [sample.a])) },
@@ -546,7 +563,7 @@ function runPath(path: string): string[] {
       );
       expectArray(
         failures,
-        `inherit false on ${block} in ${where}`,
+        `inherit false on ${block} in ${layer}`,
         { root: base([sample.a]), layers: { [layer]: fresh } },
         tokens,
         undefined
@@ -558,7 +575,7 @@ function runPath(path: string): string[] {
       cursor.inherit = false;
       expectArray(
         failures,
-        `inherit false then values on ${block} in ${where}`,
+        `inherit false then values on ${block} in ${layer}`,
         { root: base([sample.a]), layers: { [layer]: withValue } },
         tokens,
         [sample.b]
@@ -656,12 +673,6 @@ function runPath(path: string): string[] {
   return failures;
 }
 
-function pathMatches(pattern: string, path: string): boolean {
-  if (pattern.startsWith("**.")) return path.endsWith(pattern.slice(2));
-  if (pattern.endsWith(".**")) return path.startsWith(pattern.slice(0, -2));
-  return path === pattern;
-}
-
 describe("array merge coverage", () => {
   test("the root and repo settings schemas hold the same arrays", () => {
     assert.deepEqual(
@@ -715,6 +726,10 @@ function keysOf(def: Json): string[] {
   return Object.keys(asNode(def.properties) ?? {})
     .filter((k) => k !== "inherit")
     .sort();
+}
+
+function prop(def: Json, name: string): Json {
+  return asNode(asNode(def.properties)?.[name]) as Json;
 }
 
 function ruleParameters(ruleType: string): Json {
@@ -966,6 +981,153 @@ const TYPE_KEYS: Array<[string, Json, Record<string, true>]> = [
       maxFileSize: T,
     } satisfies Record<keyof NonNullable<MaxFileSizeRule["parameters"]>, true>,
   ],
+  [
+    "label",
+    defs.label,
+    {
+      color: T,
+      description: T,
+      new_name: T,
+    } satisfies Record<keyof Label, true>,
+  ],
+  [
+    "bypassActor",
+    defs.bypassActor,
+    {
+      actorId: T,
+      actorType: T,
+      bypassMode: T,
+    } satisfies Record<keyof BypassActor, true>,
+  ],
+  [
+    "rulesetConditions",
+    defs.rulesetConditions,
+    { refName: T } satisfies Record<keyof RulesetConditions, true>,
+  ],
+  [
+    "refName condition",
+    prop(defs.rulesetConditions, "refName"),
+    {
+      include: T,
+      exclude: T,
+    } satisfies Record<keyof NonNullable<RulesetConditions["refName"]>, true>,
+  ],
+  [
+    "requiredReviewer",
+    defs.requiredReviewer,
+    {
+      filePatterns: T,
+      minimumApprovals: T,
+      reviewer: T,
+    } satisfies Record<keyof RequiredReviewer, true>,
+  ],
+  [
+    "requiredReviewer reviewer",
+    prop(defs.requiredReviewer, "reviewer"),
+    { id: T, type: T } satisfies Record<
+      keyof RequiredReviewer["reviewer"],
+      true
+    >,
+  ],
+  [
+    "statusCheck",
+    defs.statusCheck,
+    {
+      context: T,
+      integrationId: T,
+    } satisfies Record<keyof StatusCheckConfig, true>,
+  ],
+  [
+    "codeScanningTool",
+    defs.codeScanningTool,
+    {
+      tool: T,
+      alertsThreshold: T,
+      securityAlertsThreshold: T,
+    } satisfies Record<keyof CodeScanningTool, true>,
+  ],
+  [
+    "workflowConfig",
+    defs.workflowConfig,
+    {
+      path: T,
+      repositoryId: T,
+      ref: T,
+      sha: T,
+    } satisfies Record<
+      keyof NonNullable<
+        NonNullable<WorkflowsRule["parameters"]>["workflows"]
+      >[number],
+      true
+    >,
+  ],
+  [
+    "secretConfig",
+    defs.secretConfig,
+    { env: T } satisfies Record<keyof SecretConfig, true>,
+  ],
+  [
+    "deploymentBranchPattern",
+    defs.deploymentBranchPattern,
+    {
+      type: T,
+      name: T,
+    } satisfies Record<keyof DeploymentBranchPattern, true>,
+  ],
+  [
+    "aiOptions",
+    defs.aiOptions,
+    {
+      provider: T,
+      model: T,
+      baseUrl: T,
+      baseUrlEnv: T,
+      apiKeyEnv: T,
+      headersEnv: T,
+      prompt: T,
+      maxDiffChars: T,
+      fallback: T,
+    } satisfies Record<keyof AiConfig, true>,
+  ],
+  [
+    "aiFallbackOptions",
+    defs.aiFallbackOptions,
+    {
+      provider: T,
+      model: T,
+      baseUrl: T,
+      baseUrlEnv: T,
+      apiKeyEnv: T,
+      headersEnv: T,
+      prompt: T,
+      maxDiffChars: T,
+    } satisfies Record<keyof AiProviderConfig, true>,
+  ],
+];
+
+const NO_ROW: Array<{
+  why: string;
+  keys: string[];
+  matches: (path: string) => boolean;
+}> = [
+  {
+    why: "named entries: only these keys are fixed, the rest are entry names",
+    keys: ["inherit", "deleteOrphaned"],
+    matches: (path) =>
+      [
+        "settings.rulesets",
+        "settings.labels",
+        "settings.variables",
+        "settings.secrets",
+        "settings.environments",
+        "settings.environments.x.secrets",
+      ].includes(path),
+  },
+  {
+    why: "rule wrappers: the parameters objects have their own rows",
+    keys: ["type", "parameters"],
+    matches: (path) => /^settings\.rulesets\.x\.rules\[[a-z_]*\]$/.test(path),
+  },
 ];
 
 describe("schema properties match the TypeScript types", () => {
@@ -974,4 +1136,28 @@ describe("schema properties match the TypeScript types", () => {
       assert.deepEqual(keysOf(def), Object.keys(table).sort());
     });
   }
+
+  test("every object the array walk reaches has a row, or is a map or rule wrapper", () => {
+    const rows = new Set(TYPE_KEYS.map(([, def]) => deref(def)));
+    const reached = new Map([
+      ...repoSettingsWalk.objects,
+      ...prOptionsWalk.objects,
+    ]);
+    const unclassified: string[] = [];
+    for (const [node, path] of reached) {
+      if (rows.has(node)) continue;
+      const kind = NO_ROW.find((k) => k.matches(path));
+      const extra = Object.keys(asNode(node.properties) ?? {}).filter(
+        (key) => !kind?.keys.includes(key)
+      );
+      if (!kind || extra.length > 0) {
+        unclassified.push(`${path} ${extra.join(",")}`.trim());
+      }
+    }
+    assert.deepEqual(
+      unclassified,
+      [],
+      "add a TYPE_KEYS row for each of these, or a NO_ROW entry"
+    );
+  });
 });
