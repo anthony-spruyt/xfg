@@ -125,20 +125,14 @@ export function assertAiHeadersEnvAllowed(
 
 /**
  * `baseUrlEnv` names the env var that holds the base URL. A URL is never
- * accepted inline, the two forms are exclusive, and the env var may not be a
- * credential xfg uses elsewhere.
+ * accepted inline and the env var may not be a credential xfg uses elsewhere.
+ * Looks at the one field, so it holds for a layer before the merge.
  */
-export function assertAiBaseUrlEnvAllowed(
+export function assertAiBaseUrlEnvName(
   baseUrlEnv: unknown,
-  baseUrl: unknown,
   path = "prOptions.ai"
 ): void {
   if (baseUrlEnv === undefined) return;
-  if (baseUrl !== undefined) {
-    throw new ValidationError(
-      `${path}: baseUrl and baseUrlEnv are mutually exclusive`
-    );
-  }
   if (typeof baseUrlEnv !== "string" || !ENV_NAME.test(baseUrlEnv)) {
     throw new ValidationError(
       `${path}.baseUrlEnv must be an env var name, not a value`
@@ -150,4 +144,19 @@ export function assertAiBaseUrlEnvAllowed(
         `export the URL under a dedicated name.`
     );
   }
+}
+
+/** `baseUrl` and `baseUrlEnv` are exclusive, then `baseUrlEnv` must pass its own checks. */
+export function assertAiBaseUrlEnvAllowed(
+  baseUrlEnv: unknown,
+  baseUrl: unknown,
+  path = "prOptions.ai"
+): void {
+  if (baseUrlEnv === undefined) return;
+  if (baseUrl !== undefined) {
+    throw new ValidationError(
+      `${path}: baseUrl and baseUrlEnv are mutually exclusive`
+    );
+  }
+  assertAiBaseUrlEnvName(baseUrlEnv, path);
 }

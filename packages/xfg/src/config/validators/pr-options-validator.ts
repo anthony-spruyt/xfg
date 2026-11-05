@@ -2,7 +2,7 @@ import { ValidationError } from "../../shared/errors.js";
 import { validateBranchName } from "../../shared/branch-validation.js";
 import { arrayValues } from "../array-directive.js";
 import type { RawPRMergeOptions } from "../types.js";
-import { validateAiOption } from "./ai-validator.js";
+import { validateAiLayer } from "./ai-validator.js";
 import { assertNoRootInherit } from "./inherit-flag.js";
 
 /** Validates prOptions of one layer; `context` names the layer, empty for the root. */
@@ -24,7 +24,7 @@ export function validatePrOptions(
   if (prOptions.branch !== undefined) {
     validateBranchName(prOptions.branch);
   }
-  validateAiOption(prOptions.ai, context);
+  validateAiLayer(prOptions.ai, context);
 
   if (prOptions.labels === undefined) return;
 

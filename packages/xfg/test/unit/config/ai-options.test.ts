@@ -17,6 +17,14 @@ const baseConfig = (overrides?: Partial<RawConfig>): RawConfig => ({
   ...overrides,
 });
 
+const REPO = "git@github.com:org/repo.git";
+
+/** What `xfg sync` runs: each layer on its own, then the merged result per repo. */
+const validateWhole = (config: RawConfig): void => {
+  validateRawConfig(config);
+  validateNormalizedConfig(normalizeConfig(config, {}));
+};
+
 describe("prOptions.ai validation", () => {
   test("accepts ai: true", () => {
     assert.doesNotThrow(() =>
@@ -83,7 +91,7 @@ describe("prOptions.ai validation", () => {
       prOptions: { ai: { provider: "openai" } },
     });
     assert.throws(
-      () => validateRawConfig(config),
+      () => validateWhole(config),
       /prOptions\.ai\.model is required when provider is 'openai'/
     );
   });
@@ -194,11 +202,26 @@ describe("prOptions.ai validation", () => {
       repos: [
         {
           git: "git@github.com:org/repo.git",
+          prOptions: { ai: { maxDiffChars: -1 } },
+        },
+      ],
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /Repo git@github\.com:org\/repo\.git: prOptions\.ai\.maxDiffChars/
+    );
+  });
+
+  test("checks a repo ai that has no model once merged", () => {
+    const config = baseConfig({
+      repos: [
+        {
+          git: "git@github.com:org/repo.git",
           prOptions: { ai: { provider: "openai" } },
         },
       ],
     });
-    assert.throws(() => validateRawConfig(config), /model is required/);
+    assert.throws(() => validateWhole(config), /model is required/);
   });
 
   test("validates ai in group prOptions", () => {
@@ -217,7 +240,7 @@ describe("prOptions.ai validation", () => {
       ],
       repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
     });
-    assert.throws(() => validateRawConfig(config), /model is required/);
+    assert.throws(() => validateWhole(config), /model is required/);
   });
 });
 
@@ -473,6 +496,158 @@ describe("prOptions.ai merged validation", () => {
   });
 });
 
+describe("prOptions.ai layers inherit the fields they omit", () => {
+  test("a group adds the provider and baseUrl to a root model", () => {
+    const config = baseConfig({
+      prOptions: { ai: { model: "gpt-4.1-mini" } },
+      groups: {
+        g: {
+          prOptions: {
+            ai: { provider: "openai", baseUrl: "http://localhost:11434/v1" },
+          },
+        },
+      },
+      repos: [{ git: REPO, groups: ["g"] }],
+    });
+    assert.doesNotThrow(() => validateWhole(config));
+    assert.deepEqual(normalizeConfig(config, {}).repos[0].prOptions?.ai, {
+      provider: "openai",
+      model: "gpt-4.1-mini",
+      baseUrl: "http://localhost:11434/v1",
+    });
+  });
+
+  test("a repo adds the key name to a root provider", () => {
+    const config = baseConfig({
+      prOptions: { ai: { provider: "openai", model: "m" } },
+      repos: [{ git: REPO, prOptions: { ai: { apiKeyEnv: "OPENAI_API_KEY" } } }],
+    });
+    assert.doesNotThrow(() => validateWhole(config));
+  });
+
+  test("a root key name waits for the provider a lower layer sets", () => {
+    const config = baseConfig({
+      prOptions: { ai: { apiKeyEnv: "OPENAI_API_KEY" } },
+      repos: [
+        {
+          git: REPO,
+          prOptions: { ai: { provider: "openai", model: "m" } },
+        },
+      ],
+    });
+    assert.doesNotThrow(() => validateWhole(config));
+  });
+
+  test("a repo fills in the model of a root fallback", () => {
+    const config = baseConfig({
+      prOptions: {
+        ai: {
+          provider: "openai",
+          model: "m",
+          fallback: { provider: "openai", baseUrl: "https://gw.example/v1" },
+        },
+      },
+      repos: [
+        { git: REPO, prOptions: { ai: { fallback: { model: "fallback-m" } } } },
+      ],
+    });
+    assert.doesNotThrow(() => validateWhole(config));
+  });
+});
+
+describe("prOptions.ai merged result is still checked", () => {
+  test("rejects an openai provider no layer gives a model", () => {
+    const config = baseConfig({
+      prOptions: { ai: { provider: "openai" } },
+      repos: [{ git: REPO, prOptions: { ai: { prompt: "p" } } }],
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+    assert.throws(
+      () => validateWhole(config),
+      new RegExp(
+        `Repo '${REPO}': prOptions\\.ai\\.model is required when provider is 'openai'`
+      )
+    );
+  });
+
+  test("rejects an openai fallback no layer gives a model", () => {
+    const config = baseConfig({
+      prOptions: {
+        ai: { provider: "openai", model: "m", fallback: { provider: "openai" } },
+      },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+    assert.throws(
+      () => validateWhole(config),
+      new RegExp(
+        `Repo '${REPO}': prOptions\\.ai\\.fallback\\.model is required when provider is 'openai'`
+      )
+    );
+  });
+
+  test("rejects a key name that needs a provider no layer sets", () => {
+    const config = baseConfig({
+      prOptions: { ai: { apiKeyEnv: "OPENAI_API_KEY" } },
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+    assert.throws(
+      () => validateWhole(config),
+      new RegExp(`Repo '${REPO}': prOptions\\.ai\\.apiKeyEnv .* credential`)
+    );
+  });
+
+  test("names the repo whose merged ai is bad, not another", () => {
+    const config = baseConfig({
+      prOptions: { ai: { provider: "openai", model: "m" } },
+      repos: [
+        { git: "git@github.com:org/good.git" },
+        {
+          git: "git@github.com:org/bad.git",
+          prOptions: { ai: { inherit: false, provider: "openai" } },
+        },
+      ],
+    });
+    assert.throws(
+      () => validateWhole(config),
+      /Repo 'git@github\.com:org\/bad\.git': prOptions\.ai\.model is required/
+    );
+  });
+
+  test("rejects one header named in two layers with different case", () => {
+    const config = baseConfig({
+      prOptions: {
+        ai: {
+          provider: "openai",
+          model: "m",
+          headersEnv: { "X-Team": "ENV_A" },
+        },
+      },
+      repos: [
+        {
+          git: REPO,
+          prOptions: { ai: { headersEnv: { "x-team": "ENV_B" } } },
+        },
+      ],
+    });
+    assert.doesNotThrow(() => validateRawConfig(config));
+    assert.throws(
+      () => validateWhole(config),
+      new RegExp(`Repo '${REPO}': prOptions\\.ai\\.headersEnv names header`)
+    );
+  });
+
+  test("still rejects a bad field shape in a root layer a lower layer overrides", () => {
+    const config = baseConfig({
+      prOptions: { ai: { maxDiffChars: 0 } },
+      repos: [{ git: REPO, prOptions: { ai: { maxDiffChars: 100 } } }],
+    });
+    assert.throws(
+      () => validateRawConfig(config),
+      /prOptions\.ai\.maxDiffChars must be a positive integer/
+    );
+  });
+});
+
 describe("prOptions.ai credential guard", () => {
   for (const apiKeyEnv of [
     "GH_TOKEN",
@@ -483,7 +658,7 @@ describe("prOptions.ai credential guard", () => {
     test(`rejects apiKeyEnv ${apiKeyEnv} for anthropic`, () => {
       assert.throws(
         () =>
-          validateRawConfig(
+          validateWhole(
             baseConfig({
               prOptions: { ai: { provider: "anthropic", apiKeyEnv } },
             })
@@ -495,7 +670,7 @@ describe("prOptions.ai credential guard", () => {
 
   test("allows the provider's own key against its default API", () => {
     assert.doesNotThrow(() =>
-      validateRawConfig(
+      validateWhole(
         baseConfig({
           prOptions: {
             ai: { provider: "anthropic", apiKeyEnv: "ANTHROPIC_API_KEY" },
@@ -508,7 +683,7 @@ describe("prOptions.ai credential guard", () => {
   test("rejects the provider's own key sent to a custom baseUrl", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           baseConfig({
             prOptions: {
               ai: {
@@ -527,7 +702,7 @@ describe("prOptions.ai credential guard", () => {
   test("rejects a credential apiKeyEnv in a repo override", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           baseConfig({
             repos: [
               {
@@ -545,7 +720,7 @@ describe("prOptions.ai credential guard", () => {
 
   test("allows a dedicated key name for a custom baseUrl", () => {
     assert.doesNotThrow(() =>
-      validateRawConfig(
+      validateWhole(
         baseConfig({
           prOptions: {
             ai: {
@@ -746,39 +921,40 @@ describe("prOptions.ai.fallback validation", () => {
     assert.throws(
       () =>
         validateRawConfig(
-          withFallback({ provider: "openai", baseUrl: OPENROUTER.baseUrl })
-        ),
-      /prOptions\.ai\.fallback\.model is required when provider is 'openai'/
-    );
-    assert.throws(
-      () =>
-        validateRawConfig(
           withFallback({ ...OPENROUTER, headersEnv: { "X-A": "GH_TOKEN" } })
         ),
       /prOptions\.ai\.fallback\.headersEnv/
     );
   });
 
+  test("requires a model once the fallback is merged", () => {
+    assert.throws(
+      () =>
+        validateWhole(
+          withFallback({ provider: "openai", baseUrl: OPENROUTER.baseUrl })
+        ),
+      /prOptions\.ai\.fallback\.model is required when provider is 'openai'/
+    );
+  });
+
   test("applies the key-safety rule to the fallback", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           withFallback({ ...OPENROUTER, apiKeyEnv: "OPENAI_API_KEY" })
         ),
       /prOptions\.ai\.fallback\.apiKeyEnv 'OPENAI_API_KEY' is a credential/
     );
     assert.throws(
       () =>
-        validateRawConfig(
-          withFallback({ ...OPENROUTER, apiKeyEnv: "GH_TOKEN" })
-        ),
+        validateWhole(withFallback({ ...OPENROUTER, apiKeyEnv: "GH_TOKEN" })),
       /credential/
     );
   });
 
   test("allows the fallback to use the provider's own key on its own API", () => {
     assert.doesNotThrow(() =>
-      validateRawConfig(
+      validateWhole(
         withFallback({ provider: "anthropic", apiKeyEnv: "ANTHROPIC_API_KEY" })
       )
     );
@@ -897,7 +1073,7 @@ describe("prOptions.ai.baseUrlEnv validation", () => {
   test("rejects baseUrl together with baseUrlEnv", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           ai({
             baseUrl: "https://gw.example.com/v1",
             baseUrlEnv: "AI_BASE_URL",
@@ -910,7 +1086,7 @@ describe("prOptions.ai.baseUrlEnv validation", () => {
   test("rejects baseUrl together with baseUrlEnv on the fallback", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           ai({
             fallback: {
               provider: "openai",
@@ -955,7 +1131,7 @@ describe("prOptions.ai.baseUrlEnv validation", () => {
   test("rejects the provider's default key with a URL from the env", () => {
     assert.throws(
       () =>
-        validateRawConfig(
+        validateWhole(
           ai({ baseUrlEnv: "AI_BASE_URL", apiKeyEnv: "OPENAI_API_KEY" })
         ),
       /credential xfg uses elsewhere/

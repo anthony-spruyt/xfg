@@ -2,6 +2,7 @@ import { isPlainObject } from "../../shared/type-guards.js";
 import { ValidationError } from "../../shared/errors.js";
 import {
   assertAiBaseUrlEnvAllowed,
+  assertAiBaseUrlEnvName,
   assertAiHeadersEnvAllowed,
   assertAiKeyEnvAllowed,
 } from "../../shared/credential-env.js";
@@ -20,8 +21,12 @@ const PROVIDER_KEYS = [
 const PRIMARY_KEYS = new Set<string>([...PROVIDER_KEYS, "fallback", "inherit"]);
 const FALLBACK_KEYS = new Set<string>(PROVIDER_KEYS);
 
-/** `context` names the layer or repo, empty for the root; `inherit` is only valid in a layer. */
-export function validateAiOption(ai: unknown, context = ""): void {
+/**
+ * Checks one layer's field shapes only. A field a layer omits may come from
+ * another layer, so rules that relate fields wait for `validateMergedAi`.
+ * `context` names the layer, empty for the root; `inherit` is only valid in a layer.
+ */
+export function validateAiLayer(ai: unknown, context = ""): void {
   if (ai === undefined || typeof ai === "boolean") return;
   const path = context ? `${context}: prOptions.ai` : "prOptions.ai";
   if (!isPlainObject(ai)) {
@@ -32,17 +37,27 @@ export function validateAiOption(ai: unknown, context = ""): void {
   if (ai.inherit !== undefined && typeof ai.inherit !== "boolean") {
     throw new ValidationError(`${path}.inherit must be a boolean`);
   }
-  validateProvider(ai, path, PRIMARY_KEYS);
+  validateProviderShape(ai, path, PRIMARY_KEYS);
 
   if (ai.fallback !== undefined) {
     if (!isPlainObject(ai.fallback)) {
       throw new ValidationError(`${path}.fallback must be an object`);
     }
-    validateProvider(ai.fallback, `${path}.fallback`, FALLBACK_KEYS);
+    validateProviderShape(ai.fallback, `${path}.fallback`, FALLBACK_KEYS);
   }
 }
 
-function validateProvider(
+/** Checks the `ai` of one repo after every layer merged; `context` names the repo. */
+export function validateMergedAi(ai: unknown, context: string): void {
+  if (!isPlainObject(ai)) return;
+  const path = `${context}: prOptions.ai`;
+  validateMergedProvider(ai, path);
+  if (isPlainObject(ai.fallback)) {
+    validateMergedProvider(ai.fallback, `${path}.fallback`);
+  }
+}
+
+function validateProviderShape(
   ai: Record<string, unknown>,
   path: string,
   knownKeys: Set<string>
@@ -69,22 +84,8 @@ function validateProvider(
     }
   }
 
-  assertAiBaseUrlEnvAllowed(ai.baseUrlEnv, ai.baseUrl, path);
-  assertAiKeyEnvAllowed(
-    (provider as AiProvider | undefined) ?? "anthropic",
-    ai.apiKeyEnv as string | undefined,
-    ai.baseUrl as string | undefined,
-    path,
-    // A URL read from the env is unknown here, so it never counts as the provider's own API.
-    ai.baseUrlEnv !== undefined
-  );
+  assertAiBaseUrlEnvName(ai.baseUrlEnv, path);
   assertAiHeadersEnvAllowed(ai.headersEnv, path);
-
-  if (provider === "openai" && ai.model === undefined) {
-    throw new ValidationError(
-      `${path}.model is required when provider is 'openai'`
-    );
-  }
 
   const max = ai.maxDiffChars;
   if (
@@ -93,6 +94,31 @@ function validateProvider(
   ) {
     throw new ValidationError(
       `${path}.maxDiffChars must be a positive integer`
+    );
+  }
+}
+
+function validateMergedProvider(
+  ai: Record<string, unknown>,
+  path: string
+): void {
+  const provider = (ai.provider as AiProvider | undefined) ?? "anthropic";
+
+  assertAiBaseUrlEnvAllowed(ai.baseUrlEnv, ai.baseUrl, path);
+  assertAiKeyEnvAllowed(
+    provider,
+    ai.apiKeyEnv as string | undefined,
+    ai.baseUrl as string | undefined,
+    path,
+    // A URL read from the env is unknown here, so it never counts as the provider's own API.
+    ai.baseUrlEnv !== undefined
+  );
+  // Layers can each be valid and still name one header twice in different case.
+  assertAiHeadersEnvAllowed(ai.headersEnv, path);
+
+  if (provider === "openai" && ai.model === undefined) {
+    throw new ValidationError(
+      `${path}.model is required when provider is 'openai'`
     );
   }
 }

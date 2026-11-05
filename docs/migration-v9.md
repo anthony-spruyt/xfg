@@ -113,7 +113,7 @@ repos:
 
 An `ai` object in a group or repo used to replace the inherited one whole, so a repo that set only `model` fell back to the Anthropic defaults. Now an omitted field is inherited, `provider`, `apiKeyEnv`, `headersEnv` and `fallback` included. `ai: true`, `ai: false` and the `ai: true` that re-enables a hidden `ai` object work as before.
 
-xfg also checks the merged `ai`, so fields from different layers must make a valid provider together.
+xfg checks each layer's field types and allowed values on their own, and the rules that relate fields (an `openai` provider needs a `model`, which key goes with which `baseUrl`) on the merged `ai` of each repo. A layer that is incomplete alone is valid when another layer supplies the rest, and an error on the merged `ai` names the repo.
 
 To get the old result, set `inherit: false` inside the `ai` object and state every field you want:
 

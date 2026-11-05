@@ -71,7 +71,9 @@ The default key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`) is only sent to that pr
 
 `ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level merges field by field with the one above it, `fallback` and `headersEnv` included, so a repo can change just the `model` and keep the provider and key. Set `inherit: false` inside the `ai` object to drop everything inherited and use only that layer's fields.
 
-Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above, and an `ai` object after `ai: false` starts fresh. xfg checks the merged result, so fields from different layers must make a valid provider together.
+Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above, and an `ai` object after `ai: false` starts fresh.
+
+xfg checks each layer's field types and allowed values on their own, so a layer may leave out a field another layer sets. It checks the rules that relate fields (an `openai` provider needs a `model`, which key goes with which `baseUrl`) on the merged `ai` of each repo, and an error there names the repo.
 
 ### Base URL from an env var
 
