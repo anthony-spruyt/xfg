@@ -6,6 +6,8 @@ import {
   mergeTextContent,
 } from "./merge.js";
 import type { ArrayMergeStrategy } from "./merge.js";
+import { arrayValues, isArrayMergeDirective } from "./array-directive.js";
+import { dropRepeatedItems } from "./drop-repeated-items.js";
 import { interpolateContent } from "./env.js";
 import type {
   RawConfig,
@@ -117,6 +119,8 @@ function normalizeHeader(
   return header;
 }
 
+const PR_OPTIONS_LOCATION = "prOptions";
+
 // lastAi remembers the ai object hidden by `ai: false` so a later `ai: true` can re-enable it.
 type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
 
@@ -129,7 +133,18 @@ function mergePROptions(
   if (!perRepo) return global;
 
   const lastAi = typeof global.ai === "object" ? global.ai : global.lastAi;
-  const merged: MergedPROptions = { ...global, ...perRepo, lastAi: undefined };
+  const { ai: _globalAi, lastAi: _globalLastAi, ...globalRest } = global;
+  const { ai: _repoAi, ...repoRest } = perRepo;
+  const merged: MergedPROptions = {
+    ...global,
+    ...perRepo,
+    lastAi: undefined,
+    ...deepMerge(
+      globalRest,
+      repoRest,
+      createMergeContext("replace", PR_OPTIONS_LOCATION)
+    ),
+  };
   if (merged.ai === true && lastAi) merged.ai = lastAi;
   if (merged.ai === false) merged.lastAi = lastAi;
   const result = Object.fromEntries(
@@ -137,6 +152,19 @@ function mergePROptions(
   ) as MergedPROptions;
 
   return Object.keys(result).length > 0 ? result : undefined;
+}
+
+function finalizePROptions(
+  prOptions: MergedPROptions | undefined
+): RepoPROptions | undefined {
+  const normalized = normalizeAiOption(prOptions);
+  if (normalized === undefined) return undefined;
+  return dropRepeatedItems(
+    stripMergeDirectives(
+      normalized as Record<string, unknown>,
+      PR_OPTIONS_LOCATION
+    )
+  ) as RepoPROptions;
 }
 
 function normalizeAiOption(
@@ -271,6 +299,30 @@ function dropEntryMapIfEmpty(
   return merged;
 }
 
+const COLLABORATORS_LOCATION = "settings.collaborators";
+
+function dedupeUsers(users: string[]): string[] {
+  const seen = new Set<string>();
+  return users.filter((user) => {
+    const key = user.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function mergeUsers(base: unknown, overlay: unknown): unknown {
+  if (overlay === undefined) return base;
+  if (isArrayMergeDirective(overlay)) {
+    return deepMerge(
+      { users: base },
+      { users: overlay },
+      createMergeContext("replace", COLLABORATORS_LOCATION)
+    ).users;
+  }
+  return [...(arrayValues(base) ?? []), ...(overlay as string[])];
+}
+
 /**
  * Merges collaborator layers: users union (case-insensitive, first spelling wins),
  * `inherit: false` drops base users but never clears an inherited deleteOrphaned.
@@ -278,27 +330,26 @@ function dropEntryMapIfEmpty(
 function mergeCollaboratorsLayer(
   base: RawCollaboratorsConfig | undefined,
   overlay: RawCollaboratorsConfig | undefined
-): CollaboratorsConfig {
-  const inheritedUsers = overlay?.inherit === false ? [] : (base?.users ?? []);
-  const seen = new Set<string>();
-  const users: string[] = [];
-  for (const user of [...inheritedUsers, ...(overlay?.users ?? [])]) {
-    const key = user.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    users.push(user);
-  }
-
+): RawCollaboratorsConfig {
+  const inherited = overlay?.inherit === false ? undefined : base?.users;
+  const users = (mergeUsers(inherited, overlay?.users) ??
+    []) as RawCollaboratorsConfig["users"];
   const deleteOrphaned = overlay?.deleteOrphaned ?? base?.deleteOrphaned;
   return deleteOrphaned === undefined ? { users } : { users, deleteOrphaned };
 }
 
-function dropCollaboratorsIfEmpty(
-  merged: CollaboratorsConfig
+function finalizeCollaborators(
+  merged: RawCollaboratorsConfig
 ): CollaboratorsConfig | undefined {
-  if ((merged.users ?? []).length === 0 && merged.deleteOrphaned === undefined)
-    return undefined;
-  return merged;
+  const { users, deleteOrphaned } = stripMergeDirectives(
+    { ...mergeCollaboratorsLayer(undefined, merged) },
+    COLLABORATORS_LOCATION
+  ) as CollaboratorsConfig;
+  const deduped = dedupeUsers(users ?? []);
+  if (deduped.length === 0 && deleteOrphaned === undefined) return undefined;
+  return deleteOrphaned === undefined
+    ? { users: deduped }
+    : { users: deduped, deleteOrphaned };
 }
 
 /**
@@ -328,10 +379,20 @@ function mergeEnvironmentLayer(
   return result;
 }
 
-function finalizeEnvironment(env: RawEnvironmentConfig): EnvironmentConfig {
+function environmentLocation(name: string): string {
+  return `environment '${name}'`;
+}
+
+function finalizeEnvironment(
+  name: string,
+  env: RawEnvironmentConfig
+): EnvironmentConfig {
   const result: EnvironmentConfig = {};
   if (env.deploymentBranchPolicy) {
-    result.deploymentBranchPolicy = structuredClone(env.deploymentBranchPolicy);
+    result.deploymentBranchPolicy = stripBlock(
+      structuredClone(env.deploymentBranchPolicy),
+      environmentLocation(name)
+    );
   }
   const secrets = dropEntryMapIfEmpty(
     mergeEntryMapLayer(undefined, env.secrets)
@@ -391,14 +452,22 @@ interface BlockMerger<K extends keyof RawRepoSettings> {
   finalize(merged: NonNullable<RawRootSettings[K]>): RepoSettings[K];
 }
 
-function objectBlock<T extends object>() {
+function stripBlock<T extends object>(block: T, location: string): T {
+  return stripMergeDirectives(block as Record<string, unknown>, location) as T;
+}
+
+function objectBlock<T extends object>(location: string) {
   return {
     merge: (base: T | false | undefined, overlay: T | false): T | false =>
       overlay === false
         ? false
-        : ({ ...(base === false ? {} : base), ...overlay } as T),
+        : (deepMerge(
+            (base || {}) as Record<string, unknown>,
+            overlay as Record<string, unknown>,
+            createMergeContext("replace", location)
+          ) as T),
     finalize: (merged: T | false): T | undefined =>
-      merged === false ? undefined : merged,
+      merged === false ? undefined : stripBlock(merged, location),
   };
 }
 
@@ -425,14 +494,19 @@ function finalizeRulesets(
   return Object.keys(result).length > 0 ? result : undefined;
 }
 
+function labelLocation(name: string): string {
+  return `label '${name}'`;
+}
+
 function finalizeLabels(
   merged: Record<string, Label | false>
 ): Record<string, Label> | undefined {
   const result: Record<string, Label> = {};
   for (const [name, label] of Object.entries(merged)) {
     if (name === "inherit" || !label || typeof label !== "object") continue;
-    const color = (label.color ?? "").replace(/^#/, "").toLowerCase();
-    result[name] = { ...label, color };
+    const stripped = stripBlock(label, labelLocation(name));
+    const color = (stripped.color ?? "").replace(/^#/, "").toLowerCase();
+    result[name] = { ...stripped, color };
   }
   return Object.keys(result).length > 0 ? result : undefined;
 }
@@ -445,7 +519,7 @@ function finalizeEnvironments(
   const result: EnvironmentsConfig = {};
   for (const [name, entry] of Object.entries(entries)) {
     if (name === "inherit" || entry === false) continue;
-    result[name] = finalizeEnvironment(entry);
+    result[name] = finalizeEnvironment(name, entry);
   }
   if (Object.keys(result).length === 0 && deleteOrphaned !== true) {
     return undefined;
@@ -471,28 +545,36 @@ const BLOCKS: { [K in keyof RawRepoSettings]-?: BlockMerger<K> } = {
     merge: (_base, overlay) => overlay,
     finalize: (merged) => merged,
   },
-  repo: objectBlock<GitHubRepoSettings>(),
+  repo: objectBlock<GitHubRepoSettings>("settings.repo"),
   labels: {
     merge: (base, overlay) =>
-      mergeNamedEntries(base, overlay, (existing, entry) => ({
-        ...(existing && typeof existing === "object" ? existing : {}),
-        ...entry,
-      })),
+      mergeNamedEntries(
+        base,
+        overlay,
+        (existing, entry, name) =>
+          deepMerge(
+            existing && typeof existing === "object" ? { ...existing } : {},
+            entry as unknown as Record<string, unknown>,
+            createMergeContext("replace", labelLocation(name))
+          ) as unknown as Label
+      ),
     finalize: finalizeLabels,
   },
   // Replaces whole: state, querySuite and languages are coupled
   codeScanning: {
     merge: (_base, overlay) =>
       overlay === false ? false : structuredClone(overlay),
-    finalize: (merged) => (merged === false ? undefined : merged),
+    finalize: (merged) =>
+      merged === false
+        ? undefined
+        : stripBlock(merged, "settings.codeScanning"),
   },
-  actions: objectBlock<ActionsSettings>(),
+  actions: objectBlock<ActionsSettings>("settings.actions"),
   variables: entryMapBlock as BlockMerger<"variables">,
   secrets: entryMapBlock as BlockMerger<"secrets">,
   collaborators: {
     merge: mergeCollaboratorsLayer,
-    finalize: (merged) =>
-      dropCollaboratorsIfEmpty(mergeCollaboratorsLayer(undefined, merged)),
+    finalize: finalizeCollaborators,
   },
   environments: {
     merge: mergeEnvironmentEntries,
@@ -526,7 +608,9 @@ function finalizeBlock(
   const value = merged[key];
   if (value === undefined || value === null) return;
   const final = (BLOCKS[key] as UntypedBlock).finalize(value);
-  if (final !== undefined) (result as Record<string, unknown>)[key] = final;
+  if (final !== undefined) {
+    (result as Record<string, unknown>)[key] = dropRepeatedItems(final);
+  }
 }
 
 function mergeRawSettings(
@@ -846,7 +930,7 @@ function normalizeRepoEntry(ctx: NormalizeRepoEntryContext): RepoConfig {
     if (entry) files.push(entry);
   }
 
-  const prOptions = normalizeAiOption(
+  const prOptions = finalizePROptions(
     mergePROptions(ctx.effectivePROptions, ctx.rawRepo.prOptions)
   );
   const settings = mergeSettings(ctx.effectiveSettings, ctx.rawRepo.settings);

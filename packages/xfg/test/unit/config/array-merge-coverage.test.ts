@@ -182,18 +182,9 @@ const blockPaths = [...repoSettingsWalk.blocks, ...prOptionsWalk.blocks];
 
 // Temporary: paths that fail on today's code; empty when the feature is done
 const EXPECTED_RED = new Set<string>([
-  "prOptions.labels",
-  "settings.actions.patternsAllowed",
   "settings.codeScanning.languages",
   "settings.collaborators.users",
   "settings.environments.x.deploymentBranchPolicy.custom",
-  "settings.rulesets.x.conditions.refName.exclude",
-  "settings.rulesets.x.conditions.refName.include",
-  "settings.rulesets.x.rules[file_extension_restriction].parameters.restrictedFileExtensions",
-  "settings.rulesets.x.rules[file_path_restriction].parameters.restrictedFilePaths",
-  "settings.rulesets.x.rules[pull_request].parameters.allowedMergeMethods",
-  "settings.rulesets.x.rules[pull_request].parameters.requiredReviewers[].filePatterns",
-  "settings.rulesets.x.rules[required_deployments].parameters.requiredDeploymentEnvironments",
 ]);
 
 interface Sample {
