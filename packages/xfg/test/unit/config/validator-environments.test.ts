@@ -13,6 +13,7 @@ import type {
   RawRepoSettings,
   RawRootSettings,
 } from "../../../src/config/index.js";
+import type { RawDeploymentBranchPolicy } from "../../../src/config/types.js";
 
 const base = (settings?: RawRootSettings, repoSettings?: RawRepoSettings) =>
   ({
@@ -193,7 +194,7 @@ describe("settings.environments validation", () => {
     });
 
     describe("both options in one layer", () => {
-      const both = {
+      const both: RawDeploymentBranchPolicy = {
         protectedBranches: true,
         custom: [{ type: "branch", name: "main" }],
       };
