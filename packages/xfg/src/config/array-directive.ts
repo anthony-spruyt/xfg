@@ -31,6 +31,34 @@ export function isArrayMergeStrategy(
   );
 }
 
+/** Why `items` cannot be matched on `matchBy`, or undefined when they can. */
+export function keyedItemsProblem(
+  items: unknown[],
+  matchBy: string
+): string | undefined {
+  const firstIndexByValue = new Map<unknown, number>();
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (!isPlainObject(item) || !Object.hasOwn(item, matchBy)) {
+      return `item ${i} has no $matchBy key '${matchBy}'`;
+    }
+    const value = item[matchBy];
+    // Map compares objects by reference, so only primitives can match
+    if (
+      value !== null &&
+      !["string", "number", "boolean"].includes(typeof value)
+    ) {
+      return `item ${i} $matchBy ${matchBy} must be a string, number, boolean or null`;
+    }
+    const first = firstIndexByValue.get(value);
+    if (first !== undefined) {
+      return `items ${first} and ${i} share $matchBy ${matchBy} '${String(value)}'`;
+    }
+    firstIndexByValue.set(value, i);
+  }
+  return undefined;
+}
+
 /** Accepts exactly what merge.ts resolves, so validation and merge agree. */
 export function isArrayMergeDirective(
   value: unknown
@@ -49,9 +77,7 @@ export function isArrayMergeDirective(
     value.$arrayMerge === "merge" &&
     typeof matchBy === "string" &&
     matchBy !== "" &&
-    value.$values.every(
-      (item) => isPlainObject(item) && Object.hasOwn(item, matchBy)
-    )
+    keyedItemsProblem(value.$values, matchBy) === undefined
   );
 }
 

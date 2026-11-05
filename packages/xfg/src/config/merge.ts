@@ -4,6 +4,7 @@ import {
   ARRAY_MERGE_STRATEGIES,
   DIRECTIVE_KEYS,
   isArrayMergeStrategy,
+  keyedItemsProblem,
   type ArrayMergeStrategy,
 } from "./array-directive.js";
 
@@ -135,38 +136,8 @@ function assertKeyedItems(
   ctx: ErrorContext,
   path: string
 ): void {
-  const firstIndexByValue = new Map<unknown, number>();
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (!isPlainObject(item) || !Object.hasOwn(item, matchBy)) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} item ${i} has no $matchBy key '${matchBy}'`
-      );
-    }
-    const value = item[matchBy];
-    // Map compares objects by reference, so only primitives can match
-    if (
-      value !== null &&
-      !["string", "number", "boolean"].includes(typeof value)
-    ) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} item ${i} $matchBy ${matchBy} must be a string, number, boolean or null`
-      );
-    }
-    const first = firstIndexByValue.get(value);
-    if (first !== undefined) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} items ${first} and ${i} share $matchBy ${matchBy} '${String(value)}'`
-      );
-    }
-    firstIndexByValue.set(value, i);
-  }
+  const problem = keyedItemsProblem(items, matchBy);
+  if (problem !== undefined) throw mergeError(ctx, path, `${label} ${problem}`);
 }
 
 function mergeByKey(

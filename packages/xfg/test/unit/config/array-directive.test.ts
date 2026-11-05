@@ -110,6 +110,41 @@ describe("isArrayMergeDirective", () => {
         false
       );
     });
+
+    test("rejects $matchBy over items that share a value", () => {
+      assert.equal(
+        isArrayMergeDirective({
+          $arrayMerge: "merge",
+          $matchBy: "name",
+          $values: [{ name: "a" }, { name: "a" }],
+        }),
+        false
+      );
+    });
+
+    test("rejects a $matchBy value that is not a string, number, boolean or null", () => {
+      for (const name of [{ id: 1 }, ["a"]]) {
+        assert.equal(
+          isArrayMergeDirective({
+            $arrayMerge: "merge",
+            $matchBy: "name",
+            $values: [{ name }],
+          }),
+          false
+        );
+      }
+    });
+
+    test("accepts string, number, boolean and null $matchBy values", () => {
+      assert.equal(
+        isArrayMergeDirective({
+          $arrayMerge: "merge",
+          $matchBy: "name",
+          $values: [{ name: "a" }, { name: 1 }, { name: true }, { name: null }],
+        }),
+        true
+      );
+    });
   });
 
   test("agrees with deepMerge on every directive it rejects for $matchBy", () => {
@@ -117,6 +152,12 @@ describe("isArrayMergeDirective", () => {
       { $arrayMerge: "merge", $matchBy: "", $values: [] },
       { $arrayMerge: "append", $matchBy: "name", $values: [{ name: "a" }] },
       { $arrayMerge: "merge", $matchBy: "name", $values: ["a"] },
+      {
+        $arrayMerge: "merge",
+        $matchBy: "name",
+        $values: [{ name: "a" }, { name: "a" }],
+      },
+      { $arrayMerge: "merge", $matchBy: "name", $values: [{ name: { a: 1 } }] },
     ];
     for (const directive of rejected) {
       assert.equal(isArrayMergeDirective(directive), false);

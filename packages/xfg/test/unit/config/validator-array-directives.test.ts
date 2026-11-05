@@ -243,6 +243,41 @@ describe("raw validation of array directives", () => {
     });
   });
 
+  describe("$matchBy", () => {
+    const bypassActors = (...ids: number[]) => ({
+      $arrayMerge: "merge",
+      $matchBy: "actorId",
+      $values: ids.map((actorId) => ({ actorId, actorType: "Team" })),
+    });
+    const group = (value: unknown) => ({
+      groups: {
+        g: { settings: { rulesets: { main: { bypassActors: value } } } },
+      },
+    });
+
+    test("accepts unique primitive values", () => {
+      accepts(group(bypassActors(1, 2)));
+    });
+
+    test("rejects a repeated value and names the layer", () => {
+      rejects(
+        group(bypassActors(1, 1)),
+        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive/
+      );
+    });
+
+    test("rejects a value that is not a string, number, boolean or null", () => {
+      rejects(
+        group({
+          $arrayMerge: "merge",
+          $matchBy: "actorId",
+          $values: [{ actorId: { id: 1 }, actorType: "Team" }],
+        }),
+        /groups\.g: ruleset 'main' bypassActors must be an array or \$arrayMerge directive/
+      );
+    });
+  });
+
   describe("prOptions.labels", () => {
     test("accepts a directive at the root", () => {
       accepts({ prOptions: { labels: append("sync") } });
