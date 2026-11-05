@@ -124,9 +124,8 @@ export function assertAiHeadersEnvAllowed(
 }
 
 /**
- * `baseUrlEnv` names the env var that holds the base URL. A URL is never
- * accepted inline and the env var may not be a credential xfg uses elsewhere.
- * Looks at the one field, so it holds for a layer before the merge.
+ * `baseUrlEnv` names the env var that holds the base URL, never a URL or a credential xfg uses elsewhere.
+ * Checks the one field, so it also holds for a layer before the merge.
  */
 export function assertAiBaseUrlEnvName(
   baseUrlEnv: unknown,

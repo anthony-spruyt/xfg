@@ -22,8 +22,7 @@ const PRIMARY_KEYS = new Set<string>([...PROVIDER_KEYS, "fallback", "inherit"]);
 const FALLBACK_KEYS = new Set<string>(PROVIDER_KEYS);
 
 /**
- * Checks one layer's field shapes only. A field a layer omits may come from
- * another layer, so rules that relate fields wait for `validateMergedAi`.
+ * Checks one layer's field shapes; rules that relate fields wait for `validateMergedAi`.
  * `context` names the layer, empty for the root; `inherit` is only valid in a layer.
  */
 export function validateAiLayer(ai: unknown, context = ""): void {
