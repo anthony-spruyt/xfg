@@ -192,17 +192,59 @@ describe("settings.environments validation", () => {
       );
     });
 
-    test("rejects a merged policy with both options in one layer", () => {
-      assert.throws(
-        () =>
-          validateMerged(
-            withPolicy({
-              protectedBranches: true,
-              custom: [{ type: "branch", name: "main" }],
+    describe("both options in one layer", () => {
+      const both = {
+        protectedBranches: true,
+        custom: [{ type: "branch", name: "main" }],
+      };
+      const message = (config: RawConfig): string => {
+        try {
+          validateRawConfig(config);
+        } catch (error) {
+          return (error as Error).message;
+        }
+        return "";
+      };
+
+      test("is rejected at root without a hint to use inherit: false", () => {
+        const text = message(withPolicy(both));
+        assert.match(
+          text,
+          /Root: environment 'release' deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'/
+        );
+        assert.doesNotMatch(text, /inherit: false/);
+      });
+
+      test("is rejected in a repo layer, also with inherit: false", () => {
+        for (const policy of [both, { inherit: false, ...both }]) {
+          const text = message(
+            base(undefined, {
+              environments: { release: { deploymentBranchPolicy: policy } },
             })
-          ),
-        /deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'.*inherit: false/
-      );
+          );
+          assert.match(
+            text,
+            /Repo .*environment 'release' deploymentBranchPolicy has both/
+          );
+          assert.doesNotMatch(text, /inherit: false/);
+        }
+      });
+
+      test("is rejected in a group layer and names the group", () => {
+        const config = base({
+          environments: asEnvs({
+            release: { deploymentBranchPolicy: { protectedBranches: true } },
+          }),
+        });
+        config.groups = {
+          g: {
+            settings: {
+              environments: { release: { deploymentBranchPolicy: both } },
+            },
+          },
+        };
+        assert.match(message(config), /groups\.g: environment 'release'/);
+      });
     });
 
     test("rejects protectedBranches merged over an inherited custom and points to inherit: false", () => {

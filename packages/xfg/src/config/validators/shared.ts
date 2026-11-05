@@ -560,6 +560,11 @@ function validateDeploymentBranchPolicyLayer(
       `${ctx}: protectedBranches must be true. Omit deploymentBranchPolicy to let any branch deploy.`
     );
   }
+  if (policy.protectedBranches !== undefined && policy.custom !== undefined) {
+    throw new ValidationError(
+      `${ctx} has both 'protectedBranches: true' and 'custom'. Set only one.`
+    );
+  }
   if (policy.custom !== undefined) {
     validateBranchPatterns(policy.custom, ctx);
   }
