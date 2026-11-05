@@ -362,7 +362,9 @@
         "headersEnv": {
           "type": "object",
           "description": "Extra HTTP headers sent with the AI request, as header name to env var name pairs. Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.",
-          "propertyNames": { "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$" },
+          "propertyNames": {
+            "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"
+          },
           "additionalProperties": {
             "type": "string",
             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
@@ -422,7 +424,9 @@
         "headersEnv": {
           "type": "object",
           "description": "Extra HTTP headers sent with the AI request, as header name to env var name pairs. Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.",
-          "propertyNames": { "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$" },
+          "propertyNames": {
+            "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"
+          },
           "additionalProperties": {
             "type": "string",
             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
@@ -673,12 +677,18 @@
         },
         "state": {
           "type": "string",
-          "enum": ["configured", "not-configured"],
+          "enum": [
+            "configured",
+            "not-configured"
+          ],
           "description": "Enable or disable code scanning default setup. Some layer must set it."
         },
         "querySuite": {
           "type": "string",
-          "enum": ["default", "extended"],
+          "enum": [
+            "default",
+            "extended"
+          ],
           "description": "Query suite to use: 'default' for standard queries, 'extended' for additional queries"
         },
         "languages": {
@@ -746,7 +756,11 @@
         },
         "allowedActions": {
           "type": "string",
-          "enum": ["all", "local_only", "selected"],
+          "enum": [
+            "all",
+            "local_only",
+            "selected"
+          ],
           "description": "Which actions and reusable workflows may run. Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected."
         },
         "shaPinningRequired": {
@@ -792,7 +806,10 @@
         },
         "defaultWorkflowPermissions": {
           "type": "string",
-          "enum": ["read", "write"],
+          "enum": [
+            "read",
+            "write"
+          ],
           "description": "Default permissions of the GITHUB_TOKEN in workflows. Maps to default_workflow_permissions of PUT actions/permissions/workflow."
         },
         "canApprovePullRequestReviews": {
@@ -970,7 +987,10 @@
         "environments": {
           "type": "object",
           "description": "GitHub deployment environments keyed by name. Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.",
-          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "propertyNames": {
+            "minLength": 1,
+            "maxLength": 255
+          },
           "properties": {
             "deleteOrphaned": {
               "type": "boolean",
@@ -1188,7 +1208,10 @@
         "environments": {
           "type": "object",
           "description": "GitHub deployment environments keyed by name, merged over inherited ones. Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.",
-          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "propertyNames": {
+            "minLength": 1,
+            "maxLength": 255
+          },
           "properties": {
             "inherit": {
               "type": "boolean",
@@ -1359,11 +1382,19 @@
     "arrayMergeDirective": {
       "type": "object",
       "description": "Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.",
-      "required": ["$arrayMerge", "$values"],
+      "required": [
+        "$arrayMerge",
+        "$values"
+      ],
       "properties": {
         "$arrayMerge": {
           "type": "string",
-          "enum": ["replace", "append", "prepend", "merge"],
+          "enum": [
+            "replace",
+            "append",
+            "prepend",
+            "merge"
+          ],
           "description": "How to combine with the inherited array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)"
         },
         "$values": {
@@ -1660,7 +1691,11 @@
                   "type": "array",
                   "items": {
                     "type": "string",
-                    "enum": ["merge", "squash", "rebase"]
+                    "enum": [
+                      "merge",
+                      "squash",
+                      "rebase"
+                    ]
                   }
                 },
                 {
@@ -1673,7 +1708,11 @@
                         "$values": {
                           "items": {
                             "type": "string",
-                            "enum": ["merge", "squash", "rebase"]
+                            "enum": [
+                              "merge",
+                              "squash",
+                              "rebase"
+                            ]
                           }
                         }
                       }
@@ -1800,18 +1839,7 @@
                 {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "required": ["context"],
-                    "properties": {
-                      "context": {
-                        "type": "string",
-                        "description": "Name of the status check"
-                      },
-                      "integrationId": {
-                        "type": "integer",
-                        "description": "GitHub App integration ID (optional, for disambiguation)"
-                      }
-                    }
+                    "$ref": "#/definitions/statusCheck"
                   }
                 },
                 {
@@ -1823,18 +1851,7 @@
                       "properties": {
                         "$values": {
                           "items": {
-                            "type": "object",
-                            "required": ["context"],
-                            "properties": {
-                              "context": {
-                                "type": "string",
-                                "description": "Name of the status check"
-                              },
-                              "integrationId": {
-                                "type": "integer",
-                                "description": "GitHub App integration ID (optional, for disambiguation)"
-                              }
-                            }
+                            "$ref": "#/definitions/statusCheck"
                           }
                         }
                       }
@@ -1844,6 +1861,22 @@
               ]
             }
           }
+        }
+      }
+    },
+    "statusCheck": {
+      "type": "object",
+      "required": [
+        "context"
+      ],
+      "properties": {
+        "context": {
+          "type": "string",
+          "description": "Name of the status check"
+        },
+        "integrationId": {
+          "type": "integer",
+          "description": "GitHub App integration ID (optional, for disambiguation)"
         }
       }
     },
@@ -1991,39 +2024,7 @@
                 {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "required": [
-                      "tool",
-                      "alertsThreshold",
-                      "securityAlertsThreshold"
-                    ],
-                    "properties": {
-                      "tool": {
-                        "type": "string",
-                        "description": "Name of the code scanning tool (e.g., 'CodeQL')"
-                      },
-                      "alertsThreshold": {
-                        "type": "string",
-                        "enum": [
-                          "none",
-                          "errors",
-                          "errors_and_warnings",
-                          "all"
-                        ],
-                        "description": "Alert threshold for general code quality"
-                      },
-                      "securityAlertsThreshold": {
-                        "type": "string",
-                        "enum": [
-                          "none",
-                          "critical",
-                          "high_or_higher",
-                          "medium_or_higher",
-                          "all"
-                        ],
-                        "description": "Alert threshold for security issues"
-                      }
-                    }
+                    "$ref": "#/definitions/codeScanningTool"
                   }
                 },
                 {
@@ -2035,39 +2036,7 @@
                       "properties": {
                         "$values": {
                           "items": {
-                            "type": "object",
-                            "required": [
-                              "tool",
-                              "alertsThreshold",
-                              "securityAlertsThreshold"
-                            ],
-                            "properties": {
-                              "tool": {
-                                "type": "string",
-                                "description": "Name of the code scanning tool (e.g., 'CodeQL')"
-                              },
-                              "alertsThreshold": {
-                                "type": "string",
-                                "enum": [
-                                  "none",
-                                  "errors",
-                                  "errors_and_warnings",
-                                  "all"
-                                ],
-                                "description": "Alert threshold for general code quality"
-                              },
-                              "securityAlertsThreshold": {
-                                "type": "string",
-                                "enum": [
-                                  "none",
-                                  "critical",
-                                  "high_or_higher",
-                                  "medium_or_higher",
-                                  "all"
-                                ],
-                                "description": "Alert threshold for security issues"
-                              }
-                            }
+                            "$ref": "#/definitions/codeScanningTool"
                           }
                         }
                       }
@@ -2077,6 +2046,41 @@
               ]
             }
           }
+        }
+      }
+    },
+    "codeScanningTool": {
+      "type": "object",
+      "required": [
+        "tool",
+        "alertsThreshold",
+        "securityAlertsThreshold"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "description": "Name of the code scanning tool (e.g., 'CodeQL')"
+        },
+        "alertsThreshold": {
+          "type": "string",
+          "enum": [
+            "none",
+            "errors",
+            "errors_and_warnings",
+            "all"
+          ],
+          "description": "Alert threshold for general code quality"
+        },
+        "securityAlertsThreshold": {
+          "type": "string",
+          "enum": [
+            "none",
+            "critical",
+            "high_or_higher",
+            "medium_or_higher",
+            "all"
+          ],
+          "description": "Alert threshold for security issues"
         }
       }
     },
@@ -2129,26 +2133,7 @@
                 {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "required": ["path", "repositoryId"],
-                    "properties": {
-                      "path": {
-                        "type": "string",
-                        "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
-                      },
-                      "repositoryId": {
-                        "type": "integer",
-                        "description": "Repository ID where the workflow is defined"
-                      },
-                      "ref": {
-                        "type": "string",
-                        "description": "Git ref to use for the workflow (branch/tag)"
-                      },
-                      "sha": {
-                        "type": "string",
-                        "description": "Specific commit SHA for the workflow"
-                      }
-                    }
+                    "$ref": "#/definitions/workflowConfig"
                   }
                 },
                 {
@@ -2160,26 +2145,7 @@
                       "properties": {
                         "$values": {
                           "items": {
-                            "type": "object",
-                            "required": ["path", "repositoryId"],
-                            "properties": {
-                              "path": {
-                                "type": "string",
-                                "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
-                              },
-                              "repositoryId": {
-                                "type": "integer",
-                                "description": "Repository ID where the workflow is defined"
-                              },
-                              "ref": {
-                                "type": "string",
-                                "description": "Git ref to use for the workflow (branch/tag)"
-                              },
-                              "sha": {
-                                "type": "string",
-                                "description": "Specific commit SHA for the workflow"
-                              }
-                            }
+                            "$ref": "#/definitions/workflowConfig"
                           }
                         }
                       }
@@ -2189,6 +2155,31 @@
               ]
             }
           }
+        }
+      }
+    },
+    "workflowConfig": {
+      "type": "object",
+      "required": [
+        "path",
+        "repositoryId"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
+        },
+        "repositoryId": {
+          "type": "integer",
+          "description": "Repository ID where the workflow is defined"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Git ref to use for the workflow (branch/tag)"
+        },
+        "sha": {
+          "type": "string",
+          "description": "Specific commit SHA for the workflow"
         }
       }
     },
@@ -2406,7 +2397,9 @@
     "secretConfig": {
       "type": "object",
       "description": "Secret configuration mapping to an environment variable source",
-      "required": ["env"],
+      "required": [
+        "env"
+      ],
       "properties": {
         "env": {
           "type": "string",
@@ -2419,11 +2412,17 @@
     "deploymentBranchPattern": {
       "type": "object",
       "description": "A branch or tag name pattern allowed to deploy",
-      "required": ["type", "name"],
+      "required": [
+        "type",
+        "name"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["branch", "tag"],
+          "enum": [
+            "branch",
+            "tag"
+          ],
           "description": "Whether the pattern matches branches or tags"
         },
         "name": {
@@ -2465,7 +2464,11 @@
                 {
                   "properties": {
                     "$arrayMerge": {
-                      "enum": ["replace", "append", "prepend"]
+                      "enum": [
+                        "replace",
+                        "append",
+                        "prepend"
+                      ]
                     },
                     "$values": {
                       "items": {
