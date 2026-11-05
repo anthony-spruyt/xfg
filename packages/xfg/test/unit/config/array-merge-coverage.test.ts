@@ -189,15 +189,11 @@ const EXPECTED_RED = new Set<string>([
   "settings.environments.x.deploymentBranchPolicy.custom",
   "settings.rulesets.x.conditions.refName.exclude",
   "settings.rulesets.x.conditions.refName.include",
-  "settings.rulesets.x.rules[code_scanning].parameters.codeScanningTools",
   "settings.rulesets.x.rules[file_extension_restriction].parameters.restrictedFileExtensions",
   "settings.rulesets.x.rules[file_path_restriction].parameters.restrictedFilePaths",
   "settings.rulesets.x.rules[pull_request].parameters.allowedMergeMethods",
-  "settings.rulesets.x.rules[pull_request].parameters.requiredReviewers",
   "settings.rulesets.x.rules[pull_request].parameters.requiredReviewers[].filePatterns",
   "settings.rulesets.x.rules[required_deployments].parameters.requiredDeploymentEnvironments",
-  "settings.rulesets.x.rules[required_status_checks].parameters.requiredStatusChecks",
-  "settings.rulesets.x.rules[workflows].parameters.workflows",
 ]);
 
 interface Sample {
