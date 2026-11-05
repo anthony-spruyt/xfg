@@ -41,6 +41,11 @@ export interface PRMergeOptions {
   ai?: boolean | AiConfig;
 }
 
+/** prOptions of a group or repo layer; `inherit: false` drops everything inherited. */
+export interface RawPRMergeOptions extends PRMergeOptions {
+  inherit?: boolean;
+}
+
 export type RepoPROptions = Omit<PRMergeOptions, "ai"> & {
   ai?: ResolvedAiConfig;
 };
@@ -537,7 +542,7 @@ export interface RawGroupConfig {
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
 }
 
@@ -556,7 +561,7 @@ export interface RawConditionalGroupConfig {
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
 }
 
@@ -579,10 +584,10 @@ export interface RawRootSettings {
 // Per-repo settings (before normalization) - inherit controls whether root settings are inherited
 export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
-  repo?: GitHubRepoSettings | false;
+  repo?: (GitHubRepoSettings & { inherit?: boolean }) | false;
   labels?: Record<string, Label | false> & { inherit?: boolean };
   codeScanning?: CodeScanningSettings | false;
-  actions?: ActionsSettings | false;
+  actions?: (ActionsSettings & { inherit?: boolean }) | false;
   variables?: Record<string, string | false> & {
     inherit?: boolean;
     deleteOrphaned?: boolean;
@@ -602,7 +607,7 @@ export interface RawRepoConfig {
   git: string | string[];
   files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
   groups?: string[];
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
   /** Fork upstream repo if target doesn't exist */
   upstream?: string;

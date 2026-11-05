@@ -240,6 +240,10 @@
       "type": "object",
       "description": "PR merge behavior options",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited prOptions field (including ai), then apply this layer's own. Not valid at root level. Default: true"
+        },
         "merge": {
           "type": "string",
           "enum": [
@@ -725,6 +729,10 @@
       "type": "object",
       "description": "GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited actions setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "enabled": {
           "type": "boolean",
           "description": "Whether GitHub Actions is enabled for the repository. Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer."
@@ -1208,6 +1216,10 @@
       "type": "object",
       "description": "GitHub repository settings for features, merge options, and security",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited repo setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "description": {
           "type": "string",
           "description": "Repository description. Used when creating new repositories via lifecycle management (upstream/source fields)."

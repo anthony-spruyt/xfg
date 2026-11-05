@@ -9,6 +9,7 @@ import {
 import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
+import { validateInheritFlag } from "./inherit-flag.js";
 import { isPlainObject } from "../../shared/type-guards.js";
 import { arrayValues, isArrayMergeDirective } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
@@ -321,6 +322,10 @@ function validateSettingsRepo(
     return;
   }
   validateRepoSettings(settings.repo, context);
+  validateInheritFlag(
+    settings.repo as Record<string, unknown>,
+    `${context} repo`
+  );
 }
 
 function validateSettingsCodeScanning(

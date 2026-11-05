@@ -104,6 +104,15 @@ function validateRootSettings(config: RawConfig): void {
 
   validateSettings(config.settings, "Root");
 
+  for (const block of ["repo", "actions"] as const) {
+    const value = config.settings[block];
+    if (value && typeof value === "object" && "inherit" in value) {
+      throw new ValidationError(
+        `'inherit' is not allowed in root-level ${block} (nothing to inherit from)`
+      );
+    }
+  }
+
   if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
     throw new ValidationError(
       "'inherit' is a reserved key and cannot be used as a ruleset name"

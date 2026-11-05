@@ -1,4 +1,5 @@
 import {
+  applyInherit,
   deepMerge,
   stripMergeDirectives,
   createMergeContext,
@@ -19,6 +20,7 @@ import type {
   ContentValue,
   AiConfig,
   PRMergeOptions,
+  RawPRMergeOptions,
   RepoPROptions,
   RepoSettings,
   RawRootSettings,
@@ -126,22 +128,27 @@ type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
 
 function mergePROptions(
   global: MergedPROptions | undefined,
-  perRepo: PRMergeOptions | undefined
+  perRepo: RawPRMergeOptions | undefined
 ): MergedPROptions | undefined {
   if (!global && !perRepo) return undefined;
-  if (!global) return perRepo;
   if (!perRepo) return global;
 
-  const lastAi = typeof global.ai === "object" ? global.ai : global.lastAi;
-  const { ai: _globalAi, lastAi: _globalLastAi, ...globalRest } = global;
-  const { ai: _repoAi, ...repoRest } = perRepo;
+  const layer = applyInherit(
+    global as Record<string, unknown> | undefined,
+    perRepo as Record<string, unknown>
+  );
+  const base = layer.base as MergedPROptions;
+  const overlay = layer.overlay as PRMergeOptions;
+  const lastAi = typeof base.ai === "object" ? base.ai : base.lastAi;
+  const { ai: _baseAi, lastAi: _baseLastAi, ...baseRest } = base;
+  const { ai: _overlayAi, ...overlayRest } = overlay;
   const merged: MergedPROptions = {
-    ...global,
-    ...perRepo,
+    ...base,
+    ...overlay,
     lastAi: undefined,
     ...deepMerge(
-      globalRest,
-      repoRest,
+      baseRest,
+      overlayRest,
       createMergeContext("replace", PR_OPTIONS_LOCATION)
     ),
   };
@@ -456,15 +463,28 @@ function stripBlock<T extends object>(block: T, location: string): T {
   return stripMergeDirectives(block as Record<string, unknown>, location) as T;
 }
 
+function mergeObjectLayer(
+  base: Record<string, unknown> | false | undefined,
+  overlay: Record<string, unknown>,
+  location: string
+): Record<string, unknown> {
+  const layer = applyInherit(base, overlay);
+  return deepMerge(
+    layer.base,
+    layer.overlay,
+    createMergeContext("replace", location)
+  );
+}
+
 function objectBlock<T extends object>(location: string) {
   return {
     merge: (base: T | false | undefined, overlay: T | false): T | false =>
       overlay === false
         ? false
-        : (deepMerge(
-            (base || {}) as Record<string, unknown>,
+        : (mergeObjectLayer(
+            base as Record<string, unknown> | false | undefined,
             overlay as Record<string, unknown>,
-            createMergeContext("replace", location)
+            location
           ) as T),
     finalize: (merged: T | false): T | undefined =>
       merged === false ? undefined : stripBlock(merged, location),

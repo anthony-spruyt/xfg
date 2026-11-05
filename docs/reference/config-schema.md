@@ -145,6 +145,7 @@ PR merge behavior options
 
 | Field           | Type                                                        | Required | Default  | Description                                                                                                                                                                                                         |
 | --------------- | ----------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inherit`       | `boolean`                                                   | No       | -        | Set to false to drop every inherited prOptions field (including ai), then apply this layer's own.                                                                                                                   |
 | `merge`         | `manual` \| `auto` \| `force` \| `direct`                   | No       | `auto`   | Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. |
 | `mergeStrategy` | `merge` \| `squash` \| `rebase`                             | No       | `squash` | How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base.                                                                                             |
 | `deleteBranch`  | `boolean`                                                   | No       | `true`   | Delete the source branch after merge completes.                                                                                                                                                                     |
@@ -153,6 +154,7 @@ PR merge behavior options
 | `branch`        | `string`                                                    | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
 | `ai`            | `boolean` \| [`aiOptions`](#aioptions)                      | No       | -        | AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).                                                                                  |
 
+- `inherit` — Not valid at root level. Default: true
 - `merge` — Default: auto
 - `mergeStrategy` — Default: squash
 - `deleteBranch` — Default: true
@@ -317,6 +319,7 @@ GitHub Actions settings for the repository (Settings > Actions). Each field maps
 
 | Field                          | Type                                                                                                | Required | Default | Description                                                                              |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------- |
+| `inherit`                      | `boolean`                                                                                           | No       | -       | Set to false to drop every inherited actions setting, then apply this layer's own.       |
 | `enabled`                      | `boolean`                                                                                           | No       | -       | Whether GitHub Actions is enabled for the repository.                                    |
 | `allowedActions`               | `all` \| `local_only` \| `selected`                                                                 | No       | -       | Which actions and reusable workflows may run.                                            |
 | `shaPinningRequired`           | `boolean`                                                                                           | No       | -       | Require actions to be referenced by full commit SHA.                                     |
@@ -330,6 +333,7 @@ GitHub Actions settings for the repository (Settings > Actions). Each field maps
 | `cacheRetentionDays`           | `integer`                                                                                           | No       | -       | Days to keep unused Actions caches.                                                      |
 | `cacheSizeGb`                  | `integer`                                                                                           | No       | -       | Maximum Actions cache size in gigabytes.                                                 |
 
+- `inherit` — Not valid at root level. Default: true
 - `enabled` — Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer.
 - `allowedActions` — Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected.
 - `shaPinningRequired` — Maps to sha_pinning_required of PUT actions/permissions.
@@ -414,35 +418,37 @@ Repository settings including GitHub Rulesets and repository features
 
 GitHub repository settings for features, merge options, and security
 
-| Field                           | Type                                      | Required | Default | Description                                                       |
-| ------------------------------- | ----------------------------------------- | -------- | ------- | ----------------------------------------------------------------- |
-| `description`                   | `string`                                  | No       | -       | Repository description.                                           |
-| `hasIssues`                     | `boolean`                                 | No       | -       | Enable or disable GitHub Issues.                                  |
-| `hasProjects`                   | `boolean`                                 | No       | -       | Enable or disable GitHub Projects.                                |
-| `hasWiki`                       | `boolean`                                 | No       | -       | Enable or disable the repository wiki.                            |
-| `hasDiscussions`                | `boolean`                                 | No       | -       | Enable or disable GitHub Discussions                              |
-| `isTemplate`                    | `boolean`                                 | No       | -       | Mark the repository as a template repository                      |
-| `allowForking`                  | `boolean`                                 | No       | -       | Allow forking of a private repository                             |
-| `visibility`                    | `public` \| `private` \| `internal`       | No       | -       | Repository visibility.                                            |
-| `archived`                      | `boolean`                                 | No       | -       | Archive the repository.                                           |
-| `allowSquashMerge`              | `boolean`                                 | No       | -       | Allow squash-merging pull requests                                |
-| `allowMergeCommit`              | `boolean`                                 | No       | -       | Allow merge commits for pull requests                             |
-| `allowRebaseMerge`              | `boolean`                                 | No       | -       | Allow rebase-merging pull requests                                |
-| `allowAutoMerge`                | `boolean`                                 | No       | -       | Allow auto-merge on pull requests                                 |
-| `deleteBranchOnMerge`           | `boolean`                                 | No       | -       | Automatically delete head branches after pull requests are merged |
-| `allowUpdateBranch`             | `boolean`                                 | No       | -       | Show 'Update branch' button in pull requests                      |
-| `squashMergeCommitTitle`        | `PR_TITLE` \| `COMMIT_OR_PR_TITLE`        | No       | -       | Default title for squash merge commits                            |
-| `squashMergeCommitMessage`      | `PR_BODY` \| `COMMIT_MESSAGES` \| `BLANK` | No       | -       | Default message for squash merge commits                          |
-| `mergeCommitTitle`              | `PR_TITLE` \| `MERGE_MESSAGE`             | No       | -       | Default title for merge commits                                   |
-| `mergeCommitMessage`            | `PR_BODY` \| `PR_TITLE` \| `BLANK`        | No       | -       | Default message for merge commits                                 |
-| `vulnerabilityAlerts`           | `boolean`                                 | No       | -       | Enable or disable Dependabot vulnerability alerts                 |
-| `automatedSecurityFixes`        | `boolean`                                 | No       | -       | Enable or disable Dependabot automated security fixes             |
-| `secretScanning`                | `boolean`                                 | No       | -       | Enable or disable secret scanning                                 |
-| `secretScanningPushProtection`  | `boolean`                                 | No       | -       | Enable or disable secret scanning push protection                 |
-| `privateVulnerabilityReporting` | `boolean`                                 | No       | -       | Enable or disable private vulnerability reporting                 |
-| `webCommitSignoffRequired`      | `boolean`                                 | No       | -       | Require contributors to sign off on web-based commits             |
-| `defaultBranch`                 | `string`                                  | No       | -       | The default branch for the repository                             |
+| Field                           | Type                                      | Required | Default | Description                                                                     |
+| ------------------------------- | ----------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------- |
+| `inherit`                       | `boolean`                                 | No       | -       | Set to false to drop every inherited repo setting, then apply this layer's own. |
+| `description`                   | `string`                                  | No       | -       | Repository description.                                                         |
+| `hasIssues`                     | `boolean`                                 | No       | -       | Enable or disable GitHub Issues.                                                |
+| `hasProjects`                   | `boolean`                                 | No       | -       | Enable or disable GitHub Projects.                                              |
+| `hasWiki`                       | `boolean`                                 | No       | -       | Enable or disable the repository wiki.                                          |
+| `hasDiscussions`                | `boolean`                                 | No       | -       | Enable or disable GitHub Discussions                                            |
+| `isTemplate`                    | `boolean`                                 | No       | -       | Mark the repository as a template repository                                    |
+| `allowForking`                  | `boolean`                                 | No       | -       | Allow forking of a private repository                                           |
+| `visibility`                    | `public` \| `private` \| `internal`       | No       | -       | Repository visibility.                                                          |
+| `archived`                      | `boolean`                                 | No       | -       | Archive the repository.                                                         |
+| `allowSquashMerge`              | `boolean`                                 | No       | -       | Allow squash-merging pull requests                                              |
+| `allowMergeCommit`              | `boolean`                                 | No       | -       | Allow merge commits for pull requests                                           |
+| `allowRebaseMerge`              | `boolean`                                 | No       | -       | Allow rebase-merging pull requests                                              |
+| `allowAutoMerge`                | `boolean`                                 | No       | -       | Allow auto-merge on pull requests                                               |
+| `deleteBranchOnMerge`           | `boolean`                                 | No       | -       | Automatically delete head branches after pull requests are merged               |
+| `allowUpdateBranch`             | `boolean`                                 | No       | -       | Show 'Update branch' button in pull requests                                    |
+| `squashMergeCommitTitle`        | `PR_TITLE` \| `COMMIT_OR_PR_TITLE`        | No       | -       | Default title for squash merge commits                                          |
+| `squashMergeCommitMessage`      | `PR_BODY` \| `COMMIT_MESSAGES` \| `BLANK` | No       | -       | Default message for squash merge commits                                        |
+| `mergeCommitTitle`              | `PR_TITLE` \| `MERGE_MESSAGE`             | No       | -       | Default title for merge commits                                                 |
+| `mergeCommitMessage`            | `PR_BODY` \| `PR_TITLE` \| `BLANK`        | No       | -       | Default message for merge commits                                               |
+| `vulnerabilityAlerts`           | `boolean`                                 | No       | -       | Enable or disable Dependabot vulnerability alerts                               |
+| `automatedSecurityFixes`        | `boolean`                                 | No       | -       | Enable or disable Dependabot automated security fixes                           |
+| `secretScanning`                | `boolean`                                 | No       | -       | Enable or disable secret scanning                                               |
+| `secretScanningPushProtection`  | `boolean`                                 | No       | -       | Enable or disable secret scanning push protection                               |
+| `privateVulnerabilityReporting` | `boolean`                                 | No       | -       | Enable or disable private vulnerability reporting                               |
+| `webCommitSignoffRequired`      | `boolean`                                 | No       | -       | Require contributors to sign off on web-based commits                           |
+| `defaultBranch`                 | `string`                                  | No       | -       | The default branch for the repository                                           |
 
+- `inherit` — Not valid at root level. Default: true
 - `description` — Used when creating new repositories via lifecycle management (upstream/source fields).
 - `hasIssues` — Warning: Disabling may hide existing issues.
 - `hasProjects` — Warning: Disabling may hide existing projects.

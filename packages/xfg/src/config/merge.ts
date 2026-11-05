@@ -276,6 +276,18 @@ function mergeArrays(
   return overlay;
 }
 
+/**
+ * Resolves `inherit` for one object block before it is merged: `inherit: false`
+ * in the overlay empties the base. The `inherit` key never reaches the merge.
+ */
+export function applyInherit(
+  base: Record<string, unknown> | false | undefined,
+  overlay: Record<string, unknown>
+): { base: Record<string, unknown>; overlay: Record<string, unknown> } {
+  const { inherit, ...rest } = overlay;
+  return { base: inherit === false || !base ? {} : base, overlay: rest };
+}
+
 export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,

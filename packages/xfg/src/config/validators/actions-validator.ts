@@ -9,8 +9,12 @@ import {
   type ActionsSettings,
 } from "../types.js";
 import { validValues } from "./file-validator.js";
+import { validateInheritFlag } from "./inherit-flag.js";
 
-const ACTIONS_KEYS: ReadonlySet<string> = new Set<keyof ActionsSettings>([
+const ACTIONS_KEYS: ReadonlySet<string> = new Set<
+  keyof ActionsSettings | "inherit"
+>([
+  "inherit",
   "enabled",
   "allowedActions",
   "shaPinningRequired",
@@ -164,6 +168,7 @@ export function validateActionsSettings(
     }
   }
 
+  validateInheritFlag(actions, context);
   validateValues(actions, context);
   validateCoupling(actions, context);
 }
