@@ -14,7 +14,9 @@ import { isCredentialEnvName } from "../shared/credential-env.js";
 import { validatePrOptions } from "./validators/pr-options-validator.js";
 import { arrayValues } from "./array-directive.js";
 import {
+  validateDeploymentBranchPolicy,
   validateFileConfigFields,
+  validateMergedCodeScanningSettings,
   validateSettings,
 } from "./validators/shared.js";
 import {
@@ -104,7 +106,7 @@ function validateRootSettings(config: RawConfig): void {
 
   validateSettings(config.settings, "Root");
 
-  for (const block of ["repo", "actions"] as const) {
+  for (const block of ["repo", "actions", "codeScanning"] as const) {
     const value = config.settings[block];
     if (value && typeof value === "object" && "inherit" in value) {
       throw new ValidationError(
@@ -429,6 +431,28 @@ export function validateNormalizedConfig(config: Config): void {
   for (const repo of config.repos) {
     assertNoOverlap(repo.settings, `Repo '${repo.git}'`);
     validateMergedActionsSettings(repo.settings?.actions, `Repo '${repo.git}'`);
+    validateMergedCodeScanningSettings(
+      repo.settings?.codeScanning,
+      `Repo '${repo.git}'`
+    );
+    validateMergedEnvironments(repo.settings, `Repo '${repo.git}'`);
+  }
+}
+
+function validateMergedEnvironments(
+  settings: RepoSettings | undefined,
+  context: string
+): void {
+  for (const [name, environment] of Object.entries(
+    settings?.environments ?? {}
+  )) {
+    if (!isPlainObject(environment) || !environment.deploymentBranchPolicy) {
+      continue;
+    }
+    validateDeploymentBranchPolicy(
+      environment.deploymentBranchPolicy,
+      `${context}: environment '${name}'`
+    );
   }
 }
 

@@ -102,7 +102,7 @@ settings:
 
 Environments merge by name (ignoring case) through root, groups, conditional groups, and the repo:
 
-- A `deploymentBranchPolicy` set at a lower layer **replaces** the inherited policy as a whole.
+- A `deploymentBranchPolicy` set at a lower layer merges field by field with the inherited one. To switch between `protectedBranches` and `custom`, set `inherit: false` on the layer that changes it.
 - `deploymentBranchPolicy: false` clears an inherited policy, so any branch can deploy. Not allowed at root.
 - Secrets merge by name. Set a secret to `false` to drop an inherited one.
 - Set an environment to `false` to drop it, or `inherit: false` to drop every inherited environment. `inherit` is not allowed at root.
@@ -123,8 +123,9 @@ repos:
       environments:
         release:
           deploymentBranchPolicy:
+            inherit: false                  # drop protectedBranches
             custom:
-              - { type: tag, name: "v*" }   # replaces protectedBranches
+              - { type: tag, name: "v*" }
           secrets:
             NPM_TOKEN: false               # drop the inherited secret
 

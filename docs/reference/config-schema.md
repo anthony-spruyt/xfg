@@ -301,12 +301,14 @@ See [Groups — Conditional Groups](../configuration/groups.md#conditional-group
 
 GitHub code scanning default setup configuration
 
-| Field        | Type                                                                                                                                                                     | Required | Default | Description                                                                           |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ------------------------------------------------------------------------------------- |
-| `state`      | `configured` \| `not-configured`                                                                                                                                         | Yes      | -       | Enable or disable code scanning default setup                                         |
-| `querySuite` | `default` \| `extended`                                                                                                                                                  | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries |
-| `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Languages to analyze.                                                                 |
+| Field        | Type                                                                                                                                                                     | Required | Default | Description                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ---------------------------------------------------------------------------------------- |
+| `inherit`    | `boolean`                                                                                                                                                                | No       | -       | Set to false to drop every inherited code scanning setting, then apply this layer's own. |
+| `state`      | `configured` \| `not-configured`                                                                                                                                         | No       | -       | Enable or disable code scanning default setup                                            |
+| `querySuite` | `default` \| `extended`                                                                                                                                                  | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries    |
+| `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Languages to analyze.                                                                    |
 
+- `inherit` — Not valid at root level. Default: true
 - `languages` — If omitted, GitHub auto-detects languages in the repository.
 
 <!-- xfg:generated:end -->
@@ -840,12 +842,14 @@ A GitHub deployment environment, merged over the inherited one
 
 Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.
 
-| Field               | Type                                                                                                     | Required | Default | Description                                           |
-| ------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------- | ----------------------------------------------------- |
-| `protectedBranches` | `true`                                                                                                   | No       | -       | Only branches with branch protection rules can deploy |
-| `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Only refs matching these patterns can deploy.         |
-| `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in custom.     |
+| Field               | Type                                                                                                     | Required | Default | Description                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------- |
+| `inherit`           | `boolean`                                                                                                | No       | -       | Set to false to drop the inherited policy, then apply this layer's own. |
+| `protectedBranches` | `true`                                                                                                   | No       | -       | Only branches with branch protection rules can deploy                   |
+| `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Only refs matching these patterns can deploy.                           |
+| `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in custom.                       |
 
+- `inherit` — Not valid at root level. Default: true
 - `custom` — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
 - `deleteOrphaned` — Only valid with custom. Default: false
 

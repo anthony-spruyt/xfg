@@ -402,6 +402,9 @@ export interface CodeScanningSettings {
   languages?: CodeScanningLanguage[];
 }
 
+/** One layer of code scanning settings; another layer may supply `state`. */
+export type RawCodeScanningSettings = Partial<CodeScanningSettings>;
+
 export type ActionsAllowedActions = "all" | "local_only" | "selected";
 export type ActionsDefaultWorkflowPermissions = "read" | "write";
 export type ActionsForkPrApprovalPolicy =
@@ -471,9 +474,15 @@ export interface EnvironmentConfig {
   secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
 }
 
+/** One layer of a deployment branch policy; the layers are merged field by field. */
+export interface RawDeploymentBranchPolicy extends DeploymentBranchPolicy {
+  /** `false` drops the inherited policy, then this layer's fields apply */
+  inherit?: boolean;
+}
+
 export interface RawEnvironmentConfig {
   /** `false` clears an inherited policy so any branch can deploy */
-  deploymentBranchPolicy?: DeploymentBranchPolicy | false;
+  deploymentBranchPolicy?: RawDeploymentBranchPolicy | false;
   secrets?: Record<string, SecretConfig | false> & { deleteOrphaned?: boolean };
 }
 
@@ -570,7 +579,7 @@ export interface RawRootSettings {
   rulesets?: Record<string, Ruleset | false>;
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false>;
-  codeScanning?: CodeScanningSettings | false;
+  codeScanning?: RawCodeScanningSettings | false;
   actions?: ActionsSettings | false;
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
@@ -586,7 +595,7 @@ export interface RawRepoSettings {
   rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
   repo?: (GitHubRepoSettings & { inherit?: boolean }) | false;
   labels?: Record<string, Label | false> & { inherit?: boolean };
-  codeScanning?: CodeScanningSettings | false;
+  codeScanning?: (RawCodeScanningSettings & { inherit?: boolean }) | false;
   actions?: (ActionsSettings & { inherit?: boolean }) | false;
   variables?: Record<string, string | false> & {
     inherit?: boolean;

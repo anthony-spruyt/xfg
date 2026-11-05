@@ -3,9 +3,11 @@ import { strict as assert } from "node:assert";
 import {
   validateRawConfig,
   validateForSync,
+  validateNormalizedConfig,
   validateSecretsConfig,
   hasActionableSettings,
 } from "../../../src/config/validator.js";
+import { normalizeConfig } from "../../../src/config/normalizer.js";
 import type {
   RawConfig,
   RawRepoSettings,
@@ -21,6 +23,9 @@ const base = (settings?: RawRootSettings, repoSettings?: RawRepoSettings) =>
 
 const asEnvs = (value: unknown) =>
   value as unknown as RawRootSettings["environments"];
+
+const validateMerged = (config: RawConfig) =>
+  validateNormalizedConfig(normalizeConfig(config, {}));
 
 describe("settings.environments validation", () => {
   test("accepts a custom policy with branch and tag patterns plus secrets", () => {
@@ -176,23 +181,169 @@ describe("settings.environments validation", () => {
       );
     });
 
-    test("rejects a policy with neither option", () => {
+    test("accepts a layer with neither option, another layer may set it", () => {
+      assert.doesNotThrow(() => validateRawConfig(withPolicy({})));
+    });
+
+    test("rejects a merged policy with neither option", () => {
       assert.throws(
-        () => validateRawConfig(withPolicy({})),
-        /needs exactly one of 'protectedBranches: true' or 'custom'/
+        () => validateMerged(withPolicy({})),
+        /Repo '.*': environment 'release' deploymentBranchPolicy needs exactly one of 'protectedBranches: true' or 'custom'/
       );
     });
 
-    test("rejects a policy with both options", () => {
+    test("rejects a merged policy with both options in one layer", () => {
       assert.throws(
         () =>
-          validateRawConfig(
+          validateMerged(
             withPolicy({
               protectedBranches: true,
               custom: [{ type: "branch", name: "main" }],
             })
           ),
-        /needs exactly one of 'protectedBranches: true' or 'custom'/
+        /deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'.*inherit: false/
+      );
+    });
+
+    test("rejects protectedBranches merged over an inherited custom and points to inherit: false", () => {
+      assert.throws(
+        () =>
+          validateMerged(
+            base(
+              {
+                environments: asEnvs({
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: [{ type: "branch", name: "main" }],
+                    },
+                  },
+                }),
+              },
+              {
+                environments: {
+                  release: {
+                    deploymentBranchPolicy: { protectedBranches: true },
+                  },
+                },
+              }
+            )
+          ),
+        /deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'.*inherit: false/
+      );
+    });
+
+    test("accepts protectedBranches with inherit: false over an inherited custom", () => {
+      assert.doesNotThrow(() =>
+        validateMerged(
+          base(
+            {
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: {
+                    custom: [{ type: "branch", name: "main" }],
+                  },
+                },
+              }),
+            },
+            {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: {
+                    inherit: false,
+                    protectedBranches: true,
+                  },
+                },
+              },
+            }
+          )
+        )
+      );
+    });
+
+    test("rejects a custom pattern repeated by an append", () => {
+      assert.throws(
+        () =>
+          validateMerged(
+            base(
+              {
+                environments: asEnvs({
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: [{ type: "branch", name: "main" }],
+                    },
+                  },
+                }),
+              },
+              {
+                environments: {
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: {
+                        $arrayMerge: "append",
+                        $values: [{ type: "branch", name: "main" }],
+                      },
+                    },
+                  },
+                },
+              } as unknown as RawRepoSettings
+            )
+          ),
+        /duplicate pattern branch 'main'/
+      );
+    });
+
+    test("accepts inherit: false in a repo layer", () => {
+      assert.doesNotThrow(() =>
+        validateRawConfig(
+          base(
+            {
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: { protectedBranches: true },
+                },
+              }),
+            },
+            {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: {
+                    inherit: false,
+                    custom: [{ type: "branch", name: "main" }],
+                  },
+                },
+              },
+            }
+          )
+        )
+      );
+    });
+
+    test("rejects a non-boolean inherit", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            base(undefined, {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: { inherit: "no", custom: [] },
+                },
+              },
+            } as unknown as RawRepoSettings)
+          ),
+        /deploymentBranchPolicy: inherit must be a boolean/
+      );
+    });
+
+    test("rejects inherit at root level", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            withPolicy({
+              inherit: false,
+              custom: [{ type: "branch", name: "main" }],
+            })
+          ),
+        /'inherit' is not allowed in root-level deploymentBranchPolicy/
       );
     });
 
@@ -373,10 +524,10 @@ describe("settings.environments validation", () => {
       );
     });
 
-    test("rejects policy deleteOrphaned with protectedBranches", () => {
+    test("rejects a merged policy deleteOrphaned with protectedBranches", () => {
       assert.throws(
         () =>
-          validateRawConfig(
+          validateMerged(
             base({
               environments: asEnvs({
                 release: {

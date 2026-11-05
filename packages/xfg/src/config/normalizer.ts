@@ -7,7 +7,6 @@ import {
   mergeTextContent,
 } from "./merge.js";
 import type { ArrayMergeStrategy } from "./merge.js";
-import { arrayValues, isArrayMergeDirective } from "./array-directive.js";
 import { dropRepeatedItems } from "./drop-repeated-items.js";
 import { interpolateContent } from "./env.js";
 import type {
@@ -33,11 +32,14 @@ import type {
   Label,
   GitHubRepoSettings,
   ActionsSettings,
+  CodeScanningSettings,
+  RawCodeScanningSettings,
   CollaboratorsConfig,
   RawCollaboratorsConfig,
   EnvironmentConfig,
   EnvironmentsConfig,
   RawEnvironmentConfig,
+  RawDeploymentBranchPolicy,
 } from "./types.js";
 import { expandRepoGroups } from "./extends-resolver.js";
 
@@ -318,38 +320,30 @@ function dedupeUsers(users: string[]): string[] {
   });
 }
 
-function mergeUsers(base: unknown, overlay: unknown): unknown {
-  if (overlay === undefined) return base;
-  if (isArrayMergeDirective(overlay)) {
-    return deepMerge(
-      { users: base },
-      { users: overlay },
-      createMergeContext("replace", COLLABORATORS_LOCATION)
-    ).users;
-  }
-  return [...(arrayValues(base) ?? []), ...(overlay as string[])];
-}
-
-/**
- * Merges collaborator layers: users union (case-insensitive, first spelling wins),
- * `inherit: false` drops base users but never clears an inherited deleteOrphaned.
- */
+/** `inherit: false` drops inherited users but never clears an inherited deleteOrphaned. */
 function mergeCollaboratorsLayer(
   base: RawCollaboratorsConfig | undefined,
-  overlay: RawCollaboratorsConfig | undefined
+  overlay: RawCollaboratorsConfig
 ): RawCollaboratorsConfig {
-  const inherited = overlay?.inherit === false ? undefined : base?.users;
-  const users = (mergeUsers(inherited, overlay?.users) ??
-    []) as RawCollaboratorsConfig["users"];
-  const deleteOrphaned = overlay?.deleteOrphaned ?? base?.deleteOrphaned;
-  return deleteOrphaned === undefined ? { users } : { users, deleteOrphaned };
+  const merged = mergeObjectLayer(
+    base as Record<string, unknown> | undefined,
+    overlay as Record<string, unknown>,
+    COLLABORATORS_LOCATION
+  ) as RawCollaboratorsConfig;
+  if (
+    merged.deleteOrphaned === undefined &&
+    base?.deleteOrphaned !== undefined
+  ) {
+    merged.deleteOrphaned = base.deleteOrphaned;
+  }
+  return merged;
 }
 
 function finalizeCollaborators(
   merged: RawCollaboratorsConfig
 ): CollaboratorsConfig | undefined {
   const { users, deleteOrphaned } = stripMergeDirectives(
-    { ...mergeCollaboratorsLayer(undefined, merged) },
+    { ...merged },
     COLLABORATORS_LOCATION
   ) as CollaboratorsConfig;
   const deduped = dedupeUsers(users ?? []);
@@ -361,19 +355,23 @@ function finalizeCollaborators(
 
 /**
  * Merges one environment layer over another: a set `deploymentBranchPolicy`
- * replaces the inherited one whole, and secrets merge like repo secrets.
+ * merges field by field, `false` clears it, and secrets merge like repo secrets.
  */
 function mergeEnvironmentLayer(
   base: RawEnvironmentConfig | false | undefined,
-  overlay: RawEnvironmentConfig
+  overlay: RawEnvironmentConfig,
+  name: string
 ): RawEnvironmentConfig {
   const inherited = base === false ? undefined : base;
   const result: RawEnvironmentConfig = {};
 
-  const policy =
-    overlay.deploymentBranchPolicy ?? inherited?.deploymentBranchPolicy;
+  const policy = mergePolicyLayer(
+    inherited?.deploymentBranchPolicy,
+    overlay.deploymentBranchPolicy,
+    environmentLocation(name)
+  );
   if (policy !== undefined) {
-    result.deploymentBranchPolicy = structuredClone(policy);
+    result.deploymentBranchPolicy = policy;
   }
 
   if (inherited?.secrets || overlay.secrets) {
@@ -384,6 +382,20 @@ function mergeEnvironmentLayer(
   }
 
   return result;
+}
+
+function mergePolicyLayer(
+  base: RawDeploymentBranchPolicy | false | undefined,
+  overlay: RawDeploymentBranchPolicy | false | undefined,
+  location: string
+): RawDeploymentBranchPolicy | false | undefined {
+  if (overlay === undefined) return structuredClone(base);
+  if (overlay === false) return false;
+  return mergeObjectLayer(
+    base as Record<string, unknown> | false | undefined,
+    structuredClone(overlay) as Record<string, unknown>,
+    location
+  ) as RawDeploymentBranchPolicy;
 }
 
 function environmentLocation(name: string): string {
@@ -476,18 +488,25 @@ function mergeObjectLayer(
   );
 }
 
-function objectBlock<T extends object>(location: string) {
+function objectBlock<T extends object, Raw extends object = T>(
+  location: string
+) {
   return {
-    merge: (base: T | false | undefined, overlay: T | false): T | false =>
+    merge: (
+      base: Raw | false | undefined,
+      overlay: Raw | false
+    ): Raw | false =>
       overlay === false
         ? false
         : (mergeObjectLayer(
             base as Record<string, unknown> | false | undefined,
             overlay as Record<string, unknown>,
             location
-          ) as T),
-    finalize: (merged: T | false): T | undefined =>
-      merged === false ? undefined : stripBlock(merged, location),
+          ) as Raw),
+    finalize: (merged: Raw | false): T | undefined =>
+      merged === false
+        ? undefined
+        : (stripBlock(merged, location) as unknown as T),
   };
 }
 
@@ -580,15 +599,10 @@ const BLOCKS: { [K in keyof RawRepoSettings]-?: BlockMerger<K> } = {
       ),
     finalize: finalizeLabels,
   },
-  // Replaces whole: state, querySuite and languages are coupled
-  codeScanning: {
-    merge: (_base, overlay) =>
-      overlay === false ? false : structuredClone(overlay),
-    finalize: (merged) =>
-      merged === false
-        ? undefined
-        : stripBlock(merged, "settings.codeScanning"),
-  },
+  // state is required; validateNormalizedConfig checks it after the merge
+  codeScanning: objectBlock<CodeScanningSettings, RawCodeScanningSettings>(
+    "settings.codeScanning"
+  ),
   actions: objectBlock<ActionsSettings>("settings.actions"),
   variables: entryMapBlock as BlockMerger<"variables">,
   secrets: entryMapBlock as BlockMerger<"secrets">,

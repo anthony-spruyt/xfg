@@ -180,19 +180,13 @@ const derivedPaths = [...repoSettingsWalk.sites, ...prOptionsWalk.sites]
 
 const blockPaths = [...repoSettingsWalk.blocks, ...prOptionsWalk.blocks];
 
-// Temporary: paths that fail on today's code; empty when the feature is done
-const EXPECTED_RED = new Set<string>([
-  "settings.codeScanning.languages",
-  "settings.collaborators.users",
-  "settings.environments.x.deploymentBranchPolicy.custom",
-]);
-
 interface Sample {
   a: unknown;
   b: unknown;
   c: unknown;
   bad: unknown;
   siblings?: Record<string, Json>;
+  dropped?: Record<string, Json>;
   matchBy?: string;
 }
 
@@ -313,6 +307,11 @@ const SAMPLES: Record<string, Sample> = {
     b: { type: "branch", name: "b" },
     c: { type: "tag", name: "c" },
     bad: { type: "branch", name: "" },
+    dropped: {
+      "settings.environments.x.deploymentBranchPolicy": {
+        protectedBranches: true,
+      },
+    },
   },
   "prOptions.labels": { a: "a", b: "b", c: "c", bad: "" },
 };
@@ -543,7 +542,7 @@ function runPath(path: string): string[] {
       const fresh = place(
         sample,
         blockToks,
-        { inherit: false, ...sample.siblings?.[block] },
+        { inherit: false, ...(sample.dropped ?? sample.siblings)?.[block] },
         "overlay"
       );
       expectArray(
@@ -709,16 +708,7 @@ describe("array merge coverage", () => {
 
   for (const path of derivedPaths.filter((p) => p in SAMPLES)) {
     test(`${path} accepts directives like every other layered array`, () => {
-      const failures = runPath(path);
-      if (EXPECTED_RED.has(path)) {
-        assert.notEqual(
-          failures.length,
-          0,
-          `${path} passes now: remove it from EXPECTED_RED`
-        );
-      } else {
-        assert.deepEqual(failures, []);
-      }
+      assert.deepEqual(runPath(path), []);
     });
   }
 });

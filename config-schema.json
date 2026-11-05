@@ -662,8 +662,11 @@
     "codeScanningSettings": {
       "type": "object",
       "description": "GitHub code scanning default setup configuration",
-      "required": ["state"],
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited code scanning setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "state": {
           "type": "string",
           "enum": ["configured", "not-configured"],
@@ -2423,6 +2426,10 @@
       "type": "object",
       "description": "Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop the inherited policy, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "protectedBranches": {
           "type": "boolean",
           "const": true,
@@ -2461,13 +2468,6 @@
           "default": false,
           "description": "Delete patterns on GitHub that are not in custom. Only valid with custom. Default: false"
         }
-      },
-      "oneOf": [
-        { "required": ["protectedBranches"] },
-        { "required": ["custom"] }
-      ],
-      "dependencies": {
-        "deleteOrphaned": ["custom"]
       },
       "additionalProperties": false
     },

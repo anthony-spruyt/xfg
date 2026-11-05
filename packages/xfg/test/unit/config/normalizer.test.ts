@@ -6898,20 +6898,48 @@ describe("mergeSettings collaborators", () => {
     assert.deepStrictEqual(result?.collaborators, { users: ["bot"] });
   });
 
-  test("unions root and repo users", () => {
+  test("a plain repo list replaces the root users", () => {
     const result = mergeSettings(
       { collaborators: { users: ["bot"] } },
       { collaborators: { users: ["other"] } }
     );
+    assert.deepStrictEqual(result?.collaborators, { users: ["other"] });
+  });
+
+  test("an append directive grows the root users", () => {
+    const result = mergeSettings({ collaborators: { users: ["bot"] } }, {
+      collaborators: {
+        users: { $arrayMerge: "append", $values: ["other"] },
+      },
+    } as unknown as RawRepoSettings);
     assert.deepStrictEqual(result?.collaborators, { users: ["bot", "other"] });
   });
 
-  test("dedupes users case-insensitively, first spelling wins", () => {
+  test("a repo that omits users inherits them", () => {
     const result = mergeSettings(
-      { collaborators: { users: ["Bot"] } },
-      { collaborators: { users: ["bot", "BOT", "other"] } }
+      { collaborators: { users: ["bot"] } },
+      { collaborators: { deleteOrphaned: true } }
     );
+    assert.deepStrictEqual(result?.collaborators, {
+      users: ["bot"],
+      deleteOrphaned: true,
+    });
+  });
+
+  test("dedupes users case-insensitively after an append, first spelling wins", () => {
+    const result = mergeSettings({ collaborators: { users: ["Bot"] } }, {
+      collaborators: {
+        users: { $arrayMerge: "append", $values: ["bot", "BOT", "other"] },
+      },
+    } as unknown as RawRepoSettings);
     assert.deepStrictEqual(result?.collaborators, { users: ["Bot", "other"] });
+  });
+
+  test("dedupes users case-insensitively inside one list", () => {
+    const result = mergeSettings(undefined, {
+      collaborators: { users: ["bot", "BOT", "other"] },
+    });
+    assert.deepStrictEqual(result?.collaborators, { users: ["bot", "other"] });
   });
 
   test("inherit: false drops inherited users", () => {
@@ -6954,7 +6982,7 @@ describe("mergeSettings collaborators", () => {
 });
 
 describe("mergeRawSettings collaborators", () => {
-  test("group users union with root and repo users", () => {
+  test("each layer's plain list replaces the one before", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: { collaborators: { users: ["root-bot"] } },
@@ -6969,6 +6997,31 @@ describe("mergeRawSettings collaborators", () => {
         },
       ],
     };
+    const config = normalizeConfig(raw, {});
+    assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
+      users: ["repo-bot"],
+    });
+  });
+
+  test("append directives grow the list across root, group and repo", () => {
+    const append = (user: string) => ({
+      $arrayMerge: "append",
+      $values: [user],
+    });
+    const raw = {
+      id: "test-config",
+      settings: { collaborators: { users: ["root-bot"] } },
+      groups: {
+        g: { settings: { collaborators: { users: append("group-bot") } } },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["g"],
+          settings: { collaborators: { users: append("repo-bot") } },
+        },
+      ],
+    } as unknown as RawConfig;
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
       users: ["root-bot", "group-bot", "repo-bot"],
@@ -6995,7 +7048,7 @@ describe("mergeRawSettings collaborators", () => {
     });
   });
 
-  test("conditional group users are merged", () => {
+  test("a conditional group's plain list replaces the root users", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: { collaborators: { users: ["root-bot"] } },
@@ -7010,7 +7063,7 @@ describe("mergeRawSettings collaborators", () => {
     };
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
-      users: ["root-bot", "cond-bot"],
+      users: ["cond-bot"],
     });
   });
 });

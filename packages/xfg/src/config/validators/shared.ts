@@ -17,6 +17,8 @@ import type {
   CodeScanningState,
   CodeScanningQuerySuite,
   CodeScanningLanguage,
+  RawCodeScanningSettings,
+  DeploymentBranchPolicy,
 } from "../types.js";
 
 export interface RootSettingsContext {
@@ -201,11 +203,12 @@ function validateCodeScanningSettings(
     throw new ValidationError(`${context}: must be an object`);
   }
 
-  if (settings.state === undefined) {
-    throw new ValidationError(`${context}: state is required`);
-  }
+  validateInheritFlag(settings, context);
 
-  if (!VALID_CODE_SCANNING_STATES.includes(settings.state as string)) {
+  if (
+    settings.state !== undefined &&
+    !VALID_CODE_SCANNING_STATES.includes(settings.state as string)
+  ) {
     throw new ValidationError(
       `${context}: state must be one of: ${VALID_CODE_SCANNING_STATES.join(", ")}`
     );
@@ -234,6 +237,21 @@ function validateCodeScanningSettings(
         );
       }
     }
+  }
+}
+
+/**
+ * A layer may omit `state` and inherit it, so only the merged block can be
+ * checked. A layer with `inherit: false` drops the inherited state.
+ */
+export function validateMergedCodeScanningSettings(
+  codeScanning: RawCodeScanningSettings | undefined,
+  context: string
+): void {
+  if (codeScanning && codeScanning.state === undefined) {
+    throw new ValidationError(
+      `${context} codeScanning: state is required, but no layer sets it (a layer with inherit: false drops the inherited state)`
+    );
   }
 }
 
@@ -456,6 +474,7 @@ const BRANCH_POLICY_KEYS = new Set([
   "protectedBranches",
   "custom",
   "deleteOrphaned",
+  "inherit",
 ]);
 const BRANCH_PATTERN_KEYS = new Set(["type", "name"]);
 const ENVIRONMENT_NAME_MAX_LENGTH = 255;
@@ -511,7 +530,7 @@ function validateBranchPatterns(custom: unknown, context: string): void {
   });
 }
 
-function validateDeploymentBranchPolicy(
+function validateDeploymentBranchPolicyLayer(
   policy: unknown,
   context: string,
   isRoot: boolean
@@ -534,32 +553,63 @@ function validateDeploymentBranchPolicy(
     `${context}: deploymentBranchPolicy`
   );
 
-  const hasProtected = policy.protectedBranches !== undefined;
-  const hasCustom = policy.custom !== undefined;
-  if (hasProtected === hasCustom) {
-    throw new ValidationError(
-      `${ctx} needs exactly one of 'protectedBranches: true' or 'custom'`
-    );
+  if (policy.inherit !== undefined) {
+    if (isRoot) {
+      throw new ValidationError(
+        `${context}: 'inherit' is not allowed in root-level deploymentBranchPolicy (nothing to inherit from)`
+      );
+    }
+    validateInheritFlag(policy, `${context}: deploymentBranchPolicy`);
   }
-  if (hasProtected && policy.protectedBranches !== true) {
+  if (
+    policy.protectedBranches !== undefined &&
+    policy.protectedBranches !== true
+  ) {
     throw new ValidationError(
       `${ctx}: protectedBranches must be true. Omit deploymentBranchPolicy to let any branch deploy.`
+    );
+  }
+  if (policy.custom !== undefined) {
+    validateBranchPatterns(policy.custom, ctx);
+  }
+  if (
+    policy.deleteOrphaned !== undefined &&
+    typeof policy.deleteOrphaned !== "boolean"
+  ) {
+    throw new ValidationError(
+      `${context}: deploymentBranchPolicy: deleteOrphaned must be a boolean`
+    );
+  }
+}
+
+/**
+ * A layer sets only some fields, so the options that must go together are
+ * checked on the merged policy.
+ */
+export function validateDeploymentBranchPolicy(
+  policy: DeploymentBranchPolicy,
+  context: string
+): void {
+  const ctx = `${context} deploymentBranchPolicy`;
+  const hasProtected = policy.protectedBranches !== undefined;
+  const hasCustom = policy.custom !== undefined;
+  if (hasProtected && hasCustom) {
+    throw new ValidationError(
+      `${ctx} has both 'protectedBranches: true' and 'custom'. Set inherit: false on the layer that changes the policy kind to drop the inherited one.`
+    );
+  }
+  if (!hasProtected && !hasCustom) {
+    throw new ValidationError(
+      `${ctx} needs exactly one of 'protectedBranches: true' or 'custom'`
     );
   }
   if (hasCustom) {
     validateBranchPatterns(policy.custom, ctx);
   }
-  if (policy.deleteOrphaned !== undefined) {
-    if (typeof policy.deleteOrphaned !== "boolean") {
-      throw new ValidationError(
-        `${context}: deploymentBranchPolicy: deleteOrphaned must be a boolean`
-      );
-    }
-    if (!hasCustom) {
-      throw new ValidationError(
-        `${context}: deploymentBranchPolicy: deleteOrphaned only applies to a 'custom' policy`
-      );
-    }
+  if (policy.deleteOrphaned !== undefined && !hasCustom) {
+    throw new ValidationError(
+      `${context}: deploymentBranchPolicy: deleteOrphaned only applies to a 'custom' policy`
+    );
   }
 }
 
@@ -664,7 +714,11 @@ function validateEnvironmentEntry(
   }
   assertKnownKeys(env, ENVIRONMENT_KEYS, envCtx);
   if (env.deploymentBranchPolicy !== undefined) {
-    validateDeploymentBranchPolicy(env.deploymentBranchPolicy, envCtx, isRoot);
+    validateDeploymentBranchPolicyLayer(
+      env.deploymentBranchPolicy,
+      envCtx,
+      isRoot
+    );
   }
   if (env.secrets !== undefined) {
     validateEnvironmentSecrets(env.secrets, envCtx);
