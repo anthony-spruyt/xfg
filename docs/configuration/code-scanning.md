@@ -101,7 +101,9 @@ repos:
 
 ## Override Behavior
 
-Per-repo code scanning settings **fully replace** the root settings (not shallow merge). This means if a repo overrides `querySuite`, it does not inherit `languages` from the root — you must specify all desired fields:
+Code scanning merges field by field, like the other settings blocks. A repo that sets one field keeps the rest of the inherited block, and some layer must set `state`. A plain `languages` list replaces the inherited one; use `$arrayMerge` to add to it instead. To start from scratch, for example to go back to auto-detected languages, set `inherit: false` in the layer.
+
+When the merged `state` is `not-configured`, `languages` and `querySuite` are dropped: the block is just `state`. A repo can switch code scanning off with `state: not-configured` alone, without `inherit: false`.
 
 ```yaml
 id: code-scanning
@@ -114,12 +116,19 @@ settings:
       - go
 
 repos:
+  # Keeps state and querySuite, adds a language to the inherited ones
   - git: git@github.com:your-org/web-app.git
     settings:
       codeScanning:
-        state: configured
-        querySuite: default
-        # Must re-specify languages if you want them
         languages:
-          - javascript-typescript
+          $arrayMerge: append
+          $values:
+            - javascript-typescript
+
+  # Drops everything inherited, so GitHub auto-detects the languages
+  - git: git@github.com:your-org/scripts.git
+    settings:
+      codeScanning:
+        inherit: false
+        state: configured
 ```

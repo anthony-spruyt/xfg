@@ -12,6 +12,7 @@ export interface JsonSchema {
   items?: JsonSchema;
   oneOf?: JsonSchema[];
   anyOf?: JsonSchema[];
+  allOf?: JsonSchema[];
   additionalProperties?: boolean | JsonSchema;
   definitions?: Record<string, JsonSchema>;
 }
@@ -47,6 +48,9 @@ function renderType(schema: JsonSchema): string {
     const rendered = members.map(renderType).filter(Boolean);
     return [...new Set(rendered)].join(" \\| ");
   }
+
+  const refs = schema.allOf?.filter((member) => member.$ref);
+  if (refs?.length) return refs.map(renderType).join(" & ");
 
   if (schema.type === "array") {
     const items = schema.items ? renderType(schema.items) : "`any`";

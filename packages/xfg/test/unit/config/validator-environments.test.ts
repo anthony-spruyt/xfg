@@ -3,14 +3,17 @@ import { strict as assert } from "node:assert";
 import {
   validateRawConfig,
   validateForSync,
+  validateNormalizedConfig,
   validateSecretsConfig,
   hasActionableSettings,
 } from "../../../src/config/validator.js";
+import { normalizeConfig } from "../../../src/config/normalizer.js";
 import type {
   RawConfig,
   RawRepoSettings,
   RawRootSettings,
 } from "../../../src/config/index.js";
+import type { RawDeploymentBranchPolicy } from "../../../src/config/types.js";
 
 const base = (settings?: RawRootSettings, repoSettings?: RawRepoSettings) =>
   ({
@@ -21,6 +24,9 @@ const base = (settings?: RawRootSettings, repoSettings?: RawRepoSettings) =>
 
 const asEnvs = (value: unknown) =>
   value as unknown as RawRootSettings["environments"];
+
+const validateMerged = (config: RawConfig) =>
+  validateNormalizedConfig(normalizeConfig(config, {}));
 
 describe("settings.environments validation", () => {
   test("accepts a custom policy with branch and tag patterns plus secrets", () => {
@@ -176,23 +182,211 @@ describe("settings.environments validation", () => {
       );
     });
 
-    test("rejects a policy with neither option", () => {
+    test("accepts a layer with neither option, another layer may set it", () => {
+      assert.doesNotThrow(() => validateRawConfig(withPolicy({})));
+    });
+
+    test("rejects a merged policy with neither option", () => {
       assert.throws(
-        () => validateRawConfig(withPolicy({})),
-        /needs exactly one of 'protectedBranches: true' or 'custom'/
+        () => validateMerged(withPolicy({})),
+        /Repo '.*': environment 'release' deploymentBranchPolicy needs exactly one of 'protectedBranches: true' or 'custom'/
       );
     });
 
-    test("rejects a policy with both options", () => {
+    describe("both options in one layer", () => {
+      const both: RawDeploymentBranchPolicy = {
+        protectedBranches: true,
+        custom: [{ type: "branch", name: "main" }],
+      };
+      const message = (config: RawConfig): string => {
+        try {
+          validateRawConfig(config);
+        } catch (error) {
+          return (error as Error).message;
+        }
+        return "";
+      };
+
+      test("is rejected at root without a hint to use inherit: false", () => {
+        const text = message(withPolicy(both));
+        assert.match(
+          text,
+          /Root: environment 'release' deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'/
+        );
+        assert.doesNotMatch(text, /inherit: false/);
+      });
+
+      test("is rejected in a repo layer, also with inherit: false", () => {
+        for (const policy of [both, { inherit: false, ...both }]) {
+          const text = message(
+            base(undefined, {
+              environments: { release: { deploymentBranchPolicy: policy } },
+            })
+          );
+          assert.match(
+            text,
+            /Repo .*environment 'release' deploymentBranchPolicy has both/
+          );
+          assert.doesNotMatch(text, /inherit: false/);
+        }
+      });
+
+      test("is rejected in a group layer and names the group", () => {
+        const config = base({
+          environments: asEnvs({
+            release: { deploymentBranchPolicy: { protectedBranches: true } },
+          }),
+        });
+        config.groups = {
+          g: {
+            settings: {
+              environments: { release: { deploymentBranchPolicy: both } },
+            },
+          },
+        };
+        assert.match(message(config), /groups\.g: environment 'release'/);
+      });
+    });
+
+    test("rejects protectedBranches merged over an inherited custom and points to inherit: false", () => {
+      assert.throws(
+        () =>
+          validateMerged(
+            base(
+              {
+                environments: asEnvs({
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: [{ type: "branch", name: "main" }],
+                    },
+                  },
+                }),
+              },
+              {
+                environments: {
+                  release: {
+                    deploymentBranchPolicy: { protectedBranches: true },
+                  },
+                },
+              }
+            )
+          ),
+        /deploymentBranchPolicy has both 'protectedBranches: true' and 'custom'.*inherit: false/
+      );
+    });
+
+    test("accepts protectedBranches with inherit: false over an inherited custom", () => {
+      assert.doesNotThrow(() =>
+        validateMerged(
+          base(
+            {
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: {
+                    custom: [{ type: "branch", name: "main" }],
+                  },
+                },
+              }),
+            },
+            {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: {
+                    inherit: false,
+                    protectedBranches: true,
+                  },
+                },
+              },
+            }
+          )
+        )
+      );
+    });
+
+    test("rejects a custom pattern repeated by an append", () => {
+      assert.throws(
+        () =>
+          validateMerged(
+            base(
+              {
+                environments: asEnvs({
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: [{ type: "branch", name: "main" }],
+                    },
+                  },
+                }),
+              },
+              {
+                environments: {
+                  release: {
+                    deploymentBranchPolicy: {
+                      custom: {
+                        $arrayMerge: "append",
+                        $values: [{ type: "branch", name: "main" }],
+                      },
+                    },
+                  },
+                },
+              } as unknown as RawRepoSettings
+            )
+          ),
+        /duplicate pattern branch 'main'/
+      );
+    });
+
+    test("accepts inherit: false in a repo layer", () => {
+      assert.doesNotThrow(() =>
+        validateRawConfig(
+          base(
+            {
+              environments: asEnvs({
+                release: {
+                  deploymentBranchPolicy: { protectedBranches: true },
+                },
+              }),
+            },
+            {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: {
+                    inherit: false,
+                    custom: [{ type: "branch", name: "main" }],
+                  },
+                },
+              },
+            }
+          )
+        )
+      );
+    });
+
+    test("rejects a non-boolean inherit", () => {
+      assert.throws(
+        () =>
+          validateRawConfig(
+            base(undefined, {
+              environments: {
+                release: {
+                  deploymentBranchPolicy: { inherit: "no", custom: [] },
+                },
+              },
+            } as unknown as RawRepoSettings)
+          ),
+        /deploymentBranchPolicy: inherit must be a boolean/
+      );
+    });
+
+    test("rejects inherit at root level", () => {
       assert.throws(
         () =>
           validateRawConfig(
             withPolicy({
-              protectedBranches: true,
+              inherit: false,
               custom: [{ type: "branch", name: "main" }],
             })
           ),
-        /needs exactly one of 'protectedBranches: true' or 'custom'/
+        /'inherit' is not allowed in root-level deploymentBranchPolicy/
       );
     });
 
@@ -373,10 +567,10 @@ describe("settings.environments validation", () => {
       );
     });
 
-    test("rejects policy deleteOrphaned with protectedBranches", () => {
+    test("rejects a merged policy deleteOrphaned with protectedBranches", () => {
       assert.throws(
         () =>
-          validateRawConfig(
+          validateMerged(
             base({
               environments: asEnvs({
                 release: {

@@ -92,7 +92,9 @@ repos:
 - `inherit: false` — discard all inherited variables (root + groups)
 - `VAR_NAME: false` — exclude a single inherited variable for this repo
 
-`inherit: false` does not clear an inherited `settings.variables.deleteOrphaned`. With `settings.variables.deleteOrphaned: true` at root, a repo that sets `inherit: false` has the inherited variables deleted from it, because they are not in its config. A variable set to `false` is deleted the same way. Set `settings.variables.deleteOrphaned: false` on the repo to keep them.
+`inherit: false` also drops an inherited `settings.variables.deleteOrphaned`. With `settings.variables.deleteOrphaned: true` at root, a repo that sets `inherit: false` and no `deleteOrphaned` of its own deletes nothing: xfg leaves the variables it does not manage on the repo.
+
+Set `deleteOrphaned: true` in the same layer to delete every variable that is not in its config, including the inherited ones and any set to `false`.
 
 ## Deleting Orphaned Variables
 

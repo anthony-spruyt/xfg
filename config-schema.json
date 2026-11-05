@@ -240,6 +240,10 @@
       "type": "object",
       "description": "PR merge behavior options",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited prOptions field (including ai), then apply this layer's own. Not valid at root level. Default: true"
+        },
         "merge": {
           "type": "string",
           "enum": [
@@ -271,12 +275,33 @@
           "description": "Reason for bypassing policies (Azure DevOps only, used when merge=force). Default: Automated config sync via xfg"
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Labels to apply to created PRs/MRs. Labels must exist on the target repository."
+          "description": "Labels to apply to created PRs/MRs. Labels must exist on the target repository.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         },
         "branch": {
           "type": "string",
@@ -301,6 +326,10 @@
       "description": "AI provider settings for generated commit messages and PR descriptions",
       "additionalProperties": false,
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited ai field (fallback included), then apply this layer's own. Not valid at root level. Default: true"
+        },
         "provider": {
           "type": "string",
           "enum": [
@@ -333,7 +362,9 @@
         "headersEnv": {
           "type": "object",
           "description": "Extra HTTP headers sent with the AI request, as header name to env var name pairs. Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.",
-          "propertyNames": { "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$" },
+          "propertyNames": {
+            "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"
+          },
           "additionalProperties": {
             "type": "string",
             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
@@ -393,7 +424,9 @@
         "headersEnv": {
           "type": "object",
           "description": "Extra HTTP headers sent with the AI request, as header name to env var name pairs. Values are never written in config. If an env var is unset or empty, this provider is skipped with a warning. Cannot name a credential xfg uses elsewhere such as GH_TOKEN, nor a header xfg sets itself.",
-          "propertyNames": { "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$" },
+          "propertyNames": {
+            "pattern": "^[!#$%&'*+.^_`|~0-9A-Za-z-]+$"
+          },
           "additionalProperties": {
             "type": "string",
             "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
@@ -636,36 +669,76 @@
     },
     "codeScanningSettings": {
       "type": "object",
-      "description": "GitHub code scanning default setup configuration",
-      "required": ["state"],
+      "description": "GitHub code scanning default setup configuration. Fields merge with the inherited block; set inherit: false to drop what it would inherit, for example to go back to auto-detected languages.",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited code scanning setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "state": {
           "type": "string",
-          "enum": ["configured", "not-configured"],
-          "description": "Enable or disable code scanning default setup"
+          "enum": [
+            "configured",
+            "not-configured"
+          ],
+          "description": "Enable or disable code scanning default setup. Some layer must set it."
         },
         "querySuite": {
           "type": "string",
-          "enum": ["default", "extended"],
+          "enum": [
+            "default",
+            "extended"
+          ],
           "description": "Query suite to use: 'default' for standard queries, 'extended' for additional queries"
         },
         "languages": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "actions",
-              "c-cpp",
-              "csharp",
-              "go",
-              "java-kotlin",
-              "javascript-typescript",
-              "python",
-              "ruby",
-              "swift"
-            ]
-          },
-          "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository."
+          "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository. A layer that omits it inherits the parent's list; a plain list replaces it, and inherit: false goes back to auto-detect.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "actions",
+                  "c-cpp",
+                  "csharp",
+                  "go",
+                  "java-kotlin",
+                  "javascript-typescript",
+                  "python",
+                  "ruby",
+                  "swift"
+                ]
+              }
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "type": "string",
+                        "enum": [
+                          "actions",
+                          "c-cpp",
+                          "csharp",
+                          "go",
+                          "java-kotlin",
+                          "javascript-typescript",
+                          "python",
+                          "ruby",
+                          "swift"
+                        ]
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         }
       }
     },
@@ -673,13 +746,21 @@
       "type": "object",
       "description": "GitHub Actions settings for the repository (Settings > Actions). Each field maps to one field of the Actions REST API.",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited actions setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "enabled": {
           "type": "boolean",
           "description": "Whether GitHub Actions is enabled for the repository. Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer."
         },
         "allowedActions": {
           "type": "string",
-          "enum": ["all", "local_only", "selected"],
+          "enum": [
+            "all",
+            "local_only",
+            "selected"
+          ],
           "description": "Which actions and reusable workflows may run. Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected."
         },
         "shaPinningRequired": {
@@ -695,16 +776,40 @@
           "description": "Allow actions from Marketplace verified creators when allowedActions is selected. Maps to verified_allowed of PUT actions/permissions/selected-actions."
         },
         "patternsAllowed": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": "Action patterns to allow when allowedActions is selected, such as docker/login-action@*. Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole."
+          "description": "Action patterns to allow when allowedActions is selected, such as docker/login-action@*. Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set. A plain list replaces the inherited patterns; use $arrayMerge to add to them.",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         },
         "defaultWorkflowPermissions": {
           "type": "string",
-          "enum": ["read", "write"],
+          "enum": [
+            "read",
+            "write"
+          ],
           "description": "Default permissions of the GITHUB_TOKEN in workflows. Maps to default_workflow_permissions of PUT actions/permissions/workflow."
         },
         "canApprovePullRequestReviews": {
@@ -843,12 +948,33 @@
           "description": "Direct collaborators for personal (user-owned) repos. Org repos are skipped with a warning.",
           "properties": {
             "users": {
-              "type": "array",
-              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
-              "items": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
-              }
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite. A plain list replaces the inherited users; use $arrayMerge to add to them. Repeated usernames are dropped, ignoring case.",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             "deleteOrphaned": {
               "type": "boolean",
@@ -861,7 +987,10 @@
         "environments": {
           "type": "object",
           "description": "GitHub deployment environments keyed by name. Set an environment to false to disable it. Environments on GitHub that are not listed are kept unless deleteOrphaned is true. GitHub repos only; private repos need a paid plan.",
-          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "propertyNames": {
+            "minLength": 1,
+            "maxLength": 255
+          },
           "properties": {
             "deleteOrphaned": {
               "type": "boolean",
@@ -1010,7 +1139,7 @@
           "properties": {
             "inherit": {
               "type": "boolean",
-              "description": "Set to false to skip all inherited secrets. Does not clear an inherited deleteOrphaned. Default: true"
+              "description": "Set to false to skip all inherited secrets and an inherited deleteOrphaned. Default: true"
             },
             "deleteOrphaned": {
               "type": "boolean",
@@ -1033,19 +1162,40 @@
         },
         "collaborators": {
           "type": "object",
-          "description": "Direct collaborators for personal (user-owned) repos. Users are added to inherited users. Set inherit: false to drop inherited users.",
+          "description": "Direct collaborators for personal (user-owned) repos. A plain users list replaces the inherited users; use $arrayMerge: append to add to them. Set inherit: false to drop inherited users.",
           "properties": {
             "inherit": {
               "type": "boolean",
-              "description": "Set to false to drop inherited users. Does not clear an inherited deleteOrphaned. Default: true"
+              "description": "Set to false to drop inherited users and an inherited deleteOrphaned. Default: true"
             },
             "users": {
-              "type": "array",
-              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
-              "items": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
-              }
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite. A plain list replaces the inherited users; use $arrayMerge to add to them. Repeated usernames are dropped, ignoring case.",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string",
+                            "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             "deleteOrphaned": {
               "type": "boolean",
@@ -1058,7 +1208,10 @@
         "environments": {
           "type": "object",
           "description": "GitHub deployment environments keyed by name, merged over inherited ones. Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.",
-          "propertyNames": { "minLength": 1, "maxLength": 255 },
+          "propertyNames": {
+            "minLength": 1,
+            "maxLength": 255
+          },
           "properties": {
             "inherit": {
               "type": "boolean",
@@ -1066,7 +1219,7 @@
             },
             "deleteOrphaned": {
               "type": "boolean",
-              "description": "Delete environments on GitHub that are not in the merged map, with their secrets and protection rules. Overrides an inherited environments.deleteOrphaned; inherit: false does not clear it. Default: false"
+              "description": "Delete environments on GitHub that are not in the merged map, with their secrets and protection rules. Overrides an inherited environments.deleteOrphaned; inherit: false drops it. Default: false"
             }
           },
           "additionalProperties": {
@@ -1093,6 +1246,10 @@
       "type": "object",
       "description": "GitHub repository settings for features, merge options, and security",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited repo setting, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "description": {
           "type": "string",
           "description": "Repository description. Used when creating new repositories via lifecycle management (upstream/source fields)."
@@ -1224,63 +1381,25 @@
     },
     "arrayMergeDirective": {
       "type": "object",
-      "description": "Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.",
-      "required": ["$arrayMerge", "$values"],
+      "description": "Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.",
+      "required": [
+        "$arrayMerge",
+        "$values"
+      ],
       "properties": {
         "$arrayMerge": {
           "type": "string",
-          "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)"
+          "enum": [
+            "replace",
+            "append",
+            "prepend",
+            "merge"
+          ],
+          "description": "How to combine with the inherited array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id)"
         },
         "$values": {
           "type": "array",
-          "items": { "type": "string" },
-          "description": "Values to merge with the base array"
-        }
-      },
-      "additionalProperties": false
-    },
-    "bypassActorsArrayMergeDirective": {
-      "type": "object",
-      "description": "Merge directive for bypassActors array",
-      "required": ["$arrayMerge", "$values"],
-      "properties": {
-        "$arrayMerge": {
-          "type": "string",
-          "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array"
-        },
-        "$values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/bypassActor"
-          },
-          "description": "Bypass actor values to merge"
-        },
-        "$matchBy": {
-          "type": "string",
-          "minLength": 1,
-          "description": "Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values"
-        }
-      },
-      "additionalProperties": false
-    },
-    "rulesArrayMergeDirective": {
-      "type": "object",
-      "description": "Merge directive for rules array",
-      "required": ["$arrayMerge", "$values"],
-      "properties": {
-        "$arrayMerge": {
-          "type": "string",
-          "enum": ["replace", "append", "prepend", "merge"],
-          "description": "How to merge with the base array"
-        },
-        "$values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/rulesetRule"
-          },
-          "description": "Rule values to merge"
+          "description": "Values to combine with the inherited array"
         },
         "$matchBy": {
           "type": "string",
@@ -1294,6 +1413,10 @@
       "type": "object",
       "description": "GitHub Ruleset configuration",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop this ruleset's inherited fields, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "target": {
           "type": "string",
           "enum": [
@@ -1314,16 +1437,29 @@
           "description": "Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). Default: active"
         },
         "bypassActors": {
+          "description": "Actors who can bypass this ruleset",
           "oneOf": [
             {
               "type": "array",
-              "description": "Actors who can bypass this ruleset",
               "items": {
                 "$ref": "#/definitions/bypassActor"
               }
             },
             {
-              "$ref": "#/definitions/bypassActorsArrayMergeDirective"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "$ref": "#/definitions/bypassActor"
+                      }
+                    }
+                  }
+                }
+              ]
             }
           ]
         },
@@ -1332,16 +1468,29 @@
           "description": "Conditions for when this ruleset applies (which branches/tags to target)"
         },
         "rules": {
+          "description": "Rules to enforce on matching refs",
           "oneOf": [
             {
               "type": "array",
-              "description": "Rules to enforce on matching refs",
               "items": {
                 "$ref": "#/definitions/rulesetRule"
               }
             },
             {
-              "$ref": "#/definitions/rulesArrayMergeDirective"
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "$ref": "#/definitions/rulesetRule"
+                      }
+                    }
+                  }
+                }
+              ]
             }
           ]
         }
@@ -1388,30 +1537,56 @@
           "description": "Ref name patterns to include/exclude",
           "properties": {
             "include": {
+              "description": "Patterns to include (e.g., 'refs/heads/main', 'refs/heads/release/*')",
               "oneOf": [
                 {
                   "type": "array",
                   "items": {
                     "type": "string"
-                  },
-                  "description": "Patterns to include (e.g., 'refs/heads/main', 'refs/heads/release/*')"
+                  }
                 },
                 {
-                  "$ref": "#/definitions/arrayMergeDirective"
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
             },
             "exclude": {
+              "description": "Patterns to exclude from this ruleset",
               "oneOf": [
                 {
                   "type": "array",
                   "items": {
                     "type": "string"
-                  },
-                  "description": "Patterns to exclude from this ruleset"
+                  }
                 },
                 {
-                  "$ref": "#/definitions/arrayMergeDirective"
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
             }
@@ -1510,23 +1685,68 @@
               "description": "Require all review threads to be resolved"
             },
             "allowedMergeMethods": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": [
-                  "merge",
-                  "squash",
-                  "rebase"
-                ]
-              },
-              "description": "Allowed merge methods for PRs"
+              "description": "Allowed merge methods for PRs",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "merge",
+                      "squash",
+                      "rebase"
+                    ]
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "merge",
+                              "squash",
+                              "rebase"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             "requiredReviewers": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/requiredReviewer"
-              },
-              "description": "Required reviewers for specific file patterns (beta feature)"
+              "description": "Required reviewers for specific file patterns (beta feature)",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/requiredReviewer"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "$ref": "#/definitions/requiredReviewer"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           }
         }
@@ -1542,11 +1762,31 @@
       ],
       "properties": {
         "filePatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "File path patterns that require this reviewer"
+          "description": "File path patterns that require this reviewer",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$values": {
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         },
         "minimumApprovals": {
           "type": "integer",
@@ -1594,26 +1834,49 @@
               "description": "Allow bypassing when creating refs (for initial setup)"
             },
             "requiredStatusChecks": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "context"
-                ],
-                "properties": {
-                  "context": {
-                    "type": "string",
-                    "description": "Name of the status check"
-                  },
-                  "integrationId": {
-                    "type": "integer",
-                    "description": "GitHub App integration ID (optional, for disambiguation)"
+              "description": "List of required status checks",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/statusCheck"
                   }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "$ref": "#/definitions/statusCheck"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
-              },
-              "description": "List of required status checks"
+              ]
             }
           }
+        }
+      }
+    },
+    "statusCheck": {
+      "type": "object",
+      "required": [
+        "context"
+      ],
+      "properties": {
+        "context": {
+          "type": "string",
+          "description": "Name of the status check"
+        },
+        "integrationId": {
+          "type": "integer",
+          "description": "GitHub App integration ID (optional, for disambiguation)"
         }
       }
     },
@@ -1712,11 +1975,31 @@
           "type": "object",
           "properties": {
             "requiredDeploymentEnvironments": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "Environments that must have successful deployments"
+              "description": "Environments that must have successful deployments",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           }
         }
@@ -1736,45 +2019,68 @@
           "type": "object",
           "properties": {
             "codeScanningTools": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "tool",
-                  "alertsThreshold",
-                  "securityAlertsThreshold"
-                ],
-                "properties": {
-                  "tool": {
-                    "type": "string",
-                    "description": "Name of the code scanning tool (e.g., 'CodeQL')"
-                  },
-                  "alertsThreshold": {
-                    "type": "string",
-                    "enum": [
-                      "none",
-                      "errors",
-                      "errors_and_warnings",
-                      "all"
-                    ],
-                    "description": "Alert threshold for general code quality"
-                  },
-                  "securityAlertsThreshold": {
-                    "type": "string",
-                    "enum": [
-                      "none",
-                      "critical",
-                      "high_or_higher",
-                      "medium_or_higher",
-                      "all"
-                    ],
-                    "description": "Alert threshold for security issues"
+              "description": "Code scanning tool configurations",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/codeScanningTool"
                   }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "$ref": "#/definitions/codeScanningTool"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
-              },
-              "description": "Code scanning tool configurations"
+              ]
             }
           }
+        }
+      }
+    },
+    "codeScanningTool": {
+      "type": "object",
+      "required": [
+        "tool",
+        "alertsThreshold",
+        "securityAlertsThreshold"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "description": "Name of the code scanning tool (e.g., 'CodeQL')"
+        },
+        "alertsThreshold": {
+          "type": "string",
+          "enum": [
+            "none",
+            "errors",
+            "errors_and_warnings",
+            "all"
+          ],
+          "description": "Alert threshold for general code quality"
+        },
+        "securityAlertsThreshold": {
+          "type": "string",
+          "enum": [
+            "none",
+            "critical",
+            "high_or_higher",
+            "medium_or_higher",
+            "all"
+          ],
+          "description": "Alert threshold for security issues"
         }
       }
     },
@@ -1822,35 +2128,58 @@
               "description": "Allow bypassing when creating refs"
             },
             "workflows": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": [
-                  "path",
-                  "repositoryId"
-                ],
-                "properties": {
-                  "path": {
-                    "type": "string",
-                    "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
-                  },
-                  "repositoryId": {
-                    "type": "integer",
-                    "description": "Repository ID where the workflow is defined"
-                  },
-                  "ref": {
-                    "type": "string",
-                    "description": "Git ref to use for the workflow (branch/tag)"
-                  },
-                  "sha": {
-                    "type": "string",
-                    "description": "Specific commit SHA for the workflow"
+              "description": "Required workflows",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/workflowConfig"
                   }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "$ref": "#/definitions/workflowConfig"
+                          }
+                        }
+                      }
+                    }
+                  ]
                 }
-              },
-              "description": "Required workflows"
+              ]
             }
           }
+        }
+      }
+    },
+    "workflowConfig": {
+      "type": "object",
+      "required": [
+        "path",
+        "repositoryId"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to workflow file (e.g., '.github/workflows/ci.yml')"
+        },
+        "repositoryId": {
+          "type": "integer",
+          "description": "Repository ID where the workflow is defined"
+        },
+        "ref": {
+          "type": "string",
+          "description": "Git ref to use for the workflow (branch/tag)"
+        },
+        "sha": {
+          "type": "string",
+          "description": "Specific commit SHA for the workflow"
         }
       }
     },
@@ -1920,11 +2249,31 @@
           "type": "object",
           "properties": {
             "restrictedFilePaths": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "File paths that are restricted from changes"
+              "description": "File paths that are restricted from changes",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           }
         }
@@ -1944,11 +2293,31 @@
           "type": "object",
           "properties": {
             "restrictedFileExtensions": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              },
-              "description": "File extensions that are restricted"
+              "description": "File extensions that are restricted",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/arrayMergeDirective"
+                    },
+                    {
+                      "properties": {
+                        "$values": {
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
             }
           }
         }
@@ -2005,6 +2374,10 @@
         "color"
       ],
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop this label's inherited fields, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "color": {
           "type": "string",
           "pattern": "^#?[0-9a-fA-F]{6}$",
@@ -2024,7 +2397,9 @@
     "secretConfig": {
       "type": "object",
       "description": "Secret configuration mapping to an environment variable source",
-      "required": ["env"],
+      "required": [
+        "env"
+      ],
       "properties": {
         "env": {
           "type": "string",
@@ -2037,11 +2412,17 @@
     "deploymentBranchPattern": {
       "type": "object",
       "description": "A branch or tag name pattern allowed to deploy",
-      "required": ["type", "name"],
+      "required": [
+        "type",
+        "name"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["branch", "tag"],
+          "enum": [
+            "branch",
+            "tag"
+          ],
           "description": "Whether the pattern matches branches or tags"
         },
         "name": {
@@ -2054,33 +2435,57 @@
     },
     "deploymentBranchPolicy": {
       "type": "object",
-      "description": "Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.",
+      "description": "Which refs can deploy. Layers merge field by field, and the merged policy must have exactly one of protectedBranches: true or custom; to switch between them, set inherit: false in the layer that changes it. Omit the policy to let any branch deploy.",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop the inherited policy, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "protectedBranches": {
           "type": "boolean",
           "const": true,
           "description": "Only branches with branch protection rules can deploy"
         },
         "custom": {
-          "type": "array",
-          "minItems": 1,
-          "description": "Only refs matching these patterns can deploy. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
-          "items": {
-            "$ref": "#/definitions/deploymentBranchPattern"
-          }
+          "description": "Only refs matching these patterns can deploy. A plain list replaces the inherited patterns; use $arrayMerge: append to add to them. A pattern is identified by type and name together, so $arrayMerge: merge is not accepted. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
+          "oneOf": [
+            {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/definitions/deploymentBranchPattern"
+              }
+            },
+            {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/arrayMergeDirective"
+                },
+                {
+                  "properties": {
+                    "$arrayMerge": {
+                      "enum": [
+                        "replace",
+                        "append",
+                        "prepend"
+                      ]
+                    },
+                    "$values": {
+                      "items": {
+                        "$ref": "#/definitions/deploymentBranchPattern"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
         },
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
-          "description": "Delete patterns on GitHub that are not in custom. Only valid with custom. Default: false"
+          "description": "Delete patterns on GitHub that are not in the merged custom list. Inherited like other fields; only valid with custom. Default: false"
         }
-      },
-      "oneOf": [
-        { "required": ["protectedBranches"] },
-        { "required": ["custom"] }
-      ],
-      "dependencies": {
-        "deleteOrphaned": ["custom"]
       },
       "additionalProperties": false
     },
@@ -2122,6 +2527,10 @@
       "type": "object",
       "description": "A GitHub deployment environment, merged over the inherited one",
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop this environment's inherited policy and secrets, then apply this layer's own. Not valid at root level. Default: true"
+        },
         "deploymentBranchPolicy": {
           "oneOf": [
             {
@@ -2133,7 +2542,7 @@
               "$ref": "#/definitions/deploymentBranchPolicy"
             }
           ],
-          "description": "Which refs can deploy. Replaces the inherited policy as a whole."
+          "description": "Which refs can deploy. Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy."
         },
         "secrets": {
           "type": "object",

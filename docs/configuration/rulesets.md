@@ -344,9 +344,39 @@ repos:
             - type: required_signatures
 ```
 
+With `inherit: false` in the `rulesets` map, a ruleset that has the same name as an inherited one is not merged with it. It replaces it, so restate it in full. To keep the other inherited rulesets, drop the map-level `inherit: false` and opt out of the ones you do not want with `name: false`.
+
+### Skipping One Ruleset's Inherited Fields
+
+Put `inherit: false` inside a single ruleset to drop only that ruleset's inherited fields. The repo's ruleset starts fresh, and every other inherited ruleset stays:
+
+```yaml
+id: rulesets
+settings:
+  rulesets:
+    main-protection:
+      target: branch
+      enforcement: active
+      bypassActors:
+        - actorId: 1
+          actorType: Team
+          bypassMode: always
+
+repos:
+  - git: git@github.com:your-org/app.git
+    settings:
+      rulesets:
+        main-protection:
+          inherit: false          # no inherited bypassActors
+          target: branch
+          enforcement: evaluate
+```
+
+`inherit` is not allowed on a root-level ruleset, where there is nothing to inherit.
+
 ### Appending to Arrays
 
-By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead:
+By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead. It works on every ruleset array, including the arrays inside rule `parameters` such as `allowedMergeMethods`, `requiredStatusChecks` and `requiredReviewers`:
 
 ```yaml
 id: rulesets

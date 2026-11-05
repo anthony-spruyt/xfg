@@ -102,10 +102,10 @@ settings:
 
 Environments merge by name (ignoring case) through root, groups, conditional groups, and the repo:
 
-- A `deploymentBranchPolicy` set at a lower layer **replaces** the inherited policy as a whole.
+- A `deploymentBranchPolicy` set at a lower layer merges field by field with the inherited one. To switch between `protectedBranches` and `custom`, set `inherit: false` on the layer that changes it.
 - `deploymentBranchPolicy: false` clears an inherited policy, so any branch can deploy. Not allowed at root.
 - Secrets merge by name. Set a secret to `false` to drop an inherited one.
-- Set an environment to `false` to drop it, or `inherit: false` to drop every inherited environment. `inherit` is not allowed at root.
+- Set an environment to `false` to drop it. `inherit: false` in the `environments` map drops every inherited environment. Inside one environment, `inherit: false` drops only that environment's inherited fields, so restate everything it needs. `inherit` is not allowed at root.
 
 ```yaml
 id: environments
@@ -123,8 +123,9 @@ repos:
       environments:
         release:
           deploymentBranchPolicy:
+            inherit: false                  # drop protectedBranches
             custom:
-              - { type: tag, name: "v*" }   # replaces protectedBranches
+              - { type: tag, name: "v*" }
           secrets:
             NPM_TOKEN: false               # drop the inherited secret
 
@@ -133,6 +134,32 @@ repos:
       environments:
         release: false                     # no release environment here
 ```
+
+A plain `custom` list replaces the inherited patterns. To add to them, use `$arrayMerge: append`:
+
+```yaml
+id: environments
+settings:
+  environments:
+    release:
+      deploymentBranchPolicy:
+        custom:
+          - { type: branch, name: main }
+
+repos:
+  - git: git@github.com:your-org/app.git
+    settings:
+      environments:
+        release:
+          deploymentBranchPolicy:
+            custom:
+              $arrayMerge: append
+              $values:
+                - { type: tag, name: "v*" }   # main and v*
+```
+
+!!! warning "`custom` does not take `merge`"
+    A pattern is identified by its type and name together, and no single `$matchBy` key covers both, so xfg rejects `$arrayMerge: merge` on `custom`. Use `append`, `prepend` or `replace`.
 
 By default xfg never deletes anything: removing an environment, pattern or secret from the config leaves it on GitHub. [Deleting Orphans](#deleting-orphans) covers the opt-in.
 
@@ -167,8 +194,8 @@ settings:
 
 How each key merges:
 
-- `environments.deleteOrphaned` and `secrets.deleteOrphaned` resolve innermost-wins, like [repo secrets](secrets.md). `inherit: false` drops inherited environments but keeps an inherited `deleteOrphaned`, so together they delete the inherited environments. Set `deleteOrphaned: false` to turn cleanup off for a repo.
-- `deploymentBranchPolicy.deleteOrphaned` belongs to the policy, and a policy set at a lower layer replaces the inherited one whole. Restate `deleteOrphaned: true` when you override the policy. It is only valid with `custom`.
+- `environments.deleteOrphaned` and `secrets.deleteOrphaned` resolve innermost-wins, like [repo secrets](secrets.md). `inherit: false` drops the inherited environments and an inherited `deleteOrphaned`. A layer that wants cleanup sets `deleteOrphaned: true` itself, and then deletes the inherited environments.
+- `deploymentBranchPolicy.deleteOrphaned` is a field of the policy and inherits like the others. It works on the merged `custom` list, so a repo that replaces `custom` with a plain list deletes the inherited patterns on GitHub. To keep them, add with `$arrayMerge: append`. It is only valid with `custom`.
 - A secrets map that holds only `deleteOrphaned: true` deletes every secret in that environment.
 
 Safety:

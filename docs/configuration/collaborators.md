@@ -40,7 +40,7 @@ Personal repos have no permission levels. Collaborators always get write access,
 
 ## Inheritance
 
-Users from root, groups, and the repo are **added together**. Names are matched without caring about case.
+A plain `users` list replaces the inherited one. Use `$arrayMerge: append` to add to the inherited users instead. Names are matched without caring about case, and a repeated name is dropped, first spelling wins.
 
 ```yaml
 id: collaborators
@@ -53,7 +53,14 @@ repos:
   - git: git@github.com:your-user/foo.git
     settings:
       collaborators:
-        users: [other-bot]       # effective: my-bot + other-bot
+        users:
+          $arrayMerge: append    # effective: my-bot + other-bot
+          $values: [other-bot]
+
+  - git: git@github.com:your-user/baz.git
+    settings:
+      collaborators:
+        users: [other-bot]       # replaces: other-bot only
 
   - git: git@github.com:your-user/bar.git
     settings:
@@ -61,6 +68,8 @@ repos:
         inherit: false           # drop inherited users
         users: [only-this-one]
 ```
+
+With `deleteOrphaned: true`, a plain list in a repo removes the inherited users from that repo. `inherit: false` also drops an inherited `deleteOrphaned`, so set it again in the same layer to keep cleanup on.
 
 `inherit` is allowed in repos, groups, and conditional groups. It is not allowed at root.
 

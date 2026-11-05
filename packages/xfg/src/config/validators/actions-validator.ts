@@ -1,5 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import {
   ACTIONS_SELECTED_FIELDS,
   type ActionsAllowedActions,
@@ -8,8 +9,12 @@ import {
   type ActionsSettings,
 } from "../types.js";
 import { validValues } from "./file-validator.js";
+import { validateInheritFlag } from "./inherit-flag.js";
 
-const ACTIONS_KEYS: ReadonlySet<string> = new Set<keyof ActionsSettings>([
+const ACTIONS_KEYS: ReadonlySet<string> = new Set<
+  keyof ActionsSettings | "inherit"
+>([
+  "inherit",
   "enabled",
   "allowedActions",
   "shaPinningRequired",
@@ -99,12 +104,16 @@ function validatePatternsAllowed(
 ): void {
   if (a.patternsAllowed === undefined) return;
 
-  if (!Array.isArray(a.patternsAllowed)) {
+  const patterns = arrayValues(a.patternsAllowed);
+  if (patterns === null) {
     throw new ValidationError(
-      `${context}: patternsAllowed must be an array of strings`
+      explainNotArray(
+        `${context}: patternsAllowed must be an array of strings or $arrayMerge directive`,
+        a.patternsAllowed
+      )
     );
   }
-  a.patternsAllowed.forEach((pattern: unknown, i) => {
+  patterns.forEach((pattern: unknown, i) => {
     if (typeof pattern !== "string" || pattern.trim() === "") {
       throw new ValidationError(
         `${context}: patternsAllowed[${i}] must be a non-empty string`
@@ -162,6 +171,7 @@ export function validateActionsSettings(
     }
   }
 
+  validateInheritFlag(actions, context);
   validateValues(actions, context);
   validateCoupling(actions, context);
 }

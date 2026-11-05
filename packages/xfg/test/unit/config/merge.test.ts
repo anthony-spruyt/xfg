@@ -1,15 +1,16 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
 import {
+  applyInherit,
   createMergeContext,
   deepMerge,
   stripMergeDirectives,
   isTextContent,
   mergeTextContent,
   findMatchKey,
-  type ArrayMergeStrategy,
   type MergeContext,
 } from "../../../src/config/merge.js";
+import type { ArrayMergeStrategy } from "../../../src/config/array-directive.js";
 
 function createContext(
   defaultStrategy: ArrayMergeStrategy = "replace"
@@ -1600,5 +1601,50 @@ describe("mergeTextContent", () => {
       const result = mergeTextContent(["base"], "overlay", "merge");
       assert.equal(result, "overlay");
     });
+  });
+});
+
+describe("applyInherit", () => {
+  test("keeps the base when the overlay does not opt out", () => {
+    assert.deepStrictEqual(applyInherit({ a: 1 }, { b: 2 }), {
+      base: { a: 1 },
+      overlay: { b: 2 },
+    });
+  });
+
+  test("empties the base when the overlay has inherit: false", () => {
+    assert.deepStrictEqual(applyInherit({ a: 1 }, { inherit: false, b: 2 }), {
+      base: {},
+      overlay: { b: 2 },
+    });
+  });
+
+  test("removes inherit: true from the overlay and keeps the base", () => {
+    assert.deepStrictEqual(applyInherit({ a: 1 }, { inherit: true, b: 2 }), {
+      base: { a: 1 },
+      overlay: { b: 2 },
+    });
+  });
+
+  test("treats a missing base as empty", () => {
+    assert.deepStrictEqual(applyInherit(undefined, { b: 2 }), {
+      base: {},
+      overlay: { b: 2 },
+    });
+  });
+
+  test("treats a false base as empty", () => {
+    assert.deepStrictEqual(applyInherit(false, { b: 2 }), {
+      base: {},
+      overlay: { b: 2 },
+    });
+  });
+
+  test("does not change its inputs", () => {
+    const base = { a: 1 };
+    const overlay = { inherit: false, b: 2 };
+    applyInherit(base, overlay);
+    assert.deepStrictEqual(base, { a: 1 });
+    assert.deepStrictEqual(overlay, { inherit: false, b: 2 });
   });
 });

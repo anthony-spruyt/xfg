@@ -1,5 +1,12 @@
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import {
+  ARRAY_MERGE_STRATEGIES,
+  DIRECTIVE_KEYS,
+  isArrayMergeStrategy,
+  keyedItemsProblem,
+  type ArrayMergeStrategy,
+} from "./array-directive.js";
 
 /** Order matters: the first key present in every item of both arrays wins. */
 export const MATCH_KEY_CANDIDATES = ["type", "actorId", "actor_id"] as const;
@@ -24,11 +31,6 @@ export function findMatchKey(
 
   return undefined;
 }
-
-// Only these are stripped; other $-prefixed keys ($schema, $id, $ref) are content
-const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values", "$matchBy"]);
-
-export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
 
 type ArrayMergeHandler = (
   base: unknown[],
@@ -82,7 +84,7 @@ function readMatchBy(
 
 function isDirectiveOnly(value: Record<string, unknown>): boolean {
   const keys = Object.keys(value);
-  return keys.length > 0 && keys.every((k) => XFG_DIRECTIVES.has(k));
+  return keys.length > 0 && keys.every((k) => DIRECTIVE_KEYS.has(k));
 }
 
 /** An object of only directive keys must be a complete directive, or it would resolve to nothing. */
@@ -95,11 +97,10 @@ function readDirective(
   const matchBy = readMatchBy(value, ctx, path);
   if (!isDirectiveOnly(value)) return matchBy;
   if (!isArrayMergeStrategy(value.$arrayMerge)) {
-    const strategies = [...arrayMergeStrategies.keys()].join(", ");
     throw mergeError(
       ctx,
       path,
-      `$arrayMerge must be one of ${strategies}, got ${describeValue(value.$arrayMerge)}`
+      `$arrayMerge must be one of ${ARRAY_MERGE_STRATEGIES.join(", ")}, got ${describeValue(value.$arrayMerge)}`
     );
   }
   if (!Array.isArray(value.$values)) {
@@ -135,38 +136,8 @@ function assertKeyedItems(
   ctx: ErrorContext,
   path: string
 ): void {
-  const firstIndexByValue = new Map<unknown, number>();
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    if (!isPlainObject(item) || !Object.hasOwn(item, matchBy)) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} item ${i} has no $matchBy key '${matchBy}'`
-      );
-    }
-    const value = item[matchBy];
-    // Map compares objects by reference, so only primitives can match
-    if (
-      value !== null &&
-      !["string", "number", "boolean"].includes(typeof value)
-    ) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} item ${i} $matchBy ${matchBy} must be a string, number, boolean or null`
-      );
-    }
-    const first = firstIndexByValue.get(value);
-    if (first !== undefined) {
-      throw mergeError(
-        ctx,
-        path,
-        `${label} items ${first} and ${i} share $matchBy ${matchBy} '${String(value)}'`
-      );
-    }
-    firstIndexByValue.set(value, i);
-  }
+  const problem = keyedItemsProblem(items, matchBy);
+  if (problem !== undefined) throw mergeError(ctx, path, `${label} ${problem}`);
 }
 
 function mergeByKey(
@@ -274,6 +245,15 @@ function mergeArrays(
   return overlay;
 }
 
+/** `inherit` is stripped so it never lands in the merged block as content. */
+export function applyInherit(
+  base: Record<string, unknown> | false | undefined,
+  overlay: Record<string, unknown>
+): { base: Record<string, unknown>; overlay: Record<string, unknown> } {
+  const { inherit, ...rest } = overlay;
+  return { base: inherit === false || !base ? {} : base, overlay: rest };
+}
+
 export function deepMerge(
   base: Record<string, unknown>,
   overlay: Record<string, unknown>,
@@ -293,7 +273,7 @@ function mergeObjects(
   const result: Record<string, unknown> = { ...base };
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
-    if (XFG_DIRECTIVES.has(key)) continue;
+    if (DIRECTIVE_KEYS.has(key)) continue;
     result[key] = mergeValue(
       base[key],
       overlayValue,
@@ -358,13 +338,6 @@ function resolveBase(base: unknown, ctx: MergeContext, path: string): unknown {
 function isArrayDirective(value: unknown): value is Record<string, unknown> {
   return (
     isPlainObject(value) && ("$arrayMerge" in value || "$matchBy" in value)
-  );
-}
-
-function isArrayMergeStrategy(value: unknown): value is ArrayMergeStrategy {
-  return (
-    typeof value === "string" &&
-    arrayMergeStrategies.has(value as ArrayMergeStrategy)
   );
 }
 
@@ -433,7 +406,7 @@ function stripObject(
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (XFG_DIRECTIVES.has(key)) continue;
+    if (DIRECTIVE_KEYS.has(key)) continue;
 
     const keyPath = childPath(path, key);
     // Validate before branching: an invalid directive is not resolved and would be stripped silently

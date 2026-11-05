@@ -9,12 +9,16 @@ import {
 import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
+import { assertNoRootInherit, validateInheritFlag } from "./inherit-flag.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
 import type {
   CodeScanningState,
   CodeScanningQuerySuite,
   CodeScanningLanguage,
+  RawCodeScanningSettings,
+  DeploymentBranchPolicy,
 } from "../types.js";
 
 export interface RootSettingsContext {
@@ -142,6 +146,20 @@ export function validateFileConfigFields(
   }
 }
 
+/** `inherit` on a ruleset, label or environment entry; root entries have nothing to inherit. */
+function validateEntryInherit(
+  entry: unknown,
+  kind: string,
+  name: string,
+  context: string,
+  isRoot: boolean
+): void {
+  if (!isPlainObject(entry)) return;
+  const entryName = `${kind} '${name}'`;
+  if (isRoot) assertNoRootInherit(entry, entryName, context);
+  validateInheritFlag(entry, `${context}: ${entryName}`);
+}
+
 function validateLabel(label: unknown, name: string, context: string): void {
   if (!isPlainObject(label)) {
     throw new ValidationError(`${context}: label '${name}' must be an object`);
@@ -199,11 +217,12 @@ function validateCodeScanningSettings(
     throw new ValidationError(`${context}: must be an object`);
   }
 
-  if (settings.state === undefined) {
-    throw new ValidationError(`${context}: state is required`);
-  }
+  validateInheritFlag(settings, context);
 
-  if (!VALID_CODE_SCANNING_STATES.includes(settings.state as string)) {
+  if (
+    settings.state !== undefined &&
+    !VALID_CODE_SCANNING_STATES.includes(settings.state as string)
+  ) {
     throw new ValidationError(
       `${context}: state must be one of: ${VALID_CODE_SCANNING_STATES.join(", ")}`
     );
@@ -219,16 +238,34 @@ function validateCodeScanningSettings(
   }
 
   if (settings.languages !== undefined) {
-    if (!Array.isArray(settings.languages)) {
-      throw new ValidationError(`${context}: languages must be an array`);
+    const languages = arrayValues(settings.languages);
+    if (languages === null) {
+      throw new ValidationError(
+        explainNotArray(
+          `${context}: languages must be an array or $arrayMerge directive`,
+          settings.languages
+        )
+      );
     }
-    for (const lang of settings.languages) {
+    for (const lang of languages) {
       if (!VALID_CODE_SCANNING_LANGUAGES.includes(lang as string)) {
         throw new ValidationError(
           `${context}: invalid language "${lang}". Valid languages: ${VALID_CODE_SCANNING_LANGUAGES.join(", ")}`
         );
       }
     }
+  }
+}
+
+/** A layer may omit `state` and inherit it, so only the merged block can be checked. */
+export function validateMergedCodeScanningSettings(
+  codeScanning: RawCodeScanningSettings | undefined,
+  context: string
+): void {
+  if (codeScanning && codeScanning.state === undefined) {
+    throw new ValidationError(
+      `${context} codeScanning: state is required, but no layer sets it (a layer with inherit: false drops the inherited state)`
+    );
   }
 }
 
@@ -255,6 +292,7 @@ function validateSettingsRulesets(
       continue;
     }
 
+    validateEntryInherit(ruleset, "ruleset", name, context, !rootCtx);
     validateRuleset(ruleset, name, context);
   }
 }
@@ -279,6 +317,7 @@ function validateSettingsLabels(
       }
       continue;
     }
+    validateEntryInherit(label, "label", name, context, !rootCtx);
     validateLabel(label, name, context);
   }
 }
@@ -317,6 +356,10 @@ function validateSettingsRepo(
     return;
   }
   validateRepoSettings(settings.repo, context);
+  validateInheritFlag(
+    settings.repo as Record<string, unknown>,
+    `${context} repo`
+  );
 }
 
 function validateSettingsCodeScanning(
@@ -426,11 +469,14 @@ function validateSettingsCollaborators(
     }
   }
 
-  const users = collaborators.users;
-  if (users === undefined) return;
-  if (!Array.isArray(users)) {
+  if (collaborators.users === undefined) return;
+  const users = arrayValues(collaborators.users);
+  if (users === null) {
     throw new ValidationError(
-      `${context}: collaborators.users must be an array of GitHub usernames`
+      explainNotArray(
+        `${context}: collaborators.users must be an array of GitHub usernames or $arrayMerge directive`,
+        collaborators.users
+      )
     );
   }
   for (const user of users) {
@@ -442,11 +488,16 @@ function validateSettingsCollaborators(
   }
 }
 
-const ENVIRONMENT_KEYS = new Set(["deploymentBranchPolicy", "secrets"]);
+const ENVIRONMENT_KEYS = new Set([
+  "deploymentBranchPolicy",
+  "secrets",
+  "inherit",
+]);
 const BRANCH_POLICY_KEYS = new Set([
   "protectedBranches",
   "custom",
   "deleteOrphaned",
+  "inherit",
 ]);
 const BRANCH_PATTERN_KEYS = new Set(["type", "name"]);
 const ENVIRONMENT_NAME_MAX_LENGTH = 255;
@@ -464,11 +515,19 @@ function assertKnownKeys(
 }
 
 function validateBranchPatterns(custom: unknown, context: string): void {
-  if (!Array.isArray(custom) || custom.length === 0) {
-    throw new ValidationError(`${context}: custom must be a non-empty array`);
+  if (isPlainObject(custom) && custom.$arrayMerge === "merge") {
+    throw new ValidationError(
+      `${context}: custom does not accept $arrayMerge: merge, because a pattern is identified by type and name together. Use append, prepend or replace.`
+    );
+  }
+  const patterns = arrayValues(custom);
+  if (patterns === null || patterns.length === 0) {
+    throw new ValidationError(
+      `${context}: custom must be a non-empty array or $arrayMerge directive`
+    );
   }
   const seen = new Set<string>();
-  custom.forEach((pattern: unknown, i) => {
+  patterns.forEach((pattern: unknown, i) => {
     const ctx = `${context}: custom[${i}]`;
     if (!isPlainObject(pattern)) {
       throw new ValidationError(`${ctx} must be an object`);
@@ -490,7 +549,7 @@ function validateBranchPatterns(custom: unknown, context: string): void {
   });
 }
 
-function validateDeploymentBranchPolicy(
+function validateDeploymentBranchPolicyLayer(
   policy: unknown,
   context: string,
   isRoot: boolean
@@ -513,32 +572,62 @@ function validateDeploymentBranchPolicy(
     `${context}: deploymentBranchPolicy`
   );
 
-  const hasProtected = policy.protectedBranches !== undefined;
-  const hasCustom = policy.custom !== undefined;
-  if (hasProtected === hasCustom) {
-    throw new ValidationError(
-      `${ctx} needs exactly one of 'protectedBranches: true' or 'custom'`
-    );
-  }
-  if (hasProtected && policy.protectedBranches !== true) {
+  if (isRoot) assertNoRootInherit(policy, "deploymentBranchPolicy", context);
+  validateInheritFlag(policy, `${context}: deploymentBranchPolicy`);
+  if (
+    policy.protectedBranches !== undefined &&
+    policy.protectedBranches !== true
+  ) {
     throw new ValidationError(
       `${ctx}: protectedBranches must be true. Omit deploymentBranchPolicy to let any branch deploy.`
+    );
+  }
+  if (policy.protectedBranches !== undefined && policy.custom !== undefined) {
+    throw new ValidationError(
+      `${ctx} has both 'protectedBranches: true' and 'custom'. Set only one.`
+    );
+  }
+  if (policy.custom !== undefined) {
+    validateBranchPatterns(policy.custom, ctx);
+  }
+  if (
+    policy.deleteOrphaned !== undefined &&
+    typeof policy.deleteOrphaned !== "boolean"
+  ) {
+    throw new ValidationError(
+      `${context}: deploymentBranchPolicy: deleteOrphaned must be a boolean`
+    );
+  }
+}
+
+/**
+ * A layer sets only some fields, so the options that must go together are
+ * checked on the merged policy.
+ */
+export function validateDeploymentBranchPolicy(
+  policy: DeploymentBranchPolicy,
+  context: string
+): void {
+  const ctx = `${context} deploymentBranchPolicy`;
+  const hasProtected = policy.protectedBranches !== undefined;
+  const hasCustom = policy.custom !== undefined;
+  if (hasProtected && hasCustom) {
+    throw new ValidationError(
+      `${ctx} has both 'protectedBranches: true' and 'custom'. Set inherit: false on the layer that changes the policy kind to drop the inherited one.`
+    );
+  }
+  if (!hasProtected && !hasCustom) {
+    throw new ValidationError(
+      `${ctx} needs exactly one of 'protectedBranches: true' or 'custom'`
     );
   }
   if (hasCustom) {
     validateBranchPatterns(policy.custom, ctx);
   }
-  if (policy.deleteOrphaned !== undefined) {
-    if (typeof policy.deleteOrphaned !== "boolean") {
-      throw new ValidationError(
-        `${context}: deploymentBranchPolicy: deleteOrphaned must be a boolean`
-      );
-    }
-    if (!hasCustom) {
-      throw new ValidationError(
-        `${context}: deploymentBranchPolicy: deleteOrphaned only applies to a 'custom' policy`
-      );
-    }
+  if (policy.deleteOrphaned !== undefined && !hasCustom) {
+    throw new ValidationError(
+      `${context}: deploymentBranchPolicy: deleteOrphaned only applies to a 'custom' policy`
+    );
   }
 }
 
@@ -588,6 +677,7 @@ function validateSettingsEnvironments(
     }
     validateEnvironmentName(name, context, seenNames);
     if (env !== false) {
+      validateEntryInherit(env, "environment", name, context, !rootCtx);
       validateEnvironmentEntry(
         env,
         `${context}: environment '${name}'`,
@@ -643,7 +733,11 @@ function validateEnvironmentEntry(
   }
   assertKnownKeys(env, ENVIRONMENT_KEYS, envCtx);
   if (env.deploymentBranchPolicy !== undefined) {
-    validateDeploymentBranchPolicy(env.deploymentBranchPolicy, envCtx, isRoot);
+    validateDeploymentBranchPolicyLayer(
+      env.deploymentBranchPolicy,
+      envCtx,
+      isRoot
+    );
   }
   if (env.secrets !== undefined) {
     validateEnvironmentSecrets(env.secrets, envCtx);

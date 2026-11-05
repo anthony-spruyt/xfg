@@ -6726,7 +6726,7 @@ describe("mergeSettings secrets", () => {
     assert.deepStrictEqual(secrets.ROOT_SECRET, { env: "ROOT_ENV" });
   });
 
-  test("repo-level secrets inherit: false keeps root deleteOrphaned", () => {
+  test("repo-level secrets inherit: false drops root deleteOrphaned", () => {
     const root: RawRootSettings = {
       secrets: Object.assign(
         { ROOT_SECRET: { env: "ROOT_ENV" } },
@@ -6742,7 +6742,25 @@ describe("mergeSettings secrets", () => {
     const result = mergeSettings(root, perRepo);
     const secrets = result?.secrets as Record<string, unknown>;
     assert.equal(secrets.ROOT_SECRET, undefined);
-    assert.equal(secrets.deleteOrphaned, true);
+    assert.equal(secrets.deleteOrphaned, undefined);
+  });
+
+  test("repo-level secrets inherit: false keeps the layer's own deleteOrphaned", () => {
+    const root: RawRootSettings = {
+      secrets: Object.assign(
+        { ROOT_SECRET: { env: "ROOT_ENV" } },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["secrets"],
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        { OWN: { env: "OWN_ENV" } },
+        { inherit: false, deleteOrphaned: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.deleteOrphaned, false);
   });
 
   test("secrets with a deleteOrphaned-only repo layer survive as actionable", () => {
@@ -6858,8 +6876,8 @@ describe("mergeRawSettings secrets", () => {
   });
 });
 
-describe("mergeRawSettings variables deleteOrphaned survives inherit: false", () => {
-  test("group-level inherit: false keeps root variables.deleteOrphaned", () => {
+describe("mergeRawSettings variables deleteOrphaned under inherit: false", () => {
+  test("group-level inherit: false drops root variables.deleteOrphaned", () => {
     const raw: RawConfig = {
       id: "test-config",
       files: { "f.json": { content: {} } },
@@ -6885,7 +6903,7 @@ describe("mergeRawSettings variables deleteOrphaned survives inherit: false", ()
     const vars = config.repos[0].settings?.variables as Record<string, unknown>;
     assert.equal(vars.ROOT_VAR, undefined);
     assert.equal(vars.X, "1");
-    assert.equal(vars.deleteOrphaned, true);
+    assert.equal(vars.deleteOrphaned, undefined);
   });
 });
 
@@ -6898,20 +6916,48 @@ describe("mergeSettings collaborators", () => {
     assert.deepStrictEqual(result?.collaborators, { users: ["bot"] });
   });
 
-  test("unions root and repo users", () => {
+  test("a plain repo list replaces the root users", () => {
     const result = mergeSettings(
       { collaborators: { users: ["bot"] } },
       { collaborators: { users: ["other"] } }
     );
+    assert.deepStrictEqual(result?.collaborators, { users: ["other"] });
+  });
+
+  test("an append directive grows the root users", () => {
+    const result = mergeSettings({ collaborators: { users: ["bot"] } }, {
+      collaborators: {
+        users: { $arrayMerge: "append", $values: ["other"] },
+      },
+    } as unknown as RawRepoSettings);
     assert.deepStrictEqual(result?.collaborators, { users: ["bot", "other"] });
   });
 
-  test("dedupes users case-insensitively, first spelling wins", () => {
+  test("a repo that omits users inherits them", () => {
     const result = mergeSettings(
-      { collaborators: { users: ["Bot"] } },
-      { collaborators: { users: ["bot", "BOT", "other"] } }
+      { collaborators: { users: ["bot"] } },
+      { collaborators: { deleteOrphaned: true } }
     );
+    assert.deepStrictEqual(result?.collaborators, {
+      users: ["bot"],
+      deleteOrphaned: true,
+    });
+  });
+
+  test("dedupes users case-insensitively after an append, first spelling wins", () => {
+    const result = mergeSettings({ collaborators: { users: ["Bot"] } }, {
+      collaborators: {
+        users: { $arrayMerge: "append", $values: ["bot", "BOT", "other"] },
+      },
+    } as unknown as RawRepoSettings);
     assert.deepStrictEqual(result?.collaborators, { users: ["Bot", "other"] });
+  });
+
+  test("dedupes users case-insensitively inside one list", () => {
+    const result = mergeSettings(undefined, {
+      collaborators: { users: ["bot", "BOT", "other"] },
+    });
+    assert.deepStrictEqual(result?.collaborators, { users: ["bot", "other"] });
   });
 
   test("inherit: false drops inherited users", () => {
@@ -6922,14 +6968,28 @@ describe("mergeSettings collaborators", () => {
     assert.deepStrictEqual(result?.collaborators, { users: ["only"] });
   });
 
-  test("inherit: false keeps inherited deleteOrphaned", () => {
+  test("inherit: false drops inherited deleteOrphaned", () => {
     const result = mergeSettings(
       { collaborators: { users: ["bot"], deleteOrphaned: true } },
-      { collaborators: { inherit: false } }
+      { collaborators: { inherit: false, users: ["only"] } }
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["only"] });
+  });
+
+  test("inherit: false keeps the layer's own deleteOrphaned", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"], deleteOrphaned: true } },
+      {
+        collaborators: {
+          inherit: false,
+          users: ["only"],
+          deleteOrphaned: false,
+        },
+      }
     );
     assert.deepStrictEqual(result?.collaborators, {
-      users: [],
-      deleteOrphaned: true,
+      users: ["only"],
+      deleteOrphaned: false,
     });
   });
 
@@ -6954,7 +7014,7 @@ describe("mergeSettings collaborators", () => {
 });
 
 describe("mergeRawSettings collaborators", () => {
-  test("group users union with root and repo users", () => {
+  test("each layer's plain list replaces the one before", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: { collaborators: { users: ["root-bot"] } },
@@ -6971,11 +7031,36 @@ describe("mergeRawSettings collaborators", () => {
     };
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
+      users: ["repo-bot"],
+    });
+  });
+
+  test("append directives grow the list across root, group and repo", () => {
+    const append = (user: string) => ({
+      $arrayMerge: "append",
+      $values: [user],
+    });
+    const raw = {
+      id: "test-config",
+      settings: { collaborators: { users: ["root-bot"] } },
+      groups: {
+        g: { settings: { collaborators: { users: append("group-bot") } } },
+      },
+      repos: [
+        {
+          git: "https://github.com/o/r.git",
+          groups: ["g"],
+          settings: { collaborators: { users: append("repo-bot") } },
+        },
+      ],
+    } as unknown as RawConfig;
+    const config = normalizeConfig(raw, {});
+    assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
       users: ["root-bot", "group-bot", "repo-bot"],
     });
   });
 
-  test("group inherit: false drops root users but keeps deleteOrphaned", () => {
+  test("group inherit: false drops root users and deleteOrphaned", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: {
@@ -6991,11 +7076,10 @@ describe("mergeRawSettings collaborators", () => {
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
       users: ["g-bot"],
-      deleteOrphaned: true,
     });
   });
 
-  test("conditional group users are merged", () => {
+  test("a conditional group's plain list replaces the root users", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: { collaborators: { users: ["root-bot"] } },
@@ -7010,7 +7094,7 @@ describe("mergeRawSettings collaborators", () => {
     };
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
-      users: ["root-bot", "cond-bot"],
+      users: ["cond-bot"],
     });
   });
 });

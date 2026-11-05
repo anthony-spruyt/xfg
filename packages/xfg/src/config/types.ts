@@ -1,4 +1,4 @@
-import type { ArrayMergeStrategy } from "./merge.js";
+import type { ArrayMergeStrategy } from "./array-directive.js";
 
 export type MergeMode = "manual" | "auto" | "force" | "direct";
 export type MergeStrategy = "merge" | "squash" | "rebase";
@@ -23,6 +23,11 @@ export interface AiConfig extends AiProviderConfig {
   fallback?: AiProviderConfig;
 }
 
+/** ai of a group or repo layer; `inherit: false` drops the inherited ai fields. */
+export interface RawAiConfig extends AiConfig {
+  inherit?: boolean;
+}
+
 export type ResolvedAiProviderConfig = AiProviderConfig & {
   provider: AiProvider;
 };
@@ -39,6 +44,12 @@ export interface PRMergeOptions {
   labels?: string[];
   branch?: string;
   ai?: boolean | AiConfig;
+}
+
+/** prOptions of a group or repo layer; `inherit: false` drops everything inherited. */
+export interface RawPRMergeOptions extends Omit<PRMergeOptions, "ai"> {
+  inherit?: boolean;
+  ai?: boolean | RawAiConfig;
 }
 
 export type RepoPROptions = Omit<PRMergeOptions, "ai"> & {
@@ -397,6 +408,9 @@ export interface CodeScanningSettings {
   languages?: CodeScanningLanguage[];
 }
 
+/** One layer of code scanning settings; another layer may supply `state`. */
+export type RawCodeScanningSettings = Partial<CodeScanningSettings>;
+
 export type ActionsAllowedActions = "all" | "local_only" | "selected";
 export type ActionsDefaultWorkflowPermissions = "read" | "write";
 export type ActionsForkPrApprovalPolicy =
@@ -466,9 +480,17 @@ export interface EnvironmentConfig {
   secrets?: Record<string, SecretConfig> & { deleteOrphaned?: boolean };
 }
 
+/** One layer of a deployment branch policy; the layers are merged field by field. */
+export interface RawDeploymentBranchPolicy extends DeploymentBranchPolicy {
+  /** `false` drops the inherited policy, then this layer's fields apply */
+  inherit?: boolean;
+}
+
 export interface RawEnvironmentConfig {
+  /** `false` drops this environment's inherited fields; not valid at root */
+  inherit?: boolean;
   /** `false` clears an inherited policy so any branch can deploy */
-  deploymentBranchPolicy?: DeploymentBranchPolicy | false;
+  deploymentBranchPolicy?: RawDeploymentBranchPolicy | false;
   secrets?: Record<string, SecretConfig | false> & { deleteOrphaned?: boolean };
 }
 
@@ -527,17 +549,12 @@ export interface RawRepoFileOverride {
   deleteOrphaned?: boolean;
 }
 
-// Group configuration (shared config layer between root and per-repo)
-// Groups need the same file override capabilities as repos: file: false to remove,
-// inherit: false to discard accumulated files. So files uses the repo-style type.
-// Groups need inherit: false support on settings sub-sections (rulesets, labels),
-// so settings uses RawRepoSettings (which has inherit on rulesets/labels).
 export interface RawGroupConfig {
   extends?: string | string[];
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
 }
 
@@ -556,7 +573,7 @@ export interface RawConditionalGroupConfig {
   files?: Record<string, RawFileConfig | RawRepoFileOverride | false> & {
     inherit?: boolean;
   };
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
 }
 
@@ -565,7 +582,7 @@ export interface RawRootSettings {
   rulesets?: Record<string, Ruleset | false>;
   repo?: GitHubRepoSettings | false;
   labels?: Record<string, Label | false>;
-  codeScanning?: CodeScanningSettings | false;
+  codeScanning?: RawCodeScanningSettings | false;
   actions?: ActionsSettings | false;
   variables?: Record<string, string | false> & { deleteOrphaned?: boolean };
   secrets?: SecretsConfig;
@@ -578,11 +595,15 @@ export interface RawRootSettings {
 
 // Per-repo settings (before normalization) - inherit controls whether root settings are inherited
 export interface RawRepoSettings {
-  rulesets?: Record<string, Ruleset | false> & { inherit?: boolean };
-  repo?: GitHubRepoSettings | false;
-  labels?: Record<string, Label | false> & { inherit?: boolean };
-  codeScanning?: CodeScanningSettings | false;
-  actions?: ActionsSettings | false;
+  rulesets?: Record<string, (Ruleset & { inherit?: boolean }) | false> & {
+    inherit?: boolean;
+  };
+  repo?: (GitHubRepoSettings & { inherit?: boolean }) | false;
+  labels?: Record<string, (Label & { inherit?: boolean }) | false> & {
+    inherit?: boolean;
+  };
+  codeScanning?: (RawCodeScanningSettings & { inherit?: boolean }) | false;
+  actions?: (ActionsSettings & { inherit?: boolean }) | false;
   variables?: Record<string, string | false> & {
     inherit?: boolean;
     deleteOrphaned?: boolean;
@@ -602,7 +623,7 @@ export interface RawRepoConfig {
   git: string | string[];
   files?: Record<string, RawRepoFileOverride | false> & { inherit?: boolean };
   groups?: string[];
-  prOptions?: PRMergeOptions;
+  prOptions?: RawPRMergeOptions;
   settings?: RawRepoSettings;
   /** Fork upstream repo if target doesn't exist */
   upstream?: string;
