@@ -109,6 +109,7 @@ jobs:
         with:
           allowed-endpoints: >-
             api.github.com:443
+            archive.ubuntu.com:443
             azure.archive.ubuntu.com:80
             cafe.github.com:443
             codeload.github.com:443
@@ -120,6 +121,7 @@ jobs:
             raw.githubusercontent.com:443
             registry.npmjs.org:443
             results-receiver.actions.githubusercontent.com:443
+            security.ubuntu.com:443
             *.blob.core.windows.net:443
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
