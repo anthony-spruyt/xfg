@@ -53,6 +53,34 @@ describe("mergeSettings - codeScanning", () => {
     assert.strictEqual(result?.codeScanning, undefined);
   });
 
+  test("not-configured drops the inherited languages and querySuite", () => {
+    const result = mergeSettings(
+      {
+        codeScanning: {
+          state: "configured",
+          languages: ["go"],
+          querySuite: "extended",
+        },
+      },
+      repoLayer({ codeScanning: { state: "not-configured" } })
+    );
+    assert.deepStrictEqual(result?.codeScanning, { state: "not-configured" });
+  });
+
+  test("not-configured drops fields the same layer sets", () => {
+    const result = mergeSettings(
+      undefined,
+      repoLayer({
+        codeScanning: {
+          state: "not-configured",
+          languages: { $arrayMerge: "append", $values: ["go"] },
+          querySuite: "default",
+        },
+      })
+    );
+    assert.deepStrictEqual(result?.codeScanning, { state: "not-configured" });
+  });
+
   test("a layer that sets only languages inherits state and querySuite", () => {
     const result = mergeSettings(
       { codeScanning: { state: "configured", querySuite: "default" } },

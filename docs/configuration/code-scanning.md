@@ -103,6 +103,8 @@ repos:
 
 Code scanning merges field by field, like the other settings blocks. A repo that sets one field keeps the rest of the inherited block, and some layer must set `state`. A plain `languages` list replaces the inherited one; use `$arrayMerge` to add to it instead. To start from scratch, for example to go back to auto-detected languages, set `inherit: false` in the layer.
 
+When the merged `state` is `not-configured`, `languages` and `querySuite` are dropped: the block is just `state`. A repo can switch code scanning off with `state: not-configured` alone, without `inherit: false`.
+
 ```yaml
 id: code-scanning
 settings:

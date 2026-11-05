@@ -583,6 +583,11 @@ function finalizeEnvironments(
   return result;
 }
 
+const codeScanningBlock = objectBlock<
+  CodeScanningSettings,
+  RawCodeScanningSettings
+>("settings.codeScanning");
+
 // Key order is the order of keys in the normalized settings
 const BLOCKS: { [K in keyof RawRepoSettings]-?: BlockMerger<K> } = {
   rulesets: {
@@ -614,9 +619,13 @@ const BLOCKS: { [K in keyof RawRepoSettings]-?: BlockMerger<K> } = {
     finalize: finalizeLabels,
   },
   // state is required; validateNormalizedConfig checks it after the merge
-  codeScanning: objectBlock<CodeScanningSettings, RawCodeScanningSettings>(
-    "settings.codeScanning"
-  ),
+  codeScanning: {
+    merge: codeScanningBlock.merge,
+    finalize: (merged) => {
+      const block = codeScanningBlock.finalize(merged);
+      return block?.state === "not-configured" ? { state: block.state } : block;
+    },
+  },
   actions: objectBlock<ActionsSettings>("settings.actions"),
   variables: entryMapBlock as BlockMerger<"variables">,
   secrets: entryMapBlock as BlockMerger<"secrets">,

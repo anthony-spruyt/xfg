@@ -53,6 +53,8 @@ repos:
 
 `state` may now be left out of a layer, but some layer must set it. xfg checks this after the layers merge.
 
+A merged `state: not-configured` keeps only `state`: `languages` and `querySuite` are dropped. A repo that switches code scanning off with `state: not-configured` gets the same result as before, without `inherit: false`.
+
 ### 3. `deploymentBranchPolicy` merges field by field
 
 A policy set in a layer used to replace the inherited one whole, and `deleteOrphaned` had to be restated each time. Now the fields merge. Three results follow:
