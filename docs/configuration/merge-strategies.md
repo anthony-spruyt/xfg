@@ -287,8 +287,8 @@ The arrays that take a directive:
 | Environments | `deploymentBranchPolicy.custom` |
 | PR options | `labels` |
 
-!!! warning "`merge` on `custom` needs `$matchBy`"
-    Without `$matchBy`, `merge` matches branch patterns on `type`, so every `branch` pattern folds into one. With `deleteOrphaned: true`, xfg would then delete the lost patterns on GitHub. xfg rejects `$arrayMerge: merge` on `custom` unless `$matchBy` is set; use `append`, or `$matchBy: name`.
+!!! warning "`custom` does not take `merge`"
+    A deployment branch pattern is identified by its type and name together, and no single `$matchBy` key covers both: `$matchBy: name` would fold a branch pattern and a tag pattern with the same name into one, and with `deleteOrphaned: true` xfg would then delete one of them on GitHub. xfg rejects `$arrayMerge: merge` on `custom`, with or without `$matchBy`; use `append`, `prepend` or `replace`.
 
 ### Appending Bypass Actors
 

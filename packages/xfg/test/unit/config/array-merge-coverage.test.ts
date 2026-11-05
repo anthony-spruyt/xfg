@@ -618,15 +618,18 @@ function runPath(path: string): string[] {
   }
 
   if (path === "settings.environments.x.deploymentBranchPolicy.custom") {
-    const custom = (extra: Json): Json =>
-      buildConfig({
+    for (const matchBy of [undefined, "name"]) {
+      const config = buildConfig({
         layers: {
           group: {
             settings: {
               environments: {
                 x: {
                   deploymentBranchPolicy: {
-                    custom: { ...directive("merge", [sample.a]), ...extra },
+                    custom: {
+                      ...directive("merge", [sample.a]),
+                      ...(matchBy ? { $matchBy: matchBy } : {}),
+                    },
                   },
                 },
               },
@@ -634,24 +637,20 @@ function runPath(path: string): string[] {
           },
         },
       });
-    try {
-      validateRawConfig(custom({}) as unknown as RawConfig);
-      failures.push(
-        "custom with merge and no $matchBy passes validateRawConfig"
-      );
-    } catch (error) {
-      if (!/\$matchBy/.test(toErrorMessage(error))) {
-        failures.push(
-          `custom with merge and no $matchBy is rejected for another reason: ${toErrorMessage(error)}`
-        );
+      const label = `custom with merge and $matchBy ${matchBy ?? "unset"}`;
+      if (schemaValidator(config)) failures.push(`${label} passes the schema`);
+      try {
+        validateRawConfig(config as unknown as RawConfig);
+        failures.push(`${label} passes validateRawConfig`);
+      } catch (error) {
+        if (
+          !/does not accept \$arrayMerge: merge/.test(toErrorMessage(error))
+        ) {
+          failures.push(
+            `${label} is rejected for another reason: ${toErrorMessage(error)}`
+          );
+        }
       }
-    }
-    try {
-      validateRawConfig(custom({ $matchBy: "name" }) as unknown as RawConfig);
-    } catch (error) {
-      failures.push(
-        `custom with merge and $matchBy is rejected: ${toErrorMessage(error)}`
-      );
     }
   }
 

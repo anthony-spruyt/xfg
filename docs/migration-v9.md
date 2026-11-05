@@ -59,7 +59,7 @@ A policy set in a layer used to replace the inherited one whole, and `deleteOrph
 
 - A layer that switches between `protectedBranches: true` and `custom` must set `inherit: false`. Without it, the merged policy holds both and validation fails with a hint to use `inherit: false`.
 - `deleteOrphaned` is inherited. It works on the merged `custom` list, so a repo that replaces `custom` with a plain list deletes the inherited patterns on GitHub. To keep them, use `$arrayMerge: append`.
-- `$arrayMerge: merge` on `custom` needs `$matchBy: name`.
+- `$arrayMerge: merge` is not accepted on `custom`, with or without `$matchBy`: a pattern is identified by its type and name together. Use `append`, `prepend` or `replace`.
 
 To get the old result, set `inherit: false` and restate the policy:
 

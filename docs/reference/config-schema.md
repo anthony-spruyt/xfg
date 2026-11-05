@@ -465,7 +465,7 @@ GitHub repository settings for features, merge options, and security
 
 <!-- xfg:generated schema:arrayMergeDirective -->
 
-Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. With 'merge' on deploymentBranchPolicy.custom, set $matchBy: name, or every branch pattern matches on type and folds into one.
+Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.
 
 | Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                                    |
 | ------------- | --------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -851,7 +851,7 @@ Which refs can deploy. Layers merge field by field, and the merged policy must h
 | `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in the merged custom list.       |
 
 - `inherit` — Not valid at root level. Default: true
-- `custom` — A plain list replaces the inherited patterns; use $arrayMerge: append to add to them, or merge with $matchBy: name. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
+- `custom` — A plain list replaces the inherited patterns; use $arrayMerge: append to add to them. A pattern is identified by type and name together, so $arrayMerge: merge is not accepted. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
 - `deleteOrphaned` — Inherited like other fields; only valid with custom. Default: false
 
 <!-- xfg:generated:end -->

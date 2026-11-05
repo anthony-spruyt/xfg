@@ -127,20 +127,43 @@ describe("raw validation of array directives", () => {
       accepts(settings(append(branch)));
     });
 
-    test("accepts merge with $matchBy", () => {
-      accepts(
-        settings({
-          $arrayMerge: "merge",
-          $matchBy: "name",
-          $values: [branch],
-        })
-      );
-    });
+    for (const strategy of ["append", "prepend", "replace"]) {
+      test(`accepts ${strategy}`, () => {
+        accepts(settings({ $arrayMerge: strategy, $values: [branch] }));
+      });
+    }
 
-    test("rejects merge without $matchBy", () => {
+    for (const matchBy of [undefined, "name", "type"]) {
+      test(`rejects merge with $matchBy ${matchBy ?? "unset"}`, () => {
+        rejects(
+          settings({
+            $arrayMerge: "merge",
+            ...(matchBy ? { $matchBy: matchBy } : {}),
+            $values: [branch],
+          }),
+          /custom does not accept \$arrayMerge: merge.*type and name/
+        );
+      });
+    }
+
+    test("names the group that holds the merge", () => {
       rejects(
-        settings({ $arrayMerge: "merge", $values: [branch] }),
-        /custom with \$arrayMerge: merge needs \$matchBy/
+        {
+          groups: {
+            g: {
+              settings: {
+                environments: {
+                  prod: {
+                    deploymentBranchPolicy: {
+                      custom: { $arrayMerge: "merge", $values: [branch] },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        /groups\.g: environment 'prod' deploymentBranchPolicy: custom does not accept/
       );
     });
 

@@ -158,8 +158,8 @@ repos:
                 - { type: tag, name: "v*" }   # main and v*
 ```
 
-!!! warning "`merge` on `custom` needs `$matchBy`"
-    Without `$matchBy: name`, `merge` folds every `branch` pattern into one, so xfg rejects it. Use `append`, or `merge` with `$matchBy: name`.
+!!! warning "`custom` does not take `merge`"
+    A pattern is identified by its type and name together, and no single `$matchBy` key covers both, so xfg rejects `$arrayMerge: merge` on `custom`. Use `append`, `prepend` or `replace`.
 
 By default xfg never deletes anything: removing an environment, pattern or secret from the config leaves it on GitHub. [Deleting Orphans](#deleting-orphans) covers the opt-in.
 

@@ -11,7 +11,7 @@ import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
 import { assertNoRootInherit, validateInheritFlag } from "./inherit-flag.js";
 import { isPlainObject } from "../../shared/type-guards.js";
-import { arrayValues, isArrayMergeDirective } from "../array-directive.js";
+import { arrayValues } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
 import type {
   CodeScanningState,
@@ -489,19 +489,15 @@ function assertKnownKeys(
 }
 
 function validateBranchPatterns(custom: unknown, context: string): void {
+  if (isPlainObject(custom) && custom.$arrayMerge === "merge") {
+    throw new ValidationError(
+      `${context}: custom does not accept $arrayMerge: merge, because a pattern is identified by type and name together. Use append, prepend or replace.`
+    );
+  }
   const patterns = arrayValues(custom);
   if (patterns === null || patterns.length === 0) {
     throw new ValidationError(
       `${context}: custom must be a non-empty array or $arrayMerge directive`
-    );
-  }
-  if (
-    isArrayMergeDirective(custom) &&
-    custom.$arrayMerge === "merge" &&
-    custom.$matchBy === undefined
-  ) {
-    throw new ValidationError(
-      `${context}: custom with $arrayMerge: merge needs $matchBy, or every branch pattern would match on 'type' and fold into one`
     );
   }
   const seen = new Set<string>();

@@ -1354,7 +1354,7 @@
     },
     "arrayMergeDirective": {
       "type": "object",
-      "description": "Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. With 'merge' on deploymentBranchPolicy.custom, set $matchBy: name, or every branch pattern matches on type and folds into one.",
+      "description": "Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.",
       "required": ["$arrayMerge", "$values"],
       "properties": {
         "$arrayMerge": {
@@ -2436,7 +2436,7 @@
           "description": "Only branches with branch protection rules can deploy"
         },
         "custom": {
-          "description": "Only refs matching these patterns can deploy. A plain list replaces the inherited patterns; use $arrayMerge: append to add to them, or merge with $matchBy: name. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
+          "description": "Only refs matching these patterns can deploy. A plain list replaces the inherited patterns; use $arrayMerge: append to add to them. A pattern is identified by type and name together, so $arrayMerge: merge is not accepted. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
           "oneOf": [
             {
               "type": "array",
@@ -2452,6 +2452,9 @@
                 },
                 {
                   "properties": {
+                    "$arrayMerge": {
+                      "enum": ["replace", "append", "prepend"]
+                    },
                     "$values": {
                       "items": {
                         "$ref": "#/definitions/deploymentBranchPattern"
