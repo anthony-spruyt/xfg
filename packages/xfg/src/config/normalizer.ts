@@ -291,12 +291,10 @@ function mergeEntryMapLayer(
   const overlayEntries = overlay ?? {};
 
   const inheriting = overlayEntries.inherit !== false;
-  const effectiveDeleteOrphaned =
-    overlayEntries.deleteOrphaned !== undefined
-      ? overlayEntries.deleteOrphaned
-      : inheriting
-        ? baseEntries.deleteOrphaned
-        : undefined;
+  let effectiveDeleteOrphaned = overlayEntries.deleteOrphaned;
+  if (effectiveDeleteOrphaned === undefined && inheriting) {
+    effectiveDeleteOrphaned = baseEntries.deleteOrphaned;
+  }
 
   const inherited = inheriting ? stripEntryMapMetaKeys(baseEntries) : {};
 
@@ -396,15 +394,17 @@ function mergeEnvironmentLayer(
   return result;
 }
 
+type PolicyLayer = RawDeploymentBranchPolicy | false | undefined;
+
 function mergePolicyLayer(
-  base: RawDeploymentBranchPolicy | false | undefined,
-  overlay: RawDeploymentBranchPolicy | false | undefined,
+  base: PolicyLayer,
+  overlay: PolicyLayer,
   location: string
-): RawDeploymentBranchPolicy | false | undefined {
+): PolicyLayer {
   if (overlay === undefined) return structuredClone(base);
   if (overlay === false) return false;
   return mergeObjectLayer(
-    base as Record<string, unknown> | false | undefined,
+    base as ObjectLayer,
     structuredClone(overlay) as Record<string, unknown>,
     location
   ) as RawDeploymentBranchPolicy;
@@ -489,8 +489,10 @@ function stripBlock<T extends object>(block: T, location: string): T {
   return stripMergeDirectives(block as Record<string, unknown>, location) as T;
 }
 
+type ObjectLayer = Record<string, unknown> | false | undefined;
+
 function mergeObjectLayer(
-  base: Record<string, unknown> | false | undefined,
+  base: ObjectLayer,
   overlay: Record<string, unknown>,
   location: string
 ): Record<string, unknown> {
@@ -513,7 +515,7 @@ function objectBlock<T extends object, Raw extends object = T>(
       overlay === false
         ? false
         : (mergeObjectLayer(
-            base as Record<string, unknown> | false | undefined,
+            base as ObjectLayer,
             overlay as Record<string, unknown>,
             location
           ) as Raw),
