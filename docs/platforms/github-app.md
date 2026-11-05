@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: anthony-spruyt/xfg@v8 # x-release-please-major
+      - uses: anthony-spruyt/xfg@v9 # x-release-please-major
         with:
           config: sync-config.yaml
           github-client-id: ${{ vars.CLIENT_ID }}
