@@ -87,9 +87,12 @@ repos:
 
 ### 4. `inherit: false` drops an inherited `deleteOrphaned`
 
-`deleteOrphaned` is an ordinary field. `inherit: false` used to keep an inherited `deleteOrphaned` on `collaborators`, `variables`, `secrets` and `environments` while it dropped everything else. It now drops that too, in every block, so a layer with `inherit: false` no longer deletes anything on GitHub unless it sets `deleteOrphaned: true` itself.
+`deleteOrphaned` is an ordinary field. `inherit: false` used to keep an inherited `deleteOrphaned` on `collaborators`, `variables`, `secrets` and `environments` while it dropped everything else. It now drops that too, in `collaborators`, `variables`, `secrets` (an environment's `secrets` included), `environments` and `deploymentBranchPolicy`.
+A layer with `inherit: false` on one of those blocks no longer deletes anything on GitHub unless it sets `deleteOrphaned: true` itself.
 
-To get the old result, restate `deleteOrphaned` in the layer:
+Rulesets and labels do not change: `settings.deleteOrphaned` is a field of `settings`, not of the `rulesets` or `labels` map, so `inherit: false` on either map keeps it, and while it is `true` the inherited rulesets or labels the layer dropped are still deleted. Set `settings.deleteOrphaned: false` in that repo to keep them.
+
+To get the old result on the other blocks, restate `deleteOrphaned` in the layer:
 
 ```yaml
 id: my-config
