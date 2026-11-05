@@ -6,6 +6,7 @@ import {
   assertAiKeyEnvAllowed,
 } from "../../shared/credential-env.js";
 import type { AiProvider } from "../types.js";
+import { assertNoRootInherit } from "./inherit-flag.js";
 
 const VALID_PROVIDERS: AiProvider[] = ["anthropic", "openai"];
 const STRING_FIELDS = ["model", "baseUrl", "apiKeyEnv", "prompt"] as const;
@@ -16,22 +17,28 @@ const PROVIDER_KEYS = [
   "baseUrlEnv",
   ...STRING_FIELDS,
 ];
-const PRIMARY_KEYS = new Set<string>([...PROVIDER_KEYS, "fallback"]);
+const PRIMARY_KEYS = new Set<string>([...PROVIDER_KEYS, "fallback", "inherit"]);
 const FALLBACK_KEYS = new Set<string>(PROVIDER_KEYS);
 
-export function validateAiOption(ai: unknown): void {
+/** `context` names the layer or repo, empty for the root; `inherit` is only valid in a layer. */
+export function validateAiOption(ai: unknown, context = ""): void {
   if (ai === undefined || typeof ai === "boolean") return;
+  const path = context ? `${context}: prOptions.ai` : "prOptions.ai";
   if (!isPlainObject(ai)) {
-    throw new ValidationError("prOptions.ai must be a boolean or an object");
+    throw new ValidationError(`${path} must be a boolean or an object`);
   }
 
-  validateProvider(ai, "prOptions.ai", PRIMARY_KEYS);
+  if (!context) assertNoRootInherit(ai, "prOptions.ai");
+  if (ai.inherit !== undefined && typeof ai.inherit !== "boolean") {
+    throw new ValidationError(`${path}.inherit must be a boolean`);
+  }
+  validateProvider(ai, path, PRIMARY_KEYS);
 
   if (ai.fallback !== undefined) {
     if (!isPlainObject(ai.fallback)) {
-      throw new ValidationError("prOptions.ai.fallback must be an object");
+      throw new ValidationError(`${path}.fallback must be an object`);
     }
-    validateProvider(ai.fallback, "prOptions.ai.fallback", FALLBACK_KEYS);
+    validateProvider(ai.fallback, `${path}.fallback`, FALLBACK_KEYS);
   }
 }
 

@@ -24,7 +24,7 @@ export function validatePrOptions(
   if (prOptions.branch !== undefined) {
     validateBranchName(prOptions.branch);
   }
-  validateAiOption(prOptions.ai);
+  validateAiOption(prOptions.ai, context);
 
   if (prOptions.labels === undefined) return;
 

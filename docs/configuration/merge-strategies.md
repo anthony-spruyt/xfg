@@ -270,7 +270,7 @@ Settings blocks and [`prOptions`](pr-options.md) share one merge model, through 
 - **Objects merge field by field.** A field a layer leaves out is inherited.
 - **A plain array replaces** the inherited array.
 - **A `$arrayMerge` directive combines** with it: `append`, `prepend`, `replace` or `merge`, with `$values` (and `$matchBy` for `merge`). It is the same syntax as in file content, and it works on every array in the list below.
-- **`inherit: false` starts a block fresh.** Inside a block, it drops everything that block would inherit, then the layer's own fields apply. It works in `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy` and `prOptions`, and, as before, in rulesets, labels, environments, collaborators, variables and secrets. It is not allowed at root, where there is nothing to inherit.
+- **`inherit: false` starts a block fresh.** Inside a block, it drops everything that block would inherit, then the layer's own fields apply. It works in `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy`, `prOptions` and `prOptions.ai`, and, as before, in rulesets, labels, environments, collaborators, variables and secrets. It is not allowed at root, where there is nothing to inherit.
 - **`false` opts out.** Setting a block (or a named entry) to `false` removes it.
 - **`deleteOrphaned` is an ordinary field.** The innermost layer wins, and where it deletes things on GitHub it works on the merged result, so an appended item is kept, not deleted.
 - **Repeated items are dropped** from the merged array, first one wins (usernames are compared ignoring case). Only strings and numbers are compared; objects are never dropped.

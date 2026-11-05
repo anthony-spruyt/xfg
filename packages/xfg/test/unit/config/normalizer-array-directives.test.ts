@@ -109,18 +109,19 @@ describe("array directives in the normalizer", () => {
       ]);
     });
 
-    test("ai still replaces whole while labels merge", () => {
+    test("ai merges field by field while a plain labels array replaces", () => {
       const config = normalize({
-        prOptions: { ai: { provider: "anthropic", model: "x" }, labels: ["a"] },
+        prOptions: { ai: { provider: "openai", model: "x" }, labels: ["a"] },
         repos: [
           {
             git: "https://github.com/org/repo.git",
-            prOptions: { ai: { provider: "openai" }, labels: ["b"] },
+            prOptions: { ai: { model: "y" }, labels: ["b"] },
           },
         ],
       });
       assert.deepStrictEqual(config.repos[0].prOptions?.ai, {
         provider: "openai",
+        model: "y",
       });
       assert.deepStrictEqual(config.repos[0].prOptions?.labels, ["b"]);
     });

@@ -23,6 +23,11 @@ export interface AiConfig extends AiProviderConfig {
   fallback?: AiProviderConfig;
 }
 
+/** ai of a group or repo layer; `inherit: false` drops the inherited ai fields. */
+export interface RawAiConfig extends AiConfig {
+  inherit?: boolean;
+}
+
 export type ResolvedAiProviderConfig = AiProviderConfig & {
   provider: AiProvider;
 };
@@ -42,8 +47,9 @@ export interface PRMergeOptions {
 }
 
 /** prOptions of a group or repo layer; `inherit: false` drops everything inherited. */
-export interface RawPRMergeOptions extends PRMergeOptions {
+export interface RawPRMergeOptions extends Omit<PRMergeOptions, "ai"> {
   inherit?: boolean;
+  ai?: boolean | RawAiConfig;
 }
 
 export type RepoPROptions = Omit<PRMergeOptions, "ai"> & {

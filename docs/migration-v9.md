@@ -107,11 +107,39 @@ repos:
           env: OWN
 ```
 
+### 5. `prOptions.ai` merges field by field
+
+An `ai` object in a group or repo used to replace the inherited one whole, so a repo that set only `model` fell back to the Anthropic defaults. Now an omitted field is inherited, `provider`, `apiKeyEnv`, `headersEnv` and `fallback` included. `ai: true`, `ai: false` and the `ai: true` that re-enables a hidden `ai` object work as before.
+
+xfg also checks the merged `ai`, so fields from different layers must make a valid provider together.
+
+To get the old result, set `inherit: false` inside the `ai` object and state every field you want:
+
+```yaml
+id: my-config
+files:
+  README.md:
+    content: "# Hello"
+
+prOptions:
+  ai:
+    provider: openai
+    model: gpt-4.1-mini
+    apiKeyEnv: LLM_KEY
+
+repos:
+  - git: git@github.com:your-org/web.git
+    prOptions:
+      ai:
+        inherit: false           # old behavior: replaces the inherited ai
+        model: claude-haiku-4-5
+```
+
 ## Other Changes
 
 These do not break a working config:
 
-- `inherit: false` now works inside `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy` and `prOptions`, and drops what the block would inherit.
+- `inherit: false` now works inside `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy`, `prOptions` and `prOptions.ai`, and drops what the block would inherit.
 - `$arrayMerge` works on every layered array, including `actions.patternsAllowed`, `codeScanning.languages`, `collaborators.users`, `deploymentBranchPolicy.custom`, `prOptions.labels` and the arrays inside ruleset rule parameters.
 - Repeated strings and numbers are dropped from a merged array, first one wins. A repeated `languages` entry used to show up as a change on every run.
 - `prOptions` is checked in every layer. A bad label in a group or repo that used to pass now fails validation.

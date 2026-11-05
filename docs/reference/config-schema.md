@@ -173,18 +173,20 @@ See [AI Commit Messages](../configuration/ai-messages.md) for setup and privacy 
 
 AI provider settings for generated commit messages and PR descriptions
 
-| Field          | Type                                      | Required | Default     | Description                                                                                   |
-| -------------- | ----------------------------------------- | -------- | ----------- | --------------------------------------------------------------------------------------------- |
-| `provider`     | `anthropic` \| `openai`                   | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                                     |
-| `model`        | `string`                                  | No       | -           | Model id.                                                                                     |
-| `baseUrl`      | `string`                                  | No       | -           | API base URL, e.g.                                                                            |
-| `baseUrlEnv`   | `string`                                  | No       | -           | Name of the env var holding the API base URL, for when the URL must not be written in config. |
-| `apiKeyEnv`    | `string`                                  | No       | -           | Name of the env var holding the API key.                                                      |
-| `headersEnv`   | `object` of `string`                      | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs.            |
-| `prompt`       | `string`                                  | No       | -           | Extra instructions appended to the built-in system prompt                                     |
-| `maxDiffChars` | `integer`                                 | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.                     |
-| `fallback`     | [`aiFallbackOptions`](#aifallbackoptions) | No       | -           | Provider to try when this one fails for any reason.                                           |
+| Field          | Type                                      | Required | Default     | Description                                                                                     |
+| -------------- | ----------------------------------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| `inherit`      | `boolean`                                 | No       | -           | Set to false to drop every inherited ai field (fallback included), then apply this layer's own. |
+| `provider`     | `anthropic` \| `openai`                   | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                                       |
+| `model`        | `string`                                  | No       | -           | Model id.                                                                                       |
+| `baseUrl`      | `string`                                  | No       | -           | API base URL, e.g.                                                                              |
+| `baseUrlEnv`   | `string`                                  | No       | -           | Name of the env var holding the API base URL, for when the URL must not be written in config.   |
+| `apiKeyEnv`    | `string`                                  | No       | -           | Name of the env var holding the API key.                                                        |
+| `headersEnv`   | `object` of `string`                      | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs.              |
+| `prompt`       | `string`                                  | No       | -           | Extra instructions appended to the built-in system prompt                                       |
+| `maxDiffChars` | `integer`                                 | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.                       |
+| `fallback`     | [`aiFallbackOptions`](#aifallbackoptions) | No       | -           | Provider to try when this one fails for any reason.                                             |
 
+- `inherit` — Not valid at root level. Default: true
 - `provider` — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic
 - `model` — Default for anthropic: claude-haiku-4-5. Required for openai.
 - `baseUrl` — `http://localhost:11434/v1` for Ollama. With openai, a baseUrl makes the API key optional.

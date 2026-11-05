@@ -69,7 +69,9 @@ prOptions:
 
 The default key (`ANTHROPIC_API_KEY` / `OPENAI_API_KEY`) is only sent to that provider's own API. With any other `baseUrl`, name a dedicated variable in `apiKeyEnv`. `apiKeyEnv` can't name a credential xfg uses elsewhere, such as `GH_TOKEN` (see [Environment Variables](env-variables.md#credential-variables)).
 
-`ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level replaces the one above it (it is not deep-merged). Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above.
+`ai` lives on `prOptions`, so it follows the normal root → group → repo override chain. An `ai` object at a lower level merges field by field with the one above it, `fallback` and `headersEnv` included, so a repo can change just the `model` and keep the provider and key. Set `inherit: false` inside the `ai` object to drop everything inherited and use only that layer's fields.
+
+Set `ai: false` on a repo or group to turn it off there. A later `ai: true` turns it back on with the `ai` object from above, and an `ai` object after `ai: false` starts fresh. xfg checks the merged result, so fields from different layers must make a valid provider together.
 
 ### Base URL from an env var
 

@@ -156,7 +156,6 @@ const EXCLUDED: Record<string, string> = {
   "files.x.content": "file lines merge by the file's mergeStrategy",
   "files.x.header": "innermost layer wins",
   "**.$values": "the directive's own payload",
-  "prOptions.ai.**": "ai replaces whole",
 };
 
 function excluded(path: string): boolean {

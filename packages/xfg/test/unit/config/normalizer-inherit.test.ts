@@ -199,18 +199,19 @@ describe("inherit: false on object blocks", () => {
       });
     });
 
-    test("ai still replaces whole when the layer sets it", () => {
+    test("ai merges field by field when the layer sets it", () => {
       const config = normalize({
-        prOptions: { ai: { provider: "anthropic", model: "x" } },
+        prOptions: { ai: { provider: "openai", model: "x" } },
         repos: [
           {
             git: "https://github.com/org/repo.git",
-            prOptions: { ai: { provider: "openai" } },
+            prOptions: { ai: { model: "y" } },
           },
         ],
       });
       assert.deepStrictEqual(config.repos[0].prOptions?.ai, {
         provider: "openai",
+        model: "y",
       });
     });
   });

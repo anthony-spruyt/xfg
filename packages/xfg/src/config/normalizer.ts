@@ -19,6 +19,7 @@ import type {
   ContentValue,
   AiConfig,
   PRMergeOptions,
+  RawAiConfig,
   RawPRMergeOptions,
   RepoPROptions,
   RepoSettings,
@@ -128,6 +129,22 @@ const PR_OPTIONS_LOCATION = "prOptions";
 // lastAi remembers the ai object hidden by `ai: false` so a later `ai: true` can re-enable it.
 type MergedPROptions = PRMergeOptions & { lastAi?: AiConfig };
 
+function mergeAi(
+  base: boolean | AiConfig | undefined,
+  overlay: boolean | RawAiConfig | undefined
+): boolean | AiConfig | undefined {
+  if (typeof overlay !== "object" || overlay === null) return overlay ?? base;
+  const layer = applyInherit(
+    typeof base === "object" ? (base as Record<string, unknown>) : undefined,
+    overlay as Record<string, unknown>
+  );
+  return deepMerge(
+    layer.base,
+    layer.overlay,
+    createMergeContext("replace", `${PR_OPTIONS_LOCATION}.ai`)
+  ) as AiConfig;
+}
+
 function mergePROptions(
   global: MergedPROptions | undefined,
   perRepo: RawPRMergeOptions | undefined
@@ -140,13 +157,14 @@ function mergePROptions(
     perRepo as Record<string, unknown>
   );
   const base = layer.base as MergedPROptions;
-  const overlay = layer.overlay as PRMergeOptions;
+  const overlay = layer.overlay as RawPRMergeOptions;
   const lastAi = typeof base.ai === "object" ? base.ai : base.lastAi;
   const { ai: _baseAi, lastAi: _baseLastAi, ...baseRest } = base;
   const { ai: _overlayAi, ...overlayRest } = overlay;
   const merged: MergedPROptions = {
     ...base,
     ...overlay,
+    ai: mergeAi(base.ai, overlay.ai),
     lastAi: undefined,
     ...deepMerge(
       baseRest,

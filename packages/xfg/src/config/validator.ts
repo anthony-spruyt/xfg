@@ -11,6 +11,7 @@ import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 import { isValidHostname } from "../shared/github-host-policy.js";
 import { isCredentialEnvName } from "../shared/credential-env.js";
+import { validateAiOption } from "./validators/ai-validator.js";
 import { validatePrOptions } from "./validators/pr-options-validator.js";
 import { assertNoRootInherit } from "./validators/inherit-flag.js";
 import { arrayValues } from "./array-directive.js";
@@ -410,6 +411,7 @@ export function validateNormalizedConfig(config: Config): void {
       `Repo '${repo.git}'`
     );
     validateMergedEnvironments(repo.settings, `Repo '${repo.git}'`);
+    validateAiOption(repo.prOptions?.ai, `Repo '${repo.git}'`);
   }
 }
 

@@ -1,6 +1,9 @@
 import { test, describe } from "node:test";
 import { strict as assert } from "node:assert";
-import { validateRawConfig } from "../../../src/config/validator.js";
+import {
+  validateRawConfig,
+  validateNormalizedConfig,
+} from "../../../src/config/validator.js";
 import { normalizeConfig } from "../../../src/config/normalizer.js";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -128,6 +131,64 @@ describe("prOptions.ai validation", () => {
     );
   });
 
+  test("accepts inherit: false inside a repo ai object", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(
+        baseConfig({
+          repos: [
+            {
+              git: "git@github.com:org/repo.git",
+              prOptions: { ai: { inherit: false, prompt: "p" } },
+            },
+          ],
+        })
+      )
+    );
+  });
+
+  test("rejects inherit inside the root ai object", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          baseConfig({
+            prOptions: { ai: { inherit: false, prompt: "p" } },
+          } as unknown as Partial<RawConfig>)
+        ),
+      /'inherit' is not allowed in root-level prOptions\.ai/
+    );
+  });
+
+  test("rejects a non-boolean inherit inside ai", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          baseConfig({
+            repos: [
+              {
+                git: "git@github.com:org/repo.git",
+                prOptions: { ai: { inherit: "no", prompt: "p" } },
+              },
+            ],
+          } as unknown as Partial<RawConfig>)
+        ),
+      /prOptions\.ai\.inherit must be a boolean/
+    );
+  });
+
+  test("rejects inherit inside the ai fallback", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(
+          baseConfig({
+            prOptions: {
+              ai: { fallback: { inherit: false } },
+            },
+          } as unknown as Partial<RawConfig>)
+        ),
+      /prOptions\.ai\.fallback has unknown key 'inherit'/
+    );
+  });
+
   test("validates ai in repo prOptions", () => {
     const config = baseConfig({
       repos: [
@@ -203,13 +264,101 @@ describe("prOptions.ai normalization", () => {
     assert.deepEqual(result.repos[0].prOptions, { merge: "direct" });
   });
 
-  test("repo ai object replaces root ai object", () => {
+  test("repo ai object merges field by field over the root ai object", () => {
     const result = normalizeConfig(
       baseConfig({
-        prOptions: { ai: { provider: "openai", model: "gpt" } },
+        prOptions: {
+          ai: { provider: "openai", model: "m1", apiKeyEnv: "LLM_KEY" },
+        },
         repos: [
           {
             git: "git@github.com:org/repo.git",
+            prOptions: { ai: { model: "m2" } },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "openai",
+      model: "m2",
+      apiKeyEnv: "LLM_KEY",
+    });
+  });
+
+  test("headersEnv merges field by field", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: {
+          ai: {
+            provider: "openai",
+            model: "m",
+            headersEnv: { "X-A": "ENV_A", "X-B": "ENV_B" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: {
+              ai: { headersEnv: { "X-B": "OTHER_B", "X-C": "ENV_C" } },
+            },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai?.headersEnv, {
+      "X-A": "ENV_A",
+      "X-B": "OTHER_B",
+      "X-C": "ENV_C",
+    });
+  });
+
+  test("inherit: false inside ai drops the inherited ai fields", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: {
+          merge: "auto",
+          ai: { provider: "openai", model: "m", apiKeyEnv: "LLM_KEY" },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: { ai: { inherit: false, prompt: "p" } },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions, {
+      merge: "auto",
+      ai: { provider: "anthropic", prompt: "p" },
+    });
+  });
+
+  test("inherit inside a group ai never reaches the result", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        groups: { g: { prOptions: { ai: { inherit: false, prompt: "p" } } } },
+        repos: [{ git: "git@github.com:org/repo.git", groups: ["g"] }],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "anthropic",
+      prompt: "p",
+    });
+  });
+
+  test("an ai object after ai: false starts fresh", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: { ai: { provider: "openai", model: "m" } },
+        groups: { g: { prOptions: { ai: false } } },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            groups: ["g"],
             prOptions: { ai: { prompt: "p" } },
           },
         ],
@@ -275,6 +424,52 @@ describe("prOptions.ai normalization", () => {
       {}
     );
     assert.deepEqual(result.repos[0].prOptions, { merge: "manual" });
+  });
+});
+
+describe("prOptions.ai merged validation", () => {
+  const layered = (
+    root: Record<string, unknown>,
+    repo: Record<string, unknown>
+  ) =>
+    normalizeConfig(
+      baseConfig({
+        prOptions: { ai: root },
+        repos: [
+          { git: "git@github.com:org/repo.git", prOptions: { ai: repo } },
+        ],
+      } as unknown as Partial<RawConfig>),
+      {}
+    );
+
+  test("checks the key against the merged baseUrl", () => {
+    const config = layered(
+      { provider: "openai", model: "m", apiKeyEnv: "OPENAI_API_KEY" },
+      { baseUrl: "https://llm.example/v1" }
+    );
+    assert.throws(
+      () => validateNormalizedConfig(config),
+      /Repo 'git@github\.com:org\/repo\.git': prOptions\.ai\.apiKeyEnv .* credential/
+    );
+  });
+
+  test("rejects a merged baseUrl and baseUrlEnv together", () => {
+    const config = layered(
+      { provider: "openai", model: "m", baseUrl: "https://llm.example/v1" },
+      { baseUrlEnv: "LLM_URL" }
+    );
+    assert.throws(
+      () => validateNormalizedConfig(config),
+      /baseUrl and baseUrlEnv are mutually exclusive/
+    );
+  });
+
+  test("accepts a merged ai that is valid", () => {
+    const config = layered(
+      { provider: "openai", model: "m", apiKeyEnv: "LLM_KEY" },
+      { baseUrl: "https://llm.example/v1" }
+    );
+    assert.doesNotThrow(() => validateNormalizedConfig(config));
   });
 });
 
@@ -622,7 +817,33 @@ describe("prOptions.ai.fallback normalization", () => {
     assert.deepEqual(result.repos[0].prOptions?.ai, ai);
   });
 
-  test("a repo ai object replaces the root one including its fallback", () => {
+  test("a repo ai object merges into the root fallback field by field", () => {
+    const result = normalizeConfig(
+      baseConfig({
+        prOptions: {
+          ai: {
+            provider: "openai",
+            model: "m",
+            fallback: { provider: "openai", model: "f1", apiKeyEnv: "F_KEY" },
+          },
+        },
+        repos: [
+          {
+            git: "git@github.com:org/repo.git",
+            prOptions: { ai: { fallback: { model: "f2" } } },
+          },
+        ],
+      }),
+      {}
+    );
+    assert.deepEqual(result.repos[0].prOptions?.ai, {
+      provider: "openai",
+      model: "m",
+      fallback: { provider: "openai", model: "f2", apiKeyEnv: "F_KEY" },
+    });
+  });
+
+  test("inherit: false inside ai drops the inherited fallback", () => {
     const result = normalizeConfig(
       baseConfig({
         prOptions: {
@@ -631,7 +852,7 @@ describe("prOptions.ai.fallback normalization", () => {
         repos: [
           {
             git: "git@github.com:org/repo.git",
-            prOptions: { ai: { prompt: "p" } },
+            prOptions: { ai: { inherit: false, prompt: "p" } },
           },
         ],
       }),

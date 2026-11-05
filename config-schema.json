@@ -326,6 +326,10 @@
       "description": "AI provider settings for generated commit messages and PR descriptions",
       "additionalProperties": false,
       "properties": {
+        "inherit": {
+          "type": "boolean",
+          "description": "Set to false to drop every inherited ai field (fallback included), then apply this layer's own. Not valid at root level. Default: true"
+        },
         "provider": {
           "type": "string",
           "enum": [
