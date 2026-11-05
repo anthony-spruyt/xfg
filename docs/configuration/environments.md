@@ -194,7 +194,7 @@ settings:
 
 How each key merges:
 
-- `environments.deleteOrphaned` and `secrets.deleteOrphaned` resolve innermost-wins, like [repo secrets](secrets.md). `inherit: false` drops inherited environments but keeps an inherited `deleteOrphaned`, so together they delete the inherited environments. Set `deleteOrphaned: false` to turn cleanup off for a repo.
+- `environments.deleteOrphaned` and `secrets.deleteOrphaned` resolve innermost-wins, like [repo secrets](secrets.md). `inherit: false` drops the inherited environments and an inherited `deleteOrphaned`. A layer that wants cleanup sets `deleteOrphaned: true` itself, and then deletes the inherited environments.
 - `deploymentBranchPolicy.deleteOrphaned` is a field of the policy and inherits like the others. It works on the merged `custom` list, so a repo that replaces `custom` with a plain list deletes the inherited patterns on GitHub. To keep them, add with `$arrayMerge: append`. It is only valid with `custom`.
 - A secrets map that holds only `deleteOrphaned: true` deletes every secret in that environment.
 

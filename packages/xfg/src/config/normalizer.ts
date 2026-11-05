@@ -262,8 +262,8 @@ function stripEntryMapMetaKeys(
 
 /**
  * Merges one name-keyed settings entry map (variables or secrets) over another.
- * `deleteOrphaned` is a policy peer key resolved innermost-wins; `inherit: false`
- * discards inherited entries only and never clears it.
+ * `deleteOrphaned` is an ordinary field resolved innermost-wins, so `inherit: false`
+ * drops an inherited one along with the inherited entries.
  */
 function mergeEntryMapLayer(
   base: Record<string, unknown> | undefined,
@@ -272,13 +272,15 @@ function mergeEntryMapLayer(
   const baseEntries = base ?? {};
   const overlayEntries = overlay ?? {};
 
+  const inheriting = overlayEntries.inherit !== false;
   const effectiveDeleteOrphaned =
     overlayEntries.deleteOrphaned !== undefined
       ? overlayEntries.deleteOrphaned
-      : baseEntries.deleteOrphaned;
+      : inheriting
+        ? baseEntries.deleteOrphaned
+        : undefined;
 
-  const inherited =
-    overlayEntries.inherit === false ? {} : stripEntryMapMetaKeys(baseEntries);
+  const inherited = inheriting ? stripEntryMapMetaKeys(baseEntries) : {};
 
   const merged = mergeCaseInsensitiveEntries(
     inherited,
@@ -320,23 +322,15 @@ function dedupeUsers(users: string[]): string[] {
   });
 }
 
-/** `inherit: false` drops inherited users but never clears an inherited deleteOrphaned. */
 function mergeCollaboratorsLayer(
   base: RawCollaboratorsConfig | undefined,
   overlay: RawCollaboratorsConfig
 ): RawCollaboratorsConfig {
-  const merged = mergeObjectLayer(
+  return mergeObjectLayer(
     base as Record<string, unknown> | undefined,
     overlay as Record<string, unknown>,
     COLLABORATORS_LOCATION
   ) as RawCollaboratorsConfig;
-  if (
-    merged.deleteOrphaned === undefined &&
-    base?.deleteOrphaned !== undefined
-  ) {
-    merged.deleteOrphaned = base.deleteOrphaned;
-  }
-  return merged;
 }
 
 function finalizeCollaborators(
@@ -430,7 +424,7 @@ function isMergeableEntry(entry: unknown): boolean {
 // GitHub environment names are case-insensitive; base entries take the overlay's spelling so they merge.
 type RawEnvironments = NonNullable<RawRepoSettings["environments"]>;
 
-/** `deleteOrphaned` resolves innermost-wins like the entry maps; `inherit: false` never clears it. */
+/** `deleteOrphaned` resolves innermost-wins like the entry maps; `inherit: false` drops an inherited one. */
 function mergeEnvironmentEntries(
   base: RawRootSettings["environments"],
   overlay: RawEnvironments
@@ -456,7 +450,9 @@ function mergeEnvironmentEntries(
       overlayEnvs,
       mergeEnvironmentLayer
     );
-  const deleteOrphaned = overlayDeleteOrphaned ?? baseDeleteOrphaned;
+  const deleteOrphaned =
+    overlayDeleteOrphaned ??
+    (shouldInherit(overlay) ? baseDeleteOrphaned : undefined);
   if (deleteOrphaned !== undefined) {
     result.deleteOrphaned = deleteOrphaned;
   }

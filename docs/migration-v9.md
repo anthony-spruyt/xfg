@@ -2,7 +2,7 @@
 
 v9 gives every settings block and every array one merge model: objects merge field by field, a plain array replaces the inherited one, and `$arrayMerge` and `inherit: false` work everywhere. See [Settings Array Merge](configuration/merge-strategies.md#settings-array-merge) for the full rules.
 
-Three blocks used to behave differently. They now follow the model, so a config that relied on the old behaviour can produce a different result or fail validation.
+Several blocks used to behave differently. They now follow the model, so a config that relied on the old behaviour can produce a different result or fail validation.
 
 ## Breaking Changes
 
@@ -81,6 +81,30 @@ repos:
             custom:
               - { type: tag, name: "v*" }
             deleteOrphaned: true
+```
+
+### 4. `inherit: false` drops an inherited `deleteOrphaned`
+
+`deleteOrphaned` is an ordinary field. `inherit: false` used to keep an inherited `deleteOrphaned` on `collaborators`, `variables`, `secrets` and `environments` while it dropped everything else. It now drops that too, in every block, so a layer with `inherit: false` no longer deletes anything on GitHub unless it sets `deleteOrphaned: true` itself.
+
+To get the old result, restate `deleteOrphaned` in the layer:
+
+```yaml
+id: my-config
+settings:
+  secrets:
+    deleteOrphaned: true
+    SHARED_KEY:
+      env: SHARED
+
+repos:
+  - git: git@github.com:your-org/isolated.git
+    settings:
+      secrets:
+        inherit: false
+        deleteOrphaned: true     # old behavior: inherited from root
+        OWN_KEY:
+          env: OWN
 ```
 
 ## Other Changes

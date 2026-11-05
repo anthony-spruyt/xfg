@@ -6726,7 +6726,7 @@ describe("mergeSettings secrets", () => {
     assert.deepStrictEqual(secrets.ROOT_SECRET, { env: "ROOT_ENV" });
   });
 
-  test("repo-level secrets inherit: false keeps root deleteOrphaned", () => {
+  test("repo-level secrets inherit: false drops root deleteOrphaned", () => {
     const root: RawRootSettings = {
       secrets: Object.assign(
         { ROOT_SECRET: { env: "ROOT_ENV" } },
@@ -6742,7 +6742,25 @@ describe("mergeSettings secrets", () => {
     const result = mergeSettings(root, perRepo);
     const secrets = result?.secrets as Record<string, unknown>;
     assert.equal(secrets.ROOT_SECRET, undefined);
-    assert.equal(secrets.deleteOrphaned, true);
+    assert.equal(secrets.deleteOrphaned, undefined);
+  });
+
+  test("repo-level secrets inherit: false keeps the layer's own deleteOrphaned", () => {
+    const root: RawRootSettings = {
+      secrets: Object.assign(
+        { ROOT_SECRET: { env: "ROOT_ENV" } },
+        { deleteOrphaned: true }
+      ) as RawRootSettings["secrets"],
+    };
+    const perRepo: RawRepoSettings = {
+      secrets: Object.assign(
+        { OWN: { env: "OWN_ENV" } },
+        { inherit: false, deleteOrphaned: false }
+      ) as RawRepoSettings["secrets"],
+    };
+    const result = mergeSettings(root, perRepo);
+    const secrets = result?.secrets as Record<string, unknown>;
+    assert.equal(secrets.deleteOrphaned, false);
   });
 
   test("secrets with a deleteOrphaned-only repo layer survive as actionable", () => {
@@ -6858,8 +6876,8 @@ describe("mergeRawSettings secrets", () => {
   });
 });
 
-describe("mergeRawSettings variables deleteOrphaned survives inherit: false", () => {
-  test("group-level inherit: false keeps root variables.deleteOrphaned", () => {
+describe("mergeRawSettings variables deleteOrphaned under inherit: false", () => {
+  test("group-level inherit: false drops root variables.deleteOrphaned", () => {
     const raw: RawConfig = {
       id: "test-config",
       files: { "f.json": { content: {} } },
@@ -6885,7 +6903,7 @@ describe("mergeRawSettings variables deleteOrphaned survives inherit: false", ()
     const vars = config.repos[0].settings?.variables as Record<string, unknown>;
     assert.equal(vars.ROOT_VAR, undefined);
     assert.equal(vars.X, "1");
-    assert.equal(vars.deleteOrphaned, true);
+    assert.equal(vars.deleteOrphaned, undefined);
   });
 });
 
@@ -6950,14 +6968,28 @@ describe("mergeSettings collaborators", () => {
     assert.deepStrictEqual(result?.collaborators, { users: ["only"] });
   });
 
-  test("inherit: false keeps inherited deleteOrphaned", () => {
+  test("inherit: false drops inherited deleteOrphaned", () => {
     const result = mergeSettings(
       { collaborators: { users: ["bot"], deleteOrphaned: true } },
-      { collaborators: { inherit: false } }
+      { collaborators: { inherit: false, users: ["only"] } }
+    );
+    assert.deepStrictEqual(result?.collaborators, { users: ["only"] });
+  });
+
+  test("inherit: false keeps the layer's own deleteOrphaned", () => {
+    const result = mergeSettings(
+      { collaborators: { users: ["bot"], deleteOrphaned: true } },
+      {
+        collaborators: {
+          inherit: false,
+          users: ["only"],
+          deleteOrphaned: false,
+        },
+      }
     );
     assert.deepStrictEqual(result?.collaborators, {
-      users: [],
-      deleteOrphaned: true,
+      users: ["only"],
+      deleteOrphaned: false,
     });
   });
 
@@ -7028,7 +7060,7 @@ describe("mergeRawSettings collaborators", () => {
     });
   });
 
-  test("group inherit: false drops root users but keeps deleteOrphaned", () => {
+  test("group inherit: false drops root users and deleteOrphaned", () => {
     const raw: RawConfig = {
       id: "test-config",
       settings: {
@@ -7044,7 +7076,6 @@ describe("mergeRawSettings collaborators", () => {
     const config = normalizeConfig(raw, {});
     assert.deepStrictEqual(config.repos[0].settings?.collaborators, {
       users: ["g-bot"],
-      deleteOrphaned: true,
     });
   });
 

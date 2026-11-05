@@ -295,14 +295,22 @@ describe("mergeSettings - environments deleteOrphaned", () => {
     });
   });
 
-  test("inherit: false keeps the inherited deleteOrphaned", () => {
+  test("inherit: false drops the inherited deleteOrphaned", () => {
     const result = mergeSettings(
       { environments: envs({ deleteOrphaned: true, release: {} }) },
       { environments: { inherit: false, staging: {} } }
     );
+    assert.deepStrictEqual(result?.environments, { staging: {} });
+  });
+
+  test("inherit: false keeps the layer's own deleteOrphaned", () => {
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true, release: {} }) },
+      { environments: { inherit: false, staging: {}, deleteOrphaned: false } }
+    );
     assert.deepStrictEqual(result?.environments, {
       staging: {},
-      deleteOrphaned: true,
+      deleteOrphaned: false,
     });
   });
 

@@ -69,7 +69,7 @@ repos:
         users: [only-this-one]
 ```
 
-With `deleteOrphaned: true`, a plain list in a repo removes the inherited users from that repo.
+With `deleteOrphaned: true`, a plain list in a repo removes the inherited users from that repo. `inherit: false` also drops an inherited `deleteOrphaned`, so set it again in the same layer to keep cleanup on.
 
 `inherit` is allowed in repos, groups, and conditional groups. It is not allowed at root.
 
