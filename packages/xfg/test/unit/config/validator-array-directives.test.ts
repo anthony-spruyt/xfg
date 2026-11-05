@@ -66,12 +66,18 @@ describe("raw validation of array directives", () => {
 
     test("a directive of users is actionable", () => {
       const raw = { collaborators: { users: append("octocat") } };
-      assert.equal(hasActionableSettings(raw as RawRepoSettings), true);
+      assert.equal(
+        hasActionableSettings(raw as unknown as RawRepoSettings),
+        true
+      );
     });
 
     test("a directive of no users is not actionable", () => {
       const raw = { collaborators: { users: append() } };
-      assert.equal(hasActionableSettings(raw as RawRepoSettings), false);
+      assert.equal(
+        hasActionableSettings(raw as unknown as RawRepoSettings),
+        false
+      );
     });
   });
 
