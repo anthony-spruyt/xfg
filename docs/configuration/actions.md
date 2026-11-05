@@ -98,7 +98,7 @@ With `enabled: false` the repo's other Actions fields are not allowed in the sam
 
 `actions` merges from root to group to repo, field by field, like `settings.repo`. A repo that sets one field keeps the rest of the inherited block.
 
-`patternsAllowed` is the exception: a layer that sets it replaces the inherited list whole. Lists are not appended.
+A plain `patternsAllowed` list replaces the inherited one. To add to it instead, use `$arrayMerge: append`. `inherit: false` in a layer drops every inherited field, then applies that layer's own.
 
 ```yaml
 id: actions-baseline
@@ -117,8 +117,9 @@ repos:
     settings:
       actions:
         patternsAllowed:
-          - docker/login-action@*
-          - aquasecurity/trivy-action@*
+          $arrayMerge: append   # adds to docker/login-action@*
+          $values:
+            - aquasecurity/trivy-action@*
   - git: git@github.com:your-org/scratch.git
     settings:
       actions:

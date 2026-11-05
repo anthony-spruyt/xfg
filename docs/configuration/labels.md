@@ -135,6 +135,27 @@ repos:
         enhancement: false       # Opt out of a single root label
 ```
 
+Inside one label, `inherit: false` drops only that label's inherited fields, so the repo's label starts fresh and the other inherited labels stay:
+
+```yaml
+id: labels
+settings:
+  labels:
+    bug:
+      color: d73a4a
+      description: "Something isn't working"
+
+repos:
+  - git: git@github.com:your-org/repo-e.git
+    settings:
+      labels:
+        bug:
+          inherit: false         # drop the inherited description
+          color: ff0000
+```
+
+With `inherit: false` in the `labels` map, a label that has the same name as an inherited one is not merged with it. It replaces it, so restate it in full. To keep the other inherited labels, drop the map-level `inherit: false` and opt out of the ones you do not want with `name: false`. `inherit` is not allowed on a root-level label.
+
 ## How It Works
 
 The `xfg sync` command:

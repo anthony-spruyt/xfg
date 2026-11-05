@@ -143,16 +143,18 @@ Repository configuration
 
 PR merge behavior options
 
-| Field           | Type                                      | Required | Default  | Description                                                                                                                                                                                                         |
-| --------------- | ----------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `merge`         | `manual` \| `auto` \| `force` \| `direct` | No       | `auto`   | Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. |
-| `mergeStrategy` | `merge` \| `squash` \| `rebase`           | No       | `squash` | How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base.                                                                                             |
-| `deleteBranch`  | `boolean`                                 | No       | `true`   | Delete the source branch after merge completes.                                                                                                                                                                     |
-| `bypassReason`  | `string`                                  | No       | -        | Reason for bypassing policies (Azure DevOps only, used when merge=force).                                                                                                                                           |
-| `labels`        | `string[]`                                | No       | -        | Labels to apply to created PRs/MRs.                                                                                                                                                                                 |
-| `branch`        | `string`                                  | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
-| `ai`            | `boolean` \| [`aiOptions`](#aioptions)    | No       | -        | AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).                                                                                  |
+| Field           | Type                                                        | Required | Default  | Description                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inherit`       | `boolean`                                                   | No       | -        | Set to false to drop every inherited prOptions field (including ai), then apply this layer's own.                                                                                                                   |
+| `merge`         | `manual` \| `auto` \| `force` \| `direct`                   | No       | `auto`   | Merge mode: 'manual' leaves PR open for review, 'auto' enables auto-merge when checks pass, 'force' bypasses requirements using admin privileges, 'direct' pushes directly to default branch without creating a PR. |
+| `mergeStrategy` | `merge` \| `squash` \| `rebase`                             | No       | `squash` | How to merge the PR: 'merge' creates a merge commit, 'squash' squashes all commits, 'rebase' rebases commits onto base.                                                                                             |
+| `deleteBranch`  | `boolean`                                                   | No       | `true`   | Delete the source branch after merge completes.                                                                                                                                                                     |
+| `bypassReason`  | `string`                                                    | No       | -        | Reason for bypassing policies (Azure DevOps only, used when merge=force).                                                                                                                                           |
+| `labels`        | `string[]` \| [`arrayMergeDirective`](#arraymergedirective) | No       | -        | Labels to apply to created PRs/MRs.                                                                                                                                                                                 |
+| `branch`        | `string`                                                    | No       | -        | Branch name for sync PRs.                                                                                                                                                                                           |
+| `ai`            | `boolean` \| [`aiOptions`](#aioptions)                      | No       | -        | AI-generated conventional commit messages and PR descriptions. true = Anthropic with defaults; false turns it off (e.g. per repo).                                                                                  |
 
+- `inherit` — Not valid at root level. Default: true
 - `merge` — Default: auto
 - `mergeStrategy` — Default: squash
 - `deleteBranch` — Default: true
@@ -171,18 +173,20 @@ See [AI Commit Messages](../configuration/ai-messages.md) for setup and privacy 
 
 AI provider settings for generated commit messages and PR descriptions
 
-| Field          | Type                                      | Required | Default     | Description                                                                                   |
-| -------------- | ----------------------------------------- | -------- | ----------- | --------------------------------------------------------------------------------------------- |
-| `provider`     | `anthropic` \| `openai`                   | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                                     |
-| `model`        | `string`                                  | No       | -           | Model id.                                                                                     |
-| `baseUrl`      | `string`                                  | No       | -           | API base URL, e.g.                                                                            |
-| `baseUrlEnv`   | `string`                                  | No       | -           | Name of the env var holding the API base URL, for when the URL must not be written in config. |
-| `apiKeyEnv`    | `string`                                  | No       | -           | Name of the env var holding the API key.                                                      |
-| `headersEnv`   | `object` of `string`                      | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs.            |
-| `prompt`       | `string`                                  | No       | -           | Extra instructions appended to the built-in system prompt                                     |
-| `maxDiffChars` | `integer`                                 | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.                     |
-| `fallback`     | [`aiFallbackOptions`](#aifallbackoptions) | No       | -           | Provider to try when this one fails for any reason.                                           |
+| Field          | Type                                      | Required | Default     | Description                                                                                     |
+| -------------- | ----------------------------------------- | -------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| `inherit`      | `boolean`                                 | No       | -           | Set to false to drop every inherited ai field (fallback included), then apply this layer's own. |
+| `provider`     | `anthropic` \| `openai`                   | No       | `anthropic` | 'anthropic' uses the Claude Messages API.                                                       |
+| `model`        | `string`                                  | No       | -           | Model id.                                                                                       |
+| `baseUrl`      | `string`                                  | No       | -           | API base URL, e.g.                                                                              |
+| `baseUrlEnv`   | `string`                                  | No       | -           | Name of the env var holding the API base URL, for when the URL must not be written in config.   |
+| `apiKeyEnv`    | `string`                                  | No       | -           | Name of the env var holding the API key.                                                        |
+| `headersEnv`   | `object` of `string`                      | No       | -           | Extra HTTP headers sent with the AI request, as header name to env var name pairs.              |
+| `prompt`       | `string`                                  | No       | -           | Extra instructions appended to the built-in system prompt                                       |
+| `maxDiffChars` | `integer`                                 | No       | `20000`     | Maximum diff characters sent to the provider, shared fairly across files.                       |
+| `fallback`     | [`aiFallbackOptions`](#aifallbackoptions) | No       | -           | Provider to try when this one fails for any reason.                                             |
 
+- `inherit` — Not valid at root level. Default: true
 - `provider` — 'openai' uses any OpenAI-compatible Chat Completions API (OpenAI, Ollama, Azure OpenAI, LiteLLM). Default: anthropic
 - `model` — Default for anthropic: claude-haiku-4-5. Required for openai.
 - `baseUrl` — `http://localhost:11434/v1` for Ollama. With openai, a baseUrl makes the API key optional.
@@ -297,15 +301,18 @@ See [Groups — Conditional Groups](../configuration/groups.md#conditional-group
 
 <!-- xfg:generated schema:codeScanningSettings -->
 
-GitHub code scanning default setup configuration
+GitHub code scanning default setup configuration. Fields merge with the inherited block; set inherit: false to drop what it would inherit, for example to go back to auto-detected languages.
 
-| Field        | Type                                                                                                                    | Required | Default | Description                                                                           |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------- |
-| `state`      | `configured` \| `not-configured`                                                                                        | Yes      | -       | Enable or disable code scanning default setup                                         |
-| `querySuite` | `default` \| `extended`                                                                                                 | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries |
-| `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` | No       | -       | Languages to analyze.                                                                 |
+| Field        | Type                                                                                                                                                                     | Required | Default | Description                                                                              |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ---------------------------------------------------------------------------------------- |
+| `inherit`    | `boolean`                                                                                                                                                                | No       | -       | Set to false to drop every inherited code scanning setting, then apply this layer's own. |
+| `state`      | `configured` \| `not-configured`                                                                                                                                         | No       | -       | Enable or disable code scanning default setup.                                           |
+| `querySuite` | `default` \| `extended`                                                                                                                                                  | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries    |
+| `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Languages to analyze.                                                                    |
 
-- `languages` — If omitted, GitHub auto-detects languages in the repository.
+- `inherit` — Not valid at root level. Default: true
+- `state` — Some layer must set it.
+- `languages` — If omitted, GitHub auto-detects languages in the repository. A layer that omits it inherits the parent's list; a plain list replaces it, and inherit: false goes back to auto-detect.
 
 <!-- xfg:generated:end -->
 
@@ -317,12 +324,13 @@ GitHub Actions settings for the repository (Settings > Actions). Each field maps
 
 | Field                          | Type                                                                                                | Required | Default | Description                                                                              |
 | ------------------------------ | --------------------------------------------------------------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------- |
+| `inherit`                      | `boolean`                                                                                           | No       | -       | Set to false to drop every inherited actions setting, then apply this layer's own.       |
 | `enabled`                      | `boolean`                                                                                           | No       | -       | Whether GitHub Actions is enabled for the repository.                                    |
 | `allowedActions`               | `all` \| `local_only` \| `selected`                                                                 | No       | -       | Which actions and reusable workflows may run.                                            |
 | `shaPinningRequired`           | `boolean`                                                                                           | No       | -       | Require actions to be referenced by full commit SHA.                                     |
 | `githubOwnedAllowed`           | `boolean`                                                                                           | No       | -       | Allow actions created by GitHub when allowedActions is selected.                         |
 | `verifiedAllowed`              | `boolean`                                                                                           | No       | -       | Allow actions from Marketplace verified creators when allowedActions is selected.        |
-| `patternsAllowed`              | `string[]`                                                                                          | No       | -       | Action patterns to allow when allowedActions is selected, such as docker/login-action@*. |
+| `patternsAllowed`              | `string[]` \| [`arrayMergeDirective`](#arraymergedirective)                                         | No       | -       | Action patterns to allow when allowedActions is selected, such as docker/login-action@*. |
 | `defaultWorkflowPermissions`   | `read` \| `write`                                                                                   | No       | -       | Default permissions of the GITHUB_TOKEN in workflows.                                    |
 | `canApprovePullRequestReviews` | `boolean`                                                                                           | No       | -       | Let workflows create and approve pull requests.                                          |
 | `forkPrApprovalPolicy`         | `first_time_contributors_new_to_github` \| `first_time_contributors` \| `all_external_contributors` | No       | -       | Which contributors need approval before workflows run on their fork pull requests.       |
@@ -330,12 +338,13 @@ GitHub Actions settings for the repository (Settings > Actions). Each field maps
 | `cacheRetentionDays`           | `integer`                                                                                           | No       | -       | Days to keep unused Actions caches.                                                      |
 | `cacheSizeGb`                  | `integer`                                                                                           | No       | -       | Maximum Actions cache size in gigabytes.                                                 |
 
+- `inherit` — Not valid at root level. Default: true
 - `enabled` — Maps to enabled of PUT actions/permissions. With false, allowedActions, shaPinningRequired and the selected-actions fields are not allowed in the same layer.
 - `allowedActions` — Maps to allowed_actions of PUT actions/permissions. The selected-actions fields apply only when this is selected.
 - `shaPinningRequired` — Maps to sha_pinning_required of PUT actions/permissions.
 - `githubOwnedAllowed` — Maps to github_owned_allowed of PUT actions/permissions/selected-actions.
 - `verifiedAllowed` — Maps to verified_allowed of PUT actions/permissions/selected-actions.
-- `patternsAllowed` — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.
+- `patternsAllowed` — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set. A plain list replaces the inherited patterns; use $arrayMerge to add to them.
 - `defaultWorkflowPermissions` — Maps to default_workflow_permissions of PUT actions/permissions/workflow.
 - `canApprovePullRequestReviews` — Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them.
 - `forkPrApprovalPolicy` — Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval.
@@ -402,7 +411,7 @@ Repository settings including GitHub Rulesets and repository features
 - `actions` — Set to false at per-repo level to opt out of inherited settings.
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
-- `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
+- `collaborators` — A plain users list replaces the inherited users; use $arrayMerge: append to add to them. Set inherit: false to drop inherited users.
 - `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.
 - `deleteOrphaned` — Default: false
 
@@ -414,35 +423,37 @@ Repository settings including GitHub Rulesets and repository features
 
 GitHub repository settings for features, merge options, and security
 
-| Field                           | Type                                      | Required | Default | Description                                                       |
-| ------------------------------- | ----------------------------------------- | -------- | ------- | ----------------------------------------------------------------- |
-| `description`                   | `string`                                  | No       | -       | Repository description.                                           |
-| `hasIssues`                     | `boolean`                                 | No       | -       | Enable or disable GitHub Issues.                                  |
-| `hasProjects`                   | `boolean`                                 | No       | -       | Enable or disable GitHub Projects.                                |
-| `hasWiki`                       | `boolean`                                 | No       | -       | Enable or disable the repository wiki.                            |
-| `hasDiscussions`                | `boolean`                                 | No       | -       | Enable or disable GitHub Discussions                              |
-| `isTemplate`                    | `boolean`                                 | No       | -       | Mark the repository as a template repository                      |
-| `allowForking`                  | `boolean`                                 | No       | -       | Allow forking of a private repository                             |
-| `visibility`                    | `public` \| `private` \| `internal`       | No       | -       | Repository visibility.                                            |
-| `archived`                      | `boolean`                                 | No       | -       | Archive the repository.                                           |
-| `allowSquashMerge`              | `boolean`                                 | No       | -       | Allow squash-merging pull requests                                |
-| `allowMergeCommit`              | `boolean`                                 | No       | -       | Allow merge commits for pull requests                             |
-| `allowRebaseMerge`              | `boolean`                                 | No       | -       | Allow rebase-merging pull requests                                |
-| `allowAutoMerge`                | `boolean`                                 | No       | -       | Allow auto-merge on pull requests                                 |
-| `deleteBranchOnMerge`           | `boolean`                                 | No       | -       | Automatically delete head branches after pull requests are merged |
-| `allowUpdateBranch`             | `boolean`                                 | No       | -       | Show 'Update branch' button in pull requests                      |
-| `squashMergeCommitTitle`        | `PR_TITLE` \| `COMMIT_OR_PR_TITLE`        | No       | -       | Default title for squash merge commits                            |
-| `squashMergeCommitMessage`      | `PR_BODY` \| `COMMIT_MESSAGES` \| `BLANK` | No       | -       | Default message for squash merge commits                          |
-| `mergeCommitTitle`              | `PR_TITLE` \| `MERGE_MESSAGE`             | No       | -       | Default title for merge commits                                   |
-| `mergeCommitMessage`            | `PR_BODY` \| `PR_TITLE` \| `BLANK`        | No       | -       | Default message for merge commits                                 |
-| `vulnerabilityAlerts`           | `boolean`                                 | No       | -       | Enable or disable Dependabot vulnerability alerts                 |
-| `automatedSecurityFixes`        | `boolean`                                 | No       | -       | Enable or disable Dependabot automated security fixes             |
-| `secretScanning`                | `boolean`                                 | No       | -       | Enable or disable secret scanning                                 |
-| `secretScanningPushProtection`  | `boolean`                                 | No       | -       | Enable or disable secret scanning push protection                 |
-| `privateVulnerabilityReporting` | `boolean`                                 | No       | -       | Enable or disable private vulnerability reporting                 |
-| `webCommitSignoffRequired`      | `boolean`                                 | No       | -       | Require contributors to sign off on web-based commits             |
-| `defaultBranch`                 | `string`                                  | No       | -       | The default branch for the repository                             |
+| Field                           | Type                                      | Required | Default | Description                                                                     |
+| ------------------------------- | ----------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------- |
+| `inherit`                       | `boolean`                                 | No       | -       | Set to false to drop every inherited repo setting, then apply this layer's own. |
+| `description`                   | `string`                                  | No       | -       | Repository description.                                                         |
+| `hasIssues`                     | `boolean`                                 | No       | -       | Enable or disable GitHub Issues.                                                |
+| `hasProjects`                   | `boolean`                                 | No       | -       | Enable or disable GitHub Projects.                                              |
+| `hasWiki`                       | `boolean`                                 | No       | -       | Enable or disable the repository wiki.                                          |
+| `hasDiscussions`                | `boolean`                                 | No       | -       | Enable or disable GitHub Discussions                                            |
+| `isTemplate`                    | `boolean`                                 | No       | -       | Mark the repository as a template repository                                    |
+| `allowForking`                  | `boolean`                                 | No       | -       | Allow forking of a private repository                                           |
+| `visibility`                    | `public` \| `private` \| `internal`       | No       | -       | Repository visibility.                                                          |
+| `archived`                      | `boolean`                                 | No       | -       | Archive the repository.                                                         |
+| `allowSquashMerge`              | `boolean`                                 | No       | -       | Allow squash-merging pull requests                                              |
+| `allowMergeCommit`              | `boolean`                                 | No       | -       | Allow merge commits for pull requests                                           |
+| `allowRebaseMerge`              | `boolean`                                 | No       | -       | Allow rebase-merging pull requests                                              |
+| `allowAutoMerge`                | `boolean`                                 | No       | -       | Allow auto-merge on pull requests                                               |
+| `deleteBranchOnMerge`           | `boolean`                                 | No       | -       | Automatically delete head branches after pull requests are merged               |
+| `allowUpdateBranch`             | `boolean`                                 | No       | -       | Show 'Update branch' button in pull requests                                    |
+| `squashMergeCommitTitle`        | `PR_TITLE` \| `COMMIT_OR_PR_TITLE`        | No       | -       | Default title for squash merge commits                                          |
+| `squashMergeCommitMessage`      | `PR_BODY` \| `COMMIT_MESSAGES` \| `BLANK` | No       | -       | Default message for squash merge commits                                        |
+| `mergeCommitTitle`              | `PR_TITLE` \| `MERGE_MESSAGE`             | No       | -       | Default title for merge commits                                                 |
+| `mergeCommitMessage`            | `PR_BODY` \| `PR_TITLE` \| `BLANK`        | No       | -       | Default message for merge commits                                               |
+| `vulnerabilityAlerts`           | `boolean`                                 | No       | -       | Enable or disable Dependabot vulnerability alerts                               |
+| `automatedSecurityFixes`        | `boolean`                                 | No       | -       | Enable or disable Dependabot automated security fixes                           |
+| `secretScanning`                | `boolean`                                 | No       | -       | Enable or disable secret scanning                                               |
+| `secretScanningPushProtection`  | `boolean`                                 | No       | -       | Enable or disable secret scanning push protection                               |
+| `privateVulnerabilityReporting` | `boolean`                                 | No       | -       | Enable or disable private vulnerability reporting                               |
+| `webCommitSignoffRequired`      | `boolean`                                 | No       | -       | Require contributors to sign off on web-based commits                           |
+| `defaultBranch`                 | `string`                                  | No       | -       | The default branch for the repository                                           |
 
+- `inherit` — Not valid at root level. Default: true
 - `description` — Used when creating new repositories via lifecycle management (upstream/source fields).
 - `hasIssues` — Warning: Disabling may hide existing issues.
 - `hasProjects` — Warning: Disabling may hide existing projects.
@@ -456,40 +467,13 @@ GitHub repository settings for features, merge options, and security
 
 <!-- xfg:generated schema:arrayMergeDirective -->
 
-Merge directive for arrays. Instead of replacing the base array, append, prepend, or deep-merge values with the inherited array.
+Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. deploymentBranchPolicy.custom takes append, prepend and replace, not merge.
 
-| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                             |
-| ------------- | --------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id) |
-| `$values`     | `string[]`                                    | Yes      | -       | Values to merge with the base array                                                                                                                                                                                     |
-
-<!-- xfg:generated:end -->
-
-### bypassActorsArrayMergeDirective
-
-<!-- xfg:generated schema:bypassActorsArrayMergeDirective -->
-
-Merge directive for bypassActors array
-
-| Field         | Type                                          | Required | Default | Description                                                                                                |
-| ------------- | --------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array                                                                           |
-| `$values`     | [`bypassActor`](#bypassactor)[]               | Yes      | -       | Bypass actor values to merge                                                                               |
-| `$matchBy`    | `string`                                      | No       | -       | Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values |
-
-<!-- xfg:generated:end -->
-
-### rulesArrayMergeDirective
-
-<!-- xfg:generated schema:rulesArrayMergeDirective -->
-
-Merge directive for rules array
-
-| Field         | Type                                          | Required | Default | Description                                                                                                |
-| ------------- | --------------------------------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to merge with the base array                                                                           |
-| `$values`     | [`rulesetRule`](#rulesetrule)[]               | Yes      | -       | Rule values to merge                                                                                       |
-| `$matchBy`    | `string`                                      | No       | -       | Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values |
+| Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                                    |
+| ------------- | --------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `$arrayMerge` | `replace` \| `append` \| `prepend` \| `merge` | Yes      | -       | How to combine with the inherited array: 'append' adds after, 'prepend' adds before, 'replace' replaces entirely, 'merge' deep-merges items matched by $matchBy, or by an auto-detected identity key (type, actorId, actor_id) |
+| `$values`     | `any[]`                                       | Yes      | -       | Values to combine with the inherited array                                                                                                                                                                                     |
+| `$matchBy`    | `string`                                      | No       | -       | Key to match items on with $arrayMerge 'merge'; every item in both arrays must have it, with unique values                                                                                                                     |
 
 <!-- xfg:generated:end -->
 
@@ -499,14 +483,16 @@ Merge directive for rules array
 
 GitHub Ruleset configuration
 
-| Field          | Type                                                                                                     | Required | Default  | Description                                                                                                                    |
-| -------------- | -------------------------------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `target`       | `branch` \| `tag`                                                                                        | No       | `branch` | Target type: 'branch' for branch rules, 'tag' for tag rules.                                                                   |
-| `enforcement`  | `active` \| `disabled` \| `evaluate`                                                                     | No       | `active` | Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). |
-| `bypassActors` | [`bypassActor`](#bypassactor)[] \| [`bypassActorsArrayMergeDirective`](#bypassactorsarraymergedirective) | No       | -        |                                                                                                                                |
-| `conditions`   | [`rulesetConditions`](#rulesetconditions)                                                                | No       | -        | Conditions for when this ruleset applies (which branches/tags to target)                                                       |
-| `rules`        | [`rulesetRule`](#rulesetrule)[] \| [`rulesArrayMergeDirective`](#rulesarraymergedirective)               | No       | -        |                                                                                                                                |
+| Field          | Type                                                                             | Required | Default  | Description                                                                                                                    |
+| -------------- | -------------------------------------------------------------------------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `inherit`      | `boolean`                                                                        | No       | -        | Set to false to drop this ruleset's inherited fields, then apply this layer's own.                                             |
+| `target`       | `branch` \| `tag`                                                                | No       | `branch` | Target type: 'branch' for branch rules, 'tag' for tag rules.                                                                   |
+| `enforcement`  | `active` \| `disabled` \| `evaluate`                                             | No       | `active` | Enforcement level: 'active' enforces rules, 'disabled' turns off rules, 'evaluate' evaluates rules without blocking (dry run). |
+| `bypassActors` | [`bypassActor`](#bypassactor)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -        | Actors who can bypass this ruleset                                                                                             |
+| `conditions`   | [`rulesetConditions`](#rulesetconditions)                                        | No       | -        | Conditions for when this ruleset applies (which branches/tags to target)                                                       |
+| `rules`        | [`rulesetRule`](#rulesetrule)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -        | Rules to enforce on matching refs                                                                                              |
 
+- `inherit` — Not valid at root level. Default: true
 - `target` — Default: branch
 - `enforcement` — Default: active
 
@@ -583,11 +569,11 @@ Require pull request before merging
 
 Required reviewer configuration for specific file patterns
 
-| Field              | Type       | Required | Default | Description                                             |
-| ------------------ | ---------- | -------- | ------- | ------------------------------------------------------- |
-| `filePatterns`     | `string[]` | Yes      | -       | File path patterns that require this reviewer           |
-| `minimumApprovals` | `integer`  | Yes      | -       | Minimum number of approvals required from this reviewer |
-| `reviewer`         | `object`   | Yes      | -       |                                                         |
+| Field              | Type                                                        | Required | Default | Description                                             |
+| ------------------ | ----------------------------------------------------------- | -------- | ------- | ------------------------------------------------------- |
+| `filePatterns`     | `string[]` \| [`arrayMergeDirective`](#arraymergedirective) | Yes      | -       | File path patterns that require this reviewer           |
+| `minimumApprovals` | `integer`                                                   | Yes      | -       | Minimum number of approvals required from this reviewer |
+| `reviewer`         | `object`                                                    | Yes      | -       |                                                         |
 
 <!-- xfg:generated:end -->
 
@@ -800,12 +786,14 @@ Restrict maximum file size
 
 GitHub label configuration
 
-| Field         | Type     | Required | Default | Description                            |
-| ------------- | -------- | -------- | ------- | -------------------------------------- |
-| `color`       | `string` | Yes      | -       | Hex color code (with or without #).    |
-| `description` | `string` | No       | -       | Label description (max 100 characters) |
-| `new_name`    | `string` | No       | -       | Rename this label.                     |
+| Field         | Type      | Required | Default | Description                                                                      |
+| ------------- | --------- | -------- | ------- | -------------------------------------------------------------------------------- |
+| `inherit`     | `boolean` | No       | -       | Set to false to drop this label's inherited fields, then apply this layer's own. |
+| `color`       | `string`  | Yes      | -       | Hex color code (with or without #).                                              |
+| `description` | `string`  | No       | -       | Label description (max 100 characters)                                           |
+| `new_name`    | `string`  | No       | -       | Rename this label.                                                               |
 
+- `inherit` — Not valid at root level. Default: true
 - `color` — Example: 'd73a4a' or '#d73a4a'
 - `new_name` — Maps to GitHub API's new_name field.
 
@@ -845,12 +833,14 @@ A GitHub deployment environment
 
 A GitHub deployment environment, merged over the inherited one
 
-| Field                    | Type                                                           | Required | Default | Description                        |
-| ------------------------ | -------------------------------------------------------------- | -------- | ------- | ---------------------------------- |
-| `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.             |
-| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name. |
+| Field                    | Type                                                           | Required | Default | Description                                                                                        |
+| ------------------------ | -------------------------------------------------------------- | -------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `inherit`                | `boolean`                                                      | No       | -       | Set to false to drop this environment's inherited policy and secrets, then apply this layer's own. |
+| `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.                                                                             |
+| `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name.                                                                 |
 
-- `deploymentBranchPolicy` — Replaces the inherited policy as a whole.
+- `inherit` — Not valid at root level. Default: true
+- `deploymentBranchPolicy` — Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy.
 - `secrets` — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.
 
 <!-- xfg:generated:end -->
@@ -859,16 +849,18 @@ A GitHub deployment environment, merged over the inherited one
 
 <!-- xfg:generated schema:deploymentBranchPolicy -->
 
-Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.
+Which refs can deploy. Layers merge field by field, and the merged policy must have exactly one of protectedBranches: true or custom; to switch between them, set inherit: false in the layer that changes it. Omit the policy to let any branch deploy.
 
-| Field               | Type                                                    | Required | Default | Description                                           |
-| ------------------- | ------------------------------------------------------- | -------- | ------- | ----------------------------------------------------- |
-| `protectedBranches` | `true`                                                  | No       | -       | Only branches with branch protection rules can deploy |
-| `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] | No       | -       | Only refs matching these patterns can deploy.         |
-| `deleteOrphaned`    | `boolean`                                               | No       | `false` | Delete patterns on GitHub that are not in custom.     |
+| Field               | Type                                                                                                     | Required | Default | Description                                                             |
+| ------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------- |
+| `inherit`           | `boolean`                                                                                                | No       | -       | Set to false to drop the inherited policy, then apply this layer's own. |
+| `protectedBranches` | `true`                                                                                                   | No       | -       | Only branches with branch protection rules can deploy                   |
+| `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Only refs matching these patterns can deploy.                           |
+| `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in the merged custom list.       |
 
-- `custom` — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
-- `deleteOrphaned` — Only valid with custom. Default: false
+- `inherit` — Not valid at root level. Default: true
+- `custom` — A plain list replaces the inherited patterns; use $arrayMerge: append to add to them. A pattern is identified by type and name together, so $arrayMerge: merge is not accepted. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
+- `deleteOrphaned` — Inherited like other fields; only valid with custom. Default: false
 
 <!-- xfg:generated:end -->
 

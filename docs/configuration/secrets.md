@@ -98,16 +98,16 @@ repos:
         SHARED_KEY: false
 ```
 
-| Directive        | Effect                                                             |
-| ---------------- | ------------------------------------------------------------------ |
-| `inherit: false` | Discard every inherited secret at this layer                       |
-| `NAME: false`    | Opt out of one inherited secret                                    |
-| `deleteOrphaned` | Policy switch, innermost wins — `inherit: false` does not clear it |
+| Directive        | Effect                                                  |
+| ---------------- | ------------------------------------------------------- |
+| `inherit: false` | Discard every inherited secret at this layer            |
+| `NAME: false`    | Opt out of one inherited secret                         |
+| `deleteOrphaned` | Innermost wins; `inherit: false` drops an inherited one |
 
-`deleteOrphaned` is a policy switch, not an entry. `inherit: false` discards inherited *entries* but leaves an inherited `deleteOrphaned` in place. To turn cleanup off for a repo, set `deleteOrphaned: false` explicitly.
+`deleteOrphaned` is an ordinary field, not an entry: the innermost layer that sets it wins. `inherit: false` discards the inherited secrets and an inherited `deleteOrphaned` along with them, so a layer that wants cleanup must set `deleteOrphaned: true` itself.
 
 !!! danger "`inherit: false` plus `deleteOrphaned: true` deletes inherited secrets"
-    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned` removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
+    `inherit: false` makes inherited secrets *undesired*, and `deleteOrphaned: true` set in the same layer removes undesired secrets. Together they delete those secrets from the repo, as in the example below. That is correct behaviour, but the interaction is easy to miss — run `--dry-run` first.
 
 ```yaml
 id: secrets

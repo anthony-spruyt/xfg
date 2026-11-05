@@ -1,5 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { arrayValues, explainNotArray } from "../array-directive.js";
 import type {
   RulesetTarget,
   RulesetEnforcement,
@@ -77,39 +78,32 @@ const VALID_RULE_TYPES = validValues<RulesetRule["type"]>([
   "max_file_size",
 ]);
 
-// Intentionally duplicated from merge.ts — validator should not depend on merge internals
-const VALID_MERGE_STRATEGIES = ["replace", "append", "prepend", "merge"];
-
-const DIRECTIVE_KEYS = new Set(["$arrayMerge", "$values", "$matchBy"]);
-
-/**
- * Checks if a value is an $arrayMerge directive:
- * { $arrayMerge: strategy, $values: [...], $matchBy?: key }
- */
-function isArrayMergeDirective(value: unknown): boolean {
-  if (!isPlainObject(value)) return false;
-  return (
-    Object.keys(value).every((k) => DIRECTIVE_KEYS.has(k)) &&
-    VALID_MERGE_STRATEGIES.includes(value.$arrayMerge as string) &&
-    Array.isArray(value.$values) &&
-    (value.$matchBy === undefined || typeof value.$matchBy === "string")
-  );
+function arrayParam(
+  params: Record<string, unknown>,
+  key: string,
+  context: string
+): unknown[] | undefined {
+  if (params[key] === undefined) return undefined;
+  const values = arrayValues(params[key]);
+  if (values === null) {
+    throw new ValidationError(
+      explainNotArray(
+        `${context}: ${key} must be an array or $arrayMerge directive`,
+        params[key]
+      )
+    );
+  }
+  return values;
 }
 
-/**
- * Extracts the $values array from a directive, or returns the value as-is if it's already an array.
- * Returns null if value is neither an array nor a valid directive.
- */
-function extractArrayOrDirectiveValues(value: unknown): unknown[] | null {
-  if (Array.isArray(value)) return value;
-  if (isArrayMergeDirective(value))
-    return (value as Record<string, unknown>).$values as unknown[];
-  return null;
-}
+const ARRAY_PARAMS_BY_RULE_TYPE: Record<string, string[]> = {
+  required_status_checks: ["requiredStatusChecks"],
+  required_deployments: ["requiredDeploymentEnvironments"],
+  workflows: ["workflows"],
+  file_path_restriction: ["restrictedFilePaths"],
+  file_extension_restriction: ["restrictedFileExtensions"],
+};
 
-/**
- * Validates a single ruleset rule.
- */
 function validateRule(rule: unknown, context: string): void {
   if (typeof rule !== "object" || rule === null || Array.isArray(rule)) {
     throw new ValidationError(`${context}: rule must be an object`);
@@ -129,7 +123,6 @@ function validateRule(rule: unknown, context: string): void {
     );
   }
 
-  // Validate parameters based on rule type
   if (r.parameters !== undefined) {
     if (
       typeof r.parameters !== "object" ||
@@ -143,7 +136,6 @@ function validateRule(rule: unknown, context: string): void {
 
     const params = r.parameters as Record<string, unknown>;
 
-    // Validate pattern rule parameters
     if (r.type.toString().endsWith("_pattern")) {
       if (
         params.operator !== undefined &&
@@ -160,7 +152,6 @@ function validateRule(rule: unknown, context: string): void {
       }
     }
 
-    // Validate pull_request parameters
     if (r.type === "pull_request") {
       if (params.requiredApprovingReviewCount !== undefined) {
         const count = params.requiredApprovingReviewCount;
@@ -175,30 +166,25 @@ function validateRule(rule: unknown, context: string): void {
           );
         }
       }
-      if (params.allowedMergeMethods !== undefined) {
-        if (!Array.isArray(params.allowedMergeMethods)) {
+      const methods = arrayParam(params, "allowedMergeMethods", context);
+      for (const method of methods ?? []) {
+        if (!VALID_MERGE_METHODS.includes(method as string)) {
           throw new ValidationError(
-            `${context}: allowedMergeMethods must be an array`
+            `${context}: allowedMergeMethods values must be one of: ${VALID_MERGE_METHODS.join(", ")}`
           );
         }
-        for (const method of params.allowedMergeMethods) {
-          if (!VALID_MERGE_METHODS.includes(method as string)) {
-            throw new ValidationError(
-              `${context}: allowedMergeMethods values must be one of: ${VALID_MERGE_METHODS.join(", ")}`
-            );
-          }
+      }
+      const reviewers = arrayParam(params, "requiredReviewers", context);
+      for (const reviewer of reviewers ?? []) {
+        if (isPlainObject(reviewer)) {
+          arrayParam(reviewer, "filePatterns", `${context}: requiredReviewers`);
         }
       }
     }
 
-    // Validate code_scanning parameters
-    if (r.type === "code_scanning" && params.codeScanningTools !== undefined) {
-      if (!Array.isArray(params.codeScanningTools)) {
-        throw new ValidationError(
-          `${context}: codeScanningTools must be an array`
-        );
-      }
-      for (const tool of params.codeScanningTools) {
+    if (r.type === "code_scanning") {
+      const tools = arrayParam(params, "codeScanningTools", context);
+      for (const tool of tools ?? []) {
         if (typeof tool !== "object" || tool === null) {
           throw new ValidationError(
             `${context}: each codeScanningTool must be an object`
@@ -225,12 +211,13 @@ function validateRule(rule: unknown, context: string): void {
         }
       }
     }
+
+    for (const key of ARRAY_PARAMS_BY_RULE_TYPE[r.type] ?? []) {
+      arrayParam(params, key, context);
+    }
   }
 }
 
-/**
- * Validates a single ruleset.
- */
 export function validateRuleset(
   ruleset: unknown,
   name: string,
@@ -266,12 +253,14 @@ export function validateRuleset(
     );
   }
 
-  // Validate bypassActors
   if (rs.bypassActors !== undefined) {
-    const actors = extractArrayOrDirectiveValues(rs.bypassActors);
+    const actors = arrayValues(rs.bypassActors);
     if (actors === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`
+        explainNotArray(
+          `${context}: ruleset '${name}' bypassActors must be an array or $arrayMerge directive`,
+          rs.bypassActors
+        )
       );
     }
     for (let i = 0; i < actors.length; i++) {
@@ -302,7 +291,6 @@ export function validateRuleset(
     }
   }
 
-  // Validate conditions
   if (rs.conditions !== undefined) {
     if (
       typeof rs.conditions !== "object" ||
@@ -326,30 +314,38 @@ export function validateRuleset(
         );
       }
       if (refName.include !== undefined) {
-        const include = extractArrayOrDirectiveValues(refName.include);
+        const include = arrayValues(refName.include);
         if (include === null || !include.every((s) => typeof s === "string")) {
           throw new ValidationError(
-            `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`
+            explainNotArray(
+              `${context}: ruleset '${name}' conditions.refName.include must be an array of strings or $arrayMerge directive with string $values`,
+              refName.include
+            )
           );
         }
       }
       if (refName.exclude !== undefined) {
-        const exclude = extractArrayOrDirectiveValues(refName.exclude);
+        const exclude = arrayValues(refName.exclude);
         if (exclude === null || !exclude.every((s) => typeof s === "string")) {
           throw new ValidationError(
-            `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`
+            explainNotArray(
+              `${context}: ruleset '${name}' conditions.refName.exclude must be an array of strings or $arrayMerge directive with string $values`,
+              refName.exclude
+            )
           );
         }
       }
     }
   }
 
-  // Validate rules array
   if (rs.rules !== undefined) {
-    const rules = extractArrayOrDirectiveValues(rs.rules);
+    const rules = arrayValues(rs.rules);
     if (rules === null) {
       throw new ValidationError(
-        `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`
+        explainNotArray(
+          `${context}: ruleset '${name}' rules must be an array or $arrayMerge directive`,
+          rs.rules
+        )
       );
     }
     for (let i = 0; i < rules.length; i++) {

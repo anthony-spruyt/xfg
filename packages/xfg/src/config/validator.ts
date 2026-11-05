@@ -11,10 +11,14 @@ import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 import { isValidHostname } from "../shared/github-host-policy.js";
 import { isCredentialEnvName } from "../shared/credential-env.js";
-import { validateBranchName } from "../shared/branch-validation.js";
-import { validateAiOption } from "./validators/ai-validator.js";
+import { validateMergedAi } from "./validators/ai-validator.js";
+import { validatePrOptions } from "./validators/pr-options-validator.js";
+import { assertNoRootInherit } from "./validators/inherit-flag.js";
+import { arrayValues } from "./array-directive.js";
 import {
+  validateDeploymentBranchPolicy,
   validateFileConfigFields,
+  validateMergedCodeScanningSettings,
   validateSettings,
 } from "./validators/shared.js";
 import {
@@ -104,6 +108,18 @@ function validateRootSettings(config: RawConfig): void {
 
   validateSettings(config.settings, "Root");
 
+  for (const block of [
+    "repo",
+    "actions",
+    "codeScanning",
+    "variables",
+    "secrets",
+    "collaborators",
+    "environments",
+  ] as const) {
+    assertNoRootInherit(config.settings[block], block);
+  }
+
   if (config.settings.rulesets && "inherit" in config.settings.rulesets) {
     throw new ValidationError(
       "'inherit' is a reserved key and cannot be used as a ruleset name"
@@ -113,36 +129,6 @@ function validateRootSettings(config: RawConfig): void {
   if (config.settings.labels && "inherit" in config.settings.labels) {
     throw new ValidationError(
       "'inherit' is a reserved key and cannot be used as a label name"
-    );
-  }
-
-  if (config.settings.variables && "inherit" in config.settings.variables) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level variables (nothing to inherit from)"
-    );
-  }
-
-  if (config.settings.secrets && "inherit" in config.settings.secrets) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level secrets (nothing to inherit from)"
-    );
-  }
-
-  if (
-    config.settings.collaborators &&
-    "inherit" in config.settings.collaborators
-  ) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level collaborators (nothing to inherit from)"
-    );
-  }
-
-  if (
-    config.settings.environments &&
-    "inherit" in config.settings.environments
-  ) {
-    throw new ValidationError(
-      "'inherit' is not allowed in root-level environments (nothing to inherit from)"
     );
   }
 }
@@ -176,27 +162,6 @@ function validateGithubHosts(config: RawConfig): void {
     if (!isValidHostname(host)) {
       throw new ValidationError(
         `githubHosts entries must be hostnames (no userinfo, port, whitespace or trailing dot). Got: ${host}`
-      );
-    }
-  }
-}
-
-function validatePrOptions(config: RawConfig): void {
-  if (config.prOptions?.branch !== undefined) {
-    validateBranchName(config.prOptions.branch);
-  }
-
-  validateAiOption(config.prOptions?.ai);
-
-  if (config.prOptions?.labels === undefined) return;
-
-  if (!Array.isArray(config.prOptions.labels)) {
-    throw new ValidationError("prOptions.labels must be an array of strings");
-  }
-  for (const label of config.prOptions.labels) {
-    if (typeof label !== "string" || label.length === 0) {
-      throw new ValidationError(
-        "prOptions.labels entries must be non-empty strings"
       );
     }
   }
@@ -313,7 +278,7 @@ export function validateRawConfig(config: RawConfig): void {
 
   validateRootSettings(config);
   validateGithubHosts(config);
-  validatePrOptions(config);
+  validatePrOptions(config.prOptions);
   validateGroups(config);
   validateConditionalGroups(config);
 
@@ -430,8 +395,9 @@ function assertNoOverlap(
 
 /**
  * Cross-validates the MERGED settings of each repo: a variable and a secret with
- * the same name collide at GitHub, and selected-actions fields need an
- * allowedActions from some layer. Must run post-normalize — a per-layer check
+ * the same name collide at GitHub, selected-actions fields need an
+ * allowedActions from some layer, and the fields of `prOptions.ai` must make a
+ * valid provider together. Must run post-normalize — a per-layer check
  * misses a root secret colliding with a repo variable.
  */
 export function validateNormalizedConfig(config: Config): void {
@@ -441,6 +407,29 @@ export function validateNormalizedConfig(config: Config): void {
   for (const repo of config.repos) {
     assertNoOverlap(repo.settings, `Repo '${repo.git}'`);
     validateMergedActionsSettings(repo.settings?.actions, `Repo '${repo.git}'`);
+    validateMergedCodeScanningSettings(
+      repo.settings?.codeScanning,
+      `Repo '${repo.git}'`
+    );
+    validateMergedEnvironments(repo.settings, `Repo '${repo.git}'`);
+    validateMergedAi(repo.prOptions?.ai, `Repo '${repo.git}'`);
+  }
+}
+
+function validateMergedEnvironments(
+  settings: RepoSettings | undefined,
+  context: string
+): void {
+  for (const [name, environment] of Object.entries(
+    settings?.environments ?? {}
+  )) {
+    if (!isPlainObject(environment) || !environment.deploymentBranchPolicy) {
+      continue;
+    }
+    validateDeploymentBranchPolicy(
+      environment.deploymentBranchPolicy,
+      `${context}: environment '${name}'`
+    );
   }
 }
 
@@ -492,7 +481,7 @@ export function hasActionableSettings(
 
   if (
     settings.collaborators &&
-    ((settings.collaborators.users ?? []).length > 0 ||
+    ((arrayValues(settings.collaborators.users) ?? []).length > 0 ||
       settings.collaborators.deleteOrphaned === true)
   ) {
     return true;

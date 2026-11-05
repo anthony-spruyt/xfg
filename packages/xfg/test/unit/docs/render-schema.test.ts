@@ -69,6 +69,18 @@ describe("renderSchemaBlock", () => {
     assert.match(merge, /\| `auto`\s+\|/);
   });
 
+  test("renders an array that also accepts a directive as both types", () => {
+    const table = renderSchemaBlock(schema, "schema:prOptions");
+    const labels = table
+      .split("\n")
+      .find((row) => row.startsWith("| `labels`"));
+    assert.ok(labels, "expected a labels row");
+    assert.match(
+      labels,
+      /`string\[\]` \\\| \[`arrayMergeDirective`\]\(#arraymergedirective\)/
+    );
+  });
+
   test("renders a oneOf definition as a list of members", () => {
     const block = renderSchemaBlock(schema, "schema:rulesetRule");
     assert.match(block, /^One of:$/m);

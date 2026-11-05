@@ -33,7 +33,7 @@ describe("mergeSettings - environments", () => {
     });
   });
 
-  test("repo environment merges with root: policy replaced, secrets merged", () => {
+  test("repo environment merges with root: inherit false replaces the policy, secrets merged", () => {
     const result = mergeSettings(
       {
         environments: {
@@ -46,7 +46,10 @@ describe("mergeSettings - environments", () => {
       {
         environments: {
           release: {
-            deploymentBranchPolicy: { protectedBranches: true },
+            deploymentBranchPolicy: {
+              inherit: false,
+              protectedBranches: true,
+            },
             secrets: { B: { env: "B_SRC" } },
           },
         },
@@ -57,6 +60,85 @@ describe("mergeSettings - environments", () => {
         deploymentBranchPolicy: { protectedBranches: true },
         secrets: { A: { env: "A_SRC" }, B: { env: "B_SRC" } },
       },
+    });
+  });
+
+  describe("deploymentBranchPolicy field merge", () => {
+    const tag = { type: "tag" as const, name: "v*" };
+    const release = (deploymentBranchPolicy: unknown) => ({
+      environments: { release: { deploymentBranchPolicy } },
+    });
+    const policyOf = (root: unknown, repo: unknown) =>
+      mergeSettings(root as RawRepoSettings, repo as RawRepoSettings)
+        ?.environments?.release.deploymentBranchPolicy;
+
+    test("a plain custom replaces the inherited one and deleteOrphaned inherits", () => {
+      assert.deepStrictEqual(
+        policyOf(
+          release({ ...mainOnly, deleteOrphaned: true }),
+          release({ custom: [tag] })
+        ),
+        { custom: [tag], deleteOrphaned: true }
+      );
+    });
+
+    test("an append directive grows the inherited custom", () => {
+      assert.deepStrictEqual(
+        policyOf(
+          release(mainOnly),
+          release({ custom: { $arrayMerge: "append", $values: [tag] } })
+        ),
+        { custom: [...mainOnly.custom, tag] }
+      );
+    });
+
+    test("a layer that sets only deleteOrphaned inherits the patterns", () => {
+      assert.deepStrictEqual(
+        policyOf(release(mainOnly), release({ deleteOrphaned: true })),
+        { ...mainOnly, deleteOrphaned: true }
+      );
+    });
+
+    test("protectedBranches over an inherited custom keeps both for the merged check", () => {
+      assert.deepStrictEqual(
+        policyOf(release(mainOnly), release({ protectedBranches: true })),
+        { ...mainOnly, protectedBranches: true }
+      );
+    });
+
+    test("inherit: false drops the inherited patterns and deleteOrphaned", () => {
+      assert.deepStrictEqual(
+        policyOf(
+          release({ ...mainOnly, deleteOrphaned: true }),
+          release({ inherit: false, custom: [tag] })
+        ),
+        { custom: [tag] }
+      );
+    });
+
+    test("a directive with no base resolves to its values", () => {
+      assert.deepStrictEqual(
+        policyOf(
+          undefined,
+          release({ custom: { $arrayMerge: "append", $values: [tag] } })
+        ),
+        { custom: [tag] }
+      );
+    });
+
+    test("false clears the policy, a later layer starts from nothing", () => {
+      const cleared = mergeSettings(
+        release(mainOnly) as RawRepoSettings,
+        release(false) as RawRepoSettings
+      );
+      assert.deepStrictEqual(cleared?.environments, { release: {} });
+      assert.deepStrictEqual(
+        policyOf(
+          { environments: { release: { deploymentBranchPolicy: false } } },
+          release({ custom: [tag] })
+        ),
+        { custom: [tag] }
+      );
     });
   });
 
@@ -213,14 +295,22 @@ describe("mergeSettings - environments deleteOrphaned", () => {
     });
   });
 
-  test("inherit: false keeps the inherited deleteOrphaned", () => {
+  test("inherit: false drops the inherited deleteOrphaned", () => {
     const result = mergeSettings(
       { environments: envs({ deleteOrphaned: true, release: {} }) },
       { environments: { inherit: false, staging: {} } }
     );
+    assert.deepStrictEqual(result?.environments, { staging: {} });
+  });
+
+  test("inherit: false keeps the layer's own deleteOrphaned", () => {
+    const result = mergeSettings(
+      { environments: envs({ deleteOrphaned: true, release: {} }) },
+      { environments: { inherit: false, staging: {}, deleteOrphaned: false } }
+    );
     assert.deepStrictEqual(result?.environments, {
       staging: {},
-      deleteOrphaned: true,
+      deleteOrphaned: false,
     });
   });
 

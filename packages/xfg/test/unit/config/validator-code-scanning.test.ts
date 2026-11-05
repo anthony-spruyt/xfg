@@ -2,8 +2,10 @@ import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
 import {
   validateRawConfig,
+  validateNormalizedConfig,
   hasActionableSettings,
 } from "../../../src/config/validator.js";
+import { normalizeConfig } from "../../../src/config/normalizer.js";
 import type { RawConfig } from "../../../src/config/types.js";
 
 function makeConfig(codeScanning: unknown): RawConfig {
@@ -33,10 +35,86 @@ describe("validateRawConfig - codeScanning", () => {
     );
   });
 
-  test("rejects codeScanning without state", () => {
+  test("accepts a layer without state, another layer may set it", () => {
+    assert.doesNotThrow(() =>
+      validateRawConfig(makeConfig({ querySuite: "default" }))
+    );
+  });
+
+  test("rejects codeScanning when no layer sets state", () => {
+    const raw = makeConfig({ querySuite: "default" });
     assert.throws(
-      () => validateRawConfig(makeConfig({ querySuite: "default" })),
-      /state is required/
+      () => validateNormalizedConfig(normalizeConfig(raw, {})),
+      /Repo 'https:\/\/github.com\/org\/repo.git'.*codeScanning.*state is required/
+    );
+  });
+
+  test("accepts codeScanning when a group sets state", () => {
+    const raw = {
+      id: "test",
+      settings: { codeScanning: { querySuite: "default" } },
+      groups: { g: { settings: { codeScanning: { state: "configured" } } } },
+      repos: [{ git: "https://github.com/org/repo.git", groups: ["g"] }],
+    } as unknown as RawConfig;
+    assert.doesNotThrow(() => {
+      validateRawConfig(raw);
+      validateNormalizedConfig(normalizeConfig(raw, {}));
+    });
+  });
+
+  test("rejects inherit: false that leaves no state", () => {
+    const raw = {
+      id: "test",
+      settings: { codeScanning: { state: "configured" } },
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          settings: { codeScanning: { inherit: false, languages: ["go"] } },
+        },
+      ],
+    } as unknown as RawConfig;
+    assert.throws(
+      () => validateNormalizedConfig(normalizeConfig(raw, {})),
+      /codeScanning.*state is required/
+    );
+  });
+
+  test("accepts inherit: false in a repo layer", () => {
+    const raw = {
+      id: "test",
+      settings: { codeScanning: { state: "configured", languages: ["go"] } },
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          settings: { codeScanning: { inherit: false, state: "configured" } },
+        },
+      ],
+    } as unknown as RawConfig;
+    assert.doesNotThrow(() => validateRawConfig(raw));
+  });
+
+  test("rejects an inherit that is not a boolean", () => {
+    const raw = {
+      id: "test",
+      settings: { codeScanning: { state: "configured" } },
+      repos: [
+        {
+          git: "https://github.com/org/repo.git",
+          settings: { codeScanning: { inherit: "no" } },
+        },
+      ],
+    } as unknown as RawConfig;
+    assert.throws(
+      () => validateRawConfig(raw),
+      /codeScanning: inherit must be a boolean/
+    );
+  });
+
+  test("rejects inherit at the root", () => {
+    assert.throws(
+      () =>
+        validateRawConfig(makeConfig({ state: "configured", inherit: false })),
+      /'inherit' is not allowed in root-level codeScanning/
     );
   });
 

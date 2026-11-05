@@ -75,6 +75,13 @@ repos:
     prOptions:
       labels: ["critical-config", "urgent"]
 
+  # Add to the global labels
+  - git: git@github.com:org/extra.git
+    prOptions:
+      labels:
+        $arrayMerge: append
+        $values: ["extra"]
+
   # Clear labels for this repo
   - git: git@github.com:org/no-labels.git
     prOptions:
@@ -82,6 +89,10 @@ repos:
 ```
 
 **Note:** Labels must already exist on the target repository. If a label doesn't exist, the PR creation will fail. GitHub only.
+
+`prOptions` set in a group or repo merges field by field with the options it inherits, and so does an `ai` object inside it (see [AI Messages](ai-messages.md)). Set `inherit: false` inside `prOptions` to drop everything inherited, `ai` included, and use only that layer's own options.
+
+Set `inherit` inside `ai` to drop only the inherited `ai` fields. `inherit` is not allowed in the root `prOptions` or the root `ai`.
 
 ## PR Branch Name
 
