@@ -309,7 +309,7 @@ repos:
 
 ### `inherit: false` on Group Settings
 
-Groups can discard accumulated rulesets or labels:
+Groups can discard what a settings block would inherit: accumulated rulesets, labels or environments, or the fields of `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy` and `prOptions`:
 
 ```yaml
 groups:

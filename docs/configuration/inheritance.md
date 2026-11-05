@@ -100,7 +100,7 @@ The base content is ignored entirely, only the override content is used.
 
 - **Objects**: Fields are merged recursively; overlay fields overwrite base fields
 - **Arrays**: By default, overlay arrays replace base arrays (see [Merge Strategies](merge-strategies.md) to change this)
-- **Settings arrays**: By default, overlay arrays replace base arrays in settings too (rulesets, bypass actors, rules, conditions). Use the [`$arrayMerge` directive](merge-strategies.md#settings-array-merge) to append or prepend instead — same syntax as file content.
+- **Settings arrays**: Overlay arrays replace base arrays in settings too, in every block. Use the [`$arrayMerge` directive](merge-strategies.md#settings-array-merge) to append or prepend instead — same syntax as file content. `inherit: false` inside a settings block drops everything the block would inherit.
 - **Scalars**: Overlay values replace base values
 
 ## File Exclusion

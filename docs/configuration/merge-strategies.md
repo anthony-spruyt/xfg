@@ -265,7 +265,30 @@ For lines arrays, `merge` behaves like `append`: lines have no identity key to m
 
 ## Settings Array Merge
 
-The `$arrayMerge` directive also works in settings overrides — rulesets, bypass actors, rules, conditions, and any other array field. This eliminates duplicating shared entries when a repo needs to add its own items.
+Settings blocks and [`prOptions`](pr-options.md) share one merge model, through root, groups, conditional groups and the repo:
+
+- **Objects merge field by field.** A field a layer leaves out is inherited.
+- **A plain array replaces** the inherited array.
+- **A `$arrayMerge` directive combines** with it: `append`, `prepend`, `replace` or `merge`, with `$values` (and `$matchBy` for `merge`). It is the same syntax as in file content, and it works on every array in the list below.
+- **`inherit: false` starts a block fresh.** Inside a block, it drops everything that block would inherit, then the layer's own fields apply. It works in `repo`, `actions`, `codeScanning`, `deploymentBranchPolicy` and `prOptions`, and, as before, in rulesets, labels, environments, collaborators, variables and secrets. It is not allowed at root, where there is nothing to inherit.
+- **`false` opts out.** Setting a block (or a named entry) to `false` removes it.
+- **`deleteOrphaned` is an ordinary field.** The innermost layer wins, and where it deletes things on GitHub it works on the merged result, so an appended item is kept, not deleted.
+- **Repeated items are dropped** from the merged array, first one wins (usernames are compared ignoring case). Only strings and numbers are compared; objects are never dropped.
+
+The arrays that take a directive:
+
+| Block | Arrays |
+| ----- | ------ |
+| Rulesets | `bypassActors`, `rules`, `conditions.refName.include`, `conditions.refName.exclude` |
+| Rule parameters | `allowedMergeMethods`, `requiredReviewers` (and its `filePatterns`), `requiredStatusChecks`, `requiredDeploymentEnvironments`, `codeScanningTools`, `workflows`, `restrictedFilePaths`, `restrictedFileExtensions` |
+| Code scanning | `languages` |
+| Actions | `patternsAllowed` |
+| Collaborators | `users` |
+| Environments | `deploymentBranchPolicy.custom` |
+| PR options | `labels` |
+
+!!! warning "`merge` on `custom` needs `$matchBy`"
+    Without `$matchBy`, `merge` matches branch patterns on `type`, so every `branch` pattern folds into one. With `deleteOrphaned: true`, xfg would then delete the lost patterns on GitHub. xfg rejects `$arrayMerge: merge` on `custom` unless `$matchBy` is set; use `append`, or `$matchBy: name`.
 
 ### Appending Bypass Actors
 
@@ -326,6 +349,59 @@ conditionalGroups:
 ```
 
 Repos with the `github-ci` group get both the `pull_request` rule and the `required_status_checks` rule. Repos without `github-ci` only get the `pull_request` rule.
+
+### Replacing or Adding to a Plain List
+
+A plain list replaces the inherited one. A directive adds to it:
+
+```yaml
+id: merge-strategies
+settings:
+  actions:
+    allowedActions: selected
+    patternsAllowed:
+      - actions/*
+
+repos:
+  # Replaces the inherited patterns
+  - git: git@github.com:org/strict.git
+    settings:
+      actions:
+        patternsAllowed:
+          - actions/checkout@*
+
+  # Adds to the inherited patterns
+  - git: git@github.com:org/docker.git
+    settings:
+      actions:
+        patternsAllowed:
+          $arrayMerge: append
+          $values:
+            - docker/login-action@*
+```
+
+### Starting a Block Fresh
+
+`inherit: false` drops everything the block would inherit, so a layer can state a block from scratch:
+
+```yaml
+id: merge-strategies
+settings:
+  codeScanning:
+    state: configured
+    languages: [go, python]
+
+repos:
+  # Inherits state and languages
+  - git: git@github.com:org/api.git
+
+  # Drops the inherited languages, so GitHub auto-detects them
+  - git: git@github.com:org/web.git
+    settings:
+      codeScanning:
+        inherit: false
+        state: configured
+```
 
 !!! note "Same syntax as file content"
     The `$arrayMerge` directive uses the same `$arrayMerge` + `$values` syntax in settings as in file content (see Inline Array Merge Directive above). Strategies: `append`, `prepend`, `replace`, `merge`. `merge` accepts [`$matchBy`](#match-by-a-chosen-key) here too.

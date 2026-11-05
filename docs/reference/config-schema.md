@@ -299,17 +299,18 @@ See [Groups — Conditional Groups](../configuration/groups.md#conditional-group
 
 <!-- xfg:generated schema:codeScanningSettings -->
 
-GitHub code scanning default setup configuration
+GitHub code scanning default setup configuration. Fields merge with the inherited block; set inherit: false to drop what it would inherit, for example to go back to auto-detected languages.
 
 | Field        | Type                                                                                                                                                                     | Required | Default | Description                                                                              |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------- | ---------------------------------------------------------------------------------------- |
 | `inherit`    | `boolean`                                                                                                                                                                | No       | -       | Set to false to drop every inherited code scanning setting, then apply this layer's own. |
-| `state`      | `configured` \| `not-configured`                                                                                                                                         | No       | -       | Enable or disable code scanning default setup                                            |
+| `state`      | `configured` \| `not-configured`                                                                                                                                         | No       | -       | Enable or disable code scanning default setup.                                           |
 | `querySuite` | `default` \| `extended`                                                                                                                                                  | No       | -       | Query suite to use: 'default' for standard queries, 'extended' for additional queries    |
 | `languages`  | `actions` \| `c-cpp` \| `csharp` \| `go` \| `java-kotlin` \| `javascript-typescript` \| `python` \| `ruby` \| `swift[]` \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Languages to analyze.                                                                    |
 
 - `inherit` — Not valid at root level. Default: true
-- `languages` — If omitted, GitHub auto-detects languages in the repository.
+- `state` — Some layer must set it.
+- `languages` — If omitted, GitHub auto-detects languages in the repository. A layer that omits it inherits the parent's list; a plain list replaces it, and inherit: false goes back to auto-detect.
 
 <!-- xfg:generated:end -->
 
@@ -341,7 +342,7 @@ GitHub Actions settings for the repository (Settings > Actions). Each field maps
 - `shaPinningRequired` — Maps to sha_pinning_required of PUT actions/permissions.
 - `githubOwnedAllowed` — Maps to github_owned_allowed of PUT actions/permissions/selected-actions.
 - `verifiedAllowed` — Maps to verified_allowed of PUT actions/permissions/selected-actions.
-- `patternsAllowed` — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.
+- `patternsAllowed` — Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set. A plain list replaces the inherited patterns; use $arrayMerge to add to them.
 - `defaultWorkflowPermissions` — Maps to default_workflow_permissions of PUT actions/permissions/workflow.
 - `canApprovePullRequestReviews` — Maps to can_approve_pull_request_reviews of PUT actions/permissions/workflow, which covers creating pull requests as well as approving them.
 - `forkPrApprovalPolicy` — Maps to approval_policy of PUT actions/permissions/fork-pr-contributor-approval.
@@ -408,7 +409,7 @@ Repository settings including GitHub Rulesets and repository features
 - `actions` — Set to false at per-repo level to opt out of inherited settings.
 - `variables` — Set a variable to false to opt out. Set inherit: false to skip all inherited variables.
 - `secrets` — Set a secret to false to opt out. Set inherit: false to skip all inherited secrets. Only synced by 'xfg secrets sync', never by 'xfg sync'.
-- `collaborators` — Users are added to inherited users. Set inherit: false to drop inherited users.
+- `collaborators` — A plain users list replaces the inherited users; use $arrayMerge: append to add to them. Set inherit: false to drop inherited users.
 - `environments` — Set an environment to false to opt out. Set inherit: false to skip all inherited environments. Environments on GitHub that are not listed are kept unless deleteOrphaned is true.
 - `deleteOrphaned` — Default: false
 
@@ -464,7 +465,7 @@ GitHub repository settings for features, merge options, and security
 
 <!-- xfg:generated schema:arrayMergeDirective -->
 
-Merge directive for arrays. Instead of replacing the inherited array, append to it, prepend to it, replace it, or merge items into it.
+Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. With 'merge' on deploymentBranchPolicy.custom, set $matchBy: name, or every branch pattern matches on type and folds into one.
 
 | Field         | Type                                          | Required | Default | Description                                                                                                                                                                                                                    |
 | ------------- | --------------------------------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -831,7 +832,7 @@ A GitHub deployment environment, merged over the inherited one
 | `deploymentBranchPolicy` | `false` \| [`deploymentBranchPolicy`](#deploymentbranchpolicy) | No       | -       | Which refs can deploy.             |
 | `secrets`                | `object` of `false` \| [`secretConfig`](#secretconfig)         | No       | -       | Environment secrets keyed by name. |
 
-- `deploymentBranchPolicy` — Replaces the inherited policy as a whole.
+- `deploymentBranchPolicy` — Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy.
 - `secrets` — Only synced by 'xfg secrets sync', never by 'xfg sync'. Set a secret to false to opt out.
 
 <!-- xfg:generated:end -->
@@ -840,18 +841,18 @@ A GitHub deployment environment, merged over the inherited one
 
 <!-- xfg:generated schema:deploymentBranchPolicy -->
 
-Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.
+Which refs can deploy. Layers merge field by field, and the merged policy must have exactly one of protectedBranches: true or custom; to switch between them, set inherit: false in the layer that changes it. Omit the policy to let any branch deploy.
 
 | Field               | Type                                                                                                     | Required | Default | Description                                                             |
 | ------------------- | -------------------------------------------------------------------------------------------------------- | -------- | ------- | ----------------------------------------------------------------------- |
 | `inherit`           | `boolean`                                                                                                | No       | -       | Set to false to drop the inherited policy, then apply this layer's own. |
 | `protectedBranches` | `true`                                                                                                   | No       | -       | Only branches with branch protection rules can deploy                   |
 | `custom`            | [`deploymentBranchPattern`](#deploymentbranchpattern)[] \| [`arrayMergeDirective`](#arraymergedirective) | No       | -       | Only refs matching these patterns can deploy.                           |
-| `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in custom.                       |
+| `deleteOrphaned`    | `boolean`                                                                                                | No       | `false` | Delete patterns on GitHub that are not in the merged custom list.       |
 
 - `inherit` — Not valid at root level. Default: true
-- `custom` — Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
-- `deleteOrphaned` — Only valid with custom. Default: false
+- `custom` — A plain list replaces the inherited patterns; use $arrayMerge: append to add to them, or merge with $matchBy: name. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.
+- `deleteOrphaned` — Inherited like other fields; only valid with custom. Default: false
 
 <!-- xfg:generated:end -->
 

@@ -661,7 +661,7 @@
     },
     "codeScanningSettings": {
       "type": "object",
-      "description": "GitHub code scanning default setup configuration",
+      "description": "GitHub code scanning default setup configuration. Fields merge with the inherited block; set inherit: false to drop what it would inherit, for example to go back to auto-detected languages.",
       "properties": {
         "inherit": {
           "type": "boolean",
@@ -670,7 +670,7 @@
         "state": {
           "type": "string",
           "enum": ["configured", "not-configured"],
-          "description": "Enable or disable code scanning default setup"
+          "description": "Enable or disable code scanning default setup. Some layer must set it."
         },
         "querySuite": {
           "type": "string",
@@ -678,7 +678,7 @@
           "description": "Query suite to use: 'default' for standard queries, 'extended' for additional queries"
         },
         "languages": {
-          "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository.",
+          "description": "Languages to analyze. If omitted, GitHub auto-detects languages in the repository. A layer that omits it inherits the parent's list; a plain list replaces it, and inherit: false goes back to auto-detect.",
           "oneOf": [
             {
               "type": "array",
@@ -758,7 +758,7 @@
           "description": "Allow actions from Marketplace verified creators when allowedActions is selected. Maps to verified_allowed of PUT actions/permissions/selected-actions."
         },
         "patternsAllowed": {
-          "description": "Action patterns to allow when allowedActions is selected, such as docker/login-action@*. Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set, and a layer replaces inherited patterns whole.",
+          "description": "Action patterns to allow when allowedActions is selected, such as docker/login-action@*. Maps to patterns_allowed of PUT actions/permissions/selected-actions. A pattern starting with ! blocks the action. Compared as a set. A plain list replaces the inherited patterns; use $arrayMerge to add to them.",
           "oneOf": [
             {
               "type": "array",
@@ -927,7 +927,7 @@
           "description": "Direct collaborators for personal (user-owned) repos. Org repos are skipped with a warning.",
           "properties": {
             "users": {
-              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite. A plain list replaces the inherited users; use $arrayMerge to add to them. Repeated usernames are dropped, ignoring case.",
               "oneOf": [
                 {
                   "type": "array",
@@ -1138,14 +1138,14 @@
         },
         "collaborators": {
           "type": "object",
-          "description": "Direct collaborators for personal (user-owned) repos. Users are added to inherited users. Set inherit: false to drop inherited users.",
+          "description": "Direct collaborators for personal (user-owned) repos. A plain users list replaces the inherited users; use $arrayMerge: append to add to them. Set inherit: false to drop inherited users.",
           "properties": {
             "inherit": {
               "type": "boolean",
               "description": "Set to false to drop inherited users. Does not clear an inherited deleteOrphaned. Default: true"
             },
             "users": {
-              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite.",
+              "description": "GitHub usernames to add as direct collaborators. Personal (user-owned) repos only; org repos are skipped with a warning. Users get write access and must accept the invite. A plain list replaces the inherited users; use $arrayMerge to add to them. Repeated usernames are dropped, ignoring case.",
               "oneOf": [
                 {
                   "type": "array",
@@ -1354,7 +1354,7 @@
     },
     "arrayMergeDirective": {
       "type": "object",
-      "description": "Merge directive for arrays. Instead of replacing the inherited array, append to it, prepend to it, replace it, or merge items into it.",
+      "description": "Merge directive for any array in a layered settings block or in prOptions. A plain array replaces the inherited one; a directive appends to it, prepends to it, replaces it, or merges items into it. Repeated strings and numbers are dropped after the merge. With 'merge' on deploymentBranchPolicy.custom, set $matchBy: name, or every branch pattern matches on type and folds into one.",
       "required": ["$arrayMerge", "$values"],
       "properties": {
         "$arrayMerge": {
@@ -2424,7 +2424,7 @@
     },
     "deploymentBranchPolicy": {
       "type": "object",
-      "description": "Which refs can deploy. Use exactly one of protectedBranches: true or custom. Omit the policy to let any branch deploy.",
+      "description": "Which refs can deploy. Layers merge field by field, and the merged policy must have exactly one of protectedBranches: true or custom; to switch between them, set inherit: false in the layer that changes it. Omit the policy to let any branch deploy.",
       "properties": {
         "inherit": {
           "type": "boolean",
@@ -2436,7 +2436,7 @@
           "description": "Only branches with branch protection rules can deploy"
         },
         "custom": {
-          "description": "Only refs matching these patterns can deploy. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
+          "description": "Only refs matching these patterns can deploy. A plain list replaces the inherited patterns; use $arrayMerge: append to add to them, or merge with $matchBy: name. Patterns on GitHub that are not listed here are left in place with a warning unless deleteOrphaned is true.",
           "oneOf": [
             {
               "type": "array",
@@ -2466,7 +2466,7 @@
         "deleteOrphaned": {
           "type": "boolean",
           "default": false,
-          "description": "Delete patterns on GitHub that are not in custom. Only valid with custom. Default: false"
+          "description": "Delete patterns on GitHub that are not in the merged custom list. Inherited like other fields; only valid with custom. Default: false"
         }
       },
       "additionalProperties": false
@@ -2520,7 +2520,7 @@
               "$ref": "#/definitions/deploymentBranchPolicy"
             }
           ],
-          "description": "Which refs can deploy. Replaces the inherited policy as a whole."
+          "description": "Which refs can deploy. Fields merge with the inherited policy; set inherit: false in it to drop the inherited fields, or false to clear the policy."
         },
         "secrets": {
           "type": "object",

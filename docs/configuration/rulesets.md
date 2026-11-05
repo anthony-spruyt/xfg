@@ -346,7 +346,7 @@ repos:
 
 ### Appending to Arrays
 
-By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead:
+By default, per-repo arrays (like `bypassActors` and `rules`) replace inherited arrays entirely. Use the `$arrayMerge` directive to append or prepend instead. It works on every ruleset array, including the arrays inside rule `parameters` such as `allowedMergeMethods`, `requiredStatusChecks` and `requiredReviewers`:
 
 ```yaml
 id: rulesets
