@@ -1,5 +1,6 @@
 import { ValidationError } from "../../shared/errors.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { arrayValues } from "../array-directive.js";
 import {
   ACTIONS_SELECTED_FIELDS,
   type ActionsAllowedActions,
@@ -99,12 +100,13 @@ function validatePatternsAllowed(
 ): void {
   if (a.patternsAllowed === undefined) return;
 
-  if (!Array.isArray(a.patternsAllowed)) {
+  const patterns = arrayValues(a.patternsAllowed);
+  if (patterns === null) {
     throw new ValidationError(
-      `${context}: patternsAllowed must be an array of strings`
+      `${context}: patternsAllowed must be an array of strings or $arrayMerge directive`
     );
   }
-  a.patternsAllowed.forEach((pattern: unknown, i) => {
+  patterns.forEach((pattern: unknown, i) => {
     if (typeof pattern !== "string" || pattern.trim() === "") {
       throw new ValidationError(
         `${context}: patternsAllowed[${i}] must be a non-empty string`

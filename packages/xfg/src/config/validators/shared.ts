@@ -10,6 +10,7 @@ import { validateRuleset } from "./ruleset-validator.js";
 import { validateRepoSettings } from "./repo-settings-validator.js";
 import { validateActionsSettings } from "./actions-validator.js";
 import { isPlainObject } from "../../shared/type-guards.js";
+import { arrayValues, isArrayMergeDirective } from "../array-directive.js";
 import { ValidationError } from "../../shared/errors.js";
 import type {
   CodeScanningState,
@@ -219,10 +220,13 @@ function validateCodeScanningSettings(
   }
 
   if (settings.languages !== undefined) {
-    if (!Array.isArray(settings.languages)) {
-      throw new ValidationError(`${context}: languages must be an array`);
+    const languages = arrayValues(settings.languages);
+    if (languages === null) {
+      throw new ValidationError(
+        `${context}: languages must be an array or $arrayMerge directive`
+      );
     }
-    for (const lang of settings.languages) {
+    for (const lang of languages) {
       if (!VALID_CODE_SCANNING_LANGUAGES.includes(lang as string)) {
         throw new ValidationError(
           `${context}: invalid language "${lang}". Valid languages: ${VALID_CODE_SCANNING_LANGUAGES.join(", ")}`
@@ -426,11 +430,11 @@ function validateSettingsCollaborators(
     }
   }
 
-  const users = collaborators.users;
-  if (users === undefined) return;
-  if (!Array.isArray(users)) {
+  if (collaborators.users === undefined) return;
+  const users = arrayValues(collaborators.users);
+  if (users === null) {
     throw new ValidationError(
-      `${context}: collaborators.users must be an array of GitHub usernames`
+      `${context}: collaborators.users must be an array of GitHub usernames or $arrayMerge directive`
     );
   }
   for (const user of users) {
@@ -464,11 +468,23 @@ function assertKnownKeys(
 }
 
 function validateBranchPatterns(custom: unknown, context: string): void {
-  if (!Array.isArray(custom) || custom.length === 0) {
-    throw new ValidationError(`${context}: custom must be a non-empty array`);
+  const patterns = arrayValues(custom);
+  if (patterns === null || patterns.length === 0) {
+    throw new ValidationError(
+      `${context}: custom must be a non-empty array or $arrayMerge directive`
+    );
+  }
+  if (
+    isArrayMergeDirective(custom) &&
+    custom.$arrayMerge === "merge" &&
+    custom.$matchBy === undefined
+  ) {
+    throw new ValidationError(
+      `${context}: custom with $arrayMerge: merge needs $matchBy, or every branch pattern would match on 'type' and fold into one`
+    );
   }
   const seen = new Set<string>();
-  custom.forEach((pattern: unknown, i) => {
+  patterns.forEach((pattern: unknown, i) => {
     const ctx = `${context}: custom[${i}]`;
     if (!isPlainObject(pattern)) {
       throw new ValidationError(`${ctx} must be an object`);

@@ -1,5 +1,12 @@
 import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
+import {
+  DIRECTIVE_KEYS,
+  isArrayMergeStrategy,
+  type ArrayMergeStrategy,
+} from "./array-directive.js";
+
+export type { ArrayMergeStrategy };
 
 /** Order matters: the first key present in every item of both arrays wins. */
 export const MATCH_KEY_CANDIDATES = ["type", "actorId", "actor_id"] as const;
@@ -24,11 +31,6 @@ export function findMatchKey(
 
   return undefined;
 }
-
-// Only these are stripped; other $-prefixed keys ($schema, $id, $ref) are content
-const XFG_DIRECTIVES = new Set(["$arrayMerge", "$values", "$matchBy"]);
-
-export type ArrayMergeStrategy = "replace" | "append" | "prepend" | "merge";
 
 type ArrayMergeHandler = (
   base: unknown[],
@@ -82,7 +84,7 @@ function readMatchBy(
 
 function isDirectiveOnly(value: Record<string, unknown>): boolean {
   const keys = Object.keys(value);
-  return keys.length > 0 && keys.every((k) => XFG_DIRECTIVES.has(k));
+  return keys.length > 0 && keys.every((k) => DIRECTIVE_KEYS.has(k));
 }
 
 /** An object of only directive keys must be a complete directive, or it would resolve to nothing. */
@@ -293,7 +295,7 @@ function mergeObjects(
   const result: Record<string, unknown> = { ...base };
 
   for (const [key, overlayValue] of Object.entries(overlay)) {
-    if (XFG_DIRECTIVES.has(key)) continue;
+    if (DIRECTIVE_KEYS.has(key)) continue;
     result[key] = mergeValue(
       base[key],
       overlayValue,
@@ -358,13 +360,6 @@ function resolveBase(base: unknown, ctx: MergeContext, path: string): unknown {
 function isArrayDirective(value: unknown): value is Record<string, unknown> {
   return (
     isPlainObject(value) && ("$arrayMerge" in value || "$matchBy" in value)
-  );
-}
-
-function isArrayMergeStrategy(value: unknown): value is ArrayMergeStrategy {
-  return (
-    typeof value === "string" &&
-    arrayMergeStrategies.has(value as ArrayMergeStrategy)
   );
 }
 
@@ -433,7 +428,7 @@ function stripObject(
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(obj)) {
-    if (XFG_DIRECTIVES.has(key)) continue;
+    if (DIRECTIVE_KEYS.has(key)) continue;
 
     const keyPath = childPath(path, key);
     // Validate before branching: an invalid directive is not resolved and would be stripped silently

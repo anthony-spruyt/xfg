@@ -11,8 +11,8 @@ import { isPlainObject } from "../shared/type-guards.js";
 import { ValidationError } from "../shared/errors.js";
 import { isValidHostname } from "../shared/github-host-policy.js";
 import { isCredentialEnvName } from "../shared/credential-env.js";
-import { validateBranchName } from "../shared/branch-validation.js";
-import { validateAiOption } from "./validators/ai-validator.js";
+import { validatePrOptions } from "./validators/pr-options-validator.js";
+import { arrayValues } from "./array-directive.js";
 import {
   validateFileConfigFields,
   validateSettings,
@@ -181,27 +181,6 @@ function validateGithubHosts(config: RawConfig): void {
   }
 }
 
-function validatePrOptions(config: RawConfig): void {
-  if (config.prOptions?.branch !== undefined) {
-    validateBranchName(config.prOptions.branch);
-  }
-
-  validateAiOption(config.prOptions?.ai);
-
-  if (config.prOptions?.labels === undefined) return;
-
-  if (!Array.isArray(config.prOptions.labels)) {
-    throw new ValidationError("prOptions.labels must be an array of strings");
-  }
-  for (const label of config.prOptions.labels) {
-    if (typeof label !== "string" || label.length === 0) {
-      throw new ValidationError(
-        "prOptions.labels entries must be non-empty strings"
-      );
-    }
-  }
-}
-
 function hasGroupFiles(config: RawConfig): boolean {
   return (
     isPlainObject(config.groups) &&
@@ -313,7 +292,7 @@ export function validateRawConfig(config: RawConfig): void {
 
   validateRootSettings(config);
   validateGithubHosts(config);
-  validatePrOptions(config);
+  validatePrOptions(config.prOptions);
   validateGroups(config);
   validateConditionalGroups(config);
 
@@ -492,7 +471,7 @@ export function hasActionableSettings(
 
   if (
     settings.collaborators &&
-    ((settings.collaborators.users ?? []).length > 0 ||
+    ((arrayValues(settings.collaborators.users) ?? []).length > 0 ||
       settings.collaborators.deleteOrphaned === true)
   ) {
     return true;
