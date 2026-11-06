@@ -21,7 +21,7 @@ jobs:
       deployment: false
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@62f9de477d70d6338bba7385d69a9e02c291b994 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@b10885d62f230c92c1653808d9a7d5295a5179cd # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -51,7 +51,7 @@ jobs:
       deployment: false
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@62f9de477d70d6338bba7385d69a9e02c291b994 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@b10885d62f230c92c1653808d9a7d5295a5179cd # main
         with:
           allowed-endpoints: >-
             api.github.com:443
