@@ -34,7 +34,7 @@
     "ghcr.io/eitsupi/devcontainer-features/jq-likes": {
       "jqVersion": "1.8.2",
       "yqVersion": "4.54.1",
-      "gojqVersion": "0.12.19"
+      "gojqVersion": "0.12.20"
     },
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
       "version": "44.181.10"
