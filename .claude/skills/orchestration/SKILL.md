@@ -29,9 +29,9 @@ Once the owner approves, brief the helper with the design verbatim, its gate che
 
 - Each helper works in its own clone from `workspace.sh <owner/repo> <task-name>` (no worktrees or hand-made clones), stages only its own files, and waits for other helpers on the same repo.
 - Steer a running helper with `SendMessage`; never start a duplicate. Each fix round you delegate gets a new helper, and a builder that follows a BLOCKED one gets that builder's notes path.
-- Every brief gives the goal and evidence (`file:line`), constraints and merge rules, what not to touch, when to stop, a report cap, and the Definition of Ready. A review brief also says whether the target is pushed (give the PR head sha) or local.
+- Every brief gives the goal and evidence (`file:line`), constraints and merge rules, whether to push or (review-first) commit and stop, what not to touch, when to stop, a report cap, and the Definition of Ready. A review brief also says whether the target is pushed (give the CI-green PR head sha) or local.
 - A CI wait runs `ci-status.sh --wait --repo <owner/repo>` with the PR or sha and any `--no-sonar`/`--no-codeql`, never `gh pr checks` or `gh run watch`.
-- Put a PR's work in one push: each push re-runs approval-gated jobs and emails the owner per job. Fix commit wording at squash-merge time, not with follow-up commits.
+- PRs squash-merge, so extra pushes are fine; fix commit wording at squash-merge time, not with follow-up commits.
 - Act on a helper's result only once it has finished (`ListAgents` doesn't show it running), and check its key claims first: the sha exists, the PR and run state.
 - When a helper flags a pre-existing CI failure, tell the owner and start a separate fix round at once.
 - Never wait for Renovate. Once your own release's image is published, bump its tag and digest yourself where it's deployed. For anything else, tick the update's box in the repo's `Renovate Dashboard` issue (else `manual job`) by editing the line from `- [ ]` to `- [x]` and piping the body to `gh issue edit <n> --body-file -` (no Write tool), then have a `chore-runner` poll for the PR.
@@ -41,20 +41,24 @@ Once the owner approves, brief the helper with the design verbatim, its gate che
 **Size checks to risk.** Before each check (a reviewer or lens, a fix-check, `spec-review`, a validator), name what it can catch that the checks already run can't. If nothing, skip it and give the reason in one line of your report.
 
 - **High risk** - the change can take production down, lose or delete data, or weaken security. It gets every check; skip none.
-- **Low risk** - anything else gets the one cheapest pre-push check that covers it. A small no-logic change from Routing needs only your own `git diff`, unless a repo rule requires a reviewer. Post-push validators the repo's rules name still run: nothing before the push sees the live result.
+- **Low risk** - anything else gets the one cheapest check that covers it. A small no-logic change from Routing needs only your own `git diff`, unless a repo rule requires a reviewer. Post-push validators the repo's rules name still run: nothing before the push sees the live result.
 - **Unsure** - treat it as high risk.
 - The repo's local orchestration rule names its high-risk areas and any validator that counts as a reviewer there.
 
 When a change needs a reviewer, use a fresh one, never the author; verbatim step 3 fixes and bot PRs (your checks under Owner) need none. Security-sensitive changes get an attacker-minded brief. Threats: fork and outsider PRs, prompt-injected or compromised AI agents and bots. Trusted: the owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions). Grade a security finding by what an attacker gains that existing controls don't already stop, and drop it if that's nothing.
 
+**Push first, review at green.** The builder pushes PR work and fixes CI, CodeQL and Sonar until green; reviews and fix-checks then run on that CI-green head, and no helper is briefed to predict scanner findings. If a job waits for the owner's approval, review that head first and ask for the approval only once the review has no BLOCKER or MAJOR.
+
+**Review first** (READY on the local, unpushed commit): (a) pushes straight to `main` in trunk-based repos; (b) CI workflow files (`.github/workflows/`); (c) security work: text, code, tests or commits that describe what a security control covers or misses (a PR page keeps every pushed commit, even after a squash); (d) review-gated paths the repo's rules define. CI fixes to that work are review-first too.
+
 Review wide once, then check only the fixes: full re-reviews find new nits forever.
 
-1. **Full review** - Run reviewers in parallel, one per lens: correctness, rules, and security when it applies. A diff under about 50 lines gets one reviewer with no lens. Merge their findings into one deduplicated list and re-grade it yourself: a MINOR that causes wrong behaviour (a bug, wrong output, lost data) is a MAJOR.
+1. **Full review** - One fresh reviewer with no lens. Only high-risk work runs reviewers in parallel, one per lens: correctness, rules, and security when it applies. Merge their findings into one deduplicated list and re-grade it yourself: a MINOR that causes wrong behaviour (a bug, wrong output, lost data) is a MAJOR.
 2. **Fix round** - One commit fixes every BLOCKER and MAJOR, plus each MINOR a reader or user would trip on or that breaks a repo convention; one such MINOR can start a round alone. Drop taste-only and unfixed MINORs, and never open follow-up issues for findings unless the owner asks.
 3. **Fix-check** - A fresh reviewer in fix-check mode gets the list and the fix range and looks only there, though it still reports a BLOCKER it happens to see outside the range. Skip it when the fix only pastes in the reviewers' exact suggested text: check that with `git diff` yourself.
-4. **Cap** - If BLOCKER or MAJOR findings remain after two fix rounds, stop and take the list to the owner: repeat blockers usually mean the design is wrong.
+4. **Cap** - If BLOCKER or MAJOR findings remain after two review fix rounds, stop and take the list to the owner: repeat blockers usually mean the design is wrong. CI and scanner fix loops don't count.
 
-Push yourself, from the `workspace.sh` clone that holds the commits and never the shared checkout, with `push-reviewed.sh <base> <sha> <branch>`, only once the review the change needs is READY on that exact range: every full-review lens or, after a fix round, the latest fix-check or your step 3 `git diff` check. If it stops, tell the owner. Give the pushed sha to the CI wait, and the range it prints to any post-push validator the repo's rules name.
+Push review-first work and your own small changes yourself, from the `workspace.sh` clone that holds the commits and never the shared checkout, with `push-reviewed.sh <base> <sha> <branch>`, only once the review the change needs is READY on that exact range: every full-review lens or, after a fix round, the latest fix-check or your step 3 `git diff` check. If it stops, tell the owner. Give the pushed sha to the CI wait, and the range it prints to any post-push validator the repo's rules name.
 
 **Definition of Ready**, before you approve, ask the owner to approve, or merge: that review is READY, owner comments and threads are checked, CI is green, and every gate the repo has passes.
 

@@ -27,7 +27,7 @@ The brief names the target: a repo and PR number, a diff range, or a local commi
 
 ## Workflow
 
-1. **Correctness** - Read the full diff (`gh pr diff`, `git diff`, `git -C <clone> show`) against the PR body or commit message, linked issue and brief, plus surrounding code. Look for bugs, missed call sites, broken edge cases and tests that don't test the claim. Run tests in that clone, or one made with `workspace.sh <owner/repo> <task-name>`.
+1. **Correctness** - Read the full diff (`gh pr diff`, `git diff`, `git -C <clone> show`) against the PR body or commit message, linked issue and brief, plus surrounding code. Look for bugs, missed call sites, broken edge cases and tests that don't test the claim. On a pushed PR, read the CI results and logs: don't rebuild or re-run what CI ran, and run something only to prove a specific suspected bug, in a `workspace.sh <owner/repo> <task-name>` clone. On an unpushed commit, run its tests in its clone. Never predict Sonar or CodeQL findings: read what the scanners reported.
 2. **Security** - When the brief asks, or the diff touches CI workflows, permissions, auth, secrets or network policy, review as an attacker would. Threats: fork and outsider PRs, and prompt-injected or compromised AI agents and bots. The owner and deterministic apps (Renovate, release bot, Mergify, GitHub Actions) are trusted. Security findings need an attacker; a tool failing is a correctness issue.
 3. **Rules** - Check the diff against the target repo's `CLAUDE.md`, `.claude/rules/` and the conventions of the files it touches: debt the rules forbid, naming, structure.
 4. **Definition of Ready** - Check each gate:
