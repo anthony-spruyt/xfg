@@ -11,6 +11,10 @@
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "containerUser": "vscode",
   "remoteUser": "vscode",
+  "remoteEnv": {
+    "CLAUDE_CODE_DISABLE_INLINE_SHELL_RM_PROMPT": "1",
+    "CLAUDE_CODE_DISABLE_SUBSTITUTION_RM_PROMPT": "1"
+  },
   "runArgs": [
     "--security-opt",
     "seccomp=${localWorkspaceFolder}/.devcontainer/podman-seccomp.json",
