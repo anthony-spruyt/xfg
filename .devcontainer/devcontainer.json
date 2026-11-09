@@ -37,7 +37,7 @@
       "gojqVersion": "0.12.20"
     },
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
-      "version": "44.181.10"
+      "version": "44.199.2"
     },
     "ghcr.io/devcontainers/features/azure-cli": {
       "version": "2.91.0"
