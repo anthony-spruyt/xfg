@@ -83,7 +83,7 @@
     "commander": "^15.0.0",
     "json5": "^2.2.3",
     "libsodium-wrappers": "^0.8.4",
-    "p-retry": "^8.0.0",
+    "p-retry": "^9.0.0",
     "yaml": "^2.4.5"
   },
   "devDependencies": {
