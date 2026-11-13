@@ -1,5 +1,17 @@
 # Changelog
 
+## [9.0.1](https://github.com/anthony-spruyt/xfg/compare/v9.0.0...v9.0.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency p-retry to v9 ([#1372](https://github.com/anthony-spruyt/xfg/issues/1372)) ([1bbe603](https://github.com/anthony-spruyt/xfg/commit/1bbe603df4c01cd78b81f8f39ab17c46e72e4623))
+
+
+### Dependencies
+
+* **deps:** lock file maintenance ([#1368](https://github.com/anthony-spruyt/xfg/issues/1368)) ([eb9e204](https://github.com/anthony-spruyt/xfg/commit/eb9e204caa4e238527a73f191ec63ef6e5ce5fe4))
+
 ## [9.0.0](https://github.com/anthony-spruyt/xfg/compare/v8.6.0...v9.0.0) (2026-11-05)
 
 
