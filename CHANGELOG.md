@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.2](https://github.com/anthony-spruyt/xfg/compare/v9.0.1...v9.0.2) (2026-11-14)
+
+
+### Dependencies
+
+* **deps:** update dependency commander to v15.1.0 ([#1379](https://github.com/anthony-spruyt/xfg/issues/1379)) ([381ab5c](https://github.com/anthony-spruyt/xfg/commit/381ab5c9d616353afab61024defd9784ec71a0fc))
+
 ## [9.0.1](https://github.com/anthony-spruyt/xfg/compare/v9.0.0...v9.0.1) (2026-11-13)
 
 
