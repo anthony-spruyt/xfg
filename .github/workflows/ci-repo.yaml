@@ -115,6 +115,7 @@ jobs:
             ingest.codecov.io:443
             keybase.io:443
             registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
             results-receiver.actions.githubusercontent.com:443
             storage.googleapis.com:443
             *.blob.core.windows.net:443

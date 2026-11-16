@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
@@ -76,6 +76,26 @@ function isHardenRunner(step: Step): boolean {
     isSharedHardenRunner(step) ||
     (step.uses?.startsWith("step-security/harden-runner@") ?? false)
   );
+}
+
+// setup-node downloads Node from here when the runner image's tool cache lacks that version
+const SETUP_NODE_DOWNLOAD_HOST = "release-assets.githubusercontent.com:443";
+
+function localActionSteps(uses: string): Step[] {
+  const file = ["action.yml", "action.yaml"]
+    .map((name) => join(repoRoot, uses, name))
+    .find(existsSync);
+  if (!file) return [];
+  const action = parse(readFileSync(file, "utf-8")) as {
+    runs?: { steps?: Step[] };
+  };
+  return action.runs?.steps ?? [];
+}
+
+function runsSetupNode(step: Step): boolean {
+  if (step.uses?.startsWith("actions/setup-node@")) return true;
+  if (!step.uses?.startsWith("./")) return false;
+  return localActionSteps(step.uses).some(runsSetupNode);
 }
 
 function exemptStep(steps: Step[]): number {
@@ -584,6 +604,35 @@ describe("harden-runner", () => {
         );
         assert.equal(step.with?.["egress-policy"], "block");
       }
+    });
+  }
+
+  const setupNodeJobs = workflowFiles.flatMap((file) =>
+    jobs(file)
+      .filter(
+        ([, job]) =>
+          Array.isArray(job.steps) &&
+          job.steps.some(isHardenRunner) &&
+          job.steps.some(runsSetupNode)
+      )
+      .map(([name, job]): [string, Job] => [`${file}: ${name}`, job])
+  );
+
+  test("guards the lanes that reach setup-node through the local action", () => {
+    assert.ok(
+      setupNodeJobs.some(([name]) => name.startsWith("_integration-tests.yaml"))
+    );
+  });
+
+  for (const [name, job] of setupNodeJobs) {
+    test(`${name} allows the host setup-node downloads Node from`, () => {
+      const allowed = String(
+        job.steps.find(isHardenRunner)?.with?.["allowed-endpoints"]
+      ).split(/\s+/);
+      assert.ok(
+        allowed.includes(SETUP_NODE_DOWNLOAD_HOST),
+        `${name} does not allow ${SETUP_NODE_DOWNLOAD_HOST}`
+      );
     });
   }
 });
