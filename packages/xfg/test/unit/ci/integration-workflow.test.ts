@@ -626,11 +626,13 @@ describe("harden-runner", () => {
 
   for (const [name, job] of setupNodeJobs) {
     test(`${name} allows the host setup-node downloads Node from`, () => {
-      const allowed = String(
-        job.steps.find(isHardenRunner)?.with?.["allowed-endpoints"]
-      ).split(/\s+/);
+      const allowed = new Set(
+        String(
+          job.steps.find(isHardenRunner)?.with?.["allowed-endpoints"]
+        ).split(/\s+/)
+      );
       assert.ok(
-        allowed.includes(SETUP_NODE_DOWNLOAD_HOST),
+        allowed.has(SETUP_NODE_DOWNLOAD_HOST),
         `${name} does not allow ${SETUP_NODE_DOWNLOAD_HOST}`
       );
     });
