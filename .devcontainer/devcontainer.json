@@ -13,7 +13,8 @@
   "remoteUser": "vscode",
   "remoteEnv": {
     "CLAUDE_CODE_DISABLE_INLINE_SHELL_RM_PROMPT": "1",
-    "CLAUDE_CODE_DISABLE_SUBSTITUTION_RM_PROMPT": "1"
+    "CLAUDE_CODE_DISABLE_SUBSTITUTION_RM_PROMPT": "1",
+    "CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS": "1"
   },
   "runArgs": [
     "--security-opt",
@@ -37,14 +38,14 @@
     },
     "ghcr.io/eitsupi/devcontainer-features/jq-likes": {
       "jqVersion": "1.8.2",
-      "yqVersion": "4.54.1",
+      "yqVersion": "4.54.3",
       "gojqVersion": "0.12.20"
     },
     "ghcr.io/devcontainers-extra/features/renovate-cli": {
-      "version": "44.199.2"
+      "version": "44.222.5"
     },
     "ghcr.io/devcontainers/features/azure-cli": {
-      "version": "2.91.0"
+      "version": "2.92.0"
     }
   },
   "initializeCommand": "bash ${localWorkspaceFolder}/.devcontainer/initialize.sh",
