@@ -115,6 +115,7 @@ jobs:
             ingest.codecov.io:443
             keybase.io:443
             registry.npmjs.org:443
+            release-assets.githubusercontent.com:443
             results-receiver.actions.githubusercontent.com:443
             storage.googleapis.com:443
             *.blob.core.windows.net:443
@@ -124,7 +125,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: "24"
+          node-version: "26"
           cache: "npm"
           cache-dependency-path: packages/xfg/package-lock.json
 
