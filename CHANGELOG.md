@@ -1,5 +1,15 @@
 # Changelog
 
+## [9.0.2](https://github.com/anthony-spruyt/xfg/compare/v9.0.1...v9.0.2) (2026-11-23)
+
+
+### Dependencies
+
+* **deps:** lock file maintenance ([#1386](https://github.com/anthony-spruyt/xfg/issues/1386)) ([36225b9](https://github.com/anthony-spruyt/xfg/commit/36225b9fd41450dcd88ee8a709b56354d304fbaf))
+* **deps:** lock file maintenance ([#1394](https://github.com/anthony-spruyt/xfg/issues/1394)) ([8f899e0](https://github.com/anthony-spruyt/xfg/commit/8f899e001fa20ac68ae8368c8c92b72eca5280ba))
+* **deps:** update dependency commander to v15.1.0 ([#1379](https://github.com/anthony-spruyt/xfg/issues/1379)) ([381ab5c](https://github.com/anthony-spruyt/xfg/commit/381ab5c9d616353afab61024defd9784ec71a0fc))
+* **deps:** update dependency node to v26 ([#1371](https://github.com/anthony-spruyt/xfg/issues/1371)) ([60a14f6](https://github.com/anthony-spruyt/xfg/commit/60a14f6f6ba926ddb55e6f1de4a517ae5685db5c))
+
 ## [9.0.1](https://github.com/anthony-spruyt/xfg/compare/v9.0.0...v9.0.1) (2026-11-13)
 
 
