@@ -52,7 +52,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             aka.ms:443
@@ -106,7 +106,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -164,7 +164,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -220,7 +220,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -276,7 +276,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -372,7 +372,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -449,7 +449,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
@@ -652,7 +652,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@d77f42e24138f83d71f69391ecdfd484ae424a72 # main
+        uses: anthony-spruyt/repo-operator/.github/actions/harden-runner@eb8b2f55960cbfa2bb5aa7ec0f84adfddf1c214e # main
         with:
           allowed-endpoints: >-
             api.github.com:443
